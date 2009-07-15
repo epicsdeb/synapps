@@ -1,8 +1,10 @@
+#This file was generated using makecontrol.py
+
 Source: synapps
 Section: devel
 Priority: extra
 Maintainer: Michael Davidsaver <mdavidsaver@bnl.gov>
-Build-Depends: debhelper (>= 7)
+Build-Depends: debhelper (>= 7), epics-dev
 Standards-Version: 3.7.3
 Homepage: http://www.aps.anl.gov/bcda/synApps/index.php
 
@@ -12,34 +14,130 @@ Description: Documentation for synapps
  It contains beamline-control and data-acquisition components for
  an EPICS based control system. synApps is distributed under the EPICS Open license.
 
-Package: epics-seq-lib
+Package: epics-seq-libs
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: EPICS state notation compiler
- Support for implementing state transition diagrams in an EPICS environment.
+Depends: ${shlibs:Depends}, ${misc:Depends} epics-libs
+Description: EPICS State Notation Compiler
+ EPICS State Notation Compiler
  .
  This package contains shared libraries.
 
 Package: epics-seq-dev
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: EPICS state notation compiler
- Support for implementing state transition diagrams in an EPICS environment.
+Depends: ${shlibs:Depends}, ${misc:Depends} epics-dev
+Description: EPICS State Notation Compiler
+ EPICS State Notation Compiler
  .
  This package contains development headers, libraries, and utilities
 
-Package: epics-allenbradley-lib
+Package: epics-ipac-libs
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: EPICS Support for Allen-Bradley PLC systems
- EPICS Support for Allen-Bradley PLC systems
+Depends: ${shlibs:Depends}, ${misc:Depends} epics-libs
+Description: Support for Industry Pack bus carriers (bridges)
+ Support for Industry Pack bus carriers (bridges)
  .
  This package contains shared libraries.
 
-Package: epics-allenbradley-dev
+Package: epics-ipac-dev
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: EPICS Support for Allen-Bradley PLC systems
- EPICS Support for Allen-Bradley PLC systems
+Depends: ${shlibs:Depends}, ${misc:Depends} epics-dev
+Description: Support for Industry Pack bus carriers (bridges)
+ Support for Industry Pack bus carriers (bridges)
+ .
+ This package contains development headers, libraries, and utilities
+
+Package: epics-sscan-libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends} epics-libs
+Description: Pattern scanning record
+ Pattern scanning record
+ .
+ This package contains shared libraries.
+
+Package: epics-sscan-dev
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends} epics-dev
+Description: Pattern scanning record
+ Pattern scanning record
+ .
+ This package contains development headers, libraries, and utilities
+
+Package: epics-autosave-libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends} epics-libs
+Description: Periodic save and automatic restore on start
+ Periodic save and automatic restore on start
+ .
+ This package contains shared libraries.
+
+Package: epics-autosave-dev
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends} epics-dev
+Description: Periodic save and automatic restore on start
+ Periodic save and automatic restore on start
+ .
+ This package contains development headers, libraries, and utilities
+
+Package: epics-asyn-libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends} epics-libs, epics-seq-libs, epics-ipac-libs
+Description: The Asynchronous Record
+ The Asynchronous Record
+ .
+ This package contains shared libraries.
+
+Package: epics-asyn-dev
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends} epics-dev, epics-seq-dev, epics-ipac-dev
+Description: The Asynchronous Record
+ The Asynchronous Record
+ .
+ This package contains development headers, libraries, and utilities
+
+Package: epics-calc-libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends} epics-libs, epics-sscan-libs
+Description: Advanced calculator record
+ Advanced calculator record
+ .
+ This package contains shared libraries.
+
+Package: epics-calc-dev
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends} epics-dev, epics-sscan-dev
+Description: Advanced calculator record
+ Advanced calculator record
+ .
+ This package contains development headers, libraries, and utilities
+
+Package: epics-motor-libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends} epics-libs, epics-asyn-libs, epics-seq-libs, epics-ipac-libs
+Description: Support for various motor controllers
+ Support for various motor controllers
+ .
+ This package contains shared libraries.
+
+Package: epics-motor-dev
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends} epics-dev, epics-asyn-dev, epics-seq-dev, epics-ipac-dev
+Description: Support for various motor controllers
+ Support for various motor controllers
+ .
+ This package contains development headers, libraries, and utilities
+
+Package: epics-stream-libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends} epics-libs, epics-asyn-libs, epics-calc-libs, epics-sscan-libs
+Description: Support and Db generator for command/responce message passing devices
+ Support and Db generator for command/responce message passing devices
+ .
+ This package contains shared libraries.
+
+Package: epics-stream-dev
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends} epics-dev, epics-asyn-dev, epics-calc-dev, epics-sscan-dev
+Description: Support and Db generator for command/responce message passing devices
+ Support and Db generator for command/responce message passing devices
  .
  This package contains development headers, libraries, and utilities
