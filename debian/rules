@@ -16,43 +16,102 @@
 # This has to be exported to make some magic below work.
 export DH_OPTIONS
 
+EPICS_HOST_ARCH:=$(shell /usr/epics/base/startup/EpicsHostArch)
+
+MFLAGS=EPICS_BASE=/usr/epics/base
+
+MODS += seq
+seq_VER = 2-0-12
+seq_INSTALLS = bin lib dbd include
+
+MODS += allenBradley
+allenBradley_VER = 2-1
+allenBradley_NAME = allenbradley
+
+# Targets to pass through to module Makefile
+# $(1) is module name (ie seq)
+# $(2) is target (ie all, clean, ...)
+define target-mod
+
+$(2)-$(1):
+	$(MAKE) -C support/$(1)/$$($(1)_VER) $$(MFLAGS) $$($(1)_MFLAGS) $(2)
+
+all-$(2) += $(2)-$(1)
+endef
+
+# Install a module into debian/epics-$(modname)-lib and debian/epics-$(modname)-dev
+#
+# $(1) is module name (ie seq)
+define install-mod
+
+$(1)_NAME ?= $(1)
+$(1)_INSTALLS ?= bin lib db dbd include
+
+$(1)_builddir = support/$(1)/$$($(1)_VER)
+$(1)_instdev = debian/epics-$$($(1)_NAME)-dev
+$(1)_instlib = debian/epics-$$($(1)_NAME)-lib
+
+install-$(1): $$($(1)_INSTALLS:%=install-$(1)-%)
+
+install-$(1)-bin:
+	install -d $$($(1)_instdev)/usr/epics/base/bin
+	cp -r $$($(1)_builddir)/bin/$$(EPICS_HOST_ARCH) $$($(1)_instdev)/usr/epics/base/bin/
+
+install-$(1)-lib:
+	install -d $$($(1)_instdev)/usr/epics/base/lib/$$(EPICS_HOST_ARCH)
+
+	cp -r $$($(1)_builddir)/lib/$$(EPICS_HOST_ARCH)/*.a $$($(1)_instdev)/usr/epics/base/lib/$$(EPICS_HOST_ARCH)/
+
+	install -d $$($(1)_instlib)/usr/lib
+	cp -r $$($(1)_builddir)/lib/$$(EPICS_HOST_ARCH)/*.so* $$($(1)_instlib)/usr/lib
+
+	for ff in $$($(1)_instlib)/usr/lib/*.so*; do ln -s ../../../../lib/`basename $$$$ff` $$($(1)_instdev)/usr/epics/base/lib/$$(EPICS_HOST_ARCH)/; done
 
 
+install-$(1)-db:
+	install -d $$($(1)_instdev)/usr/epics/base
+	cp -r $$($(1)_builddir)/db $$($(1)_instdev)/usr/epics/base/
 
+install-$(1)-dbd:
+	install -d $$($(1)_instdev)/usr/epics/base
+	cp -r $$($(1)_builddir)/dbd $$($(1)_instdev)/usr/epics/base/
 
+install-$(1)-include:
+	install -d $$($(1)_instdev)/usr/epics/base
+	cp -r $$($(1)_builddir)/include $$($(1)_instdev)/usr/epics/base/
 
-configure: configure-stamp
-configure-stamp:
-	dh_testdir
-	# Add here commands to configure the package.
-
-	touch configure-stamp
-
+all-install += install-$(1)
+endef
 
 #Architecture
 build: build-arch build-indep
 
+#$(foreach m,$(MODS),$(call target-mod,$(m),build))
+$(eval $(call target-mod,seq,all))
+$(eval $(call target-mod,seq,realclean))
+$(eval $(call install-mod,seq))
+
+#all-seq:
+#	$(MAKE) -f $(CURDIR)/debian/rules -C support/seq/$(seq_VER) $(MFLAGS) $(seq_MFLAGS) all
+
 build-arch: build-arch-stamp
-build-arch-stamp: configure-stamp  
+build-arch-stamp: $(all-all)
 
 	# Add here commands to compile the arch part of the package.
 	#$(MAKE)
 	touch $@
 
 build-indep: build-indep-stamp
-build-indep-stamp: configure-stamp  
+build-indep-stamp:
 
 	# Add here commands to compile the indep part of the package.
 	#$(MAKE) doc
 	touch $@
 
-clean: 
+clean: $(all-realclean)
 	dh_testdir
 	dh_testroot
-	rm -f build-arch-stamp build-indep-stamp configure-stamp
-
-	# Add here commands to clean up after the build process.
-	$(MAKE) clean
+	rm -f build-arch-stamp build-indep-stamp
 
 	dh_clean 
 
@@ -69,17 +128,19 @@ install-indep:
 
 	dh_install -i
 
-install-arch:
+install-arch: install-arch-pre install-arch-body install-arch-post
+
+install-arch-pre:
 	dh_testdir
 	dh_testroot
 	dh_clean -k -s 
 	dh_installdirs -s
 
-	# Add here commands to install the arch part of the package into
-	# debian/tmp.
-	$(MAKE) DESTDIR=$(CURDIR)/debian/synapps install
+install-arch-body: $(all-install)
 
+install-arch-post:
 	dh_install -s
+
 # Must not depend on anything. This is to be called by
 # binary-arch/binary-indep
 # in another 'make' thread.
@@ -101,7 +162,7 @@ binary-common:
 #	dh_installinfo
 	dh_installman
 	dh_link
-	dh_strip
+	dh_strip -Xrtems
 	dh_compress
 	dh_fixperms
 #	dh_perl
@@ -120,4 +181,4 @@ binary-arch: build-arch install-arch
 	$(MAKE) -f debian/rules DH_OPTIONS=-s binary-common
 
 binary: binary-arch binary-indep
-.PHONY: build clean binary-indep binary-arch binary install install-indep install-arch configure
+.PHONY: build clean binary-indep binary-arch binary install install-indep install-arch

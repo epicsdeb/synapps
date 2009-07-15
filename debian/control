@@ -1,18 +1,45 @@
 Source: synapps
-Section: unknown
+Section: devel
 Priority: extra
 Maintainer: Michael Davidsaver <mdavidsaver@bnl.gov>
 Build-Depends: debhelper (>= 7)
 Standards-Version: 3.7.3
-Homepage: <insert the upstream URL, if relevant>
+Homepage: http://www.aps.anl.gov/bcda/synApps/index.php
 
-Package: synapps
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: <insert up to 60 chars description>
- <insert long description, indented with spaces>
-
-Package: synapps-doc
+Package: epics-synapps-doc
 Architecture: all
 Description: Documentation for synapps
- <insert long description, indented with spaces>
+ It contains beamline-control and data-acquisition components for
+ an EPICS based control system. synApps is distributed under the EPICS Open license.
+
+Package: epics-seq-lib
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: EPICS state notation compiler
+ Support for implementing state transition diagrams in an EPICS environment.
+ .
+ This package contains shared libraries.
+
+Package: epics-seq-dev
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: EPICS state notation compiler
+ Support for implementing state transition diagrams in an EPICS environment.
+ .
+ This package contains development headers, libraries, and utilities
+
+Package: epics-allenbradley-lib
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: EPICS Support for Allen-Bradley PLC systems
+ EPICS Support for Allen-Bradley PLC systems
+ .
+ This package contains shared libraries.
+
+Package: epics-allenbradley-dev
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: EPICS Support for Allen-Bradley PLC systems
+ EPICS Support for Allen-Bradley PLC systems
+ .
+ This package contains development headers, libraries, and utilities
