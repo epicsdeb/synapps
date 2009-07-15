@@ -1,0 +1,46 @@
+New Focus 8750 Picomotor controller
+
+- RS232: 2-3 swap (Horizontal jumpers on xm-octal panel). 
+	 Baud = 19200
+	 Dbits = 8
+	 Sbits = 1
+	 Parity = N
+
+
+- In your st.cmd file:
+  # New Focus Picomotor controller (Model 8750)
+  dbLoadTemplate("picoMotor.substitutions", top)
+
+- In st_mpfserver.cmd:
+  tyGSMPFInit("serial1",  0, 0, 19200,'N',1,8,'N',"") /* NF Picomotor */
+
+- In auto_positions.req:
+  xxx:S1:A1:pM0_pos.VAL
+  xxx:S1:A1:pM0_prev.VAL
+  ...for each motor...
+
+- In medm screen that calls the top level picomotor screen (related
+  display button):
+      display[2] {
+              label="9 PicoMotors"
+              name="picoMotor_9.adl"
+              args="P=xxx:,S=S1"
+      }
+
+
+- Min Velocity must be less than Velocity.
+
+- E-Stop will cause the motor to lose position.
+
+- ETA is an *estimate* of the time to complete the move.  This gives the
+  user an (inexact) idea of how long the motor will be running.
+
+- Joystick must be off and Driver must be on for EPICS operation.
+
+- IF the controller is reset (power cycled) and the crate is not:
+  - "joystick off", "driver on", must be re-asserted. 
+  - dynamics parms must be re-asserted, _if_ they have not been
+    hardware-saved.
+
+- IF the crate is reset and the controller is not:
+  - all parameters should be restored properly by autosave.

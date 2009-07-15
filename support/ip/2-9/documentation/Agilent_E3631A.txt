@@ -1,0 +1,31 @@
+Agilent_E3631A Power Supply:
+
+- In st.cmd:
+# Agilent E3631A triple output power supply
+dbLoadRecords("$(IP)ipApp/Db/Agilent_E3631A.db","P=xxx:,S=ps1,PORT=serial1")
+
+- In st_mpfserver.cmd:
+tyGSMPFInit("serial1",  0, 0, 9600,'N',2,8,'N',"") /* Agilent E3631A */
+
+- In top level medm screen, related display button:
+     display[7] {
+             label="Agilent E3631A Power Supply"
+             name="Agilent_E3631A.adl"
+             args="P=3idd:,S=ps1"
+     }
+
+- RS-232 connection:
+Needs jumper tying pin 6 (DSR on instrument) to Space (+12V).  This
+was done on the xm-octal breakout as follows:
+
+. . . .
+. . . .
+. . . ._
+. . . ._|- jumpered these two together (see XM-Octal manual)
+
+The cable should be connected straight through except for a 2/3 swap
+and a 7/8 swap.  Pin 4 could (should?) be disconnected.  In my testing
+it didn't seem to matter although the manual says to disconnect it.
+
+- This device sends back CR/LF.  Messages sent out are terminated in
+  LF and received messages terminate with CR.

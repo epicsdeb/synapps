@@ -1,0 +1,11 @@
+#!/usr/local/bin/tcsh
+# Startup script for EPICS brick (shell application)
+#
+
+# CD to project root directory
+setenv DIR `ls -d iocBoot/ioc*`
+cd $DIR
+
+# Launch application
+setenv APP `ls ../../bin/vl-linux-x86/*App`
+launch $APP st.cmd.linux

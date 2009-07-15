@@ -1,0 +1,147 @@
+-*- outline -*-
+
+How to Use VX Stat Support on Your IOC
+======================================
+
+* config/RELEASE   
+
+R1-7-2
+Add fully instantiated MACRO-ized database, "vxStats-template.db":
+Creates a template database that only requires one substitution parameter; (i.e. the IOC's Name). 
+This will allow users to reference vxStats-template.db to use with dbLoadRecords 
+and substitute the for the MACRO at boot time. 
+The other option is to reference vxStats-template.db and make a call to msi 
+for macro substitution to create a fully instantiated databases"
+
+
+
+R1-7-1
+Add records for all netStackSysPool and netStackDataPool cluster fields.
+Add records for mbuf totals for each Pool.
+Add records for ifShow input and output errors.
+Remove vxWorks Variable device type dependency.
+
+R1-6-10
+Add additional formats for timestamp string:
+We will add a $(P)TimeShort -- "HH:MM:SS"
+We will also add a $(P)TimeMed -- "MM/DD/YY HH:MM:SS:ns"
+This will be useful for edm screens that display time
+and don't want to take up to much real-estate.
+
+R1-6-9
+Change time stamp date format to display year.
+
+
+R1-6-8
+Change ASG for "$(P):Access_Cmd" to 
+"CHIEF_OPRS". Only the Chief operators can
+change the security access mode of operational
+IOCs. This PV occurs in reboot.db and reboot.template
+
+
+
+R1-6-7
+DTYP was not defined for "$(P):Boot_Ena"
+DTYP should "Soft Channel"  this was causing
+problems for Dave Thompson's utility module.
+
+R1-6-6
+Adjust size of text region to accomodate
+different security modes on the "IOC_Status.edl"
+screen.
+
+
+R1-6-5
+Inside of RELEASE file changed the curly braces to
+paren for EPICS_BASE_RELEASE.
+
+R1-6-4
+Point to new Release of timestampRecord R1-3.
+Dave Thompson made some improvements to the
+timestampRecord
+
+
+R1-6-3
+Added DOL to mbbo record so that upon reboot
+it comes in the OPERATIONS state and valid.
+Without using DOL and PINI the mbbo record comes
+up as invalid after a reboot.
+
+
+R1-6-2:
+Changed to version R1-2 in the RELEASE file
+
+
+R1-6-1:
+Use production release of time stamp record
+support R1-2
+
+
+R1-6: unbundle timeStampRecord support
+Changed CA security bo record to an mbbo
+record to support more IOC states.
+Decoupled Channel Access related screens from the Reboot 
+EDM Screens
+
+
+
+Add
+VX_STATS=$(SHARE_RELEASE)/vxStats/R1-1
+
+* In main application's baseLIBOBJS      
+Assert that the same-name vx stat support from EPICS
+base is NOT included by e.g. commenting it out:
+
+#LIBOBJS += $(EPICS_BASE_BIN)/devVXStats.o  
+
+* In your main application's src/Makefile.Vx,
+include the VX Stats binaries:
+LIBOBJS += $(VX_STATS_BIN)/vxStatsLib  
+
+* In your main application's dbd file,
+include the DBD description:
+
+include "vxStats.dbd"
+
+* Use the vx stats template
+vxStatsApp/Db/ioc.substitutions explains
+the template files and macro names.
+
+Example use: create a substitutions file like this:
+
+# Coerce vxStat templates into something
+# that accepts LLRF marcos S, SS, N
+
+file stats.template
+{
+    {P=$(S)_$(SS):IOC$(N),
+        HMM=50000000,WMM=500000,AMM=100000,
+        HCP=100,WCP=50,ACP=80,
+        HCL=200,WCL=100,ACL=175,
+        HCX=2000,WCX=1000,ACX=1750,
+        HFD=150,WFD=20,AFD=5,WMB=50,AMB=10}
+}
+file reboot.template
+{
+    {P=$(S)_$(SS):IOC$(N),T=3}
+}
+
+Tell the Makefile.Host to use that template 
+and expand it into a DB file:
+#----------------------------------------------------
+# Add databases, templates, substitutions like this
+DB +=  stat_llrf.db
+
+#----------------------------------------------------
+# Declare template files which do not show up in DB
+USES_TEMPLATE += $(VX_STATS)/db/stats.template
+USES_TEMPLATE += $(VX_STATS)/db/reboot.template
+                              
+* EDM
+You can use the "IOC_Status.edl" that comes
+with vx stats. It requires a "P" macro.
+When following the above template, set
+P=$(S)_$(SS):IOC$(N)
+
+~                             
+

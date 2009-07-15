@@ -1,0 +1,11 @@
+#!/bin/tcsh
+# EPICS startup script for MEDM (shell application)
+#
+
+# Define relative environment variants
+setenv DSP1 delaygenApp/op/adl
+setenv DSP2 ../../support/all_adl
+setenv EPICS_DISPLAY_PATH $DSP1':'$DSP2
+
+# Launch MEDM screen
+medm -x -noMsg -macro "P=delaygen:" delaygen.adl&

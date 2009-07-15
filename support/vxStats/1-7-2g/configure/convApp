@@ -1,0 +1,120 @@
+#!/bin/bash
+#
+# R3.13 to R3.14 App conversion script..  Does the most basic stuff in 
+# "Converting an EPICS R3.13 application to R3.14.1" -- 
+#
+# requires:
+# 1.  first argument is cvs module name of app
+# 2.  start directory has snsTemplates directory installed
+# 3.  There are some absolute paths in script.
+#
+# Carl Lionberger 4 Feb 2003 SNS-ORNL
+#
+condir=$PWD
+mv work work`date -Iseconds`
+mkdir work
+cd work
+cvs export -r HEAD $1
+rm -rf ${1}314
+mkdir ${1}314
+cd ${1}314
+/ade/epics/supTop/base/R3.14.4/bin/linux-x86/makeBaseApp.pl -T $condir/snsTemplates/makeBaseApp/top -t snsApp junk
+rm -rf junkApp
+targ=$PWD
+cd ../$1
+find *App iocBoot -print | cpio -pvmd $targ
+cd $targ/configure
+mv RELEASE RELEASE.orig
+sed -e '/#SNCSEQ/a\
+SNCSEQ=/ade/epics/supTop/share/R3.14.4/seq-2.0.2' \
+    < RELEASE.orig > RELEASE
+rm RELEASE.orig
+cd $targ
+for d in `ls -d *App`
+do
+   cd $d
+   mv Makefile Makefile.orig
+   sed -e '/config/s//configure/' \
+       -e '/CONFIG_APP/s//CONFIG/' \
+       < Makefile.orig > Makefile
+   rm Makefile.orig
+if test -d Db 
+then
+      echo "Modifying Db Makefile"
+      cd Db
+      rm Makefile
+      sed -e '/^TOP/c\
+TOP=../..' \
+          -e '/config/s//configure/' \
+          -e '/CONFIG_APP/s//CONFIG/' \
+          -e '/RULES.Db/s//RULES/' \
+          < Makefile.Host > Makefile
+      rm Makefile.Host
+      cd .. 
+fi
+if test -d src
+then
+      echo "Modifying src Makefile"
+      cd src
+      rm Makefile
+      cp $condir/snsTemplates/makeBaseApp/top/simpleApp/src/Makefile \
+            ./Makefile314
+      srcMakeCon
+      cd .. 
+fi
+if test -d srcOpi
+then 
+   cd srcOpi
+   echo "Modifying srcOpi Makefile"
+   rm Makefile
+   sed -e '/^TOP/i\
+T_A=$EPICS_HOST_ARCH' \
+        -e '/^TOP/c\
+TOP=../..' \
+       -e '/config/s//configure/' \
+       -e '/CONFIG_APP/s//CONFIG/' \
+       < Makefile.Host > Makefile
+   rm Makefile.Host
+   cd .. 
+fi
+if test -d srcCfg
+then 
+   cd srcCfg
+   echo "Modifying srcCfg Makefile"
+   rm Makefile
+   sed -e '/^TOP/c\
+TOP=../..' \
+       -e '/config/s//configure/' \
+       -e '/CONFIG_APP/s//CONFIG/' \
+       < Makefile.Host > Makefile
+       rm Makefile.Host
+   cd .. 
+fi
+   rm -rf srcAdl
+   echo "$d done"
+   cd ..
+done
+if test -d $targ/iocBoot; then 
+   cd $targ/iocBoot
+   mv Makefile Makefile.orig
+   echo 'Modifying iocBoot Makefile'
+   sed -e '/config/s//configure/' \
+       -e '/CONFIG_APP/s//CONFIG/' \
+       -e '/^DIRS/d' \
+       < Makefile.orig > Makefile
+   rm Makefile.orig
+   for id in `ls -d ioc*`
+   do
+      cd $id
+      echo "Modifying $id  Makefile"
+      mv Makefile Makefile.orig
+      sed -e '/config/s//configure/' \
+          -e '/CONFIG_APP/s//CONFIG/' \
+          -e '/ARCH =/c\
+ARCH=vxWorks-ppc603' \
+          -e '/^buildInstall/d' \
+         < Makefile.orig > Makefile
+          rm Makefile.orig
+   done;
+fi
+                  

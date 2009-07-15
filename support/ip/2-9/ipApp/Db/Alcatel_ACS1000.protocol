@@ -1,0 +1,18 @@
+# Alcatel_ACS1000.protocol
+
+# stream protocol file for Alcatel ACS 1000 vacuum gauge controller
+
+# Mark Rivers
+# May 30, 2007
+
+InTerminator = CR LF;
+ENQ = \005;
+ACK = \006;
+
+readPressure {
+   out "PR1\r\n";
+   in "\${ACK}";
+   out "\${ENQ}";
+   in  "%*d, %f";
+}
+

@@ -1,0 +1,23 @@
+1/15/03 kag Eurotherm2k.db:
+
+This is support for the Eurotherm 2048 Temperature controller.
+The database runs a continuous loop that reads process temperature,
+setpoint, ramp rate and power output.  This loop is temporarily
+suspended if writes are made to these parameters.  This is also
+the case if the PID values are written to.  PID values are only
+intended to be *read* by processing the "ReadPID" seq record.  This
+seq record will also suspend the main read loop.
+
+The serial port is 3-wire, connected:
+
+2408  db9
+----  ---
+ HD    5
+ HE    3
+ HF    2
+
+This can then be connected straight through to the XM-Octal db9.
+
+NOTE: This software assumes that the 2408 is configured for:
+deg = C
+Ramp rate = min

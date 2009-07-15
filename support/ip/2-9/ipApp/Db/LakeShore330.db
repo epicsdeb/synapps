@@ -1,0 +1,352 @@
+# Note: with the older serial record this database set the OEOS string to \n.
+# The asyn record ignores these fields at iocInit, so the terminator strings must be set
+# in the serial port configuration routines.
+
+grecord(ao,"$(P)LS330:$(Q):Rset_set") {
+	field(DTYP,"Soft Channel")
+	field(FLNK,"$(P)LS330:$(Q):setRset.VAL  PP MS")
+	field(PREC,"0")
+}
+grecord(ao,"$(P)LS330:$(Q):Rate_set") {
+	field(DTYP,"Soft Channel")
+	field(FLNK,"$(P)LS330:$(Q):setRate.VAL  PP MS")
+	field(PREC,"0")
+}
+grecord(ao,"$(P)LS330:$(Q):RampR_set") {
+	field(DTYP,"Soft Channel")
+	field(FLNK,"$(P)LS330:$(Q):setRampR.VAL  PP MS")
+	field(PREC,"1")
+}
+grecord(ao,"$(P)LS330:$(Q):wr_SP") {
+	field(DTYP,"Soft Channel")
+	field(FLNK,"$(P)LS330:$(Q):SP_scalc.VAL  PP MS")
+	field(PREC,"2")
+}
+grecord(ao,"$(P)LS330:$(Q):Gain_set") {
+	field(DTYP,"Soft Channel")
+	field(FLNK,"$(P)LS330:$(Q):setGain.VAL  PP MS")
+	field(PREC,"0")
+}
+grecord(mbbi,"$(P)LS330:$(Q):Rg_rdbk") {
+	field(DTYP,"Soft Channel")
+	field(INP,"$(P)LS330:$(Q):Range.VAL  NPP MS")
+	field(ZRST,"OFF")
+	field(ONST,"100 mA")
+	field(TWST,"300 mA")
+	field(THST,"1 A")
+}
+grecord(mbbi,"$(P)LS330:$(Q):Ramp_state") {
+	field(DTYP,"Soft Channel")
+	field(INP,"$(P)LS330:$(Q):Ramp_scalc.VAL  NPP MS")
+	field(ZRST,"OFF")
+	field(ONST,"ON")
+}
+grecord(mbbo,"$(P)LS330:$(Q):Ctl_sel") {
+	field(DTYP,"Soft Channel")
+	field(FLNK,"$(P)LS330:$(Q):SetCtl.VAL  PP MS")
+	field(ZRVL,"0")
+	field(ONVL,"1")
+	field(TWVL,"0")
+	field(THVL,"0")
+	field(ZRST,"A")
+	field(ONST,"B")
+}
+grecord(mbbo,"$(P)LS330:$(Q):HeatRg") {
+	field(DTYP,"Soft Channel")
+	field(FLNK,"$(P)LS330:$(Q):SetHeat.VAL  PP MS")
+	field(ZRVL,"0")
+	field(ONVL,"1")
+	field(TWVL,"2")
+	field(THVL,"3")
+	field(FRVL,"0")
+	field(FVVL,"0")
+	field(ZRST,"OFF")
+	field(ONST,"100 mA")
+	field(TWST,"300 mA")
+	field(THST,"1 A")
+}
+grecord(mbbo,"$(P)LS330:$(Q):Ramp_on") {
+	field(DTYP,"Soft Channel")
+	field(FLNK,"$(P)LS330:$(Q):setRamp.PROC  PP MS")
+	field(ZRVL,"0")
+	field(ONVL,"1")
+	field(TWVL,"0")
+	field(THVL,"0")
+	field(ZRST,"OFF")
+	field(ONST,"ON")
+}
+grecord(mbbo,"$(P)LS330:$(Q):Sam_sel") {
+	field(DTYP,"Soft Channel")
+	field(FLNK,"$(P)LS330:$(Q):SetSam.VAL  PP MS")
+	field(ZRVL,"0")
+	field(ONVL,"1")
+	field(TWVL,"0")
+	field(THVL,"0")
+	field(ZRST,"A")
+	field(ONST,"B")
+}
+grecord(seq,"$(P)LS330:$(Q):readPID") {
+	field(PREC,"1")
+	field(LNK1,"$(P)LS330:$(Q):rd_Gain.PROC  PP MS")
+	field(DLY2,".3")
+	field(LNK2,"$(P)LS330:$(Q):rd_Rset.PROC  PP MS")
+	field(DLY3,".3")
+	field(LNK3,"$(P)LS330:$(Q):rd_Rate.PROC  PP MS")
+	field(DLY4,".3")
+	field(LNK4,"$(P)LS330:$(Q):rd_Ramp.PROC  PP MS")
+	field(DLY5,".3")
+	field(LNK5,"$(P)LS330:$(Q):rd_RampR.PROC  PP MS")
+}
+grecord(seq,"$(P)LS330:$(Q):read") {
+	field(PREC,"1")
+	field(LNK1,"$(P)LS330:$(Q):rd_Ctl.PROC  PP MS")
+	field(DLY2,".3")
+	field(LNK2,"$(P)LS330:$(Q):rd_Spl.PROC  PP MS")
+	field(DLY3,".3")
+	field(LNK3,"$(P)LS330:$(Q):rd_Heater.PROC  PP MS")
+	field(DLY4,".3")
+	field(LNK4,"$(P)LS330:$(Q):readSP.PROC  PP MS")
+	field(DLY5,"0")
+	field(LNK5,"0")
+}
+grecord(stringin,"$(P)LS330:$(Q):SamChan") {
+	field(DTYP,"Soft Channel")
+	field(INP,"$(P)LS330:$(Q):rd_SamChan.AINP  NPP MS")
+}
+grecord(stringin,"$(P)LS330:$(Q):CtlChan") {
+	field(DTYP,"Soft Channel")
+	field(INP,"$(P)LS330:$(Q):rd_CtlChan.AINP  NPP MS")
+}
+grecord(stringout,"$(P)LS330:$(Q):rd_Rset") {
+	field(DTYP,"Soft Channel")
+	field(FLNK,"0")
+	field(VAL,"RSET?")
+	field(OUT,"$(P)LS330:$(Q):wr_rd_Rset.AOUT  PP MS")
+}
+grecord(stringout,"$(P)LS330:$(Q):rd_Rate") {
+	field(DTYP,"Soft Channel")
+	field(FLNK,"0")
+	field(VAL,"RATE?")
+	field(OUT,"$(P)LS330:$(Q):wr_rd_Rate.AOUT  PP MS")
+}
+grecord(stringout,"$(P)LS330:$(Q):rd_RampR") {
+	field(DTYP,"Soft Channel")
+	field(FLNK,"0")
+	field(VAL,"RAMPR?")
+	field(OUT,"$(P)LS330:$(Q):wr_rd_RampR.AOUT  PP MS")
+}
+grecord(stringout,"$(P)LS330:$(Q):rd_Ramp") {
+	field(DTYP,"Soft Channel")
+	field(FLNK,"0")
+	field(VAL,"RAMP?")
+	field(OUT,"$(P)LS330:$(Q):wr_rd_Ramp.AOUT  PP MS")
+}
+grecord(stringout,"$(P)LS330:$(Q):readSP") {
+	field(DTYP,"Soft Channel")
+	field(FLNK,"0")
+	field(VAL,"SETP?")
+	field(OUT,"$(P)LS330:$(Q):rd_SP.AOUT  PP MS")
+}
+grecord(stringout,"$(P)LS330:$(Q):rd_Gain") {
+	field(DTYP,"Soft Channel")
+	field(FLNK,"0")
+	field(VAL,"GAIN?")
+	field(OUT,"$(P)LS330:$(Q):wr_rd_Gain.AOUT  PP MS")
+}
+grecord(asyn,"$(P)LS330:$(Q):wr_rd_Rset") {
+	field(FLNK,"$(P)LS330:$(Q):I.VAL  PP MS")
+	field(PORT,"$(PORT)")
+}
+grecord(asyn,"$(P)LS330:$(Q):wr_rd_Rate") {
+	field(FLNK,"$(P)LS330:$(Q):D.VAL  PP MS")
+	field(PORT,"$(PORT)")
+}
+grecord(asyn,"$(P)LS330:$(Q):wr_rd_Gain") {
+	field(FLNK,"$(P)LS330:$(Q):P.VAL  PP MS")
+	field(PORT,"$(PORT)")
+}
+grecord(asyn,"$(P)LS330:$(Q):rd_Ctl") {
+	field(FLNK,"$(P)LS330:$(Q):Control.VAL  PP MS")
+	field(AOUT,"CDAT?")
+	field(PORT,"$(PORT)")
+}
+grecord(asyn,"$(P)LS330:$(Q):rd_CtlChan") {
+	field(FLNK,"$(P)LS330:$(Q):CtlChan.PROC  PP MS")
+	field(AOUT,"CDAT?")
+	field(PORT,"$(PORT)")
+}
+grecord(asyn,"$(P)LS330:$(Q):rd_Heater") {
+	field(FLNK,"$(P)LS330:$(Q):Heater.VAL  PP MS")
+	field(AOUT,"HEAT?")
+	field(PORT,"$(PORT)")
+}
+grecord(asyn,"$(P)LS330:$(Q):rd_SP") {
+	field(FLNK,"$(P)LS330:$(Q):SP.VAL  PP MS")
+	field(PORT,"$(PORT)")
+}
+grecord(asyn,"$(P)LS330:$(Q):rd_SamChan") {
+	field(FLNK,"$(P)LS330:$(Q):SamChan.PROC  PP MS")
+	field(AOUT,"CDAT?")
+	field(PORT,"$(PORT)")
+}
+grecord(asyn,"$(P)LS330:$(Q):rd_Spl") {
+	field(FLNK,"$(P)LS330:$(Q):Sample.VAL  PP MS")
+	field(AOUT,"SDAT?")
+	field(PORT,"$(PORT)")
+}
+grecord(asyn,"$(P)LS330:$(Q):serial") {
+	field(PORT,"$(PORT)")
+}
+grecord(asyn,"$(P)LS330:$(Q):wr_rd_Htr") {
+	field(FLNK,"$(P)LS330:$(Q):Range.VAL  PP MS")
+	field(PORT,"$(PORT)")
+}
+grecord(asyn,"$(P)LS330:$(Q):wr_rd_Ramp") {
+	field(FLNK,"$(P)LS330:$(Q):Ramp_scalc.VAL  PP MS")
+	field(PORT,"$(PORT)")
+}
+grecord(asyn,"$(P)LS330:$(Q):wr_rd_RampR") {
+	field(FLNK,"$(P)LS330:$(Q):RampR.VAL  PP MS")
+	field(PORT,"$(PORT)")
+}
+grecord(scalcout,"$(P)LS330:$(Q):setRset") {
+	field(DESC,"Format string for PID input")
+	field(CALC,"$P('RSET %d;RSET?',A)")
+	field(INPA,"$(P)LS330:$(Q):Rset_set.VAL  NPP MS")
+	field(OUT,"$(P)LS330:$(Q):wr_rd_Rset.AOUT  PP MS")
+	field(PREC,"1")
+}
+grecord(scalcout,"$(P)LS330:$(Q):setRate") {
+	field(DESC,"Format string for PID input")
+	field(CALC,"$P('RATE %d;RATE?',A)")
+	field(INPA,"$(P)LS330:$(Q):Rate_set.VAL  NPP MS")
+	field(OUT,"$(P)LS330:$(Q):wr_rd_Rate.AOUT  PP MS")
+	field(PREC,"1")
+}
+grecord(scalcout,"$(P)LS330:$(Q):setGain") {
+	field(DESC,"Format string for PID input")
+	field(CALC,"$P('GAIN %d;GAIN?',A)")
+	field(INPA,"$(P)LS330:$(Q):Gain_set.VAL  NPP MS")
+	field(OUT,"$(P)LS330:$(Q):wr_rd_Gain.AOUT  PP MS")
+	field(PREC,"1")
+}
+grecord(scalcout,"$(P)LS330:$(Q):Ramp_scalc") {
+	field(FLNK,"$(P)LS330:$(Q):Ramp_state.PROC  PP MS")
+	field(CALC,"INT(AA)")
+	field(INAA,"$(P)LS330:$(Q):wr_rd_Ramp.AINP  NPP MS")
+	field(PREC,"1")
+}
+grecord(scalcout,"$(P)LS330:$(Q):P") {
+	field(CALC,"INT(AA)")
+	field(INAA,"$(P)LS330:$(Q):wr_rd_Gain.AINP  NPP MS")
+	field(PREC,"0")
+}
+grecord(scalcout,"$(P)LS330:$(Q):I") {
+	field(CALC,"INT(AA)")
+	field(INAA,"$(P)LS330:$(Q):wr_rd_Rset.AINP  NPP MS")
+	field(PREC,"0")
+}
+grecord(scalcout,"$(P)LS330:$(Q):D") {
+	field(CALC,"INT(AA)")
+	field(INAA,"$(P)LS330:$(Q):wr_rd_Rate.AINP  NPP MS")
+	field(PREC,"0")
+}
+grecord(scalcout,"$(P)LS330:$(Q):Control") {
+	field(DESC,"Format string for Ctl query")
+	field(CALC,"DBL(AA)")
+	field(INAA,"$(P)LS330:$(Q):rd_Ctl.AINP  NPP MS")
+	field(INEE,"0")
+	field(PREC,"2")
+}
+grecord(scalcout,"$(P)LS330:$(Q):Heater") {
+	field(DESC,"Format string for Ctl query")
+	field(CALC,"DBL(AA)")
+	field(INAA,"$(P)LS330:$(Q):rd_Heater.AINP  NPP MS")
+	field(INEE,"0")
+	field(PREC,"0")
+}
+grecord(scalcout,"$(P)LS330:$(Q):RampR") {
+	field(FLNK,"0")
+	field(CALC,"DBL(AA)")
+	field(INAA,"$(P)LS330:$(Q):wr_rd_RampR.AINP  PP MS")
+	field(PREC,"1")
+}
+grecord(scalcout,"$(P)LS330:$(Q):Range") {
+	field(DESC,"Format string for Ctl query")
+	field(FLNK,"$(P)LS330:$(Q):Rg_rdbk.PROC  PP MS")
+	field(CALC,"INT(AA)")
+	field(INAA,"$(P)LS330:$(Q):wr_rd_Htr.AINP  NPP MS")
+	field(INEE,"0")
+	field(PREC,"2")
+}
+grecord(scalcout,"$(P)LS330:$(Q):SP") {
+	field(DESC,"Format string for Ctl query")
+	field(CALC,"DBL(AA)")
+	field(INAA,"$(P)LS330:$(Q):rd_SP.AINP  NPP MS")
+	field(INEE,"0")
+	field(PREC,"2")
+}
+grecord(scalcout,"$(P)LS330:$(Q):SP_scalc") {
+	field(DESC,"Format string for Ctl query")
+	field(CALC,"$P('SETP %5.2f;SETP?',A)")
+	field(INPA,"$(P)LS330:$(Q):wr_SP.VAL  NPP MS")
+	field(INEE,"0")
+	field(OUT,"$(P)LS330:$(Q):rd_SP.AOUT  PP MS")
+	field(PREC,"1")
+}
+grecord(scalcout,"$(P)LS330:$(Q):Sample") {
+	field(DESC,"Format string for Ctl query")
+	field(CALC,"DBL(AA)")
+	field(INAA,"$(P)LS330:$(Q):rd_Spl.AINP  PP MS")
+	field(INEE,"0")
+	field(PREC,"2")
+}
+grecord(scalcout,"$(P)LS330:$(Q):SetCtl") {
+	field(DESC,"Format string for Ctl query")
+	field(CALC,"AA+BB+CC")
+	field(INAA,"0")
+	field(INBB,"$(P)LS330:$(Q):Ctl_sel.VAL  NPP MS")
+	field(OUT,"$(P)LS330:$(Q):rd_CtlChan.AOUT  PP MS")
+	field(PREC,"1")
+	field(AA,"CCHN ")
+	field(BB,"0")
+	field(CC,";CCHN?")
+}
+grecord(scalcout,"$(P)LS330:$(Q):SetHeat") {
+	field(CALC,"AA+BB+CC")
+	field(INAA,"0")
+	field(INBB,"$(P)LS330:$(Q):HeatRg.RVAL  NPP MS")
+	field(OUT,"$(P)LS330:$(Q):wr_rd_Htr.AOUT  PP MS")
+	field(PREC,"1")
+	field(AA,"RANG ")
+	field(BB,"0")
+	field(CC,";RANG?")
+}
+grecord(scalcout,"$(P)LS330:$(Q):SetSam") {
+	field(DESC,"Format string for Ctl query")
+	field(CALC,"AA+BB+CC")
+	field(INAA,"0")
+	field(INBB,"$(P)LS330:$(Q):Sam_sel.VAL  NPP MS")
+	field(OUT,"$(P)LS330:$(Q):rd_SamChan.AOUT  PP MS")
+	field(PREC,"1")
+	field(AA,"SCHN ")
+	field(BB,"0")
+	field(CC,";SCHN?")
+}
+grecord(scalcout,"$(P)LS330:$(Q):setRamp") {
+	field(DESC,"Format string for PID input")
+	field(CALC,"$P('RAMP %d;RAMP?',A)")
+	field(INPA,"$(P)LS330:$(Q):Ramp_on.RVAL  NPP MS")
+	field(OUT,"$(P)LS330:$(Q):wr_rd_Ramp.AOUT  PP MS")
+	field(PREC,"1")
+	field(AA,"0")
+	field(BB,"0")
+	field(CC,"0")
+}
+grecord(scalcout,"$(P)LS330:$(Q):setRampR") {
+	field(DESC,"Format string for PID input")
+	field(CALC,"$P('RAMPR %5.2f;RAMPR?',A)")
+	field(INPA,"$(P)LS330:$(Q):RampR_set.VAL  NPP MS")
+	field(OUT,"$(P)LS330:$(Q):wr_rd_RampR.AOUT  PP MS")
+	field(PREC,"1")
+}

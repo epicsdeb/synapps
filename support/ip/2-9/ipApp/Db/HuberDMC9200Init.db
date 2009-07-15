@@ -1,0 +1,26 @@
+grecord(stringout,"$(P)$(Q)Init")
+{
+	field(PINI,"YES")
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Q)echo1.PROC PP MS")
+	field(VAL,"echoon")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringin,"$(P)$(Q)echo1")
+{
+	field(DTYP,"asyn si stringParm")
+	field(FLNK,"$(P)$(Q)Remote.PROC PP MS")
+	field(INP,"@asyn($(PORT))TERM=ok>")
+}
+grecord(stringout,"$(P)$(Q)Remote")
+{
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Q)echo2.PROC PP MS")
+	field(VAL,"remote")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringin,"$(P)$(Q)echo2")
+{
+	field(DTYP,"asyn si stringParm")
+	field(INP,"@asyn($(PORT))TERM=ok>")
+}

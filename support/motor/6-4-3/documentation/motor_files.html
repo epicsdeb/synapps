@@ -1,0 +1,76 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.76 [en] (X11; U; SunOS 5.8 sun4u) [Netscape]">
+</head>
+<body>
+
+<center>
+<h1>
+Motor record source code file organization</h1></center>
+
+<h4>
+Record source files</h4>
+
+<blockquote>MotorSrc/motorRecord.dbd
+<br>MotorSrc/motor.h
+<br>MotorSrc/motorRecord.c</blockquote>
+
+<h4>
+Device driver source files</h4>
+
+<blockquote><b><u>Common to all motor Record device drivers</u></b>
+<br>MotorSrc/motordevCom.h
+<br>MotorSrc/motordevCom.c
+<br>MotorSrc/motordrvCom.h
+<br>MotorSrc/motordrvComCode.h
+<br>MotorSrc/motordrvCom.c</blockquote>
+
+<ul><b><u>Oregon Micro Systems</u></b>
+<p><u>Common to all OMS device drivers</u>
+<br>devOmsCom.h
+<br>devOmsCom.c
+<br>drvOmsCom.h
+<p><u>VME8/44</u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <u>VME58</u>
+<br>devOms.c&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; devOms58.c
+<br>drvOms.h&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; drvOms58.h
+<br>drvOms.c&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; drvOms58.c
+<p><b><u>Newport Motion Master</u></b>
+<p><u>Common to all Motion Master device drivers</u>
+<br>drvMMCom.h
+<p><u>MM3000</u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+<u>MM4000</u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+<u>PM500</u>
+<br>NewportSrc/devMM3000.c&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; NewportSrc/devMM4000.c&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+NewportSrc/devPM500.c
+<br>NewportSrc/drvMM3000.c&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; NewportSrc/drvMM4000.c&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+NewportSrc/drvPM500.c
+<p><b><u>Highland V544</u></b>
+<br>devV544.c
+<br>drvV544.h
+<br>drvV544.c
+<p><b><u>Soft Channel</u></b>
+<br>devSoft.h
+<br>devSoft.c
+<br>devSoftAux.c
+<p><b><u>Intelligent Motion Systems</u></b>
+<p>ImsSrc/drvIM483.h
+<br>ImsSrc/devIM483PL.c
+<br>ImsSrc/devIM483SM.c
+<br>ImsSrc/drvIM483PL.c
+<br>ImsSrc/drvIM483SM.c</ul>
+
+<h4>
+<b>Communication files</b></h4>
+
+<blockquote>CommSrc/serialIO.h
+<br>CommSrc/serialIOMPF.cc</blockquote>
+
+<blockquote>CommSrc/gpibIO.h
+<br>CommSrc/gpibIO.c</blockquote>
+
+</body>
+</html>

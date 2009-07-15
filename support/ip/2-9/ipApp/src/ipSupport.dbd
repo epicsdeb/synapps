@@ -1,0 +1,71 @@
+################
+# RECORD SUPPORT
+################
+
+################
+# DEVICE SUPPORT
+################
+
+device(ai,INST_IO,devAiStrParm,"asyn ai stringParm")
+device(ao,INST_IO,devAoStrParm,"asyn ao stringParm")
+device(bi,INST_IO,devBiStrParm,"asyn bi stringParm")
+device(bo,INST_IO,devBoStrParm,"asyn bo stringParm")
+device(longin,INST_IO,devLiStrParm,"asyn li stringParm")
+device(longout,INST_IO,devLoStrParm,"asyn lo stringParm")
+device(stringin,INST_IO,devSiStrParm,"asyn si stringParm")
+device(stringout,INST_IO,devSoStrParm,"asyn so stringParm")
+
+#device(stringin,INST_IO,devSiHuberDMC,"Huber DMC 9200")
+#device(ai,INST_IO,devAiHuberDMC,"Huber DMC 9200")
+#device(longin,INST_IO,devLiHuberDMC,"Huber DMC 9200")
+
+# Heidenhain ND261 and related serial interface boxes
+device(ai,INST_IO,devAiHeidND261,"asyn ai HeidND261")
+
+# Eurotherm 800 and 2000 series temperature controllers
+device(ao,INST_IO,devAoEurotherm,"asyn ao Eurotherm")
+device(stringout,INST_IO,devSoEurotherm,"asyn so Eurotherm")
+
+# MKS vacuum gauge controller
+device(ai,INST_IO,devAiMKS,"HPS SensaVac 937")
+
+# MPC ion pump controller
+device(ai,INST_IO,devAiMPC,"asyn MPC")
+device(ao,INST_IO,devAoMPC,"asyn MPC")
+device(bi,INST_IO,devBiMPC,"asyn MPC")
+device(bo,INST_IO,devBoMPC,"asyn MPC")
+device(mbbo,INST_IO,devMbboMPC,"asyn MPC")
+device(stringin,INST_IO,devSiMPC,"asyn MPC")
+device(stringout,INST_IO,devSoMPC,"asyn MPC")
+
+# GP307 GPIB
+device(ai,GPIB_IO,devAiGP307Gpib,"Vg307 GPIB Instrument")
+device(bi,GPIB_IO,devBiGP307Gpib,"Vg307 GPIB Instrument")
+device(bo,GPIB_IO,devBoGP307Gpib,"Vg307 GPIB Instrument")
+device(stringin,GPIB_IO,devSiGP307Gpib,"Vg307 GPIB Instrument")
+
+# Queensgate Piezo drive.
+device(ao,BBGPIB_IO,devAoAX301,"PZT Bug")
+device(ai,BBGPIB_IO,devAiAX301,"PZT Bug")
+device(bo,BBGPIB_IO,devBoAX301,"PZT Bug")
+device(longout,BBGPIB_IO,devLoAX301,"PZT Bug")
+
+# Televac Vacuum Controller
+device(ai,        INST_IO, devAiTelevac,    "asyn Televac")
+device(bi,        INST_IO, devBiTelevac,    "asyn Televac")
+
+# Pfeiffer TPG261 Vacuum Controller
+device(ai,        INST_IO, devAiTPG261,    "asyn TPG261")
+device(bi,        INST_IO, devBiTPG261,    "asyn TPG261")
+device(mbbi,      INST_IO, devMbbiTPG261,  "asyn TPG261")
+device(stringin,  INST_IO, devSiTPG261,    "asyn TPG261")
+device(ao,        INST_IO, devAoTPG261,    "asyn TPG261")
+device(bo,        INST_IO, devBoTPG261,    "asyn TPG261")
+device(mbbo,      INST_IO, devMbboTPG261,  "asyn TPG261")
+
+################
+# DRIVER SUPPORT
+################
+
+registrar(Keithley2kDMMRegistrar)
+registrar(Keithley65xxEMRegistrar)

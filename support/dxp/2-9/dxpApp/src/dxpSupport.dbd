@@ -1,0 +1,22 @@
+################
+# RECORD SUPPORT
+################
+include "dxpRecord.dbd"
+
+################
+# DEVICE SUPPORT
+################
+device(dxp,INST_IO,devDxp,"asyn DXP")
+
+################
+# DRIVER SUPPORT
+################
+
+################
+# REGISTRATION
+################
+registrar(dxpRegister)
+registrar(dxpMEDRegistrar)
+
+variable("dxpRecordDebug", int)
+ 

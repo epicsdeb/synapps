@@ -1,0 +1,880 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN"><HTML>
+<HEAD>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=ISO-8859-1">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+<META NAME="GENERATOR" CONTENT="Adobe FrameMaker 5.5/HTML Export Filter">
+<LINK REL="STYLESHEET" HREF="Manual.css" CHARSET="ISO-8859-1" TYPE="text/css">
+<TITLE>
+ Chapter 2:  State Notation Language Concepts
+</TITLE>
+
+</HEAD>
+<BODY BGCOLOR="#ffffff">
+<H1 CLASS="LOCALTITLE">
+<A NAME="pgfId-691616"></A>State Notation Language Concepts</H1>
+<P CLASS="BODY">
+<A NAME="pgfId-691663"></A>&nbsp;</P>
+<P CLASS="BODY">
+<A NAME="pgfId-691666"></A>&nbsp;</P>
+<P CLASS="BODY">
+<A NAME="pgfId-691667"></A>&nbsp;</P>
+<P CLASS="BODY">
+<A NAME="pgfId-691671"></A>&nbsp;</P>
+<P CLASS="BODY">
+<A NAME="pgfId-691676"></A>&nbsp;</P>
+<P CLASS="BODY">
+<A NAME="pgfId-691681"></A>&nbsp;</P>
+<P CLASS="BODY">
+<A NAME="pgfId-691731"></A>&nbsp;</P>
+<DIV>
+<H2 CLASS="HEADING1">
+<A NAME="pgfId-691826"></A>The State Transition Diagram<DIV>
+<IMG SRC="Manual-2.gif">
+</DIV>
+</H2>
+<P CLASS="BODY">
+<A NAME="pgfId-691827"></A>The <A NAME="marker-698866"></A>state transition diagram or <A NAME="marker-698867"></A>STD is a graphical notation for specifying the behavior of a control system in terms of control transformations. The STD serves to represent the action taken by the control system in response to both the present internal state and some external event or condition. To understand the state notation language one must first understand the STD schema.</P>
+<P CLASS="BODY">
+<A NAME="pgfId-691828"></A>A simple STD is shown in figure 1. In this example the level of an input voltage is sensed, and a light is turned on if the voltage is greater than 5 volts and turned off if the voltage becomes less than 3 volts. Note that the output or action depends not only on the input or condition, but also on the current memory or state. For instance, specifying an input of 4.2 volts does not directly specify the output; that depends on the current state.</P>
+<DIV>
+<MAP NAME="Manual-3">
+</MAP>
+<IMG SRC="Manual-3.gif" USEMAP="#Manual-3">
+</DIV>
+</DIV>
+<DIV>
+<H2 CLASS="HEADING1">
+<A NAME="pgfId-691852"></A>Elements of the State Notation Language<DIV>
+<IMG SRC="Manual-2.gif">
+</DIV>
+</H2>
+<P CLASS="BODY">
+<A NAME="pgfId-691853"></A>The following SNL code segment expresses the STD in <A HREF="Concepts.html#93048" CLASS="XRef">See A simple state transition diagram</A>:</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691854"></A>state light_off {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691855"></A>	when (v &gt; 5.0) {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691856"></A>		light = TRUE;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691857"></A>		pvPut(light);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691858"></A>	} state light_on </P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691859"></A>}</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691860"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691861"></A>state light_on {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691862"></A>	when (v &lt; 3.0) {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691863"></A>		light = FALSE; </P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691864"></A>		pvPut(light); </P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691865"></A>	} state light_off </P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691866"></A>}</P>
+<P CLASS="BODY">
+<A NAME="pgfId-691867"></A>You will notice that the SNL appears to have a <A NAME="marker-698917"></A>structure and <A NAME="marker-698918"></A>syntax that is similar to the C language. In fact the SNL uses its own syntax plus a subset of C, such as expressions, assignment statements, and function calls. This example contains two code blocks that define states: <EM CLASS="Key-word">
+light_off</EM>
+ and <EM CLASS="Key-word">
+light_on</EM>
+. Within these blocks are <EM CLASS="Key-word">
+when</EM>
+<A NAME="marker-698919"></A> statements that define the events (&quot;<EM CLASS="Key-word">
+v &gt; 5.0</EM>
+&quot; and &quot;<EM CLASS="Key-word">
+v &lt; 3.0</EM>
+&quot;). Following these statements are blocks containing actions (C statements). The <EM CLASS="Key-word">
+pvPut</EM>
+<A NAME="marker-698957"></A> function writes or puts the value in the variable <EM CLASS="Key-word">
+light</EM>
+ to the appropriate control system variables. Finally, the next states are specified following the action blocks. </P>
+<P CLASS="BODY">
+<A NAME="pgfId-691868"></A>For the previous example to execute properly the variables <EM CLASS="Key-word">
+v</EM>
+ and <EM CLASS="Key-word">
+light</EM>
+ must be declared and associated with control system variables using the following declarations:</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691869"></A>float			v;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691870"></A>short			light;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691871"></A>assign			v to &quot;Input_voltage&quot;;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691872"></A>assign			light to &quot;Indicator_light&quot;;</P>
+<P CLASS="BODY">
+<A NAME="pgfId-691873"></A>The above <EM CLASS="Key-word">
+assign</EM>
+<A NAME="marker-699022"></A> statements associate the variables <EM CLASS="Key-word">
+v</EM>
+ and <EM CLASS="Key-word">
+light</EM>
+ with the control system variables &quot;<EM CLASS="Key-word">
+Input_voltage</EM>
+&quot; and &quot;<EM CLASS="Key-word">
+Indicator_light</EM>
+&quot; respectively. We want the value of <EM CLASS="Key-word">
+v</EM>
+ to be updated automatically whenever it changes. This is accomplished with the following declaration:</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691874"></A><A NAME="marker-699023"></A>monitor			v;</P>
+<P CLASS="BODY">
+<A NAME="pgfId-691875"></A>Whenever the value in the control system changes, the value of <EM CLASS="Key-word">
+v</EM>
+ will likewise change (within the time constraints of the underlying system).</P>
+</DIV>
+<DIV>
+<H2 CLASS="HEADING1">
+<A NAME="pgfId-691876"></A><A NAME="33354"></A>A Complete State Program<DIV>
+<IMG SRC="Manual-2.gif">
+</DIV>
+</H2>
+<P CLASS="BODY">
+<A NAME="pgfId-691877"></A>Here is what the complete state program for our example looks like:</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691878"></A>program level_check</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691879"></A>float			v;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691880"></A>assign			v to &quot;Input_voltage&quot;;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691881"></A>monitor			v;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691882"></A>short			light;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691883"></A>assign			light to &quot;Indicator_light&quot;;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691884"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691885"></A>ss volt_check {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691886"></A>	state light_off</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691887"></A>	{</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691888"></A>		when (v &gt; 5.0) {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691889"></A>			/* turn light on */</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691890"></A>			light = TRUE;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691891"></A>			pvPut(light);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691892"></A>		} state light_on</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691893"></A>	}</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691894"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691895"></A>	state light_on</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691896"></A>	{</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691897"></A>		when (v &lt; 5.0) {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691898"></A>			/* turn light off */</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691899"></A>			light = FALSE;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691900"></A>			pvPut(light);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691901"></A>		} state light_off</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691902"></A>	}</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691903"></A>}</P>
+<P CLASS="BODY">
+<A NAME="pgfId-691904"></A>To distinguish a state program from other state programs it must be assigned a name. This was done in the above example with the statement:</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691905"></A><A NAME="marker-699025"></A>program level_check</P>
+<P CLASS="BODY">
+<A NAME="pgfId-691906"></A>As we'll see in the next example, we can have multiple state transition diagrams in one state program. In SNL terms these are referred to as <EM CLASS="Emphasis">
+state sets. </EM>
+<A NAME="marker-699024"></A>Each state program may have one or more named state sets. This was denoted by the statement block:</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691907"></A>ss volt_check { 	... }</P>
+</DIV>
+<DIV>
+<H2 CLASS="HEADING1">
+<A NAME="pgfId-691908"></A>Adding a Second State Set<DIV>
+<IMG SRC="Manual-2.gif">
+</DIV>
+</H2>
+<P CLASS="BODY">
+<A NAME="pgfId-691909"></A>We will now add a second state set to the previous example. This new state set generates a changing value as its output (a triangle function with amplitude 11).</P>
+<P CLASS="BODY">
+<A NAME="pgfId-691910"></A>First, we add the following lines to the declaration:</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691911"></A>float			vout; </P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691912"></A>float			delta; </P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691913"></A>assign			vout to &quot;Output_voltage&quot;;</P>
+<P CLASS="BODY">
+<A NAME="pgfId-691914"></A>Next we add the following lines after the first state set:</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691915"></A>ss generate_voltage {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691916"></A>	state init {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691917"></A>		when () {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691918"></A>			vout = 0.0;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691919"></A>			pvPut(vout);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691920"></A>			delta = 0.2;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691921"></A>		} state ramp</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691922"></A>	}</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691923"></A>	state ramp {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691924"></A>		when (delay(0.1)) {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691925"></A>			if ((delta &gt; 0.0 &amp;&amp; vout &gt;= 11.0) ||</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691926"></A>			    (delta &lt; 0.0 &amp;&amp; vout &lt;= -11.0) )</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691927"></A>				delta = -delta; /* change direction */</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691928"></A>			vout += delta;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691929"></A>		} state ramp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691930"></A>	}</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691931"></A>}</P>
+<P CLASS="BODY">
+<A NAME="pgfId-691932"></A>The above example exhibits several concepts. First, note that the <EM CLASS="Key-word">
+when</EM>
+<A NAME="marker-699028"></A> statement in state <EM CLASS="Key-word">
+init</EM>
+ contains an empty event expression. This means unconditional execution of the transition. Because <EM CLASS="Key-word">
+init</EM>
+ is the first state in the state set, it is assumed to be the initial state. You will find this to be a convenient method for initialization. Also, notice that the <EM CLASS="Key-word">
+ramp</EM>
+ state always returns to itself. This is a permissible and often useful construct. The structure of this state set is shown in the STD in <A HREF="Concepts.html#53528" CLASS="XRef">See Structure of generate_voltage State Set</A>.</P>
+<DIV>
+<MAP NAME="Manual-4">
+</MAP>
+<IMG SRC="Manual-4.gif" USEMAP="#Manual-4">
+</DIV>
+<P CLASS="BODY">
+<A NAME="pgfId-691948"></A>The final concept introduced in the last example is the <EM CLASS="Key-word">
+delay</EM>
+<A NAME="marker-699029"></A> function. This function returns a <EM CLASS="Key-word">
+TRUE</EM>
+ value after a specified time interval from when the state was entered. The parameter to <EM CLASS="Key-word">
+delay</EM>
+ specifies the number of seconds, and must be a floating point value (constant or expression).</P>
+<P CLASS="BODY">
+<A NAME="pgfId-691949"></A>At this point, you may wish to try an example with the two state sets. You can jump ahead and read parts of Chapters 3-5. You probably want to pick unique names for your control system variables, rather than the ones used above. You may also wish to replace the <EM CLASS="Key-word">
+pvPut</EM>
+<A NAME="marker-699105"></A> statements with <EM CLASS="Key-word">
+printf</EM>
+ statements to display &quot;<EM CLASS="Key-word">
+High</EM>
+&quot; and &quot;<EM CLASS="Key-word">
+Low</EM>
+&quot; on your console.</P>
+</DIV>
+<DIV>
+<H2 CLASS="HEADING1">
+<A NAME="pgfId-691950"></A>Variable Names Using Macros<DIV>
+<IMG SRC="Manual-2.gif">
+</DIV>
+</H2>
+<P CLASS="BODY">
+<A NAME="pgfId-691951"></A>One of the features of the SNL and run-time sequencer is the ability to specify the names of control system variables at run-time. This is done by using macro substitution. In our example we could replace the <EM CLASS="Key-word">
+assign</EM>
+<A NAME="marker-699149"></A> statements with the following:</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691952"></A>assign v to &quot;{unit}:ai1&quot;;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691953"></A>assign vout to &quot;{unit}:ao1&quot;;</P>
+<P CLASS="BODY">
+<A NAME="pgfId-691954"></A>The string within the curly brackets is a macro which has a name (&quot;<EM CLASS="Key-word">
+unit</EM>
+&quot; in this case). At run-time you give the macro a value, which is substituted in the above string to form a complete control system variable name. For example, if the macro &quot;<EM CLASS="Key-word">
+unit</EM>
+&quot; is given a name &quot;<EM CLASS="Key-word">
+DTL_6:CM_2</EM>
+&quot;, then the run-time variable name is &quot;<EM CLASS="Key-word">
+DTL_6:CM_2:ai1</EM>
+&quot;. More than one macro may be specified within a string, and the entire string may be a macro. See <A HREF="Manual-5.html#92625" CLASS="XRef">See Specifying Run-Time Parameters</A> for more on macros.</P>
+</DIV>
+<DIV>
+<H2 CLASS="HEADING1">
+<A NAME="pgfId-691958"></A>Data Types<DIV>
+<IMG SRC="Manual-2.gif">
+</DIV>
+</H2>
+<P CLASS="BODY">
+<A NAME="pgfId-691959"></A>The allowable variable declaration types correspond to the C <A NAME="marker-699177"></A>types: <EM CLASS="Key-word">
+char</EM>
+, <EM CLASS="Key-word">
+unsigned char</EM>
+, <EM CLASS="Key-word">
+short</EM>
+, <EM CLASS="Key-word">
+unsigned short</EM>
+, <EM CLASS="Key-word">
+int</EM>
+, <EM CLASS="Key-word">
+unsigned int</EM>
+, <EM CLASS="Key-word">
+long</EM>
+, <EM CLASS="Key-word">
+unsigned long</EM>
+, <EM CLASS="Key-word">
+float</EM>
+, and <EM CLASS="Key-word">
+double</EM>
+. In addition there is the type <EM CLASS="Key-word">
+string</EM>
+, which is a fixed array size of type <EM CLASS="Key-word">
+char</EM>
+ (at the time of writing, a string can hold 40 characters). Sequencer variables having any of these types may be assigned to a control system variable. The type declared does not have to be the same as the native control system value type. The conversion between types is performed at run-time.</P>
+<P CLASS="BODY">
+<A NAME="pgfId-691960"></A>You may specify array variables as follows:</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691961"></A>long		arc_wf[1000];</P>
+<P CLASS="BODY">
+<A NAME="pgfId-691962"></A>When assigned to a control system variable, operations such as <EM CLASS="Key-word">
+pvPut</EM>
+<A NAME="marker-699176"></A> are performed for the entire array.</P>
+</DIV>
+<DIV>
+<H2 CLASS="HEADING1">
+<A NAME="pgfId-691963"></A>Arrays of <A NAME="marker-699182"></A>Variables<DIV>
+<IMG SRC="Manual-2.gif">
+</DIV>
+</H2>
+<P CLASS="BODY">
+<A NAME="pgfId-691964"></A>Often it is necessary to have several associated control system variables. The ability to assign each element of an SNL array to a separate control system variable can significantly reduce the code complexity. The following illustrates this point:</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691965"></A>float			Vin[4];</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691966"></A>assign			Vin[0] to &quot;{unit}1&quot;;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691967"></A>assign			Vin[1] to &quot;{unit}2&quot;;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691968"></A>assign			Vin[2] to &quot;{unit}3&quot;;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691969"></A>assign			Vin[3] to &quot;{unit}4&quot;;</P>
+<P CLASS="BODY">
+<A NAME="pgfId-691970"></A>We can then take advantage of the <EM CLASS="Key-word">
+Vin</EM>
+ array to reduce code size as in the following example:</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691971"></A>		for (i = 0; i &lt; 4; i++) {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691972"></A>			Vin[i] = 0.0;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691973"></A>			pvPut (Vin[i]);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691974"></A>		}</P>
+<P CLASS="BODY">
+<A NAME="pgfId-691975"></A>We also have a shorthand method for assigning channels to array elements:</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691976"></A>assign			Vin to { &quot;{unit}1&quot;, &quot;{unit}2&quot;, &quot;{unit}3&quot;, &quot;{unit}4&quot; };</P>
+<P CLASS="BODY">
+<A NAME="pgfId-691977"></A>Similarly, the monitor declaration may be either by individual element:</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691978"></A>monitor			Vin[0];</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691979"></A>monitor			Vin[1];</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691980"></A>monitor			Vin[2];</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691981"></A>monitor			Vin[3];</P>
+<P CLASS="BODY">
+<A NAME="pgfId-691982"></A>Alternatively, we can do this for the entire array:</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691983"></A>monitor			Vin;</P>
+<P CLASS="BODY">
+<A NAME="pgfId-691984"></A>And the same goes when synchronizing with event flags (<A HREF="Manual-3.html#38073" CLASS="XRef">See Synchronizing State Sets with Event Flags</A>) and queuing monitors (<A HREF="Manual-3.html#82991" CLASS="XRef">See Queuing Monitors</A>). SNL arrays are really quite powerful.</P>
+<P CLASS="BODY">
+<A NAME="pgfId-700866"></A>Double subscripts offer additional options.</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691985"></A>double			X[2][100];</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-691986"></A>assign			X to {&quot;apple&quot;, &quot;orange&quot;};</P>
+<P CLASS="BODY">
+<A NAME="pgfId-691987"></A>The declaration creates an array with 200 elements. The first 100 elements of <EM CLASS="Key-word">
+X</EM>
+ are assigned to (array) <EM CLASS="Key-word">
+apple</EM>
+, and the second 100 elements are assigned to (array) <EM CLASS="Key-word">
+orange</EM>
+.</P>
+<P CLASS="BODY">
+<A NAME="pgfId-699183"></A>It is important to understand the distinction between the first and second array indices here. The first index defines a 2-element array of which each element is associated with a control system variable. The second index defines a 100-element double array to hold the value of each of the two control system variables. When used in a context where a number is expected, both indices must be specified, <EM CLASS="Emphasis">
+e.g.</EM>
+ <EM CLASS="Key-word">
+X[1][49]</EM>
+ is the 50th element of the value of <EM CLASS="Key-word">
+orange</EM>
+. When used in a context where a control system variable is expected, <EM CLASS="Emphasis">
+e.g.</EM>
+ with <EM CLASS="Key-word">
+pvPut</EM>
+<A NAME="marker-699253"></A>, then only the first index should be specified, <EM CLASS="Emphasis">
+e.g.</EM>
+ <EM CLASS="Key-word">
+X[1]</EM>
+ for <EM CLASS="Key-word">
+orange</EM>
+.</P>
+</DIV>
+<DIV>
+<H2 CLASS="HEADING1">
+<A NAME="pgfId-691988"></A><A NAME="47174"></A>Dynamic <A NAME="marker-699745"></A>Assignment<DIV>
+<IMG SRC="Manual-2.gif">
+</DIV>
+</H2>
+<P CLASS="BODY">
+<A NAME="pgfId-700564"></A>You may dynamically assign or re-assign variable to control system variables during the program execution as follows:</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-700565"></A>float			Xmotor;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-700566"></A>assign			Xmotor to &quot;Motor_A_2&quot;;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-700567"></A>...</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-700568"></A>		sprintf (pvName, &quot;Motor_%s_%d&quot;, snum, mnum)</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-700569"></A>		pvAssign (Xmotor[i], pvName);</P>
+<P CLASS="BODY">
+<A NAME="pgfId-700570"></A>An empty string in the assign declaration implies no initial assignment:</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-700571"></A>assign			Xmotor to &quot;&quot;;</P>
+<P CLASS="BODY">
+<A NAME="pgfId-700572"></A>Likewise, an empty string can de-assign a variable:</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-700573"></A>pvAssign(Xmotor, &quot;&quot;);</P>
+<P CLASS="BODY">
+<A NAME="pgfId-700574"></A>The current assignment status of a variable is returned by the <EM CLASS="Key-word">
+pvAssigned</EM>
+<A NAME="marker-700620"></A> function as follows:</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-700575"></A>isAssigned = pvAssigned(Xmotor);</P>
+<P CLASS="BODY">
+<A NAME="pgfId-700576"></A>The number of assigned variables is returned by the <EM CLASS="Key-word">
+pvAssignCount</EM>
+<A NAME="marker-700621"></A> function as follows:</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-700577"></A>numAssigned = pvAssignCount();</P>
+<P CLASS="BODY">
+<A NAME="pgfId-700578"></A>The following inequality will always hold:</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-700579"></A><A NAME="marker-700632"></A>pvConnectCount() &lt;= pvAssignCount() &lt;= <A NAME="marker-700633"></A>pvChannelCount()</P>
+<P CLASS="BODY">
+<A NAME="pgfId-700666"></A>Having assigned a variable, you should wait for it to connect before using it (although it is OK to monitor it). See <A HREF="Manual-3.html#15924" CLASS="XRef">See Connection Management</A>.</P>
+</DIV>
+<DIV>
+<H2 CLASS="HEADING1">
+<A NAME="pgfId-692000"></A><A NAME="marker-699747"></A>Status of Control System Variables<DIV>
+<IMG SRC="Manual-2.gif">
+</DIV>
+</H2>
+<P CLASS="BODY">
+<A NAME="pgfId-692001"></A>Control system variables have an associated status, severity and time stamp. You can obtain these with the <EM CLASS="Key-word">
+pvStatus</EM>
+<A NAME="marker-699310"></A>, <EM CLASS="Key-word">
+pvSeverity</EM>
+<A NAME="marker-699311"></A> and <EM CLASS="Key-word">
+pvTimeStamp</EM>
+<A NAME="marker-699330"></A> functions. For example:</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699429"></A>	when (pvStatus(x_motor) != pvStatOK) {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692003"></A>		printf(&quot;X motor status=%d, severity=%d, timestamp=%d&#92;n&quot;,</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692004"></A>			pvStatus(x_motor), pvSeverity(x_motor),</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699339"></A>			pvTimeStamp(x_motor).secPastEpoch);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692005"></A>		...</P>
+<P CLASS="BODY">
+<A NAME="pgfId-692008"></A>These routines are described in <A HREF="Manual-6.html#85605" CLASS="XRef">See Typographical conventions</A>. The values for status and severity are defined in the include file <EM CLASS="Key-word">
+pvAlarm.h</EM>
+, and the time stamp is returned as a standard EPICS <EM CLASS="Key-word">
+TS_STAMP</EM>
+ structure, which is defined in <EM CLASS="Key-word">
+tsStamp.h</EM>
+. Both these files are automatically included when compiling sequences (but the SNL compiler doesn't know about them, so you will get warnings when using constants like <EM CLASS="Key-word">
+pvStatOK</EM>
+ or tags like <EM CLASS="Key-word">
+secPastEpoch</EM>
+).</P>
+</DIV>
+<DIV>
+<H2 CLASS="HEADING1">
+<A NAME="pgfId-692013"></A><A NAME="38073"></A>Synchronizing <A NAME="marker-700925"></A>State Sets with <A NAME="marker-699428"></A>Event Flags<DIV>
+<IMG SRC="Manual-2.gif">
+</DIV>
+</H2>
+<P CLASS="BODY">
+<A NAME="pgfId-692014"></A>State sets within a state program may be synchronized through the use of event flags. Typically, one state set will set an event flag, and another state set will test that event flag within a <EM CLASS="Key-word">
+when</EM>
+<A NAME="marker-699427"></A> clause. The <EM CLASS="Key-word">
+sync</EM>
+<A NAME="marker-699426"></A> statement may also be used to associate an event flag with a control system variable that is being monitored. In that case, whenever a monitor is delivered, the corresponding event flag is set. Note that this provides an alternative to testing the value of the monitored channel and is particularly valuable when the channel being tested is an array or when it can have multiple values and an action must occur for any change.</P>
+<P CLASS="BODY">
+<A NAME="pgfId-699636"></A>This example shows a state set that forces a low limit always to be less than or equal to a high limit. The first <EM CLASS="Key-word">
+when</EM>
+ clause fires when the low limit changes and someone has attempted to set it above the high limit. The second <EM CLASS="Key-word">
+when</EM>
+ clause fires when the opposite situation occurs.</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699548"></A>double  loLimit;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699562"></A>assign  loLimit to &quot;demo:loLimit&quot;;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699563"></A>monitor loLimit;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699564"></A>evflag  loFlag;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699565"></A>sync    loLimit loFlag;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699566"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699567"></A>double  hiLimit;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699568"></A>assign  hiLimit to &quot;demo:hiLimit&quot;;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699569"></A>monitor hiLimit;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699570"></A>evflag  hiFlag;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699571"></A>sync    hiLimit hiFlag;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699572"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699649"></A>ss limit {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699577"></A>	state START {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699587"></A>		when ( efTestAndClear( loFlag ) &amp;&amp; loLimit &gt; hiLimit ) {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699588"></A>			hiLimit = loLimit;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699589"></A>			pvPut( hiLimit );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699590"></A>		} state START</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699591"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699592"></A>		when ( efTestAndClear( hiFlag ) &amp;&amp; hiLimit &lt; loLimit ) {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699593"></A>			loLimit = hiLimit;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699594"></A>			pvPut( loLimit );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699595"></A>		} state START</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699596"></A>	}</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699658"></A>}</P>
+<P CLASS="BODY">
+<A NAME="pgfId-700874"></A>The event flag is actually associated with the SNL variable, not the underlying control system variable. If the SNL variable is an array then the event flag is set whenever a monitor is posted on any of the control system variables that are associated with an element of that array.</P>
+</DIV>
+<DIV>
+<H2 CLASS="HEADING1">
+<A NAME="pgfId-692018"></A><A NAME="marker-699748"></A><A NAME="82991"></A>Queuing Monitors<DIV>
+<IMG SRC="Manual-2.gif">
+</DIV>
+</H2>
+<P CLASS="BODY">
+<A NAME="pgfId-692019"></A>Neither testing the value of a monitored channel in a <EM CLASS="Key-word">
+when</EM>
+<A NAME="marker-699749"></A> clause nor associating the channel with an event flag and then testing the event flag can guarantee that the sequence is aware of all monitors posted on the channel. Often this doesn't matter, but sometimes it does. For example, a variable may transition to 1 and then back to 0 to indicate that a command is active and has completed. These transitions may occur in rapid succession. This problem can be avoided by using the <EM CLASS="Key-word">
+syncQ</EM>
+ statement to associate a variable with both a queue and an event flag. The <EM CLASS="Key-word">
+pvGetQ</EM>
+ function retrieves and removes the head of queue.</P>
+<P CLASS="BODY">
+<A NAME="pgfId-699750"></A>This example illustrates a typical use of <EM CLASS="Key-word">
+pvGetQ</EM>
+<A NAME="marker-699903"></A>: setting a command variable to 1 and then changing state as an active flag transitions to 1 and then back to 0. Note the use of <EM CLASS="Key-word">
+pvFreeQ</EM>
+<A NAME="marker-699904"></A> to clear the queue before sending the command. Note also that, if <EM CLASS="Key-word">
+pvGetQ</EM>
+ hadn't been used then the active flag's transitions from 0 to 1 and back to 0 might both have occurred before the <EM CLASS="Key-word">
+when</EM>
+ clause in the <EM CLASS="Key-word">
+sent</EM>
+ state fired.</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699755"></A>long command; assign command to &quot;commandVar&quot;;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699784"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699793"></A>long active; assign active to &quot;activeVar&quot;; monitor active;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699761"></A>evflag activeFlag; syncQ active activeFlag;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699766"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699767"></A>	state start {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699768"></A>		when () {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699769"></A>			pvFreeQ( active );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699775"></A>			command = 1;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699802"></A>			pvPut( command );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699811"></A>		} state sent</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699816"></A>	}</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699821"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699826"></A>	state sent {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699831"></A>		when ( pvGetQ( active ) &amp;&amp; active ) {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699836"></A>		} state high</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699840"></A>	}</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699841"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699842"></A>	state high {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699843"></A>		when ( pvGetQ( active ) &amp;&amp; !active ) {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699849"></A>		} state done</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699858"></A>	}</P>
+<P CLASS="BODY">
+<A NAME="pgfId-700838"></A>The <EM CLASS="Key-word">
+active</EM>
+ SNL variable could have been an array in the above example. It could therefore have been associated with a set of related control system <EM CLASS="Key-word">
+active</EM>
+ flags. In this case, the queue would have had an entry added to it whenever a monitor was posted on any of the underlying control system <EM CLASS="Key-word">
+active</EM>
+ flags.</P>
+</DIV>
+<DIV>
+<H2 CLASS="HEADING1">
+<A NAME="pgfId-699931"></A>Asynchronous Use of pvGet()<DIV>
+<IMG SRC="Manual-2.gif">
+</DIV>
+</H2>
+<P CLASS="BODY">
+<A NAME="pgfId-699933"></A>Normally the <EM CLASS="Key-word">
+pvGet</EM>
+<A NAME="marker-699932"></A> operation completes before the function returns, thus ensuring data integrity. However, it is possible to use these functions asynchronously by specifying the <EM CLASS="Key-word">
++a</EM>
+<A NAME="marker-699934"></A> compiler flag (see <A HREF="Manual-4.html#19975" CLASS="XRef">See Compiler Options</A>). The operation might not be initiated until the action statements in the current transition have been completed and it could complete at any later time. To test for completion use the function <EM CLASS="Key-word">
+pvGetComplete</EM>
+<A NAME="marker-699938"></A>, which is described in <A HREF="Manual-6.html#57861" CLASS="XRef">See pvMonitor</A>.</P>
+<P CLASS="BODY">
+<A NAME="pgfId-699942"></A><EM CLASS="Key-word">
+pvGet</EM>
+ also accepts an optional <EM CLASS="Key-word">
+SYNC</EM>
+ or <EM CLASS="Key-word">
+ASYNC</EM>
+ argument, which overrides the <EM CLASS="Key-word">
++a</EM>
+ compiler flag. For example:</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699943"></A>		pvGet( initActive[i], ASYNC );</P>
+</DIV>
+<DIV>
+<H2 CLASS="HEADING1">
+<A NAME="pgfId-699969"></A><A NAME="66079"></A>Asynchronous Use of pvPut()<DIV>
+<IMG SRC="Manual-2.gif">
+</DIV>
+</H2>
+<P CLASS="BODY">
+<A NAME="pgfId-699971"></A>Normally the <EM CLASS="Key-word">
+pvPut</EM>
+<A NAME="marker-699970"></A> operation completes asynchronously. In the past it has been the responsibility of the programmer to ensure that the operation completed (typically by monitoring other variables). However, the function <EM CLASS="Key-word">
+pvPutComplete</EM>
+<A NAME="marker-700029"></A> can now be used for this. Also, while the <EM CLASS="Key-word">
++a</EM>
+ compiler flag does not affect put operations, <EM CLASS="Key-word">
+pvPut</EM>
+, like <EM CLASS="Key-word">
+pvGet</EM>
+, accepts an optional <EM CLASS="Key-word">
+SYNC</EM>
+ or <EM CLASS="Key-word">
+ASYNC</EM>
+ argument, which forces a synchronous or asynchronous put. For example:</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-699981"></A>		pvPut( init[i], SYNC );</P>
+<P CLASS="BODY">
+<A NAME="pgfId-700030"></A><EM CLASS="Key-word">
+pvPutComplete</EM>
+<A NAME="marker-700237"></A> supports arrays and can be used to check whether a set of puts have all completed. This example illustrates how to manage a set of parallel commands.</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-700055"></A>#define N 3</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-700096"></A>long init[N];</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-700394"></A>long done[N]; /* used in the modified example below */</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-700064"></A>assign init to {&quot;ss1:init&quot;, &quot;ss2:init&quot;, &quot;ss3:init&quot;};</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-700069"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-700074"></A>	state inactive {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-700080"></A>		when () {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-700081"></A>			for ( i = 0; i &lt; N; i++ ) {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-700082"></A>				init[i] = 1;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-700083"></A>				pvPut( init[i], ASYNC );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-700084"></A>			}</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-700086"></A>		} state active</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-700087"></A>	}</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-700178"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-700179"></A>	state active {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-700180"></A>		when ( pvPutComplete( init ) ) {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-700181"></A>		} state done</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-700187"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-700196"></A>		when ( delay( 10.0 ) ) {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-700205"></A>		} state timeout</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-700214"></A>	}</P>
+<P CLASS="BODY">
+<A NAME="pgfId-700219"></A><EM CLASS="Key-word">
+pvPutComplete</EM>
+<A NAME="marker-700515"></A> also supports optional arguments to wake up the state set as each put completes. The following could be inserted before the first <EM CLASS="Key-word">
+when</EM>
+ clause in the <EM CLASS="Key-word">
+active</EM>
+ state above. The <EM CLASS="Key-word">
+TRUE</EM>
+ argument causes <EM CLASS="Key-word">
+pvPutComplete</EM>
+ to return <EM CLASS="Key-word">
+TRUE</EM>
+ when any command completed (rather than only when all commands complete). The <EM CLASS="Key-word">
+done</EM>
+ argument is the address of a <EM CLASS="Key-word">
+long</EM>
+ array of the same size as <EM CLASS="Key-word">
+init</EM>
+; its elements are set to 0 for puts that are not yet complete and to 1 for puts that are complete.</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-700252"></A>		when ( pvPutComplete( init, TRUE, done ) ) {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-700263"></A>			for ( i = 0; i &lt; N; i++ )</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-700264"></A>				printf( &quot; %ld&quot;, done[i] );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-700265"></A>			printf( &quot;&#92;n&quot; );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-700266"></A>		} state active</P>
+</DIV>
+<DIV>
+<H2 CLASS="HEADING1">
+<A NAME="pgfId-692028"></A><A NAME="15924"></A>Connection Management<DIV>
+<IMG SRC="Manual-2.gif">
+</DIV>
+</H2>
+<P CLASS="BODY">
+<A NAME="pgfId-692029"></A>All control system variable connections are handled by the sequencer via the <A NAME="marker-700519"></A>PV API. Normally the state programs are not run until all control system variables are connected. However, with the <EM CLASS="Key-word">
+-c </EM>
+<A NAME="marker-700516"></A>compiler flag, execution begins while the connections are being established. The program can test for each variable's connection status with the <EM CLASS="Key-word">
+pvConnected</EM>
+<A NAME="marker-700470"></A> routine, or it can test for all variables connected with the following comparison (if not using dynamic assignment, <A HREF="Manual-3.html#47174" CLASS="XRef">See Dynamic Assignment</A>, <EM CLASS="Key-word">
+pvAssignCount</EM>
+<A NAME="pvAssignCount; functions"></A> will be the same as <EM CLASS="Key-word">
+pvChannelCount</EM>
+<A NAME="pvChannelCount; functions"></A>):</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692030"></A><A NAME="pvConnectCount; functions"></A>pvConnectCount() == pvAssignCount()</P>
+<P CLASS="BODY">
+<A NAME="pgfId-692033"></A>These routines are described in <A HREF="Manual-6.html#54856" CLASS="XRef">See Built-in Functions</A>. If a variable disconnects or re-connects during execution of a state program, the sequencer updates the connection status appropriately; this can be tested in a <EM CLASS="Key-word">
+when</EM>
+<A NAME="marker-700522"></A> clause, as in:</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-700788"></A>when (pvConnectCount() &lt; pvAssignCount()) {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-700789"></A>} state disconnected</P>
+<P CLASS="BODY">
+<A NAME="pgfId-700790"></A>When using dynamic assignment, you should wait for the newly assigned variables to connect, as in:</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-700759"></A>when (pvConnectCount() == pvAssignCount()) {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-700760"></A>} state connected</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-700761"></A>when (delay(10)) {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-700762"></A>} state connect_timeout</P>
+<P CLASS="BODY">
+<A NAME="pgfId-700776"></A>Note that the connection callback may be delivered before or after the initial monitor callback (the <A NAME="PV API"></A>PV API does not specify the behavior, although the underlying message system may do so). If this matters to you, you should synchronize the value with an event flag and wait for the event flag to be set before proceeding. See <A HREF="Manual-3.html#38073" CLASS="XRef">See Synchronizing State Sets with Event Flags</A> for an example.</P>
+</DIV>
+<DIV>
+<H2 CLASS="HEADING1">
+<A NAME="pgfId-692035"></A>Multiple Instances and Reentrant Object Code<DIV>
+<IMG SRC="Manual-2.gif">
+</DIV>
+</H2>
+<P CLASS="BODY">
+<A NAME="pgfId-692036"></A>Occasionally you will create a state program that can be used in multiple instances. If these instances run in separate address spaces, there is no problem. However, if more than one instance must be executed simultaneously in a single address space, then the objects must be made reentrant using the <EM CLASS="Key-word">
++r</EM>
+<A NAME="marker-700535"></A> compiler flag. With this flag all variables are allocated dynamically at run time; otherwise they are declared static. With the <EM CLASS="Key-word">
++r</EM>
+ flag all variables become elements of a common data structure, and therefore access to variables is slightly less efficient.</P>
+</DIV>
+<DIV>
+<H2 CLASS="HEADING1">
+<A NAME="pgfId-692037"></A>Control System Variable Element Count<DIV>
+<IMG SRC="Manual-2.gif">
+</DIV>
+</H2>
+<P CLASS="BODY">
+<A NAME="pgfId-692038"></A>All requests for control system variables that are arrays assume the array size for the element count. However, if the control system variable has a smaller count than the array size, the smaller number is used for all requests. This count is available with the <EM CLASS="Key-word">
+pvCount</EM>
+<A NAME="marker-700544"></A> function. The following example illustrates this:</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692039"></A>float			wf[2000];</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692040"></A>assign			wf to &quot;{unit}:CavField.FVAL&quot;;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692041"></A>int			LthWF;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692042"></A>...</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692043"></A>		LthWF = pvCount(wf);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692044"></A>		for (i = 0; i &lt; LthWF; i++) {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692045"></A>			...</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692046"></A>		}</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692047"></A>		pvPut(wf);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692048"></A>		...</P>
+</DIV>
+</BODY>
+</HTML>

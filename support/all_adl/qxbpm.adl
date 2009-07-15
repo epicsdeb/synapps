@@ -1,0 +1,901 @@
+
+file {
+	name="c:\Apps\epics\ioc\local\oxfordApp\op\adl\qxbpm.adl"
+	version=030004
+}
+display {
+	object {
+		x=19
+		y=30
+		width=555
+		height=370
+	}
+	clr=14
+	bclr=57
+	cmap=""
+	gridSpacing=5
+	gridOn=0
+	snapToGrid=0
+}
+"color map" {
+	ncolors=65
+	colors {
+		ffffff,
+		ececec,
+		dadada,
+		c8c8c8,
+		bbbbbb,
+		aeaeae,
+		9e9e9e,
+		919191,
+		858585,
+		787878,
+		696969,
+		5a5a5a,
+		464646,
+		2d2d2d,
+		000000,
+		00d800,
+		1ebb00,
+		339900,
+		2d7f00,
+		216c00,
+		fd0000,
+		de1309,
+		be190b,
+		a01207,
+		820400,
+		5893ff,
+		597ee1,
+		4b6ec7,
+		3a5eab,
+		27548d,
+		fbf34a,
+		f9da3c,
+		eeb62b,
+		e19015,
+		cd6100,
+		ffb0ff,
+		d67fe2,
+		ae4ebc,
+		8b1a96,
+		610a75,
+		a4aaff,
+		8793e2,
+		6a73c1,
+		4d52a4,
+		343386,
+		c7bb6d,
+		b79d5c,
+		a47e3c,
+		7d5627,
+		58340f,
+		99ffff,
+		73dfff,
+		4ea5f9,
+		2a63e4,
+		0a00b8,
+		ebf1b5,
+		d4db9d,
+		bbc187,
+		a6a462,
+		8b8239,
+		73ff6b,
+		52da3b,
+		3cb420,
+		289315,
+		1a7309,
+	}
+}
+text {
+	object {
+		x=2
+		y=3
+		width=200
+		height=10
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="qxbpm.adl"
+}
+text {
+	object {
+		x=2
+		y=18
+		width=200
+		height=10
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="last edited: 2007-Jan-30 (prj)"
+}
+text {
+	object {
+		x=8
+		y=35
+		width=500
+		height=22
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Oxford Quad Beam Position Monitor"
+	align="horiz. centered"
+}
+"related display" {
+	object {
+		x=457
+		y=3
+		width=93
+		height=14
+	}
+	display[0] {
+		label="configure"
+		name="qxbpm_config.adl"
+		args="P=$(P),S=$(S)"
+	}
+	clr=1
+	bclr=48
+	label="-configure"
+}
+"choice button" {
+	object {
+		x=227
+		y=4
+		width=200
+		height=14
+	}
+	control {
+		chan="$(P)enable"
+		clr=14
+		bclr=56
+	}
+	stacking="column"
+}
+"cartesian plot" {
+	object {
+		x=319
+		y=81
+		width=220
+		height=220
+	}
+	plotcom {
+		clr=15
+		bclr=14
+	}
+	erase_oldest="plot last n pts"
+	count="100"
+	trace[0] {
+		xdata="$(P)diff:x"
+		ydata="$(P)diff:y"
+		data_clr=20
+	}
+	x_axis {
+		rangeStyle="user-specified"
+		minRange=-0.050000
+		maxRange=0.050000
+	}
+	y1_axis {
+		rangeStyle="user-specified"
+		minRange=-0.100000
+		maxRange=0.100000
+	}
+}
+text {
+	object {
+		x=96
+		y=60
+		width=50
+		height=16
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="X"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=209
+		y=60
+		width=50
+		height=16
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Y"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=318
+		y=60
+		width=220
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="pos - ref (mm)"
+	align="horiz. centered"
+}
+rectangle {
+	object {
+		x=26
+		y=275
+		width=280
+		height=45
+	}
+	"basic attribute" {
+		clr=49
+	}
+}
+composite {
+	object {
+		x=32
+		y=276
+		width=268
+		height=43
+	}
+	"composite name"=""
+	children {
+		composite {
+			object {
+				x=32
+				y=276
+				width=12
+				height=43
+			}
+			"composite name"=""
+			children {
+				rectangle {
+					object {
+						x=32
+						y=276
+						width=12
+						height=11
+					}
+					"basic attribute" {
+						clr=20
+					}
+					"dynamic attribute" {
+						vis="calc"
+						calc="!A&&B"
+						chan="$(P)current:ok"
+						chanB="$(P)current:low"
+					}
+				}
+				rectangle {
+					object {
+						x=32
+						y=292
+						width=12
+						height=11
+					}
+					"basic attribute" {
+						clr=30
+					}
+					"dynamic attribute" {
+						vis="calc"
+						calc="A=B"
+						chan="$(P)current:ok"
+						chanB="$(P)current:low"
+					}
+				}
+				rectangle {
+					object {
+						x=32
+						y=308
+						width=12
+						height=11
+					}
+					"basic attribute" {
+						clr=15
+					}
+					"dynamic attribute" {
+						vis="calc"
+						calc="A&&!B"
+						chan="$(P)current:ok"
+						chanB="$(P)current:low"
+					}
+				}
+			}
+		}
+		composite {
+			object {
+				x=50
+				y=278
+				width=250
+				height=39
+			}
+			"composite name"=""
+			children {
+				composite {
+					object {
+						x=50
+						y=278
+						width=250
+						height=20
+					}
+					"composite name"=""
+					children {
+						text {
+							object {
+								x=50
+								y=278
+								width=250
+								height=20
+							}
+							"basic attribute" {
+								clr=30
+							}
+							"dynamic attribute" {
+								vis="calc"
+								calc="A=B"
+								chan="$(P)current:ok"
+								chanB="$(P)current:low"
+							}
+							textix="diode currents OK"
+							align="horiz. centered"
+						}
+						text {
+							object {
+								x=50
+								y=278
+								width=250
+								height=20
+							}
+							"basic attribute" {
+								clr=15
+							}
+							"dynamic attribute" {
+								vis="calc"
+								calc="A&&!B"
+								chan="$(P)current:ok"
+								chanB="$(P)current:low"
+							}
+							textix="diode currents OK"
+							align="horiz. centered"
+						}
+						text {
+							object {
+								x=50
+								y=278
+								width=250
+								height=20
+							}
+							"basic attribute" {
+								clr=20
+							}
+							"dynamic attribute" {
+								vis="calc"
+								calc="!A&&B"
+								chan="$(P)current:ok"
+								chanB="$(P)current:low"
+							}
+							textix="diode currents too low"
+							align="horiz. centered"
+						}
+					}
+				}
+				composite {
+					object {
+						x=50
+						y=298
+						width=250
+						height=19
+					}
+					"composite name"=""
+					children {
+						composite {
+							object {
+								x=50
+								y=298
+								width=250
+								height=12
+							}
+							"composite name"=""
+							children {
+								text {
+									object {
+										x=50
+										y=298
+										width=250
+										height=12
+									}
+									"basic attribute" {
+										clr=32
+									}
+									"dynamic attribute" {
+										vis="if zero"
+										chan="$(P)current:ok"
+									}
+									textix="not all diodes above threshold"
+									align="horiz. centered"
+								}
+								text {
+									object {
+										x=50
+										y=298
+										width=250
+										height=12
+									}
+									"basic attribute" {
+										clr=15
+									}
+									"dynamic attribute" {
+										vis="if not zero"
+										chan="$(P)current:ok"
+									}
+									textix="all diodes above threshold"
+									align="horiz. centered"
+								}
+							}
+						}
+						composite {
+							object {
+								x=50
+								y=307
+								width=250
+								height=10
+							}
+							"composite name"=""
+							children {
+								text {
+									object {
+										x=50
+										y=307
+										width=250
+										height=10
+									}
+									"basic attribute" {
+										clr=32
+									}
+									"dynamic attribute" {
+										vis="if zero"
+										chan="$(P)current:low"
+									}
+									textix="not all diodes below threshold"
+									align="horiz. centered"
+								}
+								text {
+									object {
+										x=50
+										y=307
+										width=250
+										height=10
+									}
+									"basic attribute" {
+										clr=20
+									}
+									"dynamic attribute" {
+										vis="if not zero"
+										chan="$(P)current:low"
+									}
+									textix="all diodes below threshold"
+									align="horiz. centered"
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+composite {
+	object {
+		x=42
+		y=174
+		width=263
+		height=96
+	}
+	"composite name"=""
+	children {
+		"text update" {
+			object {
+				x=70
+				y=192
+				width=100
+				height=20
+			}
+			monitor {
+				chan="$(P)current:a"
+				clr=15
+				bclr=14
+			}
+			align="horiz. centered"
+			format="engr. notation"
+			limits {
+			}
+		}
+		"text update" {
+			object {
+				x=183
+				y=192
+				width=100
+				height=20
+			}
+			monitor {
+				chan="$(P)current:c"
+				clr=15
+				bclr=14
+			}
+			align="horiz. centered"
+			format="engr. notation"
+			limits {
+			}
+		}
+		text {
+			object {
+				x=43
+				y=194
+				width=20
+				height=16
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="A"
+			align="horiz. centered"
+		}
+		text {
+			object {
+				x=285
+				y=194
+				width=20
+				height=16
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="C"
+			align="horiz. centered"
+		}
+		"text update" {
+			object {
+				x=69
+				y=220
+				width=100
+				height=20
+			}
+			monitor {
+				chan="$(P)current:b"
+				clr=15
+				bclr=14
+			}
+			align="horiz. centered"
+			format="engr. notation"
+			limits {
+			}
+		}
+		"text update" {
+			object {
+				x=182
+				y=220
+				width=100
+				height=20
+			}
+			monitor {
+				chan="$(P)current:d"
+				clr=15
+				bclr=14
+			}
+			align="horiz. centered"
+			format="engr. notation"
+			limits {
+			}
+		}
+		text {
+			object {
+				x=42
+				y=222
+				width=20
+				height=16
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="B"
+			align="horiz. centered"
+		}
+		text {
+			object {
+				x=284
+				y=222
+				width=20
+				height=16
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="D"
+			align="horiz. centered"
+		}
+		text {
+			object {
+				x=77
+				y=174
+				width=200
+				height=16
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="photodiode currents"
+			align="horiz. centered"
+		}
+		text {
+			object {
+				x=99
+				y=252
+				width=20
+				height=16
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="A+B+C+D"
+			align="horiz. right"
+		}
+		"text update" {
+			object {
+				x=126
+				y=250
+				width=100
+				height=20
+			}
+			monitor {
+				chan="$(P)current:total"
+				clr=15
+				bclr=14
+			}
+			align="horiz. centered"
+			format="engr. notation"
+			limits {
+			}
+		}
+	}
+}
+text {
+	object {
+		x=11
+		y=82
+		width=50
+		height=16
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="pos"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=318
+		y=309
+		width=76
+		height=10
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="threshold:"
+}
+"text update" {
+	object {
+		x=402
+		y=308
+		width=76
+		height=12
+	}
+	monitor {
+		chan="$(P)current:low:raw"
+		clr=15
+		bclr=14
+	}
+	align="horiz. centered"
+	limits {
+	}
+}
+text {
+	object {
+		x=13
+		y=330
+		width=400
+		height=12
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="amplifier range (all photodiodes use same range)"
+}
+"choice button" {
+	object {
+		x=14
+		y=342
+		width=530
+		height=18
+	}
+	control {
+		chan="$(P)gain"
+		clr=14
+		bclr=58
+	}
+	stacking="column"
+}
+composite {
+	object {
+		x=11
+		y=140
+		width=275
+		height=20
+	}
+	"composite name"=""
+	children {
+		"related display" {
+			object {
+				x=158
+				y=140
+				width=18
+				height=18
+			}
+			display[0] {
+				label="calculation"
+				name="userCalcOut.adl"
+				args="P=$(P),C=diff:x"
+			}
+			clr=0
+			bclr=59
+		}
+		"related display" {
+			object {
+				x=268
+				y=140
+				width=18
+				height=18
+			}
+			display[0] {
+				label="calculation"
+				name="userCalcOut.adl"
+				args="P=$(P),C=diff:y"
+			}
+			clr=0
+			bclr=59
+		}
+		text {
+			object {
+				x=11
+				y=141
+				width=50
+				height=16
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="diff"
+			align="horiz. centered"
+		}
+		"text update" {
+			object {
+				x=71
+				y=140
+				width=84
+				height=20
+			}
+			monitor {
+				chan="$(P)diff:x"
+				clr=15
+				bclr=14
+			}
+			align="horiz. centered"
+			limits {
+			}
+		}
+		"text update" {
+			object {
+				x=184
+				y=140
+				width=84
+				height=20
+			}
+			monitor {
+				chan="$(P)diff:y"
+				clr=15
+				bclr=14
+			}
+			align="horiz. centered"
+			limits {
+			}
+		}
+	}
+}
+composite {
+	object {
+		x=11
+		y=114
+		width=273
+		height=20
+	}
+	"composite name"=""
+	children {
+		text {
+			object {
+				x=11
+				y=116
+				width=50
+				height=16
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="ref"
+			align="horiz. centered"
+		}
+		"text entry" {
+			object {
+				x=71
+				y=114
+				width=100
+				height=20
+			}
+			control {
+				chan="$(P)ref:x"
+				clr=14
+				bclr=56
+			}
+			limits {
+			}
+		}
+		"text entry" {
+			object {
+				x=184
+				y=114
+				width=100
+				height=20
+			}
+			control {
+				chan="$(P)ref:y"
+				clr=14
+				bclr=56
+			}
+			limits {
+			}
+		}
+	}
+}
+"text update" {
+	object {
+		x=71
+		y=81
+		width=100
+		height=24
+	}
+	monitor {
+		chan="$(P)pos:x"
+		clr=1
+		bclr=11
+	}
+	align="horiz. centered"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=184
+		y=81
+		width=100
+		height=24
+	}
+	monitor {
+		chan="$(P)pos:y"
+		clr=1
+		bclr=11
+	}
+	align="horiz. centered"
+	limits {
+	}
+}

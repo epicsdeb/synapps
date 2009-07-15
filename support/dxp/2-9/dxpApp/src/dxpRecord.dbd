@@ -1,0 +1,2454 @@
+# dxpRecord.dbd
+# Database definition for DXP record.
+# 
+# Created:  Mark Rivers, 1999?
+#
+# Modifications:
+# 14-Feb-2002  MLR Changed the A01V field from USHORT to SHORT to work around
+#              bug in save_restore.c which causes USHORT fields to be corrupted
+#              during the save (not restore!) operation.  This bug should be fixed
+#              and the field returned to USHORT.
+# 25-Feb-2002  MLR Changed the BASE field from SHORT to USHORT 
+# 6-MAR-2002   MLR Added GAIN, PGAIN, EMAX fields
+# 10-MAR-2002  MLR Added FIPPI, EMAXRBV, GAINRBV fields
+# 07-DEC-2004  MLR Major re-write for Handel API
+
+menu(dxpNY) {
+    choice(dxpNY_No,"No")
+    choice(dxpNY_Yes,"Yes")
+}
+menu(dxpYN) {
+    choice(dxpYN_Yes,"Yes")
+    choice(dxpYN_No,"No")
+}
+menu(dxpFilter) {
+    choice(dxpFilter2,         "2")
+    choice(dxpFilter4,         "4")
+    choice(dxpFilter8,         "8")
+    choice(dxpFilter16,       "16")
+    choice(dxpFilter32,       "32")
+    choice(dxpFilter64,       "64")
+    choice(dxpFilter128,     "128")
+    choice(dxpFilter256,     "256")
+    choice(dxpFilter512,     "512")
+    choice(dxpFilter1024,   "1024")
+    choice(dxpFilter2048,   "2048")
+    choice(dxpFilter4096,   "4096")
+    choice(dxpFilter8192,   "8192")
+    choice(dxpFilter16384, "16384")
+    choice(dxpFilter32768, "32768")
+    choice(dxpFilter65536, "65536")
+}
+
+recordtype(dxp) {
+    include "dbCommon.dbd"
+# Input specification
+    field(INP,DBF_INLINK) {
+        prompt("Input specification")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(MTYP,DBF_LONG) {
+        prompt("Module type")
+        asl(ASL0)
+    }
+
+# VAL field, unused
+    field(VAL,DBF_LONG) {
+        prompt("Current value")
+        asl(ASL0)
+        special(SPC_NOMOD)
+        pp(TRUE)
+    }
+
+# Array fields
+    field(BPTR,DBF_NOACCESS) {
+        prompt("Baseline histogram buffer pointer")
+        special(SPC_NOMOD)
+        interest(4)
+        size(4)
+        extra("long *bptr")
+    }
+    field(BASE,DBF_LONG) {
+        prompt("Baseline Histogram")
+        asl(ASL0)
+        special(SPC_DBADDR)
+    }
+    field(BCPTR,DBF_NOACCESS) {
+        prompt("Baseline cut buffer pointer")
+        special(SPC_NOMOD)
+        interest(4)
+        size(4)
+        extra("long *bcptr")
+    }
+    field(BASE_CUT,DBF_LONG) {
+        prompt("Baseline Cut")
+        asl(ASL0)
+        special(SPC_DBADDR)
+    }
+    field(BXPTR,DBF_NOACCESS) {
+        prompt("Baseline histogram X buffer pointer")
+        special(SPC_NOMOD)
+        interest(4)
+        size(4)
+        extra("float *bxptr")
+    }
+    field(BASE_X,DBF_FLOAT) {
+        prompt("Baseline Histogram X")
+        asl(ASL0)
+        special(SPC_DBADDR)
+    }
+    field(BHPTR,DBF_NOACCESS) {
+        prompt("Baseline history buffer pointer")
+        special(SPC_NOMOD)
+        interest(4)
+        size(4)
+        extra("long *bhptr")
+    }
+    field(BHIST,DBF_LONG) {
+        prompt("Baseline History")
+        asl(ASL0)
+        special(SPC_DBADDR)
+    }
+    field(BHXPTR,DBF_NOACCESS) {
+        prompt("Baseline history X buffer pointer")
+        special(SPC_NOMOD)
+        interest(4)
+        size(4)
+        extra("float *bhxptr")
+    }
+    field(BHIST_X,DBF_FLOAT) {
+        prompt("Baseline History X")
+        asl(ASL0)
+        special(SPC_DBADDR)
+    }
+    field(PPTR,DBF_NOACCESS) {
+        prompt("Parameter Buffer Pointer")
+        special(SPC_NOMOD)
+        interest(4)
+        size(4)
+        extra("unsigned short *pptr")
+    }
+    field(PARM,DBF_USHORT) {
+        prompt("DXP Parameters")
+        asl(ASL0)
+        special(SPC_DBADDR)
+    }
+    field(TPTR,DBF_NOACCESS) {
+        prompt("Trace Buffer Pointer")
+        special(SPC_NOMOD)
+        interest(4)
+        size(4)
+        extra("long *tptr")
+    }
+    field(TRACE,DBF_LONG) {
+        prompt("ADC trace")
+        asl(ASL0)
+        special(SPC_DBADDR)
+    }
+    field(TXPTR,DBF_NOACCESS) {
+        prompt("Trace X Buffer Pointer")
+        special(SPC_NOMOD)
+        interest(4)
+        size(4)
+        extra("float *txptr")
+    }
+    field(TRACE_X,DBF_FLOAT) {
+        prompt("ADC trace X")
+        asl(ASL0)
+        special(SPC_DBADDR)
+    }
+    field(MIPTR,DBF_NOACCESS) {
+        prompt("Module info pointer")
+        special(SPC_NOMOD)
+        interest(4)
+        size(4)
+        extra("void *miptr")
+    }
+    field(SPFPTR,DBF_NOACCESS) {
+        prompt("Special flag pointer")
+        special(SPC_NOMOD)
+        interest(4)
+        size(4)
+        extra("void *spfptr")
+    }
+
+
+# Fields to start and stop data acquisition
+    field(STRT,DBF_LONG) {
+          prompt("Start acquiring")
+          asl(ASL0)
+          special(SPC_MOD)
+          pp(TRUE)
+    }
+    field(STOP,DBF_LONG) {
+          prompt("Stop acquiring")
+          asl(ASL0)
+          special(SPC_MOD)
+          pp(TRUE)
+    }
+    field(ERAS,DBF_LONG) {
+          prompt("Erase")
+          asl(ASL0)
+          special(SPC_MOD)
+          pp(TRUE)
+    }
+    field(ACQG,DBF_LONG) {
+          prompt("Acquiring")
+          asl(ASL0)
+          special(SPC_NOMOD)
+    }
+
+# Special tasks
+    field(READ_PARAMS,DBF_LONG) {
+        prompt("Read parameters")
+        interest(1)
+        special(SPC_MOD)
+        pp(TRUE)
+    }
+
+    field(READ_HISTOGRAM,DBF_LONG) {
+        prompt("Read baseline histogram")
+        interest(1)
+        special(SPC_MOD)
+        pp(TRUE)
+    }
+
+    field(READ_TRACE,DBF_LONG) {
+        prompt("Read ADC trace")
+        interest(1)
+        special(SPC_MOD)
+        pp(TRUE)
+    }
+
+    field(READ_HISTORY,DBF_LONG) {
+        prompt("Read baseline history")
+        interest(1)
+        special(SPC_MOD)
+        pp(TRUE)
+    }
+
+    field(OPEN_RELAY,DBF_LONG) {
+        prompt("Open input relay")
+        interest(1)
+        special(SPC_MOD)
+        pp(TRUE)
+    }
+
+    field(CLOSE_RELAY,DBF_LONG) {
+        prompt("Close input relay")
+        interest(1)
+        special(SPC_MOD)
+        pp(TRUE)
+    }
+
+# Baseline filter length
+    field(BASE_LEN,DBF_MENU) {
+        prompt("Baseline filter length")
+        special(SPC_MOD)
+        pp(TRUE)
+        menu(dxpFilter)
+        asl(ASL0)
+        initial(8)
+    }
+
+# Baseline cut enable
+    field(BASE_CUT_ENBL,DBF_MENU) {
+        prompt("Enable baseline cut")
+        promptgroup(GUI_COMMON)
+        interest(1)
+        special(SPC_MOD)
+        pp(TRUE)
+        menu(dxpNY)
+    }
+    field(BASE_CUT_ENBL_RBV,DBF_MENU) {
+        prompt("Enable baseline cut readback")
+        promptgroup(GUI_COMMON)
+        interest(1)
+        special(SPC_NOMOD)
+        menu(dxpNY)
+    }
+
+
+# Higher level control parameters - all double, 29 total
+    field(PKTIM,DBF_DOUBLE) {
+        prompt("Peaking time")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+        initial(4.)
+    }
+    field(PKTIM_RBV,DBF_DOUBLE) {
+        prompt("Peaking time readback")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(ADC_RULE,DBF_DOUBLE) {
+        prompt("ADC rule at ECAL")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+        initial(5.)
+    }
+    field(ADC_RULE_RBV,DBF_DOUBLE) {
+        prompt("ADC rule readback")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(ECAL,DBF_DOUBLE) {
+        prompt("Calibration energy")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+        initial(10.)
+    }
+    field(ECAL_RBV,DBF_DOUBLE) {
+        prompt("Calibration energy readback")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(PGAIN,DBF_DOUBLE) {
+        prompt("Preamp Gain (mv/keV)")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+        initial(4.)
+    }
+    field(PGAIN_RBV,DBF_DOUBLE) {
+        prompt("Preamp Gain readback")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(EMAX,DBF_DOUBLE) {
+        prompt("Maximum energy (keV)")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+        initial(20.)
+    }
+    field(EMAX_RBV,DBF_DOUBLE) {
+        prompt("Maximum energy readback")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(FAST_TRIG,DBF_DOUBLE) {
+        prompt("Fast trigger threshold (keV)")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+        initial(1.0)
+    }
+    field(FAST_TRIG_RBV,DBF_DOUBLE) {
+        prompt("Fast trigger readback")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(TRIG_PKTIM,DBF_DOUBLE) {
+        prompt("Trigger peaking time")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+        initial(.15)
+    }
+    field(TRIG_PKTIM_RBV,DBF_DOUBLE) {
+        prompt("Trigger peaking time readback")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(TRIG_GAPTIM,DBF_DOUBLE) {
+        prompt("Trigger gap time")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+        initial(0.)
+    }
+    field(TRIG_GAPTIM_RBV,DBF_DOUBLE) {
+        prompt("Trigger gap time readback")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(SLOW_TRIG,DBF_DOUBLE) {
+        prompt("Slow trigger threshold (eV)")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+        initial(0.)
+    }
+    field(SLOW_TRIG_RBV,DBF_DOUBLE) {
+        prompt("Slow trigger readback")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(GAPTIM,DBF_DOUBLE) {
+        prompt("Gap time")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+        initial(0.5)
+    }
+    field(GAPTIM_RBV,DBF_DOUBLE) {
+        prompt("Gap time readback")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(TRACE_WAIT,DBF_DOUBLE) {
+        prompt("Trace wait (usec)")
+        special(SPC_MOD)
+        pp(TRUE)
+        asl(ASL0)
+        initial(0.1)
+    }
+    field(BHIST_TIME,DBF_DOUBLE) {
+        prompt("Baseline history time (usec)")
+        special(SPC_MOD)
+        pp(TRUE)
+        asl(ASL0)
+        initial(1.0)
+    }
+    field(BASE_CUT_PCT,DBF_DOUBLE) {
+        prompt("Baseline cut (%)")
+        special(SPC_MOD)
+        pp(TRUE)
+        asl(ASL0)
+        initial(5.0)
+    }
+    field(BASE_CUT_PCT_RBV,DBF_DOUBLE) {
+        prompt("Baseline cut % readback")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(MAXWIDTH,DBF_DOUBLE) {
+        prompt("Max. width (%)")
+        special(SPC_MOD)
+        pp(TRUE)
+        asl(ASL0)
+        initial(4.)
+    }
+    field(MAXWIDTH_RBV,DBF_DOUBLE) {
+        prompt("Maxwidth readback")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(BASE_THRESH,DBF_DOUBLE) {
+        prompt("Baseline threshold")
+        special(SPC_MOD)
+        pp(TRUE)
+        asl(ASL0)
+        initial(1.0)
+    }
+    field(BASE_THRESH_RBV,DBF_DOUBLE) {
+        prompt("Baseline threshold readback")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(BASE_LEN_RBV,DBF_DOUBLE) {
+        prompt("Baseline filter length readback")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+# Run statistics
+    field(FAST_PEAKS,DBF_LONG) {
+        prompt("Fast peaks (triggers)")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(SLOW_PEAKS,DBF_LONG) {
+        prompt("Slow peaks (counts)")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(ICR,DBF_DOUBLE) {
+        prompt("Input count rate")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(OCR,DBF_DOUBLE) {
+        prompt("Output count rate")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+# SCA fields
+    field(NUM_SCAS,DBF_LONG) {
+        prompt("Number of SCAs")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+    }
+    field(SCA0_LO,DBF_LONG) {
+        prompt("SCA0 low channel")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+        initial(-1)
+    }
+    field(SCA0_LO_RBV,DBF_LONG) {
+        prompt("SCA0 low channel readback")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(SCA0_HI,DBF_LONG) {
+        prompt("SCA0 high channel")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+        initial(-1)
+    }
+    field(SCA0_HI_RBV,DBF_LONG) {
+        prompt("SCA0 high channel readback")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(SCA0_CTS,DBF_LONG) {
+        prompt("SCA0 counts")
+        asl(ASL0)
+        special(SPC_NOMOD)
+        initial(-1)
+    }
+    field(SCA1_LO,DBF_LONG) {
+        prompt("SCA1 low channel")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+        initial(-1)
+    }
+    field(SCA1_LO_RBV,DBF_LONG) {
+        prompt("SCA1 low channel readback")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(SCA1_HI,DBF_LONG) {
+        prompt("SCA1 high channel")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+        initial(-1)
+    }
+    field(SCA1_HI_RBV,DBF_LONG) {
+        prompt("SCA1 high channel readback")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(SCA1_CTS,DBF_LONG) {
+        prompt("SCA1 counts")
+        asl(ASL0)
+        special(SPC_NOMOD)
+        initial(-1)
+    }
+    field(SCA2_LO,DBF_LONG) {
+        prompt("SCA2 low channel")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+        initial(-1)
+    }
+    field(SCA2_LO_RBV,DBF_LONG) {
+        prompt("SCA2 low channel readback")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(SCA2_HI,DBF_LONG) {
+        prompt("SCA2 high channel")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+        initial(-1)
+    }
+    field(SCA2_HI_RBV,DBF_LONG) {
+        prompt("SCA2 high channel readback")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(SCA2_CTS,DBF_LONG) {
+        prompt("SCA2 counts")
+        asl(ASL0)
+        special(SPC_NOMOD)
+        initial(-1)
+    }
+    field(SCA3_LO,DBF_LONG) {
+        prompt("SCA3 low channel")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+        initial(-1)
+    }
+    field(SCA3_LO_RBV,DBF_LONG) {
+        prompt("SCA3 low channel readback")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(SCA3_HI,DBF_LONG) {
+        prompt("SCA3 high channel")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+        initial(-1)
+    }
+    field(SCA3_HI_RBV,DBF_LONG) {
+        prompt("SCA3 high channel readback")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(SCA3_CTS,DBF_LONG) {
+        prompt("SCA3 counts")
+        asl(ASL0)
+        special(SPC_NOMOD)
+        initial(-1)
+    }
+    field(SCA4_LO,DBF_LONG) {
+        prompt("SCA4 low channel")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+        initial(-1)
+    }
+    field(SCA4_LO_RBV,DBF_LONG) {
+        prompt("SCA4 low channel readback")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(SCA4_HI,DBF_LONG) {
+        prompt("SCA4 high channel")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+        initial(-1)
+    }
+    field(SCA4_HI_RBV,DBF_LONG) {
+        prompt("SCA4 high channel readback")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(SCA4_CTS,DBF_LONG) {
+        prompt("SCA4 counts")
+        asl(ASL0)
+        special(SPC_NOMOD)
+        initial(-1)
+    }
+    field(SCA5_LO,DBF_LONG) {
+        prompt("SCA5 low channel")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+        initial(-1)
+    }
+    field(SCA5_LO_RBV,DBF_LONG) {
+        prompt("SCA5 low channel readback")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(SCA5_HI,DBF_LONG) {
+        prompt("SCA5 high channel")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+        initial(-1)
+    }
+    field(SCA5_HI_RBV,DBF_LONG) {
+        prompt("SCA5 high channel readback")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(SCA5_CTS,DBF_LONG) {
+        prompt("SCA5 counts")
+        asl(ASL0)
+        special(SPC_NOMOD)
+        initial(-1)
+    }
+    field(SCA6_LO,DBF_LONG) {
+        prompt("SCA6 low channel")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+        initial(-1)
+    }
+    field(SCA6_LO_RBV,DBF_LONG) {
+        prompt("SCA6 low channel readback")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(SCA6_HI,DBF_LONG) {
+        prompt("SCA6 high channel")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+        initial(-1)
+    }
+    field(SCA6_HI_RBV,DBF_LONG) {
+        prompt("SCA6 high channel readback")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(SCA6_CTS,DBF_LONG) {
+        prompt("SCA6 counts")
+        asl(ASL0)
+        special(SPC_NOMOD)
+        initial(-1)
+    }
+    field(SCA7_LO,DBF_LONG) {
+        prompt("SCA7 low channel")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+        initial(-1)
+    }
+    field(SCA7_LO_RBV,DBF_LONG) {
+        prompt("SCA7 low channel readback")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(SCA7_HI,DBF_LONG) {
+        prompt("SCA7 high channel")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+        initial(-1)
+    }
+    field(SCA7_HI_RBV,DBF_LONG) {
+        prompt("SCA7 high channel readback")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(SCA7_CTS,DBF_LONG) {
+        prompt("SCA7 counts")
+        asl(ASL0)
+        special(SPC_NOMOD)
+        initial(-1)
+    }
+    field(SCA8_LO,DBF_LONG) {
+        prompt("SCA8 low channel")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+        initial(-1)
+    }
+    field(SCA8_LO_RBV,DBF_LONG) {
+        prompt("SCA8 low channel readback")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(SCA8_HI,DBF_LONG) {
+        prompt("SCA8 high channel")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+        initial(-1)
+    }
+    field(SCA8_HI_RBV,DBF_LONG) {
+        prompt("SCA8 high channel readback")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(SCA8_CTS,DBF_LONG) {
+        prompt("SCA8 counts")
+        asl(ASL0)
+        special(SPC_NOMOD)
+        initial(-1)
+    }
+    field(SCA9_LO,DBF_LONG) {
+        prompt("SCA9 low channel")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+        initial(-1)
+    }
+    field(SCA9_LO_RBV,DBF_LONG) {
+        prompt("SCA9 low channel readback")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(SCA9_HI,DBF_LONG) {
+        prompt("SCA9 high channel")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+        initial(-1)
+    }
+    field(SCA9_HI_RBV,DBF_LONG) {
+        prompt("SCA9 high channel readback")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(SCA9_CTS,DBF_LONG) {
+        prompt("SCA9 counts")
+        asl(ASL0)
+        special(SPC_NOMOD)
+        initial(-1)
+    }
+    field(SCA10_LO,DBF_LONG) {
+        prompt("SCA10 low channel")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+        initial(-1)
+    }
+    field(SCA10_LO_RBV,DBF_LONG) {
+        prompt("SCA10 low channel readback")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(SCA10_HI,DBF_LONG) {
+        prompt("SCA10 high channel")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+        initial(-1)
+    }
+    field(SCA10_HI_RBV,DBF_LONG) {
+        prompt("SCA10 high channel readback")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(SCA10_CTS,DBF_LONG) {
+        prompt("SCA10 counts")
+        asl(ASL0)
+        special(SPC_NOMOD)
+        initial(-1)
+    }
+    field(SCA11_LO,DBF_LONG) {
+        prompt("SCA11 low channel")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+        initial(-1)
+    }
+    field(SCA11_LO_RBV,DBF_LONG) {
+        prompt("SCA11 low channel readback")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(SCA11_HI,DBF_LONG) {
+        prompt("SCA11 high channel")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+        initial(-1)
+    }
+    field(SCA11_HI_RBV,DBF_LONG) {
+        prompt("SCA11 high channel readback")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(SCA11_CTS,DBF_LONG) {
+        prompt("SCA11 counts")
+        asl(ASL0)
+        special(SPC_NOMOD)
+        initial(-1)
+    }
+    field(SCA12_LO,DBF_LONG) {
+        prompt("SCA12 low channel")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+        initial(-1)
+    }
+    field(SCA12_LO_RBV,DBF_LONG) {
+        prompt("SCA12 low channel readback")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(SCA12_HI,DBF_LONG) {
+        prompt("SCA12 high channel")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+        initial(-1)
+    }
+    field(SCA12_HI_RBV,DBF_LONG) {
+        prompt("SCA12 high channel readback")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(SCA12_CTS,DBF_LONG) {
+        prompt("SCA12 counts")
+        asl(ASL0)
+        special(SPC_NOMOD)
+        initial(-1)
+    }
+    field(SCA13_LO,DBF_LONG) {
+        prompt("SCA13 low channel")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+        initial(-1)
+    }
+    field(SCA13_LO_RBV,DBF_LONG) {
+        prompt("SCA13 low channel readback")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(SCA13_HI,DBF_LONG) {
+        prompt("SCA13 high channel")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+        initial(-1)
+    }
+    field(SCA13_HI_RBV,DBF_LONG) {
+        prompt("SCA13 high channel readback")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(SCA13_CTS,DBF_LONG) {
+        prompt("SCA13 counts")
+        asl(ASL0)
+        special(SPC_NOMOD)
+        initial(-1)
+    }
+    field(SCA14_LO,DBF_LONG) {
+        prompt("SCA14 low channel")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+        initial(-1)
+    }
+    field(SCA14_LO_RBV,DBF_LONG) {
+        prompt("SCA14 low channel readback")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(SCA14_HI,DBF_LONG) {
+        prompt("SCA14 high channel")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+        initial(-1)
+    }
+    field(SCA14_HI_RBV,DBF_LONG) {
+        prompt("SCA14 high channel readback")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(SCA14_CTS,DBF_LONG) {
+        prompt("SCA14 counts")
+        asl(ASL0)
+        special(SPC_NOMOD)
+        initial(-1)
+    }
+    field(SCA15_LO,DBF_LONG) {
+        prompt("SCA15 low channel")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+        initial(-1)
+    }
+    field(SCA15_LO_RBV,DBF_LONG) {
+        prompt("SCA15 low channel readback")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(SCA15_HI,DBF_LONG) {
+        prompt("SCA15 high channel")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+        initial(-1)
+    }
+    field(SCA15_HI_RBV,DBF_LONG) {
+        prompt("SCA15 high channel readback")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(SCA15_CTS,DBF_LONG) {
+        prompt("SCA15 counts")
+        asl(ASL0)
+        special(SPC_NOMOD)
+        initial(-1)
+    }
+
+# ASC parameters - 9 total
+    field(A01V,DBF_SHORT) {
+        prompt("A01V")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+    }
+    field(A01L,DBF_STRING) {
+        prompt("A01V label")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(A01O,DBF_SHORT) {
+        prompt("A01V offset")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(A02V,DBF_SHORT) {
+        prompt("A02V")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+    }
+    field(A02L,DBF_STRING) {
+        prompt("A02V label")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(A02O,DBF_SHORT) {
+        prompt("A02V offset")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(A03V,DBF_SHORT) {
+        prompt("A03V")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+    }
+    field(A03L,DBF_STRING) {
+        prompt("A02V label")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(A03O,DBF_SHORT) {
+        prompt("A02V offset")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(A04V,DBF_SHORT) {
+        prompt("A04V")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+    }
+    field(A04L,DBF_STRING) {
+        prompt("A04V label")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(A04O,DBF_SHORT) {
+        prompt("A04V offset")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(A05V,DBF_SHORT) {
+        prompt("A05V")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+    }
+    field(A05L,DBF_STRING) {
+        prompt("A05V label")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(A05O,DBF_SHORT) {
+        prompt("A05V offset")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(A06V,DBF_SHORT) {
+        prompt("A06V")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+    }
+    field(A06L,DBF_STRING) {
+        prompt("A06V label")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(A06O,DBF_SHORT) {
+        prompt("A06V offset")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(A07V,DBF_SHORT) {
+        prompt("A07V")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+    }
+    field(A07L,DBF_STRING) {
+        prompt("A07V label")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(A07O,DBF_SHORT) {
+        prompt("A07V offset")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(A08V,DBF_SHORT) {
+        prompt("A08V")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+    }
+    field(A08L,DBF_STRING) {
+        prompt("A08V label")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(A08O,DBF_SHORT) {
+        prompt("A08V offset")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(A09V,DBF_SHORT) {
+        prompt("A09V")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+    }
+    field(A09L,DBF_STRING) {
+        prompt("A09V label")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(A09O,DBF_SHORT) {
+        prompt("A09V offset")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+# FiPPI parameters - 10 total
+    field(F01V,DBF_SHORT) {
+        prompt("F01V")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+    }
+    field(F01L,DBF_STRING) {
+        prompt("F01V label")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(F01O,DBF_SHORT) {
+        prompt("F01V offset")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(F02V,DBF_SHORT) {
+        prompt("F02V")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+    }
+    field(F02L,DBF_STRING) {
+        prompt("F02V label")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(F02O,DBF_SHORT) {
+        prompt("F02V offset")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(F03V,DBF_SHORT) {
+        prompt("F03V")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+    }
+    field(F03L,DBF_STRING) {
+        prompt("F03V label")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(F03O,DBF_SHORT) {
+        prompt("F03V offset")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(F04V,DBF_SHORT) {
+        prompt("F04V")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+    }
+    field(F04L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(F04O,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(F05V,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+    }
+    field(F05L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(F05O,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(F06V,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+    }
+    field(F06L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(F06O,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(F07V,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+    }
+    field(F07L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(F07O,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(F08V,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+    }
+    field(F08L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(F08O,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(F09V,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+    }
+    field(F09L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(F09O,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(F10V,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+    }
+    field(F10L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(F10O,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+# DSP parameters - 10 total
+    field(D01V,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+    }
+    field(D01L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(D01O,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(D02V,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+    }
+    field(D02L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(D02O,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(D03V,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+    }
+    field(D03L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(D03O,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(D04V,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+    }
+    field(D04L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(D04O,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(D05V,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+    }
+    field(D05L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(D05O,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(D06V,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+    }
+    field(D06L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(D06O,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(D07V,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+    }
+    field(D07L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(D07O,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(D08V,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+    }
+    field(D08L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(D08O,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(D09V,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+    }
+    field(D09L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(D09O,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(D10V,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+    }
+    field(D10L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(D10O,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+# Baseline parameters - 8 total
+    field(B01V,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+    }
+    field(B01L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(B01O,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(B02V,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+    }
+    field(B02L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(B02O,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(B03V,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+    }
+    field(B03L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(B03O,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(B04V,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+    }
+    field(B04L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(B04O,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(B05V,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+    }
+    field(B05L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(B05O,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(B06V,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+    }
+    field(B06L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(B06O,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(B07V,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+    }
+    field(B07L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(B07O,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(B08V,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_MOD)
+        pp(TRUE)
+    }
+    field(B08L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(B08O,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+
+# Read-only parameters - 16 total
+    field(R01V,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(R01L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(R01O,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(R02V,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(R02L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(R02O,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(R03V,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(R03L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(R03O,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(R04V,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(R04L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(R04O,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(R05V,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(R05L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(R05O,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(R06V,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(R06L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(R06O,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(R07V,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(R07L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(R07O,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(R08V,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(R08L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(R08O,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(R09V,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(R09L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(R09O,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(R10V,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(R10L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(R10O,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(R11V,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(R11L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(R11O,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(R12V,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(R12L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(R12O,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(R13V,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(R13L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(R13O,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(R14V,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(R14L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(R14O,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(R15V,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(R15L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(R15O,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(R16V,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(R16L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(R16O,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+
+# Statistics parameters - 14 total
+    field(S01V,DBF_LONG) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(S01L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(S01OL,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(S01OH,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(S02V,DBF_LONG) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(S02L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(S02OL,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(S02OH,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(S03V,DBF_LONG) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(S03L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(S03OL,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(S03OH,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(S04V,DBF_LONG) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(S04L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(S04OL,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(S04OH,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(S05V,DBF_LONG) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(S05L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(S05OL,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(S05OH,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(S06V,DBF_LONG) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(S06L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(S06OL,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(S06OH,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(S07V,DBF_LONG) {
+        prompt("")
+        prompt("Livetime")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(S07L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(S07OL,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(S07OH,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(S08V,DBF_LONG) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(S08L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(S08OL,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(S08OH,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(S09V,DBF_LONG) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(S09L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(S09OL,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(S09OH,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(S10V,DBF_LONG) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(S10L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(S10OL,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(S10OH,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(S11V,DBF_LONG) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(S11L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(S11OL,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(S11OH,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(S12V,DBF_LONG) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(S12L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(S12OL,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(S12OH,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(S13V,DBF_LONG) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(S13L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(S13OL,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(S13OH,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+    field(S14V,DBF_LONG) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(S14L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(16)
+        special(SPC_NOMOD)
+    }
+    field(S14OL,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+    field(S14OH,DBF_SHORT) {
+        prompt("")
+        asl(ASL0)
+        special(SPC_NOMOD)
+    }
+
+# Run tasks choices - 16 total
+    field(T01V,DBF_MENU) {
+        prompt("")
+        promptgroup(GUI_COMMON)
+        interest(1)
+        special(SPC_MOD)
+        pp(TRUE)
+        menu(dxpNY)
+    }
+    field(T01L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(25)
+        special(SPC_NOMOD)
+    }
+
+    field(T02V,DBF_MENU) {
+        prompt("")
+        promptgroup(GUI_COMMON)
+        interest(1)
+        special(SPC_MOD)
+        pp(TRUE)
+        menu(dxpNY)
+    }
+    field(T02L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(25)
+        special(SPC_NOMOD)
+    }
+
+    field(T03V,DBF_MENU) {
+        prompt("")
+        promptgroup(GUI_COMMON)
+        interest(1)
+        special(SPC_MOD)
+        pp(TRUE)
+        menu(dxpNY)
+    }
+    field(T03L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(25)
+        special(SPC_NOMOD)
+    }
+
+    field(T04V,DBF_MENU) {
+        prompt("")
+        promptgroup(GUI_COMMON)
+        interest(1)
+        special(SPC_MOD)
+        pp(TRUE)
+        menu(dxpNY)
+    }
+    field(T04L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(25)
+        special(SPC_NOMOD)
+    }
+
+    field(T05V,DBF_MENU) {
+        prompt("")
+        promptgroup(GUI_COMMON)
+        interest(1)
+        special(SPC_MOD)
+        pp(TRUE)
+        menu(dxpNY)
+    }
+    field(T05L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(25)
+        special(SPC_NOMOD)
+    }
+
+    field(T06V,DBF_MENU) {
+        prompt("")
+        promptgroup(GUI_COMMON)
+        interest(1)
+        special(SPC_MOD)
+        pp(TRUE)
+        menu(dxpNY)
+    }
+    field(T06L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(25)
+        special(SPC_NOMOD)
+    }
+
+    field(T07V,DBF_MENU) {
+        prompt("")
+        promptgroup(GUI_COMMON)
+        interest(1)
+        special(SPC_MOD)
+        pp(TRUE)
+        menu(dxpNY)
+    }
+    field(T07L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(25)
+        special(SPC_NOMOD)
+    }
+
+    field(T08V,DBF_MENU) {
+        prompt("")
+        promptgroup(GUI_COMMON)
+        interest(1)
+        special(SPC_MOD)
+        pp(TRUE)
+        menu(dxpNY)
+    }
+    field(T08L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(25)
+        special(SPC_NOMOD)
+    }
+
+    field(T09V,DBF_MENU) {
+        prompt("")
+        promptgroup(GUI_COMMON)
+        interest(1)
+        special(SPC_MOD)
+        pp(TRUE)
+        menu(dxpNY)
+    }
+    field(T09L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(25)
+        special(SPC_NOMOD)
+    }
+
+    field(T10V,DBF_MENU) {
+        prompt("")
+        promptgroup(GUI_COMMON)
+        interest(1)
+        special(SPC_MOD)
+        pp(TRUE)
+        menu(dxpNY)
+    }
+    field(T10L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(25)
+        special(SPC_NOMOD)
+    }
+
+    field(T11V,DBF_MENU) {
+        prompt("")
+        promptgroup(GUI_COMMON)
+        interest(1)
+        special(SPC_MOD)
+        pp(TRUE)
+        menu(dxpNY)
+    }
+    field(T11L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(25)
+        special(SPC_NOMOD)
+    }
+
+    field(T12V,DBF_MENU) {
+        prompt("")
+        promptgroup(GUI_COMMON)
+        interest(1)
+        special(SPC_MOD)
+        pp(TRUE)
+        menu(dxpNY)
+    }
+    field(T12L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(25)
+        special(SPC_NOMOD)
+    }
+
+    field(T13V,DBF_MENU) {
+        prompt("")
+        promptgroup(GUI_COMMON)
+        interest(1)
+        special(SPC_MOD)
+        pp(TRUE)
+        menu(dxpNY)
+    }
+    field(T13L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(25)
+        special(SPC_NOMOD)
+    }
+
+    # Note, this menu is reversed (0=Yes, 1=No) to keep the logic
+    # clear, because 1 = disable auto
+    field(T14V,DBF_MENU) {
+        prompt("")
+        promptgroup(GUI_COMMON)
+        interest(1)
+        special(SPC_MOD)
+        pp(TRUE)
+        menu(dxpYN)
+    }
+    field(T14L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(25)
+        special(SPC_NOMOD)
+    }
+
+    field(T15V,DBF_MENU) {
+        prompt("")
+        promptgroup(GUI_COMMON)
+        interest(1)
+        special(SPC_MOD)
+        pp(TRUE)
+        menu(dxpNY)
+    }
+    field(T15L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(25)
+        special(SPC_NOMOD)
+    }
+
+    field(T16V,DBF_MENU) {
+        prompt("")
+        promptgroup(GUI_COMMON)
+        interest(1)
+        special(SPC_MOD)
+        pp(TRUE)
+        menu(dxpNY)
+    }
+    field(T16L,DBF_STRING) {
+        prompt("")
+        asl(ASL0)
+        size(25)
+        special(SPC_NOMOD)
+    }
+
+}

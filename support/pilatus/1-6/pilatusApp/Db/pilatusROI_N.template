@@ -1,0 +1,65 @@
+# Database for Pilatus detector with ROI calculations
+# Mark Rivers
+# July 5, 2007
+
+record(longout, "$(DET)ROI$(N)XMin")
+{
+   field(PINI, "1")
+   field(VAL,  "$(XMIN)")
+}
+
+record(longout, "$(DET)ROI$(N)XMax")
+{
+   field(PINI, "1")
+   field(VAL,  "$(XMAX)")
+}
+
+record(longout, "$(DET)ROI$(N)YMin")
+{
+   field(PINI, "1")
+   field(VAL,  "$(YMIN)")
+}
+
+record(longout, "$(DET)ROI$(N)YMax")
+{
+   field(PINI, "1")
+   field(VAL,  "$(YMAX)")
+}
+
+record(longout, "$(DET)ROI$(N)BgdWidth")
+{
+   field(PINI, "1")
+   field(VAL,  "$(BGD_WIDTH)")
+}
+
+record(ao, "$(DET)ROI$(N)TotalCounts")
+{
+}
+
+record(ao, "$(DET)ROI$(N)NetCounts")
+{
+}
+
+record(longout, "$(DET)ROI$(N)MinCounts")
+{
+}
+
+record(longout, "$(DET)ROI$(N)MaxCounts")
+{
+}
+
+record(stringout, "$(DET)ROI$(N)Label")
+{
+}
+
+record(waveform, "$(DET)ROI$(N)WFTotalCounts")
+{
+    field(FTVL, "DOUBLE")
+    field(NELM, "$(NCHANS)")
+}
+
+record(waveform, "$(DET)ROI$(N)WFNetCounts")
+{
+    field(FTVL, "DOUBLE")
+    field(NELM, "$(NCHANS)")
+}

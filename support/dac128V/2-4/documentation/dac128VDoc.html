@@ -1,0 +1,169 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<title>dac128V.html</title>
+</head>
+
+<body bgcolor="#FFFFFF">
+
+<h1 align="center">dac128V</h1>
+
+<h2 align="center">Current Author: Mark Rivers</h2>
+
+<h2 align="center">Original Author: Jim Kolakowski</h2>
+
+<p>&nbsp;</p>
+
+<p>This file describes support for the Systran DAC128V, an 8 channel, 12-bit D/A 
+converter. The following source files are included in this module.</p>
+
+<table border="1">
+            <tr>
+                <td>DAC128V.h</td>
+                <td>defines dac128V class</td>
+            </tr>
+            <tr>
+                <td>dac128V.cc</td>
+                <td>communicates with hardware</td>
+            </tr>
+            <tr>
+                <td>dac128VServer.cc</td>
+                <td>MPF server, interface between MPF and
+                dac128V.cc</td>
+            </tr>
+            <tr>
+                <td>devAoDAC128V.cc</td>
+                <td>EPICS device support code for ao (analog
+                output record)</td>
+            </tr>
+            <tr>
+                <td>devAoDAC128V.dbd</td>
+                <td>EPICS device support definition for ao
+                (analog output record)</td>
+            </tr>
+            </table>
+
+<p>&nbsp;</p>
+
+<h2 align="center">Hardware Configuration</h2>
+
+<p>The minimum and maximum voltage of the DAC128V IP module are set by jumpers.&nbsp; 
+The minimum voltage choices are -10V, -5V or 0V, and the maximum voltage choices are 0V, 
++5V and +10V.</p>
+
+<p>NOTE: The factory configuration is minimum and maximum both set to 0V, so the 
+DAC won't put out any voltage!&nbsp; You MUST change the jumpers before 
+installing the module.</p>
+
+<p>CAUTION: The modules always initializes (after VME reset or power-on) to the 
+midpoint of the minimum and maximum voltages that are jumper selected.&nbsp; 
+Thus, if the range is -10V to +10V then it will come up at 0V, while if the 
+range is 0 to +5V it will come up at 2.5V.&nbsp; If you are connecting 
+the device to something that should not have voltage applied at reset (such as 
+a heater, or DC motor amplifier, etc.) then always select either -10V to +10V or 
+-5V to +5V range, so that it will power up at 0V.</p>
+
+<p>NOTE: The module can supply up to 20mA over its full output voltage if it is 
+connected to an external 15V power supply.&nbsp; If you use the internal VME 12V 
+supply, which is the factory default configuration, then the following are true:</p>
+
+<ul>
+  <li>The module accurately outputs -10V to +10V into a high impedance.</li>
+  <li>The module can supply 20mA up to about +9V with good output voltage 
+  accuracy.&nbsp; Above +9V the output is not accurate when supplying more than 
+  1mA or so.&nbsp; I have found that when programming 10V output into a 1 kOhm 
+  load (10 mA output) the actual voltage is 9.3-9.6V.</li>
+</ul>
+
+<p>&nbsp;</p>
+
+<h2 align="center">Startup Script</h2>
+
+<p align="left">The following lines should go in your startup script to 
+initialize the dac128V MPF server.</p>
+
+<p align="left"><b>EPICS 3.14</b></p>
+
+<div align="left">
+  <pre><font face="Courier New"># Initialize Systran DAC
+# initDAC128V(char *serverName, int carrier, int slot, int queueSize)
+# serverName = name to give this server
+# carrier = IPAC carrier number (0, 1, etc.)
+# slot = IPAC slot (0,1,2,3, etc.)
+# queueSize = size of output queue for EPICS
+# Example:
+initDAC128V(&quot;DAC1&quot;, 0, 3, 20)
+</font></pre>
+</div>
+
+<p><b>EPICS 3.13</b></p>
+
+<pre># Initialize Systran DAC
+# initDAC128V(char *serverName, char *carrierName, char *siteName int queueSize)
+# serverName = name to give this server
+# carrierName = name of IPAC carrier from initIpacCarrier
+# siteName = name of IP site, e.g. &quot;IP_a&quot;
+# queueSize = size of output queue for EPICS
+# pDAC128V = pointer to server object.  Used in fast feedback with ip330 and quadEM.
+# Example:
+pDAC128V = initDAC128V(&quot;d-DAC&quot;,carrier0,&quot;IP_d&quot;,20)
+</pre>
+
+<p>&nbsp;</p>
+
+<h2 align="center">EPICS Device Support</h2>
+
+<p>EPICS device support sends Int32Messages with the following
+info</p>
+
+<ul>
+    <li><tt>address</tt> - channel to write to (range 0-7)</li>
+    <li><tt>value</tt> - value to write (range 0-4095)</li>
+</ul>
+
+<p>MPF server returns</p>
+
+<ul>
+    <li><tt>status=0</tt> means success, anything else is failure</li>
+</ul>
+
+<p>Standard input record type format is for ao records</p>
+
+<p><tt>field(SCAN,&quot;1 second&quot;) </tt></p>
+
+<p><tt>field(DTYP,&quot;dac128V&quot;)</tt></p>
+
+<p><tt>field(INP,&quot;#C{card} S{signal} @{servername}<br>
+card = The location of the MPF server<br>
+signal = The output channel of the DAC128V. Channels 0 - 7 are
+valid<br>
+serverName = Must match the serverName specified with initDAC128V
+</tt></p>
+
+<p><tt>field(EGUF,&quot;{FULL VALUE}&quot;)</tt> The engineering units at 
+positive full scale output.&nbsp; The actual output voltage depends on the 
+jumpers.</p>
+
+<p><tt>field(EGUL,&quot;{LOW VALUE}&quot;)</tt> The engineering units at 
+negative full scale output.&nbsp; The actual output voltage depends on the 
+jumpers.</p>
+
+<p><tt>field(LINR,&quot;LINEAR&quot;) </tt>Optional</p>
+
+<p>&nbsp;</p>
+
+<h2 align="center"><a href="dac128VReleaseNotes.html">Release Notes</a></h2>
+
+<p>&nbsp;</p>
+
+<address>
+    Suggestions and Comments to: <br>
+    <a href="mailto:rivers@cars.uchicago.edu">Mark Rivers </a>:
+    (rivers@cars.uchicago.edu) <br>
+    Last modified: November 6, 2003 
+</address>
+</body>
+</html>

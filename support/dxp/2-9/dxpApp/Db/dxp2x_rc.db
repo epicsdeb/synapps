@@ -1,0 +1,157 @@
+grecord(dxp,"$(P)$(R)")
+{
+# Input field
+    field(INP,"$(INP)")
+
+# Process at initialization
+    field(PINI,"YES")
+    
+# ASC parameters - 9 total
+    field(A01L,"GAINDAC")
+    field(A02L,"HIGHGAIN")
+    field(A03L,"POLARITY")
+    field(A04L,"INPUTENABLE")
+    field(A05L,"RESETWAIT")
+    field(A06L,"RESETINT")
+    field(A07L,"RCTAU")
+    field(A08L,"RCTAUFRAC")
+    field(A09L,"Unused")
+
+# FiPPI parameters - 10 total
+    field(F01L,"FASTLEN")
+    field(F02L,"FASTGAP")
+    field(F03L,"SLOWLEN")
+    field(F04L,"SLOWGAP")
+    field(F05L,"MAXWIDTH")
+    field(F06L,"MINWIDTH")
+    field(F07L,"PEAKINT")
+    field(F08L,"PEAKSAM")
+    field(F09L,"THRESHOLD")
+    field(F10L,"SLOWTHRESH")
+
+# DSP parameters - 10 total
+    field(D01L,"BINFACT1")
+    field(D02L,"MCALIMLO")
+    field(D03L,"MCALIMHI")
+    field(D04L,"TRACEWAIT")
+    field(D05L,"ASCTIMEOUT")
+    field(D06L,"YELLOWTHR")
+    field(D07L,"REDTHR")
+    field(D08L,"PRESET")
+    field(D09L,"WHICHTEST")
+    field(D10L,"RUNTASKS")
+
+# Baseline parameters - 8 total
+    field(B01L,"BLFILTER")
+    field(B02L,"BLFILTERF")
+    field(B03L,"BASEBINNING")
+    field(B04L,"BLCUT")
+    field(B05L,"BLMIN")
+    field(B06L,"BLMAX")
+    field(B07L,"BASETHRESH")
+    field(B08L,"BASTHRADJ")
+
+# Read-only parameters - 16 total
+    field(R01L,"CODEREV")
+    field(R02L,"CODEVAR")
+    field(R03L,"RUNIDENT")
+    field(R04L,"RUNERROR")
+    field(R05L,"ERRINFO")
+    field(R06L,"HDWRVAR")
+    field(R07L,"FIPPIREV")
+    field(R08L,"FIPPIVAR")
+    field(R09L,"DECIMATION")
+    field(R10L,"BUSY")
+    field(R11L,"OFFSETDAC")
+    field(R12L,"OFFDACZERO")
+    field(R13L,"OFFSETVAL")
+    field(R14L,"Unused")
+    field(R15L,"Unused")
+    field(R16L,"SPECTLEN")
+
+# Statistics parameters, 32 bits - 14 total
+    field(S01L,"EVTSINRUN")
+    field(S02L,"UNDRFLOWS")
+    field(S03L,"OVERFLOWS")
+    field(S04L,"FASTPEAKS")
+    field(S05L,"BASEEVTS")
+    field(S06L,"BASEMEAN")
+    field(S07L,"LIVETIME")
+    field(S08L,"REALTIME")
+    field(S09L,"NUMASCINT")
+    field(S10L,"NUMRESETS")
+    field(S11L,"NUMDRDOS")
+    field(S12L,"NUMDRUPS")
+    field(S13L,"NUMUPSETS")
+    field(S14L,"NUMZIGZAG")
+
+# Run tasks labels - 16 total
+    field(T01L,"Histogram baseline")
+    field(T01V,"Yes")
+    field(T02L,"Update slope")
+    field(T02V,"Yes")
+    field(T03L,"Use FIR filter")
+    field(T03V,"No")
+    field(T04L,"Update baseline")
+    field(T04V,"Yes")
+    field(T05L,"Adjust fast threshold")
+    field(T05V,"Yes")
+    field(T06L,"Correct for baseline")
+    field(T06V,"Yes")
+    field(T07L,"Sub. slope from baseline")
+    field(T07V,"Yes")
+    field(T08L,"Collect baseline history")
+    field(T08V,"No")
+    field(T09L,"Special task/calibration")
+    field(T09V,"No")
+#   On RC pre-amps the default is to histogram the delta baseline,
+#   otherwise there is a large offset in the mean
+    field(T10L,"Histogram delta baseline")
+    field(T10V,"Yes")
+    field(T11L,"Enable baseline cut")
+    field(T11V,"No")
+    field(T12L,"Special timing mode")
+    field(T12V,"No")
+    field(T13L,"Skip filling")
+    field(T13V,"No")
+    field(T14L,"Auto adjust base thresh.")
+    field(T14V,"Yes")
+    field(T15L,"Unused")
+    field(T15V,"No")
+    field(T16L,"Unused")
+    field(T16V,"No")
+
+}
+grecord(calc,"$(P)$(R):icrocr") {
+    field(INPA,"$(P)$(R).S01V CP NMS")
+    field(INPB,"$(P)$(R).S04V CP NMS")
+    field(INPC,"$(P)$(R).S07V CP NMS")
+    field(INPD,"$(P)$(R).S08V CP NMS")
+    field(CALC,"B*C/((A+.1)*(D+.1))")
+    field(DESC,"icr*livetime/ocr*realtime")
+    field(PREC,"3")
+}
+
+# These records are used to read the parameters, baseline histogram,
+# ADC trace and baseline history periodically
+record(bo, "$(P)$(R):ReadParams") {
+    field(OUT, "$(P)$(R).READ_PARAMS PP MS")
+    field(SCAN, "Passive")
+    field(VAL,"1")
+}
+record(bo, "$(P)$(R):ReadTrace") {
+    field(OUT, "$(P)$(R).READ_TRACE PP MS")
+    field(SCAN, "Passive")
+    field(VAL,"1")
+}
+record(bo, "$(P)$(R):ReadHistory") {
+    field(OUT, "$(P)$(R).READ_HISTORY PP MS")
+    field(SCAN, "Passive")
+    field(VAL,"1")
+}
+record(bo, "$(P)$(R):ReadHistogram") {
+    field(OUT, "$(P)$(R).READ_HISTOGRAM PP MS")
+    field(SCAN, "Passive")
+    field(VAL,"1")
+}
+

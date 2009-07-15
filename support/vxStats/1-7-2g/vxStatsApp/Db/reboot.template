@@ -1,0 +1,42 @@
+grecord(bo,"$(P):Boot_Ena") {
+	field(DESC,"One-shot enable: use L input")
+	field(PINI,"YES")
+      field(DTYP, "Soft Channel")
+	field(DOL,"0")
+	field(HIGH,"$(T)")
+	field(ZNAM,"SAFE")
+	field(ONAM,"ENABLED")
+	field(OSV,"MAJOR")
+}
+grecord(sub,"$(P):Reboot") {
+	field(DESC,"IOC Reboot")
+	field(INAM,"rebootInit")
+	field(SNAM,"rebootProc")
+	field(INPL,"$(P):Boot_Ena.VAL  NPP NMS")
+	field(BRSV,"INVALID")
+}
+grecord(sub,"$(P):Read_ACF") {
+	field(DESC,"reread access control file")
+	field(INAM,"asSubInit")
+	field(SNAM,"asSubProcess")
+	field(INPL,"0")
+	field(BRSV,"INVALID")
+}
+record(mbbo, "$(P):Access_Cmd") {
+  field(DESC, "Access Security Select")
+  field(PINI,"YES")
+  field(DOL,"0")
+  field(DTYP, "Soft Channel")
+  field(NOBT, "2")
+  field(ZRVL, "0")
+  field(ONVL, "1")
+  field(TWVL, "2")
+  field(THVL, "3")
+  field(ZRST, "OPERATIONS")
+  field(ONST, "MAINTENANCE")
+  field(TWST, "TEST")
+  field(THST, "OFFLINE")
+  field(IVOA, "Don't drive outputs")
+  field(ASG, "CHIEF_OPRS")
+}
+

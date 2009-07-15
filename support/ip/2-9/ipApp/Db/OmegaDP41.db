@@ -1,0 +1,335 @@
+grecord(ai,"$(P)DP41:$(S):temp") {
+	field(DESC,"Temperature")
+	field(DTYP,"Soft Channel")
+	field(INP,"$(P)DP41:$(S):TempStr.VAL  NPP NMS")
+	field(PREC,"2")
+	field(HOPR,"100")
+	field(HIHI,"81")
+	field(LOLO,"0")
+	field(HIGH,"79")
+	field(LOW,"0")
+	field(HHSV,"MAJOR")
+	field(HSV,"MINOR")
+	field(HYST,"0.5")
+}
+grecord(bi,"$(P)DP41:$(S):off_ind") {
+}
+grecord(bo,"$(P)DP41:$(S):readMode") {
+	field(ZNAM,"autoread")
+	field(ONAM,"one-shot")
+}
+grecord(bo,"$(P)DP41:$(S):manRead") {
+	field(FLNK,"$(P)DP41:$(S):getTemp_man.VAL  PP MS")
+}
+grecord(calc,"$(P)DP41:$(S):times100") {
+	field(FLNK,"$(P)DP41:$(S):rangeOff.VAL  PP MS")
+	field(CALC,"ABS(A*100)")
+	field(INPA,"$(P)DP41:$(S):offset.A  NPP NMS")
+	field(PREC,"0")
+}
+grecord(calc,"$(P)DP41:$(S):times101") {
+	field(FLNK,"$(P)DP41:$(S):sp_HIGH.VAL  PP MS")
+	field(CALC,"ABS(A*100)")
+	field(INPA,"$(P)DP41:$(S):spHIGH.A  NPP NMS")
+	field(PREC,"0")
+}
+grecord(calc,"$(P)DP41:$(S):times102") {
+	field(FLNK,"$(P)DP41:$(S):sp_HIHI.VAL  PP MS")
+	field(CALC,"ABS(A*100)")
+	field(INPA,"$(P)DP41:$(S):spHIHI.A  NPP NMS")
+	field(PREC,"0")
+}
+grecord(calcout,"$(P)DP41:$(S):calc_ind") {
+	field(CALC,"A#0?1:0")
+	field(INPA,"$(P)DP41:$(S):times100.VAL  NPP NMS")
+	field(OUT,"$(P)DP41:$(S):off_ind.VAL  PP MS")
+}
+grecord(mbbo,"$(P)DP41:$(S):units") {
+	field(PINI,"YES")
+	field(FLNK,"$(P)DP41:$(S):seqUnits.VAL  PP MS")
+	field(ZRVL,"0x1")
+	field(ONVL,"0x2")
+	field(TWVL,"0x3")
+	field(ZRST,"C")
+	field(ONST,"F")
+	field(TWST,"K")
+}
+grecord(seq,"$(P)DP41:$(S):seqUnits") {
+	field(SELM,"Specified")
+	field(SELL,"$(P)DP41:$(S):units.RVAL  NPP NMS")
+	field(LNK1,"$(P)DP41:$(S):setC.PROC  PP MS")
+	field(LNK2,"$(P)DP41:$(S):setF.PROC  PP MS")
+	field(LNK3,"$(P)DP41:$(S):setK.PROC  PP MS")
+}
+grecord(seq,"$(P)DP41:$(S):delayOff") {
+	field(DLY1,"1.0")
+	field(LNK1,"$(P)DP41:$(S):convOff.VAL  PP MS")
+}
+grecord(seq,"$(P)DP41:$(S):delayK") {
+	field(DLY1,"1.0")
+	field(LNK1,"$(P)DP41:$(S):setK_ROM.PROC  PP MS")
+}
+grecord(seq,"$(P)DP41:$(S):delayHIHI") {
+	field(DLY1,"1.0")
+	field(LNK1,"$(P)DP41:$(S):conv_HIHI.VAL  PP MS")
+}
+grecord(seq,"$(P)DP41:$(S):delayHIGH") {
+	field(DLY1,"1.0")
+	field(LNK1,"$(P)DP41:$(S):conv_HIGH.VAL  PP MS")
+}
+grecord(seq,"$(P)DP41:$(S):delayF") {
+	field(DLY1,"1.0")
+	field(LNK1,"$(P)DP41:$(S):setF_ROM.PROC  PP MS")
+}
+grecord(seq,"$(P)DP41:$(S):delayC") {
+	field(DLY1,"1.0")
+	field(LNK1,"$(P)DP41:$(S):setC_ROM.PROC  PP MS")
+}
+grecord(stringin,"$(P)DP41:$(S):TempStr") {
+	field(DTYP,"asyn si stringParm")
+	field(FLNK,"$(P)DP41:$(S):temp.VAL  PP MS")
+	field(INP,"@asyn($(PORT))TERM=0d")
+}
+grecord(stringout,"$(P)DP41:$(S):setK_ROM") {
+	field(DTYP,"asyn so stringParm")
+	field(VAL,"*W0768")
+	field(OUT,"@asyn($(PORT))TERM=0d")
+}
+grecord(stringout,"$(P)DP41:$(S):setK") {
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)DP41:$(S):delayK.VAL  PP MS")
+	field(VAL,"*P0768")
+	field(OUT,"@asyn($(PORT))TERM=0d")
+}
+grecord(stringout,"$(P)DP41:$(S):setF_ROM") {
+	field(DTYP,"asyn so stringParm")
+	field(VAL,"*W0758")
+	field(OUT,"@asyn($(PORT))TERM=0d")
+}
+grecord(stringout,"$(P)DP41:$(S):setF") {
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)DP41:$(S):delayF.VAL  PP MS")
+	field(VAL,"*P0758")
+	field(OUT,"@asyn($(PORT))TERM=0d")
+}
+grecord(stringout,"$(P)DP41:$(S):setC_ROM") {
+	field(DTYP,"asyn so stringParm")
+	field(VAL,"*W0748")
+	field(OUT,"@asyn($(PORT))TERM=0d")
+}
+grecord(stringout,"$(P)DP41:$(S):setC") {
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)DP41:$(S):delayC.VAL  PP MS")
+	field(VAL,"*P0748")
+	field(OUT,"@asyn($(PORT))TERM=0d")
+}
+grecord(stringout,"$(P)DP41:$(S):sendOff_ROM") {
+	field(DTYP,"asyn so stringParm")
+	field(OUT,"@asyn($(PORT))TERM=0d")
+}
+grecord(stringout,"$(P)DP41:$(S):sendOff_RAM") {
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)DP41:$(S):delayOff.VAL  PP MS")
+	field(OUT,"@asyn($(PORT))TERM=0d")
+}
+grecord(stringout,"$(P)DP41:$(S):sendHIHI_ROM") {
+	field(DTYP,"asyn so stringParm")
+	field(OUT,"@asyn($(PORT))TERM=0d")
+}
+grecord(stringout,"$(P)DP41:$(S):sendHIHI_RAM") {
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)DP41:$(S):delayHIHI.VAL  PP MS")
+	field(OUT,"@asyn($(PORT))TERM=0d")
+}
+grecord(stringout,"$(P)DP41:$(S):sendHIGH_ROM") {
+	field(DTYP,"asyn so stringParm")
+	field(OUT,"@asyn($(PORT))TERM=0d")
+}
+grecord(stringout,"$(P)DP41:$(S):sendHIGH_RAM") {
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)DP41:$(S):delayHIGH.VAL  PP MS")
+	field(OUT,"@asyn($(PORT))TERM=0d")
+}
+grecord(stringout,"$(P)DP41:$(S):getTemp_man") {
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)DP41:$(S):TempStr.VAL  PP MS")
+	field(VAL,"*X04")
+	field(OUT,"@asyn($(PORT))TERM=0d")
+}
+grecord(stringout,"$(P)DP41:$(S):getTemp") {
+	field(SCAN,"5 second")
+	field(DTYP,"asyn so stringParm")
+	field(SDIS,"$(P)DP41:$(S):readMode.VAL  PP MS")
+	field(FLNK,"$(P)DP41:$(S):TempStr.VAL  PP MS")
+	field(VAL,"*X04")
+	field(OUT,"@asyn($(PORT))TERM=0d")
+}
+grecord(scalcout,"$(P)DP41:$(S):sp_HIHI3") {
+	field(CALC,"(A>=4096)&&(A<25536)?1:0")
+	field(INPA,"$(P)DP41:$(S):times102.VAL  NPP NMS")
+	field(INAA,"$(P)DP41:$(S):spHIHI.SVAL  NPP NMS")
+	field(OUT,"$(P)DP41:$(S):sendHIHI_RAM.VAL  PP MS")
+	field(OOPT,"When Non-zero")
+	field(DOPT,"Use OCAL")
+	field(OCAL,"AA+$P('%X',A)")
+}
+grecord(scalcout,"$(P)DP41:$(S):sp_HIHI2") {
+	field(FLNK,"$(P)DP41:$(S):sp_HIHI3.VAL  PP MS")
+	field(CALC,"(A>=256)&&(A<4096)?1:0")
+	field(INPA,"$(P)DP41:$(S):times102.VAL  NPP NMS")
+	field(INAA,"$(P)DP41:$(S):spHIHI.SVAL  NPP NMS")
+	field(OUT,"$(P)DP41:$(S):sendHIHI_RAM.VAL  PP MS")
+	field(OOPT,"When Non-zero")
+	field(DOPT,"Use OCAL")
+	field(OCAL,"AA+BB+$P('%X',A)")
+	field(BB,"0")
+}
+grecord(scalcout,"$(P)DP41:$(S):sp_HIHI1") {
+	field(FLNK,"$(P)DP41:$(S):sp_HIHI2.VAL  PP MS")
+	field(CALC,"(A>=16)&&(A<256)?1:0")
+	field(INPA,"$(P)DP41:$(S):times102.VAL  NPP NMS")
+	field(INAA,"$(P)DP41:$(S):spHIHI.SVAL  NPP NMS")
+	field(OUT,"$(P)DP41:$(S):sendHIHI_RAM.VAL  PP MS")
+	field(OOPT,"When Non-zero")
+	field(DOPT,"Use OCAL")
+	field(OCAL,"AA+BB+$P('%X',A)")
+	field(BB,"00")
+}
+grecord(scalcout,"$(P)DP41:$(S):sp_HIHI") {
+	field(FLNK,"$(P)DP41:$(S):sp_HIHI1.VAL  PP MS")
+	field(CALC,"A<16?1:0")
+	field(INPA,"$(P)DP41:$(S):times102.VAL  NPP NMS")
+	field(INAA,"$(P)DP41:$(S):spHIHI.SVAL  NPP NMS")
+	field(OUT,"$(P)DP41:$(S):sendHIHI_RAM.VAL  PP MS")
+	field(OOPT,"When Non-zero")
+	field(DOPT,"Use OCAL")
+	field(OCAL,"AA+BB+$P('%X',A)")
+	field(BB,"000")
+}
+grecord(scalcout,"$(P)DP41:$(S):sp_HIGH1") {
+	field(FLNK,"$(P)DP41:$(S):sp_HIGH2.VAL  PP MS")
+	field(CALC,"(A>=16)&&(A<256)?1:0")
+	field(INPA,"$(P)DP41:$(S):times101.VAL  NPP NMS")
+	field(INAA,"$(P)DP41:$(S):spHIGH.SVAL  NPP NMS")
+	field(OUT,"$(P)DP41:$(S):sendHIGH_RAM.VAL  PP MS")
+	field(OOPT,"When Non-zero")
+	field(DOPT,"Use OCAL")
+	field(OCAL,"AA+BB+$P('%X',A)")
+	field(BB,"00")
+}
+grecord(scalcout,"$(P)DP41:$(S):sp_HIGH") {
+	field(FLNK,"$(P)DP41:$(S):sp_HIGH1.VAL  PP MS")
+	field(CALC,"A<16?1:0")
+	field(INPA,"$(P)DP41:$(S):times101.VAL  NPP NMS")
+	field(INAA,"$(P)DP41:$(S):spHIGH.SVAL  NPP NMS")
+	field(OUT,"$(P)DP41:$(S):sendHIGH_RAM.VAL  PP MS")
+	field(OOPT,"When Non-zero")
+	field(DOPT,"Use OCAL")
+	field(OCAL,"AA+BB+$P('%X',A)")
+	field(BB,"000")
+}
+grecord(scalcout,"$(P)DP41:$(S):spHIHI") {
+	field(FLNK,"$(P)DP41:$(S):times102.VAL  PP MS")
+	field(CALC,"A<0?AA:BB")
+	field(OUT,"$(P)DP41:$(S):temp.HIHI  NPP NMS")
+	field(DOPT,"Use OCAL")
+	field(OCAL,"A")
+	field(PREC,"2")
+	field(AA,"*P22B0")
+	field(BB,"*P2230")
+}
+grecord(scalcout,"$(P)DP41:$(S):spHIGH") {
+	field(FLNK,"$(P)DP41:$(S):times101.VAL  PP MS")
+	field(CALC,"A<0?AA:BB")
+	field(OUT,"$(P)DP41:$(S):temp.HIGH  NPP NMS")
+	field(DOPT,"Use OCAL")
+	field(OCAL,"A")
+	field(PREC,"2")
+	field(AA,"*P21B0")
+	field(BB,"*P2130")
+}
+grecord(scalcout,"$(P)DP41:$(S):rangeOff3") {
+	field(FLNK,"$(P)DP41:$(S):calc_ind.VAL PP MS")
+	field(CALC,"(A>=4096)&&(A<65536)?1:0")
+	field(INPA,"$(P)DP41:$(S):times100.VAL  NPP NMS")
+	field(INAA,"$(P)DP41:$(S):offset.SVAL  NPP NMS")
+	field(OUT,"$(P)DP41:$(S):sendOff_RAM.VAL  PP MS")
+	field(OOPT,"When Non-zero")
+	field(DOPT,"Use OCAL")
+	field(OCAL,"AA+$P('%X',A)")
+}
+grecord(scalcout,"$(P)DP41:$(S):rangeOff2") {
+	field(FLNK,"$(P)DP41:$(S):rangeOff3.VAL  PP MS")
+	field(CALC,"(A>=256)&&(A<4096)?1:0")
+	field(INPA,"$(P)DP41:$(S):times100.VAL  NPP NMS")
+	field(INAA,"$(P)DP41:$(S):offset.SVAL  NPP NMS")
+	field(OUT,"$(P)DP41:$(S):sendOff_RAM.VAL  PP MS")
+	field(OOPT,"When Non-zero")
+	field(DOPT,"Use OCAL")
+	field(OCAL,"AA+BB+$P('%X',A)")
+	field(BB,"0")
+}
+grecord(scalcout,"$(P)DP41:$(S):rangeOff1") {
+	field(FLNK,"$(P)DP41:$(S):rangeOff2.VAL  PP MS")
+	field(CALC,"(A>=16)&&(A<256)?1:0")
+	field(INPA,"$(P)DP41:$(S):times100.VAL  NPP NMS")
+	field(INAA,"$(P)DP41:$(S):offset.SVAL  NPP NMS")
+	field(OUT,"$(P)DP41:$(S):sendOff_RAM.VAL  PP MS")
+	field(OOPT,"When Non-zero")
+	field(DOPT,"Use OCAL")
+	field(OCAL,"AA+BB+$P('%X',A)")
+	field(BB,"00")
+}
+grecord(scalcout,"$(P)DP41:$(S):rangeOff") {
+	field(FLNK,"$(P)DP41:$(S):rangeOff1.VAL  PP MS")
+	field(CALC,"A<16?1:0")
+	field(INPA,"$(P)DP41:$(S):times100.VAL  NPP NMS")
+	field(INAA,"$(P)DP41:$(S):offset.SVAL  NPP NMS")
+	field(OUT,"$(P)DP41:$(S):sendOff_RAM.VAL  PP MS")
+	field(OOPT,"When Non-zero")
+	field(DOPT,"Use OCAL")
+	field(OCAL,"AA+BB+$P('%X',A)")
+	field(BB,"000")
+}
+grecord(scalcout,"$(P)DP41:$(S):offset") {
+	field(FLNK,"$(P)DP41:$(S):times100.VAL  PP MS")
+	field(CALC,"A<0?AA:BB")
+	field(PREC,"2")
+	field(AA,"*P09C0")
+	field(BB,"*P0940")
+}
+grecord(scalcout,"$(P)DP41:$(S):sp_HIGH2") {
+	field(FLNK,"$(P)DP41:$(S):sp_HIGH3.VAL  PP MS")
+	field(CALC,"(A>=256)&&(A<4096)?1:0")
+	field(INPA,"$(P)DP41:$(S):times101.VAL  NPP NMS")
+	field(INAA,"$(P)DP41:$(S):spHIGH.SVAL  NPP NMS")
+	field(OUT,"$(P)DP41:$(S):sendHIGH_RAM.VAL  PP MS")
+	field(OOPT,"When Non-zero")
+	field(DOPT,"Use OCAL")
+	field(OCAL,"AA+BB+$P('%X',A)")
+	field(BB,"0")
+}
+grecord(scalcout,"$(P)DP41:$(S):sp_HIGH3") {
+	field(CALC,"(A>=4096)&&(A<25536)?1:0")
+	field(INPA,"$(P)DP41:$(S):times101.VAL  NPP NMS")
+	field(INAA,"$(P)DP41:$(S):spHIGH.SVAL  NPP NMS")
+	field(OUT,"$(P)DP41:$(S):sendHIGH_RAM.VAL  PP MS")
+	field(OOPT,"When Non-zero")
+	field(DOPT,"Use OCAL")
+	field(OCAL,"AA+$P('%X',A)")
+}
+grecord(scalcout,"$(P)DP41:$(S):conv_HIHI") {
+	field(CALC,"AA{'P','W'}")
+	field(INAA,"$(P)DP41:$(S):sendHIHI_RAM.VAL  NPP NMS")
+	field(OUT,"$(P)DP41:$(S):sendHIHI_ROM.VAL  PP MS")
+}
+grecord(scalcout,"$(P)DP41:$(S):conv_HIGH") {
+	field(CALC,"AA{'P','W'}")
+	field(INAA,"$(P)DP41:$(S):sendHIGH_RAM.VAL  NPP NMS")
+	field(OUT,"$(P)DP41:$(S):sendHIGH_ROM.VAL  PP MS")
+}
+grecord(scalcout,"$(P)DP41:$(S):convOff") {
+	field(CALC,"AA{'P','W'}")
+	field(INAA,"$(P)DP41:$(S):sendOff_RAM.VAL  NPP NMS")
+	field(OUT,"$(P)DP41:$(S):sendOff_ROM.VAL  PP MS")
+}

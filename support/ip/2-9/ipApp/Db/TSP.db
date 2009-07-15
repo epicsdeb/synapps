@@ -1,0 +1,153 @@
+#  Database for MPC ion pump controller TSP
+#
+#  Written by Mark Rivers, 04-Mar-2001
+#
+#  Parameters
+#   $(P)        PV name prefix (e.g. 13IDA:)
+#   $(TSP)      PV name for this specific TSP (e.g. tsp1:)
+#   $(PORT)     asyn PORT name
+#   $(PA)       Pump address (0-255)
+record(stringin,"$(P)$(TSP):TSP_STAT") {
+	field(DTYP,"asyn MPC")
+	field(SCAN,"5 second")
+        field(INP,"@asyn($(PORT) $(PA))GET_TSP_STATUS 1")
+        field(FLNK,"$(P)$(TSP):TSP_REMAINING PP MS")
+}
+record(scalcout,"$(P)$(TSP):TSP_REMAINING") {
+        field(INAA,"$(P)$(TSP):TSP_STAT NPP MS")
+        field(CALC,"$S(AA,'%d')")
+        field(FLNK,"$(P)$(TSP):TSP_MIN1 PP MS")
+}
+record(scalcout,"$(P)$(TSP):TSP_MIN1") {
+        field(INAA,"$(P)$(TSP):TSP_STAT NPP MS")
+        field(CALC,"$S(AA,'%*d,1-%d')")
+        field(FLNK,"$(P)$(TSP):TSP_MIN2 PP MS")
+}
+record(scalcout,"$(P)$(TSP):TSP_MIN2") {
+        field(INAA,"$(P)$(TSP):TSP_STAT NPP MS")
+        field(CALC,"$S(AA,'%*d,1-%*d,2-%d')")
+        field(FLNK,"$(P)$(TSP):TSP_MIN3 PP MS")
+}
+record(scalcout,"$(P)$(TSP):TSP_MIN3") {
+        field(INAA,"$(P)$(TSP):TSP_STAT NPP MS")
+        field(CALC,"$S(AA,'%*d,1-%*d,2-%*d,3-%d')")
+        field(FLNK,"$(P)$(TSP):TSP_MIN4 PP MS")
+}
+record(scalcout,"$(P)$(TSP):TSP_MIN4") {
+        field(INAA,"$(P)$(TSP):TSP_STAT NPP MS")
+        field(CALC,"$S(AA,'%*d,1-%*d,2-%*d,3-%*d,4-%d')")
+}
+record(stringout,"$(P)$(TSP):SEND_TIMED") {
+	field(DTYP,"asyn MPC")
+        field(OUT,"@asyn($(PORT) $(PA))SET_TSP_TIMED 1")
+}
+record(bo,"$(P)$(TSP):TSP_OFF") {
+	field(DTYP,"asyn MPC")
+        field(OUT,"@asyn($(PORT) $(PA))SET_TSP_OFF 1")
+}
+record(mbbo,"$(P)$(TSP):TSP_FIL") {
+	field(DTYP,"asyn MPC")
+        field(OUT,"@asyn($(PORT) $(PA))SET_TSP_FILAMENT 1")
+        field(ZRST,"1")
+        field(ZRVL,"1")
+        field(ONST,"2")
+        field(ONVL,"2")
+        field(TWST,"3")
+        field(TWVL,"3")
+        field(THST,"4")
+        field(THVL,"4")
+}
+record(bo,"$(P)$(TSP):TSP_CLEAR") {
+	field(DTYP,"asyn MPC")
+        field(OUT,"@asyn($(PORT) $(PA))SET_TSP_CLEAR 1")
+}
+record(bo,"$(P)$(TSP):TSP_AUTO_ADV") {
+	field(DTYP,"asyn MPC")
+        field(OUT,"@asyn($(PORT) $(PA))SET_TSP_AUTO_ADVANCE 1")
+        field(OSV,"MAJOR")
+        field(ZNAM,"No")
+        field(ONAM,"Yes")
+}
+record(bo,"$(P)$(TSP):TSP_CONTINUOUS") {
+	field(DTYP,"asyn MPC")
+        field(OUT,"@asyn($(PORT) $(PA))SET_TSP_CONTINUOUS 1")
+}
+record(stringout,"$(P)$(TSP):SEND_SUBLIMATION") {
+	field(DTYP,"asyn MPC")
+        field(OUT,"@asyn($(PORT) $(PA))SET_TSP_SUBLIMATION 1")
+}
+record(bo,"$(P)$(TSP):TSP_DEGAS") {
+	field(DTYP,"asyn MPC")
+        field(OUT,"@asyn($(PORT) $(PA))SET_TSP_DEGAS 1")
+}
+record(mbbo,"$(P)$(TSP):TSP_MODE") {
+        field(VAL,"2")
+        field(PINI,"YES")
+        field(ZRST,"Timed")
+        field(ZRVL,"1")
+        field(ONST,"Continuous")
+        field(ONVL,"2")
+        field(TWST,"Off")
+        field(TWVL,"3")
+        field(THST,"Degas")
+        field(THVL,"4")
+}
+# Note we need 2 scalcout records only because CALC expression > 40 chars
+record(scalcout,"$(P)$(TSP):TSP_SUBLIMATION") {
+        field(INPA,"$(P)$(TSP):TSP_VALUE NPP MS")
+        field(INPB,"$(P)$(TSP):TSP_UNITS NPP MS")
+        field(CALC,"$P('%.2f,',A)+(B==0?'A,':'W,')")
+        field(FLNK, "$(P)$(TSP):TSP_SUB2 PP MS")
+}
+record(scalcout,"$(P)$(TSP):TSP_SUB2") {
+        field(INAA,"$(P)$(TSP):TSP_SUBLIMATION.SVAL NPP MS")
+        field(INPC,"$(P)$(TSP):TSP_SECONDS NPP MS")
+        field(CALC,"AA+$P('%d',C)")
+        field(OUT, "$(P)$(TSP):SEND_SUBLIMATION PP MS")
+}
+record(seq,"$(P)$(TSP):TSP_SETMODE") {
+	field(SELM,"Specified")
+        field(SELL,"$(P)$(TSP):TSP_MODE.RVAL NPP NMS")
+        field(LNK1,"$(P)$(TSP):TSP_TIMED.PROC PP MS")
+        field(LNK2,"$(P)$(TSP):TSP_CONTINUOUS.PROC PP MS")
+        field(LNK3,"$(P)$(TSP):TSP_OFF.PROC PP MS")
+        field(LNK4,"$(P)$(TSP):TSP_DEGAS.PROC PP MS")
+}
+record(scalcout,"$(P)$(TSP):TSP_TIMED") {
+        field(INPA,"$(P)$(TSP):TSP_MINUTES NPP MS")
+        field(INPB,"$(P)$(TSP):TSP_NCYCLES NPP MS")
+        field(INPC,"$(P)$(TSP):TSP_MIN_PRESS NPP MS")
+        field(CALC,"$P('%d,',A)+$P('%d,',B)+$P('%.2e',C)")
+        field(OUT, "$(P)$(TSP):SEND_TIMED PP MS")
+}
+record(ao,"$(P)$(TSP):TSP_VALUE") {
+        field(VAL,"40")
+	field(PREC,"1")
+        field(LOPR,"0")
+        field(DRVL,"0")
+        field(HOPR,"500")
+        field(DRVH,"500")
+        field(FLNK,"$(P)$(TSP):TSP_SUBLIMATION PP MS")
+}
+record(bo,"$(P)$(TSP):TSP_UNITS") {
+        field(ZNAM,"Amps")
+        field(ONAM,"Watts")
+        field(FLNK,"$(P)$(TSP):TSP_SUBLIMATION PP MS")
+}
+record(ao,"$(P)$(TSP):TSP_SECONDS") {
+        field(VAL,"5")
+	field(PREC,"0")
+        field(FLNK,"$(P)$(TSP):TSP_SUBLIMATION PP MS")
+}
+record(ao,"$(P)$(TSP):TSP_MINUTES") {
+        field(VAL,"1")
+	field(PREC,"0")
+}
+record(ao,"$(P)$(TSP):TSP_NCYCLES") {
+        field(VAL,"2")
+	field(PREC,"0")
+}
+record(ao,"$(P)$(TSP):TSP_MIN_PRESS") {
+        field(VAL,"1.e-3")
+	field(PREC,"2")
+}

@@ -1,0 +1,199 @@
+menu(ab1771IFE_SEDI) {
+  choice(ab1771IFE_SE,"SingleEndedInput")
+  choice(ab1771IFE_DI ,"DifferentialInput")
+}
+menu(ab1771IFE_RANGE) {
+  choice(ab1771IFE_RANGE_0,"1to5V,4to20mA")
+  choice(ab1771IFE_RANGE_1,"0to5V,0to20mA")
+  choice(ab1771IFE_RANGE_2,"-5to5V,-20to20mA")
+  choice(ab1771IFE_RANGE_3,"-10to10V,0to10V")
+}
+menu(ab1771IFE_CMD) {
+  choice(ab1771IFE_CMD_None,"None")
+  choice(ab1771IFE_Init,"Initialize")
+}
+
+recordtype(ab1771IFE) {
+  include "dbCommon.dbd" 
+  field(VAL,DBF_STRING) {
+    prompt("Status")
+    special(SPC_NOMOD)
+    size(40)
+  }
+  field(CMD,DBF_MENU) {
+    prompt("Command")
+    interest(1)
+    menu(ab1771IFE_CMD)
+  }
+  field(LOCA,DBF_MENU) {
+    prompt("scanIoRequest comm err")
+    promptgroup(GUI_INPUTS)
+    interest(1)
+    menu(menuYesNo)
+  }
+  field(LINK,DBF_USHORT) {
+    prompt("Scanner Number")
+    promptgroup(GUI_INPUTS)
+    special(SPC_NOMOD)
+    interest(1)
+  }
+  field(RACK,DBF_USHORT) {
+    prompt("Rack")
+    promptgroup(GUI_INPUTS)
+    special(SPC_NOMOD)
+    interest(1)
+  }
+  field(SLOT,DBF_USHORT) {
+    prompt("Slot")
+    promptgroup(GUI_INPUTS)
+    special(SPC_NOMOD)
+    interest(1)
+  }
+  field(OUTM,DBF_NOACCESS) {
+    prompt("Output Message")
+    special(SPC_DBADDR)
+    size(4)
+    extra("short	*outm")
+  }
+  field(INPM,DBF_NOACCESS) {
+    prompt("Input Message")
+    special(SPC_DBADDR)
+    size(4)
+    extra("short	*inpm")
+  }
+  field(IAI1,DBF_NOACCESS) {
+    prompt("Interface for ai")
+    special(SPC_DBADDR)
+    size(4)
+    extra("void	*iai1")
+  }
+  field(SEDI,DBF_MENU) {
+    prompt("Single/Double Ended")
+    promptgroup(GUI_INPUTS)
+    menu(ab1771IFE_SEDI)
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(FILT,DBF_SHORT) {
+    prompt("Filter 00to99")
+    promptgroup(GUI_INPUTS)
+    interest(1)
+  }
+  field(STIM,DBF_SHORT) {
+    prompt("Sample Time Period")
+    promptgroup(GUI_INPUTS)
+    interest(1)
+  }
+  field(R0,DBF_MENU) {
+    prompt("Range signal 0")
+    promptgroup(GUI_INPUTS)
+    menu(ab1771IFE_RANGE)
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(R1,DBF_MENU) {
+    prompt("Range signal 1")
+    promptgroup(GUI_INPUTS)
+    menu(ab1771IFE_RANGE)
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(R2,DBF_MENU) {
+    prompt("Range signal 2")
+    promptgroup(GUI_INPUTS)
+    menu(ab1771IFE_RANGE)
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(R3,DBF_MENU) {
+    prompt("Range signal 3")
+    promptgroup(GUI_INPUTS)
+    menu(ab1771IFE_RANGE)
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(R4,DBF_MENU) {
+    prompt("Range signal 4")
+    promptgroup(GUI_INPUTS)
+    menu(ab1771IFE_RANGE)
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(R5,DBF_MENU) {
+    prompt("Range signal 5")
+    promptgroup(GUI_INPUTS)
+    menu(ab1771IFE_RANGE)
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(R6,DBF_MENU) {
+    prompt("Range signal 6")
+    promptgroup(GUI_INPUTS)
+    menu(ab1771IFE_RANGE)
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(R7,DBF_MENU) {
+    prompt("Range signal 7")
+    promptgroup(GUI_INPUTS)
+    menu(ab1771IFE_RANGE)
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(R8,DBF_MENU) {
+    prompt("Range signal 8")
+    promptgroup(GUI_INPUTS)
+    menu(ab1771IFE_RANGE)
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(R9,DBF_MENU) {
+    prompt("Range signal 9")
+    promptgroup(GUI_INPUTS)
+    menu(ab1771IFE_RANGE)
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(R10,DBF_MENU) {
+    prompt("Range signal 10")
+    promptgroup(GUI_INPUTS)
+    menu(ab1771IFE_RANGE)
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(R11,DBF_MENU) {
+    prompt("Range signal 11")
+    promptgroup(GUI_INPUTS)
+    menu(ab1771IFE_RANGE)
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(R12,DBF_MENU) {
+    prompt("Range signal 12")
+    promptgroup(GUI_INPUTS)
+    menu(ab1771IFE_RANGE)
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(R13,DBF_MENU) {
+    prompt("Range signal 13")
+    promptgroup(GUI_INPUTS)
+    menu(ab1771IFE_RANGE)
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(R14,DBF_MENU) {
+    prompt("Range signal 14")
+    promptgroup(GUI_INPUTS)
+    menu(ab1771IFE_RANGE)
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(R15,DBF_MENU) {
+    prompt("Range signal 15")
+    promptgroup(GUI_INPUTS)
+    menu(ab1771IFE_RANGE)
+    interest(1)
+    special(SPC_NOMOD)
+  }
+}

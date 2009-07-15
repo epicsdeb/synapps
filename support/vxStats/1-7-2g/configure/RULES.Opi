@@ -1,0 +1,31 @@
+INSTALL_EDL	= $(INSTALL_LOCATION)/opi
+
+INSTALL_EDLS += $(addprefix $(INSTALL_EDL)/,$(notdir $(EDLS))) 
+
+build : $(INSTALL_EDL) $(INSTALL_EDLS) $(LISTS)
+
+install : build
+clean : 
+	rm -rf $(LISTS)
+
+$(LISTS) : %.list : ../Makefile 
+	@echo "Linking to list file $@"
+	@$(RM) $@
+	@ln -s $(EPICS_EXTENSIONS)/pref/edm/$@ $@
+	@echo "	@cp  $@ $(INSTALL_EDL)"
+	@cp  $@ $ $(INSTALL_EDL)
+#	@echo "	@cp -d $@ $(INSTALL_EDL)"
+#	@cp -d $@ $ $(INSTALL_EDL)
+
+
+INSTALL_DISPLAYLIST = $(INSTALL)
+
+
+$(INSTALL_EDLS):$(INSTALL_EDL)/%.edl : %.edl  
+	@echo "Installing edl file $@"
+	@$(INSTALL) -d -m 644 $< $(INSTALL_EDL)
+
+$(INSTALL_EDL) :
+	$(MKDIR) $(INSTALL_EDL)
+
+

@@ -1,0 +1,311 @@
+<HTML>
+<HEAD>
+<TITLE>CANbus Driver Release Notes</TITLE>
+<META NAME="Author" CONTENT="Andrew Johnson">
+<META NAME="Description" CONTENT="Release Notes for the vxWorks/EPICS CANbus and IPAC driver software">
+<META NAME="KeyWords" CONTENT="CANbus, vxWorks, IPAC, EPICS, Tip810">
+<META NAME="Version" CONTENT="$Id: canRelease.html 178 2008-12-19 21:09:54Z anj $">
+</HEAD>
+<BODY>
+
+<CENTER>
+<H2>CANbus Driver Release Notes</H2>
+<P><I>Andrew Johnson</I></P>
+</CENTER>
+
+<P>This document describes the changes which have been made to the EPICS CANbus
+driver as it has evolved since first release. The earliest version appears at
+the bottom, with more recent releases above it. Missing version numbers merely
+imply that changes were made elsewhere in the drvIpac package without any
+changes to the CANbus driver.</P>
+
+<HR>
+
+<H2>Version 2.10</H2>
+
+<P>Changed:</P>
+<UL>
+
+<LI>Removed an unnecessary test and some unused code from the special_linconv()
+routines of the ai and ao device support.</LI>
+
+<LI>Added epicsShareFunc decoration to all externally visible functions to
+permit building DLLs on Windows systems.</LI>
+
+</UL>
+<HR>
+
+<H2>Version 2.9</H2>
+
+<P>Changed:</P>
+<UL>
+
+<LI>Converted all vxWorks calls to use the equivalent EPICS OSI layer routines,
+which makes this driver cross-platform to any OS that provides a suitable
+drvIpac carrier driver.</LI>
+
+</UL>
+
+<P>Added:</P>
+<UL>
+
+<LI>Registration with iocsh for the canBusReset, canBusStop and canBusRestart
+commands.</LI>
+
+</UL>
+<HR>
+
+<H2>Version 2.6</H2>
+
+<P>Added:</P>
+<UL>
+
+<LI>A drvTip810Registrar routine and iocsh command tables for use with EPICS
+Base R3.14.4 and higher.  It should be possible to initialize this driver from
+iocsh as well as from the vxWorks shell.  This does not include the OSI
+modifications that would be needed for use with RTEMS though.</LI>
+
+</UL>
+<HR>
+
+
+<H2>Version 2.5</H2>
+
+<P>Changed:</P>
+<UL>
+
+<LI>This version is intended for use with EPICS Base R3.14.x, and has been
+built against Base R3.14.2 (but not actually tested before release as I don't
+have a TIP810 module). There were a few minor changes to the code, but these
+were just to get it to build properly. The only supported operating system is
+still vxWorks - the EPICS OSI layer does not currently provide API equivalents
+for vxMemProbe() or intConnect(). There is a reasonable chance of porting this
+code to run on RTEMS once the OSI layer is sufficiently functional, but other
+operating systems are not likely to be easy targets.</LI>
+
+</UL>
+
+<P>Added:</P>
+<UL>
+
+<LI>Code to mark the IP slot as active using the ipmIrqCmd() command
+ipac_statActive at initialization, and inactive again when the rebootHook
+routine is run. This will be ignored by most IP carrier drivers.</LI>
+
+</UL>
+<HR>
+
+
+<H2>Version 2.4</H2>
+
+<P>Changed:</P>
+<UL>
+
+<LI>Added <TT>char* paramStr;</TT> to the <TT>canIo_t</TT> structure and
+ammended <tt>canIoParse()</tt> to return any remaining address string in this
+pointer.</LI>
+
+</UL>
+
+<P>Added:</P>
+<UL>
+
+<LI>Support for float and double message values in the ai and ao device support
+layers.</LI>
+
+</UL>
+<HR>
+
+
+<H2>Version 2.3</H2>
+
+<P>Changed:</P>
+<UL>
+
+<LI>Removed IPAC-specific comments from the CANbus Release Notes.</LI>
+
+<LI>Added a new parameter to the t810Create routine to set the interrupt vector
+number to be used.  <B>Existing applications must be changed</B> to add this
+parameter (probably only in the startup script), which appears before the
+busRate parameter.</LI>
+
+</UL>
+
+<P>Added:</P>
+<UL>
+
+<LI>Carl Lionberger's String In device support for use with the Wiener VME
+crate.  Note that this is <B>not</B> generic stringin support, and has been
+renamed from his original to <TT>devSiWiener.c</TT>.  In deference to the
+existing applications that are using this I have retained the <tt>"CANbus"</TT>
+device type string, although I'd really rather have changed it.</LI>
+
+<LI>The <tt>drvTip810.h</tt> header file is now installed into the
+<tt>$(TOP)/include</tt> directory so applications can get at the
+<tt>t810Status()</tt> routine.</LI>
+
+</UL>
+<HR>
+
+
+<H2>Version 2.2</H2>
+
+<P>Changed:</P>
+<UL>
+
+<LI>Copyright and license terms.  drvTip810 (and ipac) is now licensed under
+the GNU Lesser General Public License (LGPL), which enables it to be used in
+commercial software, although any binary distribution containing it or a
+derivative of it must make the source code available under the LGPL terms.</LI>
+
+<LI>Various other small modifications to fix compiler warnings and such under
+EPICS Release 3.13.2.</LI>
+
+</UL>
+<HR>
+
+
+<H2>Version 2.1</H2>
+
+<P>Incorporated changes from Carl Lionberger that move the receive message
+callbacks into a fairly high priority task, rather than doing them in the ISR
+itself.  This allows a higher peak message rate to be handled, although the
+average rate should be essentially unchanged. </P>
+
+<P>Added:</P>
+<UL>
+
+<LI>ISR funnels incoming CAN packets into a Message queue rather than run the
+<TT>canMessage</TT> callbacks directly.  NB: The <TT>canSignal</TT> callbacks
+are still run from the ISR so must be interrupt-safe. </LI>
+
+</UL>
+<HR>
+
+
+<H2>Version 2.0</H2>
+
+<P>First version since I joined APS, now restructured in an EPICS R3.13.1
+&lt;supporttop&gt; application.  drvIpac module and carrier drivers were split
+off into a separate application directory. </P>
+
+<P>Bug fixed:</P>
+<UL>
+
+<LI>Gcc compilation warnings attended to.</LI>
+
+</UL>
+<HR>
+
+
+<H2>Version 1.1c</H2>
+
+<P>Final release from the RGO.  CVS repository transferred to APS. </P>
+
+<P>Bugs fixed, courtesy Carl Lionberger at LBL:</P>
+<UL>
+
+<LI>Reinstated Bus Errors causing records to go into alarm state with an
+<TT>INVALID_ALARM</TT> severity.  A Bus Off transition is very rarely if ever
+seen, even pulling the cable only causes a Bus Error.</LI>
+
+</UL>
+<HR>
+
+
+<H2>Version 1.1b</H2>
+
+<P>Added:</P>
+<UL>
+
+<LI>Carl Lionberger's code to <TT>canIoParse</TT> which allows message IDs to
+be calculated as the sum of several numbers.  This makes it possible to use
+templates and text substitution to generate IDs for many device types.</LI>
+
+<LI>These release notes.</LI>
+
+</UL>
+
+<P>Bugs fixed:</P>
+<UL>
+
+<LI>Changed the alarm severities for Bus Off events and Timeouts to use the
+EPICS standard <TT>INVALID_ALARM</TT> severity.  A Bus Error now does not affect record
+alarm state or severities at all, but now all Bus Status transitions cause a
+message to be logged giving the bus name and the new status.</LI>
+
+<LI>ao, bo, mbbo and mbboDirect records which have a constant value in their
+DOL field will now initialise properly to this value - the DOL values copied
+into the VAL field by the record initialisation routines were being overwritten
+as the CAN device support <TT>init_record</TT> routine was returning
+<TT>OK&nbsp;=>&nbsp;0&nbsp;=>&nbsp;CONVERT</TT>, rather than the correct
+<TT>DO_NOT_CONVERT&nbsp;=>&nbsp;2</TT>.</LI>
+
+</UL>
+<HR>
+
+
+<H2>Version 1.1a</H2>
+
+<P>Bugs fixed:</P>
+<UL>
+
+<LI>Removed a change introduced in V1.1 to when input records are processed on
+the receipt of interrupts.  Carl Lionberger discovered this change had been a
+mistake...</LI>
+
+</UL>
+<HR>
+
+
+<H2>Version 1.1</H2>
+
+<P>Added:</P>
+<UL>
+
+<LI>devBoTip810 device support to allow CANbus status bits to be tested from
+within the EPICS database.</LI>
+
+<LI>Support files for EPICS R3.13 (.dbd, LIBOBJS).  Not tested though.</LI>
+
+<LI><TT>canMsgDelete</TT> routine which allows message callbacks to be
+unregistered.</LI>
+
+<LI><TT>canBusReset</TT>, <TT>canBusStop</TT> and <TT>canBusRestart</TT>
+routines to allow resetting and halting bus operations.</LI>
+
+<LI>Usage instructions output by <TT>canTest</TT> if no bus name given.</LI>
+
+<LI>HTML Documentation distributed in the release.</LI>
+
+</UL>
+
+<P>Bugs fixed:</P>
+<UL>
+
+<LI>Significantly reduced the number of callbacks used in the event of a Bus
+Error or Bus Off event, by only using one per device support type rather than
+one per record.  This solves the large number of "callback ring buffer full"
+messages which would occur whenever a CANbus with a lot of I/O on it was
+disconnected.</LI>
+
+<LI>RTR messages are now sent with length 8 rather than 0 as some CAN devices
+use the RTR length field to indicate how long a message to return.</LI>
+
+<LI>Tip810 Interrupt was not enabled using correct drvIpac call and would not
+work on some carrier boards.</LI>
+
+<LI>A Bus-Off event sometimes caused all further transmissions to be disabled
+forever because transmit semaphore was not released when resetting the error.
+</LI>
+
+</UL>
+<HR>
+
+
+<H2>Version 1.0</H2>
+
+<P>First full release.</P>
+
+</BODY>
+</HTML>

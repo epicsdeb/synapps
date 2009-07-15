@@ -1,0 +1,39 @@
+# Watchdog template for IOC
+#
+# rivers
+# 2007/05/25 15:42:06
+# 1.2
+
+#--------------------------------------------------------------------
+#
+# Macros:
+#   NAME  - Name of the (soft) IOC (max. 18 chars)
+#   
+#--------------------------------------------------------------------
+
+record (bo, "$(NAME)WATCHDOG") 
+{
+    field (DESC, "heart beat")
+    field (HIGH, "1.0")
+    field (ZNAM, "0")
+    field (ONAM, "1")
+}
+
+record (calc, "$(NAME)UPTIME") 
+{
+    field (DESC, "seconds since start")
+    field (SCAN, "1 second")
+    field (INPA, "$(NAME)UPTIME")
+    field (INPB, "1")
+    field (CALC, "A+B")
+}
+
+# private records
+
+record (bo, "$(NAME)WD-CLOCK") 
+{
+    field (DESC, "private")
+    field (SCAN, "2 second")
+    field (DOL,  "1")
+    field (OUT,  "$(NAME)WATCHDOG PP")
+}

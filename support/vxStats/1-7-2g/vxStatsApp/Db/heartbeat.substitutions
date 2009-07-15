@@ -1,0 +1,45 @@
+#
+# These lines do not have to be a separate file; they may be included in the
+# "ioc.substitutions" file, for example.
+#
+# Macro Descriptions
+#
+# my_IOC_heartbeat.template or my_IOC_heartbeat_mod.template:
+#
+# P = Processor; device part of IOC name.
+# SCAN = how often I update my heartbeat (in seconds.)
+# MAX =  the maximum value of the heartbeat.  MAX must be a number of the form
+#	 9*N-1 for the EDM symbol GlobalSym_heartbeat to work smoothly - only
+#	 relevant if "my_IOC_heartbeat_mod.template" is used.
+#
+# test_his_IOC_heartbeat.template:
+#
+# P = Processor; device part of my IOC name.
+# P_his = his Processor; device part of his IOC name.  (We must both also have a
+#	  heartbeat like the one defined in "my_IOC_heartbeat.template" or
+#	  "my_IOC_heartbeat_mod.template".
+# SIG = the signal id for my IOC's opinion of his IOC's health; if we are both
+#	in the same system and subsystem, this could be the device id of his
+#	ioc; else, it should include enough to identify his external ioc.
+# MAX = the maximum value of my heartbeat.
+# TICKS = how many ticks of my heartbeat before I raise a major alarm about
+#	  his heartbeat.
+# SCAN = how often I update my heartbeat and check his (in seconds.)
+#
+#-----------------
+file /stats/db/my_IOC_heartbeat_mod.template
+{
+    {P=<iocname>,SCAN=1,MAX=26}
+}
+#---- OR ---------
+file /stats/db/my_IOC_heartbeat.template
+{
+    {P=<iocname>,SCAN=1,MAX=26}
+}
+#-----------------
+file /stats/db/test_his_IOC_heartbeat.template
+{
+    {P=<iocname>,
+	P_his=<hisiocname>,SIG=<hissigid>,
+	TICKS=5,SCAN=1,MAX=26}
+}

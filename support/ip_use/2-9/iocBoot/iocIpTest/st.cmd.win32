@@ -1,0 +1,15 @@
+< envPaths
+
+# Tell EPICS all about the record types, device-support modules, drivers,
+# etc. in this build from ipApp
+# For WIN32 comment out the above lines and use these instead
+dbLoadDatabase("../../dbd/ipWin32.dbd")
+ipWin32_registerRecordDeviceDriver(pdbbase)
+
+# Load serial port stuff
+
+< ip_serial.cmd
+
+iocInit
+
+seq &Keithley2kDMM, "P=ipTest:, Dmm=DMM1, stack=10000"

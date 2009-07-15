@@ -1,0 +1,49 @@
+grecord(ao,"$(P)DAC$(D)_$(N)") {
+    field(PINI, "YES")
+    field(DTYP,"asynInt32")
+    field(FLNK,"$(P)DAC$(D)_$(N)_return.PROC  PP MS")
+    field(OUT,"@asyn($(PORT),$(S))")
+    field(EGUL,"$(EGUL)")
+    field(DRVL,"$(DRVL)")
+    field(LOPR,"$(LOPR)")
+    field(EGUF,"$(EGUF)")
+    field(DRVH,"$(DRVH)")
+    field(HOPR,"$(HOPR)")
+    field(PREC,"$(PREC)")
+    field(LINR,"$(LINR)")
+    field(VAL,"$(VAL)")
+}
+grecord(ao,"$(P)DAC$(D)_$(N)_return") {
+    field(DTYP,"asynInt32")
+    field(DISV,"0")
+    field(SDIS,"$(P)DAC$(D)_$(N)_pulse.VAL  NPP NMS")
+    field(OUT,"@asyn($(PORT),$(S))")
+    field(OMSL,"closed_loop")
+    field(EGUL,"$(EGUL)")
+    field(DRVL,"$(DRVL)")
+    field(LOPR,"$(LOPR)")
+    field(EGUF,"$(EGUF)")
+    field(DRVH,"$(DRVH)")
+    field(HOPR,"$(HOPR)")
+    field(PREC,"$(PREC)")
+    field(LINR,"$(LINR)")
+    field(VAL,"$(VAL)")
+}
+grecord(bo,"$(P)DAC$(D)_$(N)_pulse") {
+    field(ZNAM,"Normal")
+    field(ONAM,"Pulse")
+}
+
+grecord(ao,"$(P)DAC$(D)_$(N)_tweakVal") {
+    field(PREC,"$(PREC)")
+}
+
+grecord(transform,"$(P)DAC$(D)_$(N)_tweak") {
+    field(CLCE,"a?d-c:b?d+c:d")
+    field(INPC,"$(P)DAC$(D)_$(N)_tweakVal.VAL  NPP MS")
+    field(INPD,"$(P)DAC$(D)_$(N).VAL  NPP MS")
+    field(OUTE,"$(P)DAC$(D)_$(N).VAL  PP MS")
+    field(OUTF,"$(P)DAC$(D)_$(N)_tweak.A  NPP MS")
+    field(OUTG,"$(P)DAC$(D)_$(N)_tweak.B  NPP MS")
+    field(PREC,"3")
+}

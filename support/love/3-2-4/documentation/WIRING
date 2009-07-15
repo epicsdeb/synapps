@@ -1,0 +1,97 @@
+
+                       LOVE CONTROLLER HARDWARE / WIRING
+
+The typical equipment used is listed as below in addition to the connections.
+
+
+HARDWARE
+    - Tracewell systems VMEbus crate
+    - MVME5100
+    - SBS 626 (TVME200) IP carrier
+      - IP Octal RS232 module in slot A
+    - SBS XM-OCTAL-IO
+      - Default jumper settings
+      - Port 2A
+      - 50-pin flat ribbon cable.
+    - In-house fabricated RS232 DB9 cable
+    
+      PIN    FUNC
+      ---    ----
+       2     RX
+       3     TX
+       5     GND
+
+    - RJ45 pinout
+
+      PIN    FUNC
+      ---    ----
+       4      RX
+       5      TX
+       3      GND
+
+    - B & B electronics model 485LDRC RS232 to RS485 (2-wire) converter
+
+      PIN    FUNC
+      ---    ----
+       A     RD       -+
+       D     TD        | RS232
+       B     SIG GND  -+
+
+       G     A (-)    -+
+                       | RS485
+       H     B (+)    -+
+
+       F     +10V     -+
+                       | Power
+       C     GND      -+
+
+      SWITCHES
+       1   2   3   4   5   6   7   8
+       ON  ON  ON  ON  OFF ON  OFF OFF
+
+    - Love controller (Model 1600 - 16163-992)
+      - Configure to read 'Voltage' from a power supply
+      - 9600 baud
+      - Host is set to 9600 baud,8 bits,no parity,1 stopbit,no flow control.
+      - PIN 11 connected to B (+) on converter.
+      - PIN 12 connected to A (-) on converter.
+
+WIRING:
+    +------------+
+    |            |
+    | LOVE       +- 12 ------------+
+    | CONTROLLER |                 |
+    |            +- 11 ---------+  |
+    |            |              |  |
+    +------------+              |  |
+                                |  |
+                                |  |
+                                |  |
+    +------------+              |  |
+    |   B & B    |              |  |
+    |  485LDRC   +- H -- B(+) --+  |
+    |            |                 |
+    |            +- G -- A(-) -----+
+    |            |
+    |  SWITCHES  +- F ------------\ +10V
+    |  12345678  |
+    |  11110100  +- C ------------+ GND
+    | 1=ON 0=OFF |                V
+    +--+--+--+--+
+       |  |  |
+       B  D  A             +-----+
+       |  |  |             |     |
+       |  |  +- RD ---- 2 -+ DB9 |         +-------------+
+       |  |                |     |         |     SBS     |
+       |  +---- TD ---- 3 -+     +==== 2A =+ XM-OCTAL-IO |
+       |                   |     |         |             |
+       +------- GND --- 5 -+     |         +-------------+
+                           |     |
+                           +-----+
+
+COMMUNICATION:
+    - STX = ^B
+    - ETX = ^C
+
+    - To read the SP1 from controller address 1:
+    	^B L 0 1 0 1 0 0 2 2 ^C

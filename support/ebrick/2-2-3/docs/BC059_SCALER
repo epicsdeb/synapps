@@ -1,0 +1,99 @@
+     BC-059 Generic Digital I/O Scaler Input/Output Assignments
+                             Version 2.1
+
+
+Func	Jumper
+====================================================================
+INPUTS:
+
+CTR1    J7-1
+CTR2    J7-2
+CTR3    J7-3
+CTR4    J7-4
+
+CTR5    J12-1
+CTR6    J12-2
+CTR7    J12-3
+CTR8    J12-4
+
+CTR9    J14-1
+CTR10   J14-2
+CTR11   J14-3
+CTR12   J14-4
+
+CTR13   J15-1
+CTR14   J15-2
+CTR15   J15-3
+CTR16   J15-4
+
+ARMIN   J22-3
+====================================================================
+OUTPUTS:
+
+CLKOUT  J22-4
+ARMOUT  J22-6
+INTR    J22-12
+====================================================================
+LEDS:
+
+ARMED   ALTLED11 (GREEN)
+ACCESS  ALTLED10 (BLUE)
+ARMIN   ALTLED09 (RED)
+GATEIN  ******** (NOT USED)
+====================================================================
+RETURN STATUS:
+
+7       0
+XXXX XXXX
+      |||
+      ||+-- DONE
+      |+--- ARMED
+      +---- GROUP
+====================================================================
+SERIAL LINK CONNECTIONS (3bits):
+
+ENABLE  JEB1-19
+CLOCK   JEB1-18
+DATA    JEB1-17
+
+SERIAL LINK FORMAT (64bits):
+
+3         2 2 1 1  1 1    
+1         1 0 8 7  4 3    8 7      0
+XXXXXXXXXXX XXX XXXX XXXXXX XXXXXXXX
+          |   |    |      |        |
+          |   |    |      |        +-- Version ID (0x21)
+          |   |    |      +----------- Counter select
+          |   |    +------------------ Function select
+          |   +----------------------- Subfunction select
+          +--------------------------- Reserved (unused)
+
+
+6                              3
+3                              2
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+                               |
+                               +----------------- Preset data
+
+Where
+    - Version ID
+      0x21 - Version identification
+    - Counter select:
+      0    - General, effects all counters (i.e. reset)
+      1-16 - Specific counter
+    - Functions:
+      0  - NULL
+      1  - ARM
+      2  - DISARM
+      3  - PRESET
+      4  - RESET
+      5  - GROUP
+      6  - UNGROUP
+      7  - READ
+      8  - STATUS
+    - Sunfunctions:
+      0 - NULL
+      1 - STATUS
+      2 - DATA LOW
+      4 - DATA HIGH
+====================================================================

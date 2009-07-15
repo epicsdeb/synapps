@@ -1,0 +1,54 @@
+This interpolation software relies on the gensub record (written by Andy
+Foster), or the aSub record (included in EPICS base beginning with version
+3.14.10).  If needed, a copy of a genSub module version that is compatible
+with synApps is included in the synApps tar file.
+
+The following fields of the gensub record have the following functions in this
+software:
+
+VALA[]  independent variable
+VALB[]  dependent variable 1
+VALC[]  dependent variable 2
+A       new value of independent variable, for interp or adding entry
+VALN    number of entries
+F       interpolation order (1: linear; >1: polynomial)
+G       mode (0: Interpolate; 1: Add Entry; 2: Clear All)
+B       new value for dependent variable 1 array (used if mode is "Add Entry")
+C       new value for dependent variable 2 array (used if mode is "Add Entry")
+VALE    successful interpolation (VALE==1)
+VALF    interpolation result for dependent variable 1
+VALG    interpolation result for dependent variable 2
+NOVA    max number of entries in a array - limits table size
+NOVB    max number of entries in b array - limits table size
+NOVC    max number of entries in c array - limits table size
+
+Note: the code uses only n entries, where n = MIN(nova, novb, novc)
+
+Here's how you use it:
+
+Load VALA, VALB, VALC arrays such that VALB[i] = y1(VALA[i]) and VALC[i] =
+y2(VALA[i]), where y1 and y2 are the functions you want to interpolate, and
+VALA]] increases with its array index.  You can do this in several ways:
+1) with a channel-access client, such as BURT or caput.  This works only
+   at run time.
+2) by editing the file autosave writes when it's told to save according to
+   'interp.req' (later renamed 'interp_settings.req'), and then using
+   autosave/restore to load that file.  This works only at boot time.
+3) by setting the interp mode to "Add Entry", specifying interp_y1 and
+   interp_y2 values, and then specifying an interp_x value. This works only at
+   run time.
+
+However you load the arrays, make sure you do all of the following:
+
+1) set VALE to the number of meaningful points in the VALA, VALB, VALC arrays.
+2) load arrays into VALA, VALB, and VALC
+3) Make sure VALA[] is monotonically increasing with its array index
+
+The supplied database adds a sort of user interface to the software described
+above.  The user writes to $(P)interp_x, and the database sends this value to
+the gensub record, which interpolates and, if successful, writes to
+$(P)interp_y1 and $(P)interp_y2.  If the user has specified output-link fields
+$(P)interp_y1.OUT or $(P)interp_y2.OUT, then the new values will be written to
+the PV's named in those links.
+
+Tim Mooney 3/04/2009

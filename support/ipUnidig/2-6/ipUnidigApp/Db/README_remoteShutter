@@ -1,0 +1,17 @@
+README_remoteShutter
+
+------ st.cmd --------------------------------------------------------------------------------
+
+# Remote Shutter Control
+#    Used to 'Open' and 'Close' the shutters using the remote shutter
+#    control box. 
+# Macros: 
+#   BL=xx[ID/BM] where PS:$(BL):$(S1)_SHTRS_CLOSED (Operations PV)
+#   S=Sector Hutch Name [A,B,C,D]
+#   PPS=PPS Hutch Name (usually the same as S)
+#   OUT=x where $(P)UnidigBo$(OUT) (physical output PV - see IpUnidig.substitutions)
+
+dbLoadRecords("$(IPUNIDIG)/ipUnidigApp/Db/remoteShutter.db", "P=xxx:,BL=nnID,S=A,PPS=A,OUT=1")
+dbLoadRecords("$(IPUNIDIG)/ipUnidigApp/Db/remoteShutter.db", "P=xxx:,BL=nnID,S=B,PPS=B,OUT=3")
+dbLoadRecords("$(IPUNIDIG)/ipUnidigApp/Db/remoteShutter.db", "P=xxx:,BL=nnID,S=C,PPS=C,OUT=5")
+dbLoadRecords("$(IPUNIDIG)/ipUnidigApp/Db/remoteShutter.db", "P=xxx:,BL=nnID,S=D,PPS=D,OUT=7")

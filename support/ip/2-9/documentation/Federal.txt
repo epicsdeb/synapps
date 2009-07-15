@@ -1,0 +1,31 @@
+Federal ERO-1071 Setup Info
+---------------------------
+
+- EPICS Files: Federal.st, Federal.db, Federal.adl, Federal_more.adl,
+               Federal_setup.adl, Federal.db.txt (this file).
+
+- Federal Box Settings:
+   probe: "scan", scan probes = num_probes <- set in db
+   x.xxx: set this to match prec on adl display
+   show:  set all to "yes"
+   units: set to "mm"
+   print: 0, "no", "reading then step"
+   rs232: 19200, 2, "even", "no", "no"
+
+- In st.cmd:
+# Federal digital encoder readout
+dbLoadRecords("kagApp/Db/Federal.db","P=xxx:,S=s1,C=0,SERVER=serial1",top)
+
+- In st_mpfserver.cmd:
+tyGSMPFInit("serial1",  0, 0, 19200,'E',2,7,'N',"") /* Federal */
+
+
+- RS-232 connection:
+db9  db25
+---  ----
+ 2    2
+ 3    3
+ 5    7
+
+- Device needs ctrl-B (STX) (0x02) for reading.  No cr or lf necessary.
+

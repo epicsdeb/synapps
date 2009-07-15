@@ -1,0 +1,209 @@
+#!/usr/bin/perl
+#
+#  srcMakeCon
+#
+#  Produce 3.14 Makefile from 3.13 Makefile.Host and Makefile.Vx in App/src
+#
+# usage: srcMakeCon (in src directory).
+# requires the Makefile from simpleApp/src to be available as Makefile314
+#
+
+#
+# Check file availability immediately
+#
+open(Template,"./Makefile314") ||
+      die "No 3.14 Makefile Template Makefile314\n";
+open(hostfile, "./Makefile.Host") ||
+      die "Can't find Makefile.Host\n";
+open(vxfile, "./Makefile.Vx") || 
+      die "Can't find Makefile.Vx\n";
+open(outfile,">./Makefile") ||
+      die "Can't write to Makefile\n";
+#
+# load Makefile.Host and Makefile.Vx into lists without comments
+#
+while (<hostfile>) {
+   if (/^#/)  { next; }
+   @hostlist = (@hostlist, $_);
+}
+close(hostfile);
+while (<vxfile>) {
+   if (/^#/)  { next; }
+   @vxlist = (@vxlist, $_);
+}
+close(vxfile);
+#
+# write top part of Makefile directly from Template
+#
+while (<Template>) {
+   if (/=Create\sHost\sPrograms=/) { 
+     $lastline = $_;
+     last; 
+   }
+   print outfile;
+}
+#
+# propagate USR flags
+#
+foreach (@hostlist, @vxlist) {
+    if (/^USR/) {
+       print outfile;
+    }
+}
+#print outfile 'USR_CFLAGS += -I$(EPICS_TOP)/include -I$(EPICS_TOP)/include/os/${OS_CLASS}';
+#print outfile "\n";
+#print outfile 'USR_CFLAGS += -I$(SNCSEQ)/include';
+#print outfile "\n";
+#print outfile 'USR_CXXFLAGS += -I$(EPICS_TOP)/include -I$(EPICS_TOP)/include/os/${OS_CLASS}';
+#print outfile "\n";
+#print outfile 'USR_CXXFLAGS += -I$(SNCSEQ)/include';
+#print outfile "\n";
+#
+#  write more from Template
+#
+print outfile $lastline;
+while (<Template>) {
+   if (/=Database\sProducts=/) { 
+     $lastline = $_;
+     last; 
+   }
+   print outfile;
+}
+#
+# Look for PROD stuff
+#
+foreach (@hostlist) {
+   if (/PROD_LIBS\s*\+*=/) {
+      chomp;
+      ($junk, @prods) = split  /\+=/;
+      @prodlibs = (@prodlibs, @prods);
+   }
+}
+foreach (@prodlibs) {
+   if (/Db/) {
+     s/Db/dbStaticHost/;
+   }
+}
+foreach (@hostlist) {
+   if (/PROD\s*\+=/) {
+      chomp;
+      ($junk, $prodword)=split /\+*=\s*/;
+      @prods = split /\s\s*/, $prodword;
+      foreach (@prods) {
+         print outfile "PROD_HOST += ".$_."\n";
+         print outfile $_.'_SRCS += '.$_."\.c\n";
+         $prodname = $_;
+         foreach (@prodlibs) {
+            print outfile $prodname.'_LIBS += '.$_."\n";
+         }
+         print outfile "\n";
+      }
+      next;
+   }
+   if (/_SRCS\s*\+=/) {
+      print outfile ;
+      next;
+   }
+   if (/LIBRARY/) {
+      s/LIBRARY/LIBRARY_HOST/;
+      print outfile;
+      next;
+   }
+   if (/LIBSRCS/) {
+      s/LIBSRCS/LIB_SRCS/;
+      print outfile;
+      next;
+   }
+}
+print outfile "\n";
+#
+# print more of makefile template
+#
+print outfile $lastline;
+while(<Template>) {
+   if (/=Create\san\sIOC\sprogram=/)  { 
+     $lastline = $_;
+     last; 
+   }
+   print outfile;
+}
+#
+# look for DBD stuff
+#
+foreach (@hostlist, @vxlist) {
+   if (/RECTYPES\s*\+=/) {
+      s/RECTYPES/DBDINC/;
+      print outfile;
+      next;
+   }
+   if (/DBDEXPAND|DBDNAME/) {
+      s//DBD/;
+      s/\+=/=/;
+      s/=/\+=/;
+      print outfile;
+      next;
+   }
+}
+print outfile 'DBEXPAND        = msi';
+print outfile "\n";
+#
+# print more of template file 
+#
+print outfile $lastline;
+while(<Template>) {
+   if (/configure/)  { 
+     $lastline = $_;
+     last; 
+   }
+   print outfile;
+}
+#
+# read old vxWorks targets
+#
+foreach (@vxlist) {
+   if (/LIBNAME/) {
+      chomp;
+      ($junk,$junkalso,$libname) = split /\s\s*/;
+      $libname =~ s/Lib//;
+      next;
+   }
+   if (/SRCS.*\+=/) {
+      chomp;
+      ($junk, $junkalso, $srcword) = split /\s\s*/;
+      @templist = split /\s\s*/, $srcword;
+      @srclist = (@srclist, @templist);
+      next;
+   }
+   if (/LIBOBJS\s\s*\+=/) {
+      chomp;
+      ($junk, $junkalso, $libword) = split /\s\s*/;
+      @templist = split /\s\s*/, $libword;
+      @liblist = (@liblist, @templist);
+      next;
+   }
+   if (/^INSTALLS/) {
+      print outfile;
+      next;
+   }
+}
+#
+# print new vxWorks targets
+#
+print outfile 'PROD_IOC_vxWorks = '.$libname."\n";
+print outfile 'LIBRARY_IOC_Linux = '.$libname."\n";
+foreach (@srclist) {
+   s/\.\.\///;
+   print outfile $libname.'_SRCS += '.$_."\n";
+   }
+foreach (@liblist) {
+   s/\.o/\.xx/;
+   print outfile $libname.'_SRCS += '.$_."\n";
+   }
+print outfile $libname.'_OBJ_vxWorks += \$(EPICS_BASE_BIN)/vxComLibrary'."\n\n";
+#
+# print out last of Makefile Template
+#
+print outfile $lastline;
+while(<Template>) {
+   print outfile;
+}

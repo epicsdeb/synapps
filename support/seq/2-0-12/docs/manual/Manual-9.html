@@ -1,0 +1,563 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN"><HTML>
+<HEAD>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=ISO-8859-1">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+<META NAME="GENERATOR" CONTENT="Adobe FrameMaker 5.5/HTML Export Filter">
+<LINK REL="STYLESHEET" HREF="Manual.css" CHARSET="ISO-8859-1" TYPE="text/css">
+<TITLE>
+ Chapter 8:  Installation
+</TITLE>
+
+</HEAD>
+<BODY BGCOLOR="#ffffff">
+<H1 CLASS="LOCALTITLE">
+<A NAME="pgfId-789709"></A><A NAME="81910"></A>Installation</H1>
+<P CLASS="BODY">
+<A NAME="pgfId-790609"></A>&nbsp;</P>
+<P CLASS="BODY">
+<A NAME="pgfId-790616"></A>&nbsp;</P>
+<P CLASS="BODY">
+<A NAME="pgfId-790625"></A>&nbsp;</P>
+<P CLASS="BODY">
+<A NAME="pgfId-790630"></A>&nbsp;</P>
+<P CLASS="BODY">
+<A NAME="pgfId-790635"></A>&nbsp;</P>
+<P CLASS="BODY">
+<A NAME="pgfId-790640"></A>The sequencer is distributed as an EPICS R3.14 <EM CLASS="Key-word">
+makeBaseApp</EM>
+ application. This chapter describes how to obtain, unpack, build, install, verify and use the distribution.</P>
+<P CLASS="BODY">
+<A NAME="pgfId-791367"></A>&nbsp;</P>
+<DIV>
+<H2 CLASS="HEADING1">
+<A NAME="pgfId-791357"></A><A NAME="51730"></A>Prerequisites<DIV>
+<IMG SRC="Manual-11.gif">
+</DIV>
+</H2>
+<P CLASS="BODY">
+<A NAME="pgfId-791511"></A>EPICS R3.14 (any version) or later must be installed on your system.</P>
+</DIV>
+<DIV>
+<H2 CLASS="HEADING1">
+<A NAME="pgfId-791506"></A>Obtaining the distribution<DIV>
+<IMG SRC="Manual-11.gif">
+</DIV>
+</H2>
+<P CLASS="BODY">
+<A NAME="pgfId-791369"></A>The distribution should be obtained via the sequencer home page which is, at the time of writing, at URL <EM CLASS="Key-word">
+<A HREF="http://www2.keck.hawaii.edu:3636/realpublic/epics/seq" CLASS="URL">http://www2.keck.hawaii.edu:3636/realpublic/epics/seq</A></EM>
+ (what a mouthful). This describes the available versions and will point you to a gzipped tar file with a name of the form <EM CLASS="Key-word">
+seq-n.m.p.tar.gz</EM>
+ (<EM CLASS="Key-word">
+n.m.p</EM>
+ is the version number, <EM CLASS="Emphasis">
+e.g.</EM>
+ <EM CLASS="Key-word">
+2.0.0</EM>
+).</P>
+<P CLASS="BODY">
+<A NAME="pgfId-791425"></A>Select and download the appropriate version. In what follows, we will assume that you downloaded v2.0.0. However, the instructions will apply to this or any later version.</P>
+<P CLASS="BODY">
+<A NAME="pgfId-791437"></A>Note that, from v2.0.0, the third digit is the patch level and will be incremented each time a new version is released, no matter how minor the changes. The second digit is the minor version number and will be incremented each time functional changes are made. The first digit is the major version number and will be incremented only when major changes are made.</P>
+</DIV>
+<DIV>
+<H2 CLASS="HEADING1">
+<A NAME="pgfId-791409"></A>Unpacking the distribution<DIV>
+<IMG SRC="Manual-11.gif">
+</DIV>
+</H2>
+<P CLASS="BODY">
+<A NAME="pgfId-791419"></A><EM CLASS="Key-word">
+cd</EM>
+ to the directory that you wish to be the parent of the sequencer tree. Then unpack and untar the file. For example (these steps can be combined by clever use of pipes using syntax that I can never remember, or else if you have GNU tar, its <EM CLASS="Key-word">
+-z</EM>
+ option will decompress on the fly).</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791432"></A>% gunzip seq-2.0.0.tar.gz</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791433"></A>% tar xvf seq-2.0.0.tar</P>
+<P CLASS="BODY">
+<A NAME="pgfId-791436"></A>This creates a directory tree with the following general structure (this is part of the  file in the top-level directory).</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791438"></A>/sequencer</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791444"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791445"></A>	README					This file (general notes at the top, followed</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791469"></A>						by release notes, most recent first)</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791505"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791447"></A>(etc... update when README has been updated!)</P>
+</DIV>
+<DIV>
+<H2 CLASS="HEADING1">
+<A NAME="pgfId-791461"></A><A NAME="30287"></A>Preparing to build<DIV>
+<IMG SRC="Manual-11.gif">
+</DIV>
+</H2>
+<P CLASS="BODY">
+<A NAME="pgfId-791524"></A>It will be necessary to edit the files <EM CLASS="Key-word">
+configure/RELEASE</EM>
+ and <EM CLASS="Key-word">
+configure/CONFIG</EM>
+ before building. Here are copies of these files, with the lines that you are likely to have change highlit:</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791526"></A>#RELEASE Location of external products</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791950"></A><EM CLASS="Bold">
+EPICS_BASE=/home/wlupton/epics/anl/base</EM>
+</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791951"></A>TEMPLATE_TOP=$(EPICS_BASE)/templates/makeBaseApp/top</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791952"></A><EM CLASS="Bold">
+SEQ=/home/wlupton/epics/seq</EM>
+</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791953"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791935"></A>#CONFIG</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791975"></A>include $(TOP)/configure/CONFIG_APP</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791976"></A># Add any changes to make rules here</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791977"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791978"></A>#CROSS_COMPILER_TARGET_ARCHS = vxWorks-68040</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791979"></A><EM CLASS="Bold">
+CROSS_COMPILER_TARGET_ARCHS =</EM>
+</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791980"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791981"></A># shareable library version (from CONFIG_BASE)</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791982"></A>SHRLIB_VERSION = $(EPICS_VERSION).$(EPICS_REVISION)</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791983"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791984"></A># sequencer version number (replaces old Version file)</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791985"></A>SEQ_VERSION = 2.0.0</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791986"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791987"></A># override to use snc from SEQ</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791988"></A>SNC = $(SEQ)/bin/$(EPICS_HOST_ARCH)/snc</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791989"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791990"></A># which message systems to support (comment to disable)</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791991"></A><EM CLASS="Bold">
+PVCA = TRUE</EM>
+</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791992"></A><EM CLASS="Bold">
+#PVFILE = TRUE</EM>
+</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791993"></A><EM CLASS="Bold">
+#PVKTL = TRUE</EM>
+</P>
+<P CLASS="BODY">
+<A NAME="pgfId-791527"></A>In <EM CLASS="Key-word">
+RELEASE</EM>
+, you should select EPICS base via the <EM CLASS="Key-word">
+EPICS_BASE</EM>
+ macro and the top of the sequencer tree via the <EM CLASS="Key-word">
+SEQ</EM>
+ macro.</P>
+<P CLASS="BODY">
+<A NAME="pgfId-792040"></A>In <EM CLASS="Key-word">
+CONFIG</EM>
+, you should select the target architectures for which to build via the <EM CLASS="Key-word">
+CROSS_COMPILER_TARGET_ARCHS</EM>
+ macro (a subset of those for which EPICS has been built), and the message systems to support via the <EM CLASS="Key-word">
+PVXXX</EM>
+ macros.</P>
+</DIV>
+<DIV>
+<H2 CLASS="HEADING1">
+<A NAME="pgfId-791557"></A><A NAME="61596"></A>Building and installing<DIV>
+<IMG SRC="Manual-11.gif">
+</DIV>
+</H2>
+<P CLASS="BODY">
+<A NAME="pgfId-791624"></A>Ensure that your environment is configured for building EPICS applications. The only EPICS requirement is that the <EM CLASS="Key-word">
+EPICS_HOST_ARCH</EM>
+ environment variable be set correctly (you can use the <EM CLASS="Key-word">
+$EPICS_BASE/startup/EpicsHostArch</EM>
+ script to set it). However, if you built EPICS with shareable library support, your <EM CLASS="Key-word">
+LD_LIBRARY_PATH</EM>
+ environment variable will have to include <EM CLASS="Key-word">
+$EPICS_BASE/lib/$EPICS_HOST_ARCH</EM>
+, and if you are using gcc with shareable library support, it will have to include the directory that contains <EM CLASS="Key-word">
+libstdc++.so</EM>
+. These notes are written from a Solaris standpoint; details may vary slightly under other architectures.</P>
+<P CLASS="BODY">
+<A NAME="pgfId-791578"></A><EM CLASS="Key-word">
+cd</EM>
+ to the top of the sequencer tree and run GNU make. The tree should build without incident. Please feed back any build problems (and their resolutions!) to me. My e-mail address is on the front cover of this manual.</P>
+<P CLASS="BODY">
+<A NAME="pgfId-791702"></A>Note that make builds in the <EM CLASS="Key-word">
+configure</EM>
+ directory, then the <EM CLASS="Key-word">
+src</EM>
+ tree, and finally the <EM CLASS="Key-word">
+test</EM>
+ tree. A failure in the <EM CLASS="Key-word">
+test</EM>
+ tree will not impact your ability to write sequences.</P>
+</DIV>
+<DIV>
+<H2 CLASS="HEADING1">
+<A NAME="pgfId-791703"></A><A NAME="38061"></A>Verifying the installation<DIV>
+<IMG SRC="Manual-11.gif">
+</DIV>
+</H2>
+<P CLASS="BODY">
+<A NAME="pgfId-791705"></A>Under Solaris, the <EM CLASS="Key-word">
+-R</EM>
+ loader option will have been used to link executables, so <EM CLASS="Key-word">
+LD_LIBRARY_PATH</EM>
+ should need no further additions. Under other operating systems, it may be necessary to append <EM CLASS="Key-word">
+$SUPPORT/lib/$EPICS_HOST_ARCH</EM>
+, where <EM CLASS="Key-word">
+SUPPORT</EM>
+ has the value that you gave it in <EM CLASS="Key-word">
+configure/RELEASE</EM>
+.</P>
+<P CLASS="BODY">
+<A NAME="pgfId-791710"></A><EM CLASS="Key-word">
+cd</EM>
+ to <EM CLASS="Key-word">
+$SUPPORT/bin/$EPICS_HOST_ARCH</EM>
+. It should look like this:</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791712"></A>demo          sncDelay      sncEntryVar   sncExample    sncOpttVar</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791717"></A>demo.vws      sncEntry      sncExEntry    sncExitOptx</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791718"></A>snc           sncEntryOpte  sncExOpt      sncOptt</P>
+<P CLASS="BODY">
+<A NAME="pgfId-791715"></A>Try running demo. This includes its own CA server, so no IOC or portable CA server is needed. It should look something like this:</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791725"></A>% <EM CLASS="Bold">
+./demo</EM>
+</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791728"></A>Starting iocInit</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791729"></A>##################################################################</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791730"></A>###  @(#)EPICS IOC CORE built on Mar 22 2000</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791731"></A>###  @(#)Version R3.14.0.alpha $2000/04/04 03:21:38$</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791732"></A>###  @(#)Built date Mar 22 2000</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791733"></A>##################################################################</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791734"></A>db_attach_pvAdapter I dont know what to call</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791735"></A>iocInit: All initialization complete</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791736"></A>@(#)SEQ Version 2.0.0: Fri Mar 31 16:50:09 HST 2000</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791737"></A>osiSockDiscoverInterfaces(): ignoring loopback interface: lo0</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791738"></A>osiSockDiscoverInterfaces(): net intf hme0 found</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791739"></A>osiSockDiscoverInterfaces(): ignoring loopback interface: lo0</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791740"></A>osiSockDiscoverInterfaces(): net intf hme0 found</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791741"></A>Spawning thread 0xa54c0: &quot;demo_1&quot;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791742"></A>Spawning thread 0xa5580: &quot;demo_2&quot;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791743"></A>Spawning state program &quot;demo&quot;, thread 0x98240: &quot;demo&quot;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791744"></A>demo_1 2000/03/31 17:14:24: start -&gt; ramp_up</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791745"></A>demo 2000/03/31 17:14:31: light_off -&gt; light_on</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791746"></A>demo_1 2000/03/31 17:14:35: ramp_up -&gt; ramp_down</P>
+<P CLASS="BODY">
+<A NAME="pgfId-791726"></A>If you see the &quot;<EM CLASS="Key-word">
+start -&gt; ramp_up</EM>
+&quot; <EM CLASS="Emphasis">
+etc.</EM>
+ messages, things are good. If not, some channels haven't connected (use the &quot;<EM CLASS="Key-word">
+-</EM>
+&quot; to command to find out which).</P>
+<P CLASS="BODY">
+<A NAME="pgfId-791789"></A>Issue the &quot;<EM CLASS="Key-word">
+i</EM>
+&quot; command. You should something like this:</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791754"></A><EM CLASS="Bold">
+i</EM>
+</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791771"></A>            NAME       ID      PRI    STATE     WAIT</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-792112"></A>          _main_    2adf8        0       OK</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-792113"></A>          errlog    323a0       10       OK</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-792114"></A>          taskwd    32508       10       OK</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-792115"></A>           cbLow    3cf48       59       OK</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-792116"></A>        cbMedium    30e10       64       OK</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-792117"></A>          cbHigh    30ed8       71       OK</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-792118"></A>        dbCaLink    313f0       50       OK</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-792119"></A>     CAC process    31570       50       OK</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-792120"></A>        scanOnce    4c5f0       70       OK</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-792121"></A>          scan10    4c878       60       OK</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-792122"></A>           scan5    4c908       61       OK</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-792123"></A>           scan2    4c9b0       62       OK</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-792124"></A>           scan1    4ca40       63       OK</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-792125"></A>         scan0.5    4cad0       64       OK</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-792126"></A>         scan0.2    4cb60       65       OK</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-792127"></A>         scan0.1    4cbf0       66       OK</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-792128"></A>           CAtcp    4cda0       20       OK</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-792129"></A>           CAudp    4ce30       19       OK</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-792130"></A>          seqAux    4def0       51       OK</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-792131"></A>        CAonline    4df80        7       OK</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-792132"></A>     CAC process    8ee70       50       OK</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-792133"></A>            demo    9b310       50       OK</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-792134"></A>    CAC UDP Recv    9c588       10       OK</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-792135"></A>    CAC UDP Send    9c618       10       OK</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-792136"></A>   osiTimerQueue    9c6e0        0       OK</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-792137"></A>          demo_1    9cac0       50       OK</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-792138"></A>          demo_2    9cb50       50       OK</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-792139"></A>    CAC TCP Recv    9d070       10       OK</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-792140"></A>    CAC TCP Send    9d100       10       OK</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-792141"></A>        CA event    b2cd8       19       OK</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-792142"></A>        CAclient    b2d68       10       OK</P>
+<P CLASS="BODY">
+<A NAME="pgfId-791755"></A>Finally, go to an xterm and do the following:</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-792259"></A>% <EM CLASS="Bold">
+caget ss0</EM>
+</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-792260"></A>ss0                            light</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-792261"></A>% <EM CLASS="Bold">
+caget ss1</EM>
+</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-792262"></A>ss1                            ramp</P>
+<P CLASS="BODY">
+<A NAME="pgfId-792256"></A>This illustrates the very basic &quot;sequencer device support&quot; in this release. These records are returning the names of the first two state-sets of the above sequence.</P>
+<P CLASS="BODY">
+<A NAME="pgfId-792271"></A>Most (maybe all) of the other test programs do not connect to control system variables and can be run without an IOC. For example:</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791797"></A>% <EM CLASS="Bold">
+sncExitOptx</EM>
+</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791798"></A>@(#)SEQ Version 2.0.0: Fri Mar 31 16:50:09 HST 2000</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791799"></A>Spawning state program &quot;sncexitoptx&quot;, thread 0x30868: &quot;sncexitoptx&quot;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791800"></A>low, delay timeout, incr v and now reenter low</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791801"></A>v = 1</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791802"></A>Pause on each exit of low, including 'iterations'</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791803"></A>low, delay timeout, incr v and now reenter low</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791804"></A>v = 2</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791805"></A>Pause on each exit of low, including 'iterations'</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791806"></A>low, delay timeout, incr v and now reenter low</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791807"></A>v = 3</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791808"></A>Pause on each exit of low, including 'iterations'</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791794"></A><EM CLASS="Bold">
+^D</EM>
+</P>
+</DIV>
+<DIV>
+<H2 CLASS="HEADING1">
+<A NAME="pgfId-791795"></A><A NAME="29721"></A>Using the installation<DIV>
+<IMG SRC="Manual-11.gif">
+</DIV>
+</H2>
+<P CLASS="BODY">
+<A NAME="pgfId-792248"></A>This section assumes that you are working in a <EM CLASS="Key-word">
+makeBaseApp</EM>
+ environment. The more general information in <A HREF="Manual-4.html#30450" CLASS="XRef">See Using makeBaseApp</A> should help if this is not the case.</P>
+<P CLASS="BODY">
+<A NAME="pgfId-791814"></A>You need to edit your own <EM CLASS="Bold">
+configure/RELEASE</EM>
+ and <EM CLASS="Bold">
+configure/CONFIG</EM>
+ files to reference the correct sequencer version. The necessary changes are similar to those that were made to build the sequencer (<A HREF="Manual-9.html#30287" CLASS="XRef">See Preparing to build</A>). Here are versions of the files with the lines that must be added for the sequencer highlit:</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-792172"></A>#RELEASE Location of external products</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-792202"></A>EPICS_BASE=_EPICS_BASE_</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-792203"></A>TEMPLATE_TOP=_TEMPLATE_TOP_</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-792176"></A><EM CLASS="Bold">
+SEQ=_SEQ_TOP_</EM>
+</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-792214"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-792216"></A>#CONFIG</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-792217"></A>include $(TOP)/configure/CONFIG_APP</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-792218"></A># Add any changes to make rules here</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-792219"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-792220"></A>#CROSS_COMPILER_TARGET_ARCHS = vxWorks-68040</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-792190"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-792191"></A><EM CLASS="Bold">
+SNC = $(SEQ)/bin/$(EPICS_HOST_ARCH)/snc</EM>
+</P>
+<P CLASS="BODY">
+<A NAME="pgfId-792162"></A>You can refer to the various <EM CLASS="Key-word">
+Makefile</EM>
+s in the test tree to see how to write your own sequences. For example, here is the <EM CLASS="Key-word">
+Makefile</EM>
+ for the above <EM CLASS="Key-word">
+sncExitOptx</EM>
+ program (<EM CLASS="Key-word">
+test/validate/Makefile</EM>
+):</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791840"></A>TOP = ../..</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791842"></A>include $(TOP)/configure/CONFIG</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791847"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791879"></A>SNCFLAGS = +m</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791850"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791880"></A>SEQS =		sncDelay sncEntry sncEntryOpte sncEntryVar sncExitOptx &#92;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791885"></A>		sncOptt sncOpttVar</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791851"></A>PROD = $(SEQS)</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791852"></A>OBJS_vxWorks = $(SEQS)</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791853"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791855"></A>PROD_LIBS += seq</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791856"></A>seq_DIR    = $(SEQ_LIB)</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791857"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791858"></A>include $(TOP)/test/Makefile.pv</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791859"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791860"></A>PROD_LIBS += Com</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791861"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791862"></A>include $(TOP)/configure/RULES</P>
+<P CLASS="BODY">
+<A NAME="pgfId-791838"></A>This <EM CLASS="Key-word">
+Makefile</EM>
+ includes <EM CLASS="Key-word">
+test/Makefile.pv</EM>
+ but you will probably want to look at that and bring what you need inline (it handles all the possible message systems and you will likely be using only a single message system). For example, to use CA, the following would be fine.</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791886"></A>TOP = ../..</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791889"></A>include $(TOP)/configure/CONFIG</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791890"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791891"></A>SNCFLAGS = +m</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791892"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791893"></A>SEQS =		sncDelay sncEntry sncEntryOpte sncEntryVar sncExitOptx &#92;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791894"></A>		sncOptt sncOpttVar</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791895"></A>PROD = $(SEQS)</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791896"></A>OBJS_vxWorks = $(SEQS)</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791897"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791898"></A>PROD_LIBS += seq pv pvCa ca Com</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791899"></A>seq_DIR    = $(SEQ_LIB)</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791904"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791905"></A>include $(TOP)/configure/RULES</P>
+<P CLASS="BODY">
+<A NAME="pgfId-791887"></A>The only real requirements here are that <EM CLASS="Key-word">
+SEQ</EM>
+ is defined to point to the head of the tree in which the sequencer has been installed (see <EM CLASS="Key-word">
+configure/RELEASE</EM>
+; <EM CLASS="Key-word">
+SEQ_LIB</EM>
+ is automatically defined by a make rule in <EM CLASS="Key-word">
+configure</EM>
+), and that <EM CLASS="Key-word">
+SNC</EM>
+ is defined like this (see <EM CLASS="Key-word">
+configure/CONFIG</EM>
+):</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-791912"></A>SNC = $(SUPPORT)/bin/$(EPICS_HOST_ARCH)/snc</P>
+</DIV>
+</BODY>
+</HTML>

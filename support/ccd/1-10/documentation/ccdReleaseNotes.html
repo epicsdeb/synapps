@@ -1,0 +1,105 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>ccdReleaseNotes.html</title>
+</head>
+<body>
+  <h1 style="text-align: center">
+    ccd Release Notes</h1>
+  <p>
+    NOTE: This module is <b>now obsolete</b> and has been replaced by the <a href="http://cars.uchicago.edu/software/epics/areaDetector.html/">
+      areaDetector module.</a>
+  </p>
+  <h2 style="text-align: center">
+    Release 1-10 (2-Feb-2009)</h2>
+  <ul>
+    <li>Added code to support parallel make.</li>
+    <li>Use new "busy" module for busy record support, not in sscan module any longer.</li>
+    <li>NOTE: The new version of roperServer in R1-9 and R1-10 may not work on some Windows
+      systems. The older server from R1-8 and before can still be used in this case.</li>
+  </ul>
+  <h2 style="text-align: center">
+    Release 1-9 (5-Mar-2008)</h2>
+  <ul>
+    <li>Converted roperServer from Visual Basic 6 to Visual Basic .NET 2003.</li>
+    <li>Fixed bug in roperServer that caused it to treat 16-bit data as signed rather
+      than unsigned.</li>
+  </ul>
+  <h2 style="text-align: center">
+    Release 1-8 (9-Oct-2007)</h2>
+  <ul>
+    <li>Fixed logic in roperCCD.st to eliminate race condition on AcquireCLBK when saving
+      files with SaveFile rather than with AutoSave. Before this fix one needed a delay
+      (~0.5 second) after SaveFile before starting the next frame or acquisition would
+      not start.</li>
+    <li>Changed the SaveFile record type from bo to busy so that it can be used with ca_put_callback
+      if desired and EPICS will wait until the file save is complete.</li>
+  </ul>
+  <h2 style="text-align: center">
+    Release 1-7 (4-Oct-2007)</h2>
+  <ul>
+    <li>Added new FrameType, "Dbl correlation" to collect frames with double correlation.
+      This collects 2 frames, each with half the requested exposure time, and removes
+      cosmic rays (zingers) by comparing the frames. This option is currently only implemented
+      on the marCCD.</li>
+    <li>Added start_epics and sync_adls in iocMarCCD</li>
+  </ul>
+  <h2 style="text-align: center">
+    Release 1-6 (6-Sep-2005)</h2>
+  <ul>
+    <li>Added support for WIN32.</li>
+    <li>Removed variable argument macros for debugging in SNL code.</li>
+    <li>Minor changes in MAR code.</li>
+  </ul>
+  <h2 style="text-align: center">
+    Release 1-5 (31-Mar-2005)</h2>
+  <ul>
+    <li>Added rpc library dependency for cygwin.</li>
+    <li>Changed from using SaveAs to Save in roperServer, so that default file type (SPE,
+      TIFF, etc.) is preserved.</li>
+  </ul>
+  <h2 style="text-align: center">
+    Release 1-4 (23-Mar-2005)</h2>
+  <ul>
+    <li>Changes for asyn, particularly with handling terminators</li>
+    <li>Fixed timing problem with EPICS shutter with roperCCD.st</li>
+  </ul>
+  <h2 style="text-align: center">
+    Release 1-3 (30-Jun-2004)
+  </h2>
+  <ul>
+    <li>Removed MPF, old socket library, and IP, all replaced with ASYN</li>
+    <li>Support double correlation for backgrounds in marCCD</li>
+  </ul>
+  <h2 style="text-align: center">
+    Release 1-2 (18-Feb-2004?)
+  </h2>
+  <ul>
+    <li>Added SSCAN for busy record</li>
+    <li>Added autosave for save/restore</li>
+  </ul>
+  <p>
+  </p>
+  <h2 style="text-align: center">
+    Release 1-1 (27-Jan-2004)
+  </h2>
+  <p>
+    This is the first release of the synApps ccd module.&nbsp; The smartControl program
+    was previously available on the CARS Web site.&nbsp; The other software is new with
+    this release.&nbsp; This version runs only on EPICS 3.14.</p>
+  <p>
+    The support for the MAR-165 CCD and the Roper CCD detectors is currently complete
+    and functional.</p>
+  <p>
+    The support for the Bruker CCD detectors (via the smartService socket interface)
+    is not complete or functional.</p>
+  <p>
+    The support for the MAR-345 online image plate is not complete or functional.</p>
+  <address>
+    Suggestions and Comments to:
+    <br />
+    <a href="mailto:rivers@cars.uchicago.edu">Mark Rivers </a>: (rivers@cars.uchicago.edu)
+    <br />
+    Last modified: March 29, 2005
+  </address>
+</body>
+</html>

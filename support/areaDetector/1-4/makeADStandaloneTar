@@ -1,0 +1,20 @@
+find . -name 'auto_settings.sav_0*' -exec rm -fv {} \;
+find . -name 'core.*' -exec rm -fv {} \;
+tar cvzf /home/epics/public_html/pub/areaDetectorPrebuilt_R1-4.tgz --exclude '.svn*' -C ../.. \
+areaDetector/1-4/dbd \
+areaDetector/1-4/bin \
+areaDetector/1-4/documentation \
+areaDetector/1-4/ADApp/Db \
+areaDetector/1-4/ADApp/op \
+areaDetector/1-4/Viewers \
+areaDetector/1-4/iocBoot \
+asyn/4-10/medm \
+asyn/4-10/db \
+autosave/4-5/asApp/Db \
+autosave/4-5/asApp/op/adl \
+calc/2-7/calcApp/Db \
+calc/2-7/calcApp/op/adl \
+mca/6-10/mcaApp/Db \
+mca/6-10/mcaApp/op/adl \
+sscan/2-6-3/sscanApp/Db \
+sscan/2-6-3/sscanApp/op/adl

@@ -1,0 +1,356 @@
+grecord(stringout,"$(P)$(M):reqInfo")
+{
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(M):getSpeed.PROC PP MS")
+	field(VAL,"I")
+	field(OUT,"@asyn($(PORT))TERM=,")
+}
+grecord(ai,"$(P)$(M):getSpeed")
+{
+	field(DTYP,"asyn ai stringParm")
+	field(FLNK,"$(P)$(M):speedRPut.PROC PP MS")
+	field(INP,"@asyn($(PORT))TERM=0d0a,FMT=%lf,IX=6,TO=3000")
+	field(PREC,"2")
+	field(EGU,"um/s")
+}
+grecord(ai,"$(P)$(M):position")
+{
+	field(DTYP,"asyn ai stringParm")
+	field(SDIS,"$(P)$(M):speedRPut1.PACT NPP NMS")
+	field(FLNK,"$(P)$(M):initPos.PROC PP MS")
+	field(INP,"@asyn($(PORT))TERM=0d0a,FMT=%lf,IX=18")
+	field(PREC,"2")
+	field(EGU,"um")
+}
+grecord(ai,"$(P)$(M):relPosition")
+{
+	field(DTYP,"asyn ai stringParm")
+	field(FLNK,"$(P)$(M):selectedMotor.PROC PP MS")
+	field(INP,"@asyn($(PORT))TERM=0d0a,FMT=%lf,IX=18")
+	field(PREC,"2")
+	field(EGU,"um")
+}
+grecord(longin,"$(P)$(M):selectedMotor")
+{
+	field(DTYP,"asyn li stringParm")
+	field(FLNK,"$(P)$(M):active1.PROC PP MS")
+	field(INP,"@asyn($(PORT))TERM=0d0a,FMT=%d,IX=15")
+}
+grecord(stringin,"$(P)$(M):status")
+{
+	field(DTYP,"asyn si stringParm")
+	field(FLNK,"$(P)$(M):initSpeed.PROC PP MS")
+	field(INP,"@asyn($(PORT))TERM=0d0a")
+}
+grecord(stringout,"$(P)$(M):stop")
+{
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(M):getReply.PROC PP MS")
+	field(VAL,"S")
+	field(OUT,"@asyn($(PORT))TERM=,")
+}
+grecord(stringout,"$(P)$(M):local")
+{
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(M):localReply0.PROC PP MS")
+	field(VAL,"L")
+	field(OUT,"@asyn($(PORT))TERM=,")
+}
+grecord(stringout,"$(P)$(M):remote")
+{
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(M):locRemReply.PROC PP MS")
+	field(VAL,"R")
+	field(OUT,"@asyn($(PORT))TERM=,")
+}
+grecord(stringin,"$(P)$(M):getReply")
+{
+	field(DTYP,"asyn si stringParm")
+	field(FLNK,"$(P)$(M):reqInfo.VAL PP MS")
+	field(INP,"@asyn($(PORT))TERM=0d0a,TO=100")
+}
+grecord(ao,"$(P)$(M):go")
+{
+	field(DTYP,"asyn ao stringParm")
+	field(SDIS,"$(P)$(M):putPos.PACT NPP NMS")
+	field(FLNK,"$(P)$(M):goReply.PROC PP MS")
+	field(OUT,"@asyn($(PORT))TERM=0d,FMT=G%.1f")
+	field(PREC,"1")
+}
+grecord(bo,"$(P)$(M):notDone")
+{
+	field(OMSL,"closed_loop")
+	field(OUT,"$(P)$(M):done.VAL PP MS")
+}
+grecord(bi,"$(P)$(M):done")
+{
+	field(ZNAM,"Moving")
+	field(ONAM,"Done")
+}
+grecord(stringout,"$(P)$(M):reqRBV")
+{
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(M):getRBV.PROC PP MS")
+	field(VAL,"A")
+	field(OUT,"@asyn($(PORT))TERM=,")
+}
+grecord(longin,"$(P)$(M):rawStatus")
+{
+	field(DTYP,"asyn li stringParm")
+	field(FLNK,"$(P)$(M):HLS.PROC PP MS")
+	field(INP,"@asyn($(PORT))TERM=,FMT=%x,N=1,TO=50")
+}
+grecord(calc,"$(P)$(M):calcDone")
+{
+	field(FLNK,"$(P)$(M):putDone.PROC PP MS")
+	field(CALC,"(a#11&&a#12&&b#11&&b#12)?1:0")
+	field(INPA,"$(P)$(M):rawStatus.VAL NPP NMS")
+	field(INPB,"$(P)$(M):calcDone.LA NPP NMS")
+}
+grecord(bo,"$(P)$(M):putDone")
+{
+	field(SDIS,"$(P)$(M):done.VAL NPP NMS")
+	field(OMSL,"closed_loop")
+	field(DOL,"$(P)$(M):calcDone.VAL NPP NMS")
+	field(OUT,"$(P)$(M):done.VAL PP MS")
+}
+grecord(longout,"$(P)$(M):selectMotor")
+{
+	field(DTYP,"asyn lo stringParm")
+	field(FLNK,"$(P)$(M):getReply1.PROC PP MS")
+	field(OUT,"@asyn($(PORT))TERM=0d,FMT=M%d")
+	field(DOL,"1")
+}
+grecord(stringin,"$(P)$(M):getReply1")
+{
+	field(DTYP,"asyn si stringParm")
+	field(FLNK,"$(P)$(M):reqInfo.PROC PP MS")
+	field(INP,"@asyn($(PORT))TERM=0a,TO=1000")
+}
+grecord(bo,"$(P)$(M):initDone")
+{
+	field(PINI,"YES")
+	field(OMSL,"closed_loop")
+	field(DOL,"1")
+	field(OUT,"$(P)$(M):done.VAL PP MS")
+}
+grecord(asyn,"$(P)$(M):setup")
+{
+	field(TMOD,"Read")
+	field(PORT,"$(PORT)")
+}
+grecord(stringin,"$(P)$(M):localReply0")
+{
+	field(DTYP,"asyn si stringParm")
+	field(FLNK,"$(P)$(M):locRemReply.PROC PP MS")
+	field(INP,"@asyn($(PORT))TERM=0d0a,TO=100")
+}
+grecord(stringin,"$(P)$(M):locRemReply")
+{
+	field(DTYP,"asyn si stringParm")
+	field(INP,"@asyn($(PORT))TERM=0d0a,TO=100,IX=1")
+}
+grecord(stringin,"$(P)$(M):flush")
+{
+	field(DTYP,"asyn si stringParm")
+	field(INP,"@asyn($(PORT))TERM=,TO=100")
+}
+grecord(calc,"$(P)$(M):HLS")
+{
+	field(FLNK,"$(P)$(M):LLS.PROC PP MS")
+	field(CALC,"a=14?1:0")
+	field(INPA,"$(P)$(M):rawStatus.VAL NPP NMS")
+}
+grecord(ai,"$(P)$(M):getRBV")
+{
+	field(DTYP,"asyn ai stringParm")
+	field(FLNK,"$(P)$(M):RBV.PROC PP MS")
+	field(INP,"@asyn($(PORT))TERM=0d0a,FMT=%lf")
+	field(PREC,"1")
+	field(EGU,"um")
+}
+grecord(stringout,"$(P)$(M):reqStatus")
+{
+	field(DTYP,"asyn so stringParm")
+	field(SDIS,"$(P)$(M):putPos.PACT NPP NMS")
+	field(FLNK,"$(P)$(M):rawStatus.PROC PP MS")
+	field(VAL,"Z")
+	field(OUT,"@asyn($(PORT))TERM=,")
+}
+grecord(stringin,"$(P)$(M):goReply")
+{
+	field(DTYP,"asyn si stringParm")
+	field(FLNK,"$(P)$(M):notDone.PROC PP MS")
+	field(INP,"@asyn($(PORT))TERM=0d0d0a,TO=1000")
+}
+grecord(stringin,"$(P)$(M):update")
+{
+	field(SCAN,".5 second")
+	field(DTYP,"asyn si stringParm")
+	field(SDIS,"$(P)$(M):done.VAL NPP NMS")
+	field(FLNK,"$(P)$(M):reqRBV.PROC PP MS")
+	field(INP,"@asyn($(PORT))TERM=,TO=100")
+}
+grecord(transform,"$(P)$(M):tweak")
+{
+	field(CLCE,"a?d+c:b?d-c:d")
+	field(INPC,"1")
+	field(INPD,"$(P)$(M):VAL.VAL NPP NMS")
+	field(OUTE,"$(P)$(M):VAL.VAL PP MS")
+	field(OUTF,"$(P)$(M):tweak.A PP MS")
+	field(OUTG,"$(P)$(M):tweak.B PP MS")
+	field(EGU,"um")
+	field(PREC,"1")
+}
+grecord(ao,"$(P)$(M):initSpeed")
+{
+	field(OUT,"$(P)$(M):putSpeed.VAL PP MS")
+	field(DOL,"$(P)$(M):speed.VAL NPP NMS")
+	field(OMSL,"closed_loop")
+	field(PREC,"2")
+	field(EGU,"um/s")
+}
+grecord(calc,"$(P)$(M):LLS")
+{
+	field(FLNK,"$(P)$(M):calcDone.PROC PP MS")
+	field(CALC,"a=13?1:0")
+	field(INPA,"$(P)$(M):rawStatus.VAL NPP NMS")
+}
+grecord(ao,"$(P)$(M):initPos")
+{
+	field(FLNK,"$(P)$(M):putPos.PROC PP MS")
+	field(DOL,"$(P)$(M):position.VAL NPP NMS")
+	field(OMSL,"closed_loop")
+	field(PREC,"2")
+	field(EGU,"um")
+}
+grecord(ao,"$(P)$(M):VAL")
+{
+	field(DESC,"EncoderMike1")
+	field(OUT,"$(P)$(M):go.VAL PP MS")
+	field(PREC,"1")
+	field(EGU,"um")
+}
+grecord(ao,"$(P)$(M):putSpeed")
+{
+	field(OUT,"$(P)$(M):calcPrec.A PP MS")
+	field(PREC,"2")
+	field(EGUF,"200")
+	field(EGUL,"0.5")
+	field(EGU,"um/s")
+	field(DRVH,"200")
+	field(DRVL,"0.5")
+	field(HOPR,"200")
+	field(LOPR,"0.5")
+}
+grecord(ai,"$(P)$(M):speedReply")
+{
+	field(DTYP,"asyn ai stringParm")
+	field(FLNK,"$(P)$(M):speedRPut1.PROC PP MS")
+	field(INP,"@asyn($(PORT))TERM=0d0d0a,FMT=%lf,IX=1")
+	field(PREC,"2")
+	field(EGU,"um/s")
+}
+grecord(ao,"$(P)$(M):RBV")
+{
+	field(FLNK,"$(P)$(M):reqStatus.PROC PP MS")
+	field(DOL,"$(P)$(M):getRBV.VAL NPP NMS")
+	field(OMSL,"closed_loop")
+	field(PREC,"1")
+	field(EGU,"um")
+}
+grecord(seq,"$(P)$(M):putPos")
+{
+	field(FLNK,"$(P)$(M):relPosition.PROC PP MS")
+	field(DOL1,"$(P)$(M):initPos.VAL NPP NMS")
+	field(LNK1,"$(P)$(M):VAL.VAL PP MS")
+	field(DOL2,"$(P)$(M):initPos.VAL NPP NMS")
+	field(LNK2,"$(P)$(M):RBV.VAL PP MS")
+}
+grecord(calc,"$(P)$(M):active1")
+{
+	field(FLNK,"$(P)$(M):active2.PROC PP MS")
+	field(CALC,"a=1")
+	field(INPA,"$(P)$(M):selectedMotor.VAL NPP NMS")
+}
+grecord(calc,"$(P)$(M):active2")
+{
+	field(FLNK,"$(P)$(M):active3.PROC PP MS")
+	field(CALC,"a=2")
+	field(INPA,"$(P)$(M):selectedMotor.VAL NPP NMS")
+}
+grecord(calc,"$(P)$(M):active3")
+{
+	field(FLNK,"$(P)$(M):status.PROC PP MS")
+	field(CALC,"a=3")
+	field(INPA,"$(P)$(M):selectedMotor.VAL NPP NMS")
+}
+grecord(ao,"$(P)$(M):speedRPut")
+{
+	field(OUT,"$(P)$(M):speed.VAL PP MS")
+	field(DOL,"$(P)$(M):getSpeed.VAL NPP NMS")
+	field(OMSL,"closed_loop")
+	field(PREC,"2")
+	field(EGU,"um/s")
+}
+grecord(ao,"$(P)$(M):speed")
+{
+	field(FLNK,"$(P)$(M):position.PROC PP MS")
+	field(PREC,"2")
+	field(EGU,"um/s")
+}
+grecord(ao,"$(P)$(M):speedRPut1")
+{
+	field(FLNK,"$(P)$(M):reqRBV.VAL PP MS")
+	field(OUT,"$(P)$(M):speed.VAL PP MS")
+	field(DOL,"$(P)$(M):speedReply.VAL NPP NMS")
+	field(OMSL,"closed_loop")
+	field(PREC,"2")
+	field(EGU,"um/s")
+}
+grecord(ao,"$(P)$(M)")
+{
+	field(DESC,"Encoder Mike")
+	field(PREC,"1")
+	field(EGU,"um")
+}
+grecord(ao,"$(P)$(M):putSpeed2")
+{
+	field(DTYP,"asyn ao stringParm")
+	field(FLNK,"$(P)$(M):speedReply.PROC PP MS")
+	field(OUT,"@asyn($(PORT))TERM=0d,FMT=V%.2f")
+	field(PREC,"2")
+	field(EGU,"um/s")
+}
+grecord(ao,"$(P)$(M):putSpeed1")
+{
+	field(DTYP,"asyn ao stringParm")
+	field(FLNK,"$(P)$(M):speedReply.PROC PP MS")
+	field(OUT,"@asyn($(PORT))TERM=0d,FMT=V%.1f")
+	field(PREC,"2")
+	field(EGU,"um/s")
+}
+grecord(ao,"$(P)$(M):putSpeed0")
+{
+	field(DTYP,"asyn ao stringParm")
+	field(FLNK,"$(P)$(M):speedReply.PROC PP MS")
+	field(OUT,"@asyn($(PORT))TERM=0d,FMT=V%.0f")
+	field(PREC,"2")
+	field(EGU,"um/s")
+}
+grecord(calc,"$(P)$(M):calcPrec")
+{
+	field(FLNK,"$(P)$(M):putSpeedSQ.PROC PP MS")
+	field(CALC,"a<=4.99?1:a<=49.9?2:3")
+}
+grecord(seq,"$(P)$(M):putSpeedSQ")
+{
+	field(SELM,"Specified")
+	field(SELL,"$(P)$(M):calcPrec.VAL NPP NMS")
+	field(DOL1,"$(P)$(M):calcPrec.A NPP NMS")
+	field(LNK1,"$(P)$(M):putSpeed2.VAL PP MS")
+	field(DOL2,"$(P)$(M):calcPrec.A NPP NMS")
+	field(LNK2,"$(P)$(M):putSpeed1.VAL PP MS")
+	field(DOL3,"$(P)$(M):calcPrec.A NPP NMS")
+	field(LNK3,"$(P)$(M):putSpeed0.VAL PP MS")
+}

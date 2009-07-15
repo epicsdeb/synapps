@@ -1,0 +1,39 @@
+# RELEASE - Location of external products
+#
+# Note: This file will be scanned to automatically generate
+#       include path definitions etc.
+#       The order of the following declarations will be retained
+#       within those definitions.
+#
+# Note that "#!" marks lines that can be uncommented.
+#
+# Add your declarations here
+
+#!GATEWAY=
+#!SUPPORT=
+
+# If any motor controller communication mechanism besides the VME backplane is
+# required, then ASYN must be defined.
+# Recommended ASYN release: R4-10
+ASYN=/home/oxygen/MOONEY/distrib/synApps_5_4_1/support/asyn/4-10
+
+# Need the sequencer for the MM4005 and XPS trajectory scanning
+# Recommended SNCSEQ release: R2-0-12
+SNCSEQ=/home/oxygen/MOONEY/distrib/synApps_5_4_1/support/seq/2-0-12
+
+# Recommended EPICS release: R3.14.10
+EPICS_BASE=/home/oxygen/MOONEY/epics/base-3.14.10
+
+# The following must be defined for the MXmotor device driver.
+#!MX=$(SUPPORT)/mx/mx
+
+# The following support modules are required ONLY if the examples in
+# <motor>/motorExApp are built.  To build examples, the top Makefile,
+# <motor>/Makefile must also be edited.
+
+# Recommended IPAC release: R2-10
+#!IPAC=$(SUPPORT)/ipacR2-10
+
+# The following is only needed for the motor examples in iocBoot.
+#!MOTOR=$(TOP)
+

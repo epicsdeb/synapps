@@ -1,0 +1,131 @@
+menu(abDcm_DCMT) {
+	choice(abDcm_1771DCM,"1771-DCM")
+	choice(abDcm_1771PLCadapter,"PLC adapter port")
+	choice(abDcm_1771MultiSlot,"PLCMultiSlot")
+}
+recordtype(abDcm) {
+	include "dbCommon.dbd" 
+	field(VAL,DBF_STRING) {
+		prompt("Link Status")
+		special(SPC_NOMOD)
+		size(40)
+	}
+	field(OVAL,DBF_STRING) {
+		prompt("Link Status")
+		special(SPC_NOMOD)
+		size(40)
+	}
+	field(DCMT,DBF_MENU) {
+		prompt("DCM Type")
+		promptgroup(GUI_INPUTS)
+		menu(abDcm_DCMT)
+		interest(1)
+		special(SPC_NOMOD)
+	}
+	field(NT,DBF_USHORT) {
+		prompt("Number of Tables")
+		promptgroup(GUI_INPUTS)
+		special(SPC_NOMOD)
+		interest(1)
+	}
+	field(TOFF,DBF_USHORT) {
+		prompt("Offset in message of Table Number")
+		promptgroup(GUI_INPUTS)
+		special(SPC_NOMOD)
+		interest(1)
+	}
+	field(DLY,DBF_FLOAT) {
+		prompt("block transfer delay ")
+		promptgroup(GUI_DISPLAY)
+		interest(1)
+	}
+	field(LOCA,DBF_MENU) {
+		prompt("scanIoRequest comm err")
+		promptgroup(GUI_INPUTS)
+		interest(1)
+		menu(menuYesNo)
+	}
+	field(LINK,DBF_USHORT) {
+		prompt("Scanner Number")
+		promptgroup(GUI_INPUTS)
+		special(SPC_NOMOD)
+		interest(1)
+	}
+	field(RACK,DBF_USHORT) {
+		prompt("Rack")
+		promptgroup(GUI_INPUTS)
+		special(SPC_NOMOD)
+		interest(1)
+	}
+	field(SLOT,DBF_USHORT) {
+		prompt("Slot")
+		promptgroup(GUI_INPUTS)
+		special(SPC_NOMOD)
+		interest(1)
+	}
+	field(MCW,DBF_USHORT) {
+		prompt("Max Consecutive Writes")
+		promptgroup(GUI_INPUTS)
+		interest(1)
+	}
+	field(T0,DBF_NOACCESS) {
+		prompt("Table Array 0")
+		special(SPC_DBADDR)
+		size(4)
+		extra("void *		t0")
+	}
+	field(T1,DBF_NOACCESS) {
+		prompt("Table Array 1")
+		special(SPC_DBADDR)
+		size(4)
+		extra("void *		t1")
+	}
+	field(T2,DBF_NOACCESS) {
+		prompt("Table Array 2")
+		special(SPC_DBADDR)
+		size(4)
+		extra("void *		t2")
+	}
+	field(T3,DBF_NOACCESS) {
+		prompt("Table Array 3")
+		special(SPC_DBADDR)
+		size(4)
+		extra("void *		t3")
+	}
+	field(T4,DBF_NOACCESS) {
+		prompt("Table Array 4")
+		special(SPC_DBADDR)
+		size(4)
+		extra("void *		t4")
+	}
+	field(T5,DBF_NOACCESS) {
+		prompt("Table Array 5")
+		special(SPC_DBADDR)
+		size(4)
+		extra("void *		t5")
+	}
+	field(T6,DBF_NOACCESS) {
+		prompt("Table Array 6")
+		special(SPC_DBADDR)
+		size(4)
+		extra("void *		t6")
+	}
+	field(T7,DBF_NOACCESS) {
+		prompt("Table Array 7")
+		special(SPC_DBADDR)
+		size(4)
+		extra("void *		t7")
+	}
+	field(T8,DBF_NOACCESS) {
+		prompt("Table Array 8")
+		special(SPC_DBADDR)
+		size(4)
+		extra("void *		t8")
+	}
+	field(T9,DBF_NOACCESS) {
+		prompt("Table Array 9")
+		special(SPC_DBADDR)
+		size(4)
+		extra("void *		t9")
+	}
+}

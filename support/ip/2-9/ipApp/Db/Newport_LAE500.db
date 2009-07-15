@@ -1,0 +1,226 @@
+# Database for Newport LAE500 autocollimator
+#
+# Mark Rivers
+# July 30, 2006
+#
+
+# Fields to read data (Y and Y)
+record(asyn, "$(P)$(R)_READ_DATA") {
+    field(PINI,"1")
+    field(AOUT,"P")
+    field(PORT,"$(PORT)")
+    field(FLNK,"$(P)$(R)_X.VAL PP MS")
+}
+record(scalcout,"$(P)$(R)_X") {
+    field(INAA,"$(P)$(R)_READ_DATA.AINP NPP NMS")
+    field(CALC,"SSCANF(AA, 'P%f')")
+    field(PREC,"1")
+    field(FLNK,"$(P)$(R)_Z.PROC PP MS")
+}
+record(scalcout,"$(P)$(R)_Z") {
+    field(INAA,"$(P)$(R)_READ_DATA.AINP NPP NMS")
+    field(CALC,"SSCANF(AA, 'P%*f,%f')")
+    field(PREC,"1")
+}
+
+record(bo, "$(P)$(R)_READ_STATUS") {
+    field(PINI,"1")
+    field(FLNK,"$(P)$(R)_START_STATUS.PROC PP MS")
+}
+
+record(bo, "$(P)$(R)_START_STATUS") {
+    field(VAL, "1")
+    field(OUT,"$(P)$(R)_READ_Y_COEFF.PROC PP MS")
+}
+
+record(asyn, "$(P)$(R)_READ_Y_COEFF") {
+    field(AOUT,"Y")
+    field(PORT,"$(PORT)")
+    field(FLNK,"$(P)$(R)_Y_COEFF_RBV.PROC PP MS")
+}
+record(scalcout,"$(P)$(R)_Y_COEFF_RBV") {
+    field(INAA,"$(P)$(R)_READ_Y_COEFF.AINP NPP NMS")
+    field(CALC,"SSCANF(AA, 'Y%f')")
+    field(PREC,"0")
+    field(FLNK,"$(P)$(R)_READ_Z_COEFF.PROC PP MS")
+}
+
+record(asyn, "$(P)$(R)_READ_Z_COEFF") {
+    field(AOUT,"Z")
+    field(PORT,"$(PORT)")
+    field(FLNK,"$(P)$(R)_Z_COEFF_RBV.PROC PP MS")
+}
+record(scalcout,"$(P)$(R)_Z_COEFF_RBV") {
+    field(INAA,"$(P)$(R)_READ_Z_COEFF.AINP NPP NMS")
+    field(CALC,"SSCANF(AA, 'Z%f')")
+    field(PREC,"0")
+    field(FLNK,"$(P)$(R)_READ_INTEGRATE.PROC PP MS")
+}
+
+record(asyn, "$(P)$(R)_READ_INTEGRATE") {
+    field(AOUT,"I")
+    field(PORT,"$(PORT)")
+    field(FLNK,"$(P)$(R)_INTEGRATE_RBV.PROC PP MS")
+}
+record(scalcout,"$(P)$(R)_INTEGRATE_RBV") {
+    field(INAA,"$(P)$(R)_READ_INTEGRATE.AINP NPP NMS")
+    field(CALC,"SSCANF(AA, 'I%f')")
+    field(PREC,"0")
+    field(FLNK,"$(P)$(R)_READ_INCREMENT.PROC PP MS")
+}
+
+record(asyn, "$(P)$(R)_READ_INCREMENT") {
+    field(AOUT,"S")
+    field(PORT,"$(PORT)")
+    field(FLNK,"$(P)$(R)_INCREMENT_RBV.PROC PP MS")
+}
+record(scalcout,"$(P)$(R)_INCREMENT_RBV") {
+    field(INAA,"$(P)$(R)_READ_INCREMENT.AINP NPP NMS")
+    field(CALC,"SSCANF(AA, 'S%s')")
+    field(PREC,"0")
+    field(FLNK,"$(P)$(R)_READ_UNITS.PROC PP MS")
+}
+
+record(asyn, "$(P)$(R)_READ_UNITS") {
+    field(AOUT,"U")
+    field(PORT,"$(PORT)")
+    field(FLNK,"$(P)$(R)_UNITS_RBV.PROC PP MS")
+}
+record(scalcout,"$(P)$(R)_UNITS_RBV") {
+    field(INAA,"$(P)$(R)_READ_UNITS.AINP NPP NMS")
+    field(CALC,"$S(AA,'U%s')='m'?'Microns':'Microrads'")
+    field(FLNK,"$(P)$(R)_READ_VERSION.PROC PP MS")
+}
+
+record(asyn, "$(P)$(R)_READ_VERSION") {
+    field(AOUT,"V")
+    field(PORT,"$(PORT)")
+    field(FLNK,"$(P)$(R)_VERSION_RBV.PROC PP MS")
+}
+record(scalcout,"$(P)$(R)_VERSION_RBV") {
+    field(INAA,"$(P)$(R)_READ_VERSION.AINP NPP NMS")
+    field(CALC,"SSCANF(AA, 'V%s')")
+}
+
+
+# Records to set parameters
+
+# Remote/local mode.  Put in remote mode at iocInit.
+record(mbbo,"$(P)$(R)_REMOTE") {
+    field(ZRVL, "0")
+    field(ZRST, "Disable")
+    field(ONVL, "1")
+    field(ONST, "Enable")
+    field(VAL,  "1")
+    field(PINI, "1")
+    field(FLNK,"$(P)$(R)_SET_REMOTE.PROC PP MS")
+}
+record(scalcout,"$(P)$(R)_SET_REMOTE") {
+    field(INPA,"$(P)$(R)_REMOTE.RVAL")
+    field(CALC,"A=0?$P('C+',0):$P('C-',0)")
+    field(OUT,"$(P)$(R)_OUTPUT.AOUT PP MS")
+}
+
+record(mbbo,"$(P)$(R)_UNITS") {
+    field(ZRVL, "0")
+    field(ZRST, "Microradians")
+    field(ONVL, "1")
+    field(ONST, "Microns")
+    field(VAL,  "1")
+    field(FLNK,"$(P)$(R)_SET_UNITS.PROC PP MS")
+}
+record(scalcout,"$(P)$(R)_SET_UNITS") {
+    field(INPA,"$(P)$(R)_UNITS.RVAL")
+    field(CALC,"A=0?$P('UR',0):$P('UM',0)")
+    field(OUT,"$(P)$(R)_OUTPUT.AOUT PP MS")
+}
+
+record(ao,"$(P)$(R)_Y_COEFF") {
+    field(PREC,"0")
+    field(OUT,"$(P)$(R)_SET_Y_COEFF.A PP MS")
+}
+record(scalcout,"$(P)$(R)_SET_Y_COEFF") {
+    field(CALC,"PRINTF('Y%d',A)")
+    field(OUT,"$(P)$(R)_OUTPUT.AOUT PP MS")
+}
+
+record(ao,"$(P)$(R)_Z_COEFF") {
+    field(PREC,"0")
+    field(OUT,"$(P)$(R)_SET_Z_COEFF.A PP MS")
+}
+record(scalcout,"$(P)$(R)_SET_Z_COEFF") {
+    field(CALC,"PRINTF('Z%d',A)")
+    field(OUT,"$(P)$(R)_OUTPUT.AOUT PP MS")
+}
+
+record(mbbo,"$(P)$(R)_INTEGRATE") {
+    field(ZRVL, "1")
+    field(ZRST, "1 ms")
+    field(ONVL, "2")
+    field(ONST, "2 ms")
+    field(TWVL, "5")
+    field(TWST, "5 ms")
+    field(THVL, "10")
+    field(THST, "10 ms")
+    field(FRVL, "20")
+    field(FRST, "20 ms")
+    field(FVVL, "50")
+    field(FVST, "50 ms")
+    field(SXVL, "100")
+    field(SXST, "100 ms")
+    field(SVVL, "200")
+    field(SVST, "200 ms")
+    field(EIVL, "500")
+    field(EIST, "500 ms")
+    field(NIVL, "1000")
+    field(NIST, "1000 ms")
+    field(FLNK,"$(P)$(R)_SET_INTEGRATE.PROC PP MS")
+}
+record(scalcout,"$(P)$(R)_SET_INTEGRATE") {
+    field(INPA,"$(P)$(R)_INTEGRATE.RVAL")
+    field(CALC,"PRINTF('I%d',A)")
+    field(OUT,"$(P)$(R)_OUTPUT.AOUT PP MS")
+}
+
+record(mbbo,"$(P)$(R)_INCREMENT") {
+    field(ZRVL, "100")
+    field(ZRST, "0.1")
+    field(ONVL, "200")
+    field(ONST, "0.2")
+    field(TWVL, "500")
+    field(TWST, "0.5")
+    field(THVL, "1000")
+    field(THST, "1.0")
+    field(FRVL, "2000")
+    field(FRST, "2.0")
+    field(FVVL, "5000")
+    field(FVST, "5.0")
+    field(SXVL, "10000")
+    field(SXST, "10.0")
+    field(SVVL, "20000")
+    field(SVST, "20.0")
+    field(FLNK,"$(P)$(R)_SET_INCREMENT.PROC PP MS")
+}
+
+# The LAE500 is picky about decimal points and formats.  
+# Need to send one digit after decimal point  for numbers <1 and 
+# no decimal point for numbers >= 1.
+record(scalcout,"$(P)$(R)_SET_INCREMENT") {
+    field(INPA,"$(P)$(R)_INCREMENT.RVAL")
+    field(CALC,"A<1e3?$P('S%.1f',A/1e3):$P('S%d',A/1e3)")
+    field(OUT,"$(P)$(R)_OUTPUT.AOUT PP MS")
+}
+
+# General purpose asyn record for output.
+# This is used when setting parameters.
+# Forward link to READ_STATUS so we always read the status after setting any parameter.
+record(asyn, "$(P)$(R)_OUTPUT") {
+    field(PORT,"$(PORT)")
+    field(FLNK,"$(P)$(R)_START_STATUS.PROC PP MS")
+}
+
+# General purpose asyn record for users
+record(asyn, "$(P)$(R)_ASYN") {
+    field(PORT,"$(PORT)")
+}
+

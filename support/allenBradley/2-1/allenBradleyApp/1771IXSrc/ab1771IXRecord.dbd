@@ -1,0 +1,235 @@
+menu(ab1771IX_MTYP) {
+  choice(ab1771IX_HR,"1771-IXHR")
+  choice(ab1771IX_E ,"1771-IXE")
+}
+menu(ab1771IX_Units) {
+  choice(ab1771IX_UnitsC,"degC")
+  choice(ab1771IX_UnitsF,"degF")
+}
+menu(ab1771IX_TYPE) {
+  choice(ab1771IX_TYPE_MV,"Millivolt")
+  choice(ab1771IX_TYPE_tcB,"tc B")
+  choice(ab1771IX_TYPE_tcE,"tc E")
+  choice(ab1771IX_TYPE_tcJ,"tc J")
+  choice(ab1771IX_TYPE_tcK,"tc K")
+  choice(ab1771IX_TYPE_tcR,"tc R")
+  choice(ab1771IX_TYPE_tcS,"tc S")
+  choice(ab1771IX_TYPE_tcT,"tc T")
+}
+menu(ab1771IX_CMD) {
+  choice(ab1771IX_CMD_None,"None")
+  choice(ab1771IX_Init,"Initialize")
+}
+menu(ab1771IX_STA) {
+  choice(ab1771IX_STA_Ok,"Ok")
+  choice(ab1771IX_STA_Under,"Underrange")
+  choice(ab1771IX_STA_Over,"Overrange")
+}
+
+recordtype(ab1771IX) {
+  include "dbCommon.dbd" 
+  field(VAL,DBF_STRING) {
+    prompt("Status")
+    special(SPC_NOMOD)
+    size(40)
+  }
+  field(CMD,DBF_MENU) {
+    prompt("Command")
+    interest(1)
+    menu(ab1771IX_CMD)
+  }
+  field(LOCA,DBF_MENU) {
+    prompt("scanIoRequest comm err")
+    promptgroup(GUI_INPUTS)
+    interest(1)
+    menu(menuYesNo)
+  }
+  field(LINK,DBF_USHORT) {
+    prompt("Scanner Number")
+    promptgroup(GUI_INPUTS)
+    special(SPC_NOMOD)
+    interest(1)
+  }
+  field(RACK,DBF_USHORT) {
+    prompt("Rack")
+    promptgroup(GUI_INPUTS)
+    special(SPC_NOMOD)
+    interest(1)
+  }
+  field(SLOT,DBF_USHORT) {
+    prompt("Slot")
+    promptgroup(GUI_INPUTS)
+    special(SPC_NOMOD)
+    interest(1)
+  }
+  field(OUTM,DBF_NOACCESS) {
+    prompt("Output Message")
+    special(SPC_DBADDR)
+    size(4)
+    extra("short	*outm")
+  }
+  field(INPM,DBF_NOACCESS) {
+    prompt("Input Message")
+    special(SPC_DBADDR)
+    size(4)
+    extra("short	*inpm")
+  }
+  field(IAI1,DBF_NOACCESS) {
+    prompt("Interface for ai")
+    special(SPC_DBADDR)
+    size(4)
+    extra("void	*iai1")
+  }
+  field(MTYP,DBF_MENU) {
+    prompt("Module Type")
+    promptgroup(GUI_INPUTS)
+    menu(ab1771IX_MTYP)
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(TYPA,DBF_MENU) {
+    prompt("Chan 1-4 type")
+    promptgroup(GUI_INPUTS)
+    menu(ab1771IX_TYPE)
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(TYPB,DBF_MENU) {
+    prompt("Chan 5-8 type")
+    promptgroup(GUI_INPUTS)
+    menu(ab1771IX_TYPE)
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(SCAL,DBF_MENU) {
+    prompt("Temperature Scale")
+    promptgroup(GUI_INPUTS)
+    menu(ab1771IX_Units)
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(STIM,DBF_SHORT) {
+    prompt("Sample Time Period")
+    promptgroup(GUI_INPUTS)
+    interest(1)
+  }
+  field(ZOOM,DBF_MENU) {
+    prompt("Enable zoom for millivolt")
+    promptgroup(GUI_INPUTS)
+    menu(menuYesNo)
+    interest(1)
+  }
+  field(ZCA,DBF_SHORT) {
+    prompt("Zoom center channels 1-4")
+    promptgroup(GUI_INPUTS)
+    interest(1)
+  }
+  field(ZCB,DBF_SHORT) {
+    prompt("Zoom center channels 5-8")
+    promptgroup(GUI_INPUTS)
+    interest(1)
+  }
+  field(FILA,DBF_SHORT) {
+    prompt("Filter value channels 1-4")
+    promptgroup(GUI_INPUTS)
+    interest(1)
+  }
+  field(FILB,DBF_SHORT) {
+    prompt("Filter value channels 5-8")
+    promptgroup(GUI_INPUTS)
+    interest(1)
+  }
+  field(CJT,DBF_FLOAT) {
+    prompt("Cold Junction Temperature ")
+    special(SPC_NOMOD)
+    interest(0)
+  }
+  field(STA1,DBF_MENU) {
+    prompt("Chan 1 status")
+    menu(ab1771IX_STA)
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(RAW1,DBF_SHORT) {
+    prompt("Chan 1 raw value")
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(STA2,DBF_MENU) {
+    prompt("Chan 2 status")
+    menu(ab1771IX_STA)
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(RAW2,DBF_SHORT) {
+    prompt("Chan 2 raw value")
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(STA3,DBF_MENU) {
+    prompt("Chan 3 status")
+    menu(ab1771IX_STA)
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(RAW3,DBF_SHORT) {
+    prompt("Chan 3 raw value")
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(STA4,DBF_MENU) {
+    prompt("Chan 4 status")
+    menu(ab1771IX_STA)
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(RAW4,DBF_SHORT) {
+    prompt("Chan 4 raw value")
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(STA5,DBF_MENU) {
+    prompt("Chan 5 status")
+    menu(ab1771IX_STA)
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(RAW5,DBF_SHORT) {
+    prompt("Chan 5 raw value")
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(STA6,DBF_MENU) {
+    prompt("Chan 6 status")
+    menu(ab1771IX_STA)
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(RAW6,DBF_SHORT) {
+    prompt("Chan 6 raw value")
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(STA7,DBF_MENU) {
+    prompt("Chan 7 status")
+    menu(ab1771IX_STA)
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(RAW7,DBF_SHORT) {
+    prompt("Chan 7 raw value")
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(STA8,DBF_MENU) {
+    prompt("Chan 8 status")
+    menu(ab1771IX_STA)
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(RAW8,DBF_SHORT) {
+    prompt("Chan 8 raw value")
+    interest(1)
+    special(SPC_NOMOD)
+  }
+}

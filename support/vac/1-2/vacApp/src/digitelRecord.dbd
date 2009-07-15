@@ -1,0 +1,646 @@
+menu(digitelDSPL) {
+	choice(digitelDSPL_VOLTS,"VOLTS")
+	choice(digitelDSPL_CURR,"CURR")
+	choice(digitelDSPL_PRES,"PRES")
+}
+menu(digitelKLCK) {
+	choice(digitelKLCK_Unlocked,"Unlocked")
+	choice(digitelKLCK_Locked,"Locked")
+}
+menu(digitelMODS) {
+	choice(digitelMODS_STBY,"STBY")
+	choice(digitelMODS_OPER,"OPER")
+}
+menu(digitelMODR) {
+	choice(digitelMODR_STBY,"STBY")
+	choice(digitelMODR_OPER,"OPER")
+	choice(digitelMODR_CONN,"CONN")
+	choice(digitelMODR_COOL,"COOL")
+	choice(digitelMODR_PERR,"PERR")
+	choice(digitelMODR_LOCK,"LOCK")
+}
+menu(digitelSET1) {
+	choice(digitelSET1_Off,"Off")
+	choice(digitelSET1_On,"On")
+}
+menu(digitelS1MS) {
+	choice(digitelS1MS_Pressure,"Pressure")
+	choice(digitelS1MS_Current,"Current")
+}
+menu(digitelS1VS) {
+	choice(digitelS1VS_Off,"Off")
+	choice(digitelS1VS_On,"On")
+}
+menu(digitelBAKS) {
+	choice(digitelBAKS_Disabled,"Disabled")
+	choice(digitelBAKS_Enabled,"Enabled")
+}
+menu(digitelS3BS) {
+	choice(digitelS3BS_Real_Time,"Real Time")
+	choice(digitelS3BS_Heat_On_Time,"Heat On Time")
+}
+menu(digitelPTYP) {
+	# The first 6 entries match REC_DG_CHOICE_PUMP_* in choiceDigitel.h
+	# and are used in the old devDigitelMsg232.c Dg500/1500 support
+	choice(digitelPTYP_30__Liter_sec,"30  Liter/sec")
+	choice(digitelPTYP_60__Liter_sec,"60  Liter/sec")
+	choice(digitelPTYP_120_Liter_sec,"120 Liter/sec")
+	choice(digitelPTYP_220_Liter_sec,"220 Liter/sec")
+	choice(digitelPTYP_400_Liter_sec,"400 Liter/sec")
+	choice(digitelPTYP_700_Liter_sec,"700 Liter/sec")
+	# Entries below here are not found in the obselete choiceDigitel.h
+	choice(digitelPTYP_1200_Liter_sec,"1200 Liter/sec")
+}
+menu(digitelCMOR) {
+	choice(digitelCMOR_Off,"Off")
+	choice(digitelCMOR_On,"On")
+}
+menu(digitelBKIN) {
+	choice(digitelBKIN_Absent,"Absent")
+	choice(digitelBKIN_Installed,"Installed")
+}
+menu(digitelTYPE) {
+	choice(digitelTYPE_Digitel_MPC,"MPC")
+	choice(digitelTYPE_Digitel_500,"D500")
+	choice(digitelTYPE_Digitel_1500,"D1500")
+}
+recordtype(digitel) {
+	include "dbCommon.dbd" 
+	field(INP,DBF_INLINK) {
+		prompt("Device Specification")
+		promptgroup(GUI_COMMON)
+		special(SPC_NOMOD)
+		interest(1)
+	}
+	field(VAL,DBF_DOUBLE) {
+		prompt("Pressure")
+		asl(ASL0)
+		special(SPC_NOMOD)
+	}
+	field(LVAL,DBF_DOUBLE) {
+		prompt("Pressure (log10 form)")
+		asl(ASL0)
+		special(SPC_NOMOD)
+	}
+	field(HIHI,DBF_DOUBLE) {
+		prompt("Pressure Hihi Alarm")
+		promptgroup(GUI_ALARMS)
+		pp(TRUE)
+		interest(1)
+		initial("1e-06")
+	}
+	field(LOLO,DBF_DOUBLE) {
+		prompt("Pressure Lolo Alarm")
+		promptgroup(GUI_ALARMS)
+		pp(TRUE)
+		interest(1)
+		initial("1e-12")
+	}
+	field(HIGH,DBF_DOUBLE) {
+		prompt("Pressure High Alarm")
+		promptgroup(GUI_ALARMS)
+		pp(TRUE)
+		interest(1)
+		initial("1e-07")
+	}
+	field(LOW,DBF_DOUBLE) {
+		prompt("Pressure Low Alarm")
+		promptgroup(GUI_ALARMS)
+		pp(TRUE)
+		interest(1)
+		initial("2e-12")
+	}
+	field(HHSV,DBF_MENU) {
+		prompt("Pressure Hihi Severity")
+		promptgroup(GUI_ALARMS)
+		pp(TRUE)
+		interest(1)
+		menu(menuAlarmSevr)
+	}
+	field(LLSV,DBF_MENU) {
+		prompt("Pressure Lolo Severity")
+		promptgroup(GUI_ALARMS)
+		pp(TRUE)
+		interest(1)
+		menu(menuAlarmSevr)
+	}
+	field(HSV,DBF_MENU) {
+		prompt("Pressure High Severity")
+		promptgroup(GUI_ALARMS)
+		pp(TRUE)
+		interest(1)
+		menu(menuAlarmSevr)
+	}
+	field(LSV,DBF_MENU) {
+		prompt("Pressure Low Severity")
+		promptgroup(GUI_ALARMS)
+		pp(TRUE)
+		interest(1)
+		menu(menuAlarmSevr)
+	}
+	field(HYST,DBF_DOUBLE) {
+		prompt("Alarm Deadband")
+		promptgroup(GUI_ALARMS)
+		interest(1)
+	}
+	field(LALM,DBF_DOUBLE) {
+		prompt("Last Value Alarmed")
+		special(SPC_NOMOD)
+		interest(3)
+	}
+	field(DSPL,DBF_MENU) {
+		prompt("Display Mode")
+		promptgroup(GUI_ALARMS)
+		special(SPC_MOD)
+		pp(TRUE)
+		menu(digitelDSPL)
+		initial("2")
+	}
+	field(KLCK,DBF_MENU) {
+		prompt("Keyboard Lock")
+		promptgroup(GUI_BITS1)
+		special(SPC_MOD)
+		pp(TRUE)
+		menu(digitelKLCK)
+	}
+	field(MODS,DBF_MENU) {
+		prompt("Mode")
+		promptgroup(GUI_BITS2)
+		special(SPC_MOD)
+		pp(TRUE)
+		menu(digitelMODS)
+	}
+	field(MODR,DBF_MENU) {
+		prompt("Mode Readback")
+		special(SPC_NOMOD)
+		menu(digitelMODR)
+	}
+	field(BAKS,DBF_MENU) {
+		prompt("Bake")
+		promptgroup(GUI_BITS2)
+		special(SPC_MOD)
+		pp(TRUE)
+		menu(digitelBAKS)
+	}
+	field(BAKR,DBF_MENU) {
+		prompt("Bake Readback")
+		special(SPC_NOMOD)
+		menu(digitelBAKS)
+	}
+	field(COOL,DBF_DOUBLE) {
+		prompt("Cooldown Time")
+		special(SPC_NOMOD)
+	}
+	field(CMOR,DBF_MENU) {
+		prompt("Cooldown Mode")
+		special(SPC_NOMOD)
+		menu(digitelCMOR)
+	}
+	field(SET1,DBF_MENU) {
+		prompt("Setpoint 1")
+		special(SPC_NOMOD)
+		menu(digitelSET1)
+	}
+	field(SET2,DBF_MENU) {
+		prompt("Setpoint 2")
+		special(SPC_NOMOD)
+		menu(digitelSET1)
+	}
+	field(SET3,DBF_MENU) {
+		prompt("Setpoint 3")
+		special(SPC_NOMOD)
+		menu(digitelSET1)
+	}
+	field(ACCW,DBF_DOUBLE) {
+		prompt("Acc Power")
+		special(SPC_NOMOD)
+	}
+	field(ACCI,DBF_DOUBLE) {
+		prompt("Acc Current")
+		special(SPC_NOMOD)
+	}
+	field(PTYP,DBF_MENU) {
+		prompt("Pump Type")
+		special(SPC_NOMOD)
+		menu(digitelPTYP)
+	}
+	field(TYPE,DBF_MENU) {
+		prompt("Controller Type")
+		promptgroup(GUI_BITS2)
+		special(SPC_MOD)
+		pp(TRUE)
+		menu(digitelTYPE)
+	}
+	field(SP1S,DBF_DOUBLE) {
+		prompt("SP1 Setpoint")
+		special(SPC_MOD)
+		pp(TRUE)
+	}
+	field(SP1R,DBF_DOUBLE) {
+		prompt("SP1 SP Readback")
+		special(SPC_NOMOD)
+	}
+	field(S1HS,DBF_DOUBLE) {
+		prompt("SP1 Hysteresis")
+		special(SPC_MOD)
+		pp(TRUE)
+	}
+	field(S1HR,DBF_DOUBLE) {
+		prompt("SP1 HY Readback")
+		special(SPC_NOMOD)
+	}
+	field(S1MS,DBF_MENU) {
+		prompt("SP1 Mode")
+		promptgroup(GUI_HIST)
+		special(SPC_MOD)
+		pp(TRUE)
+		menu(digitelS1MS)
+	}
+	field(S1MR,DBF_MENU) {
+		prompt("SP1 Mode Readback")
+		special(SPC_NOMOD)
+		menu(digitelS1MS)
+	}
+	field(S1VS,DBF_MENU) {
+		prompt("SP1 HV Interlock")
+		promptgroup(GUI_INPUTS)
+		special(SPC_MOD)
+		pp(TRUE)
+		menu(digitelS1VS)
+	}
+	field(S1VR,DBF_MENU) {
+		prompt("SP1 HVI Readback")
+		special(SPC_NOMOD)
+		menu(digitelS1VS)
+	}
+	field(SP2S,DBF_DOUBLE) {
+		prompt("SP2 Setpoint")
+		special(SPC_MOD)
+		pp(TRUE)
+	}
+	field(SP2R,DBF_DOUBLE) {
+		prompt("SP2 SP Readback")
+		special(SPC_NOMOD)
+	}
+	field(S2HS,DBF_DOUBLE) {
+		prompt("SP2 Hysteresis")
+		special(SPC_MOD)
+		pp(TRUE)
+	}
+	field(S2HR,DBF_DOUBLE) {
+		prompt("SP2 HY Readback")
+		special(SPC_NOMOD)
+	}
+	field(S2MS,DBF_MENU) {
+		prompt("SP2 Mode")
+		promptgroup(GUI_LINKS)
+		special(SPC_MOD)
+		pp(TRUE)
+		menu(digitelS1MS)
+	}
+	field(S2MR,DBF_MENU) {
+		prompt("SP2 Mode Readback")
+		special(SPC_NOMOD)
+		menu(digitelS1MS)
+	}
+	field(S2VS,DBF_MENU) {
+		prompt("SP2 HV Interlock")
+		promptgroup(GUI_MBB)
+		special(SPC_MOD)
+		pp(TRUE)
+		menu(digitelS1VS)
+	}
+	field(S2VR,DBF_MENU) {
+		prompt("SP2 HVI Readback")
+		special(SPC_NOMOD)
+		menu(digitelS1VS)
+	}
+	field(SP3S,DBF_DOUBLE) {
+		prompt("SP3 Setpoint")
+		special(SPC_MOD)
+		pp(TRUE)
+	}
+	field(SP3R,DBF_DOUBLE) {
+		prompt("SP3 SP Readback")
+		special(SPC_NOMOD)
+	}
+	field(S3HS,DBF_DOUBLE) {
+		prompt("SP3 Hysteresis")
+		special(SPC_MOD)
+		pp(TRUE)
+	}
+	field(S3HR,DBF_DOUBLE) {
+		prompt("SP3 HY Readback")
+		special(SPC_NOMOD)
+	}
+	field(S3MS,DBF_MENU) {
+		prompt("SP3 Mode")
+		promptgroup(GUI_LINKS)
+		special(SPC_MOD)
+		pp(TRUE)
+		menu(digitelS1MS)
+	}
+	field(S3MR,DBF_MENU) {
+		prompt("SP3 Mode Readback")
+		special(SPC_NOMOD)
+		menu(digitelS1MS)
+	}
+	field(S3VS,DBF_MENU) {
+		prompt("SP3 HV Interlock")
+		promptgroup(GUI_MBB)
+		special(SPC_MOD)
+		pp(TRUE)
+		menu(digitelS1VS)
+	}
+	field(S3VR,DBF_MENU) {
+		prompt("SP3 HVI Readback")
+		special(SPC_NOMOD)
+		menu(digitelS1VS)
+	}
+	field(S3BS,DBF_MENU) {
+		prompt("Bake Time Mode Set")
+		promptgroup(GUI_MOTOR)
+		special(SPC_MOD)
+		pp(TRUE)
+		menu(digitelS3BS)
+	}
+	field(S3BR,DBF_MENU) {
+		prompt("Bake Time Mode Read")
+		special(SPC_NOMOD)
+		menu(digitelS3BS)
+	}
+	field(S3TS,DBF_DOUBLE) {
+		prompt("Bake Time Set")
+		special(SPC_MOD)
+		pp(TRUE)
+	}
+	field(S3TR,DBF_DOUBLE) {
+		prompt("Bake Time Read")
+		special(SPC_NOMOD)
+	}
+	field(HOPR,DBF_FLOAT) {
+		prompt("Pressure Display Hi")
+		promptgroup(GUI_SEQ2)
+		interest(1)
+		initial("0.0001")
+	}
+	field(LOPR,DBF_FLOAT) {
+		prompt("Pressure Display Lo")
+		promptgroup(GUI_SEQ3)
+		interest(1)
+		initial("1e-11")
+	}
+	field(HCTR,DBF_FLOAT) {
+		prompt("Current Display Hi")
+		promptgroup(GUI_SUB)
+		interest(1)
+		initial("0.5")
+	}
+	field(LCTR,DBF_FLOAT) {
+		prompt("Current Display Lo")
+		promptgroup(GUI_TIMER)
+		interest(1)
+		initial("1e-09")
+	}
+	field(HVTR,DBF_FLOAT) {
+		prompt("Voltage Display Hi")
+		promptgroup(GUI_WAVE)
+		interest(1)
+		initial("7000")
+	}
+	field(LVTR,DBF_FLOAT) {
+		prompt("Voltage Display Lo")
+		promptgroup(GUI_SCAN)
+		interest(1)
+	}
+	field(HLPR,DBF_FLOAT) {
+		prompt("Log Pres Display Hi")
+		promptgroup(GUI_DISPLAY)
+		interest(1)
+		initial("-4")
+	}
+	field(LLPR,DBF_FLOAT) {
+		prompt("Log Pres Display Lo")
+		promptgroup(GUI_DISPLAY)
+		interest(1)
+		initial("-11")
+	}
+	field(SIML,DBF_INLINK) {
+		prompt("Sim Mode Location")
+		promptgroup(GUI_DISPLAY)
+		special(SPC_NOMOD)
+		interest(1)
+	}
+	field(SIMM,DBF_MENU) {
+		prompt("Sim Mode Value")
+		interest(1)
+		menu(menuYesNo)
+	}
+	field(SLMO,DBF_INLINK) {
+		prompt("Sim Location Mode")
+		promptgroup(GUI_DISPLAY)
+		special(SPC_NOMOD)
+		interest(1)
+	}
+	field(SVMO,DBF_MENU) {
+		prompt("Sim Value Mode")
+		menu(digitelMODS)
+	}
+	field(SLS1,DBF_INLINK) {
+		prompt("Sim Location SP1")
+		promptgroup(GUI_DISPLAY)
+		special(SPC_NOMOD)
+		interest(1)
+	}
+	field(SVS1,DBF_MENU) {
+		prompt("Sim Value SP1")
+		menu(digitelSET1)
+	}
+	field(SLS2,DBF_INLINK) {
+		prompt("Sim Location SP2")
+		promptgroup(GUI_DISPLAY)
+		special(SPC_NOMOD)
+		interest(1)
+	}
+	field(SVS2,DBF_MENU) {
+		prompt("Sim Value SP2")
+		menu(digitelSET1)
+	}
+	field(SLCR,DBF_INLINK) {
+		prompt("Sim Location Current")
+		promptgroup(GUI_DISPLAY)
+		special(SPC_NOMOD)
+		interest(1)
+	}
+	field(SVCR,DBF_DOUBLE) {
+		prompt("Sim Value Current")
+	}
+	field(TONL,DBF_ULONG) {
+		prompt("Time Online")
+		special(SPC_NOMOD)
+	}
+	field(CRNT,DBF_DOUBLE) {
+		prompt("Current")
+		special(SPC_NOMOD)
+	}
+	field(VOLT,DBF_DOUBLE) {
+		prompt("Voltage")
+		special(SPC_NOMOD)
+	}
+	field(FLGS,DBF_ULONG) {
+		prompt("Mod Flags")
+		special(SPC_NOMOD)
+	}
+	field(SPFG,DBF_ULONG) {
+		prompt("Setpoint Flags")
+		special(SPC_NOMOD)
+	}
+	field(BKIN,DBF_MENU) {
+		prompt("Bake Installed")
+		special(SPC_NOMOD)
+		menu(digitelBKIN)
+	}
+	field(IVAL,DBF_DOUBLE) {
+		prompt("init pressure")
+		special(SPC_NOMOD)
+	}
+	field(ILVA,DBF_DOUBLE) {
+		prompt("init pressure (log10)")
+		special(SPC_NOMOD)
+	}
+	field(IMOD,DBF_MENU) {
+		prompt("init mode")
+		special(SPC_NOMOD)
+		menu(digitelMODS)
+	}
+	field(IBAK,DBF_MENU) {
+		prompt("init bake")
+		special(SPC_NOMOD)
+		menu(digitelBAKS)
+	}
+	field(ICOL,DBF_DOUBLE) {
+		prompt("init cooldown time")
+		special(SPC_NOMOD)
+	}
+	field(ISP1,DBF_MENU) {
+		prompt("init set1")
+		special(SPC_NOMOD)
+		menu(digitelSET1)
+	}
+	field(ISP2,DBF_MENU) {
+		prompt("init set2")
+		special(SPC_NOMOD)
+		menu(digitelSET1)
+	}
+	field(ISP3,DBF_MENU) {
+		prompt("init set3")
+		special(SPC_NOMOD)
+		menu(digitelSET1)
+	}
+	field(IACW,DBF_DOUBLE) {
+		prompt("init Acc power")
+		special(SPC_NOMOD)
+	}
+	field(IACI,DBF_DOUBLE) {
+		prompt("init Acc current")
+		special(SPC_NOMOD)
+	}
+	field(IPTY,DBF_MENU) {
+		prompt("init pump type")
+		special(SPC_NOMOD)
+		menu(digitelPTYP)
+	}
+	field(IBKN,DBF_MENU) {
+		prompt("init Bake Installed")
+		special(SPC_NOMOD)
+		menu(digitelBKIN)
+	}
+	field(IS1,DBF_DOUBLE) {
+		prompt("init sp1")
+		special(SPC_NOMOD)
+	}
+	field(IH1,DBF_DOUBLE) {
+		prompt("init sp1 HY")
+		special(SPC_NOMOD)
+	}
+	field(IM1,DBF_MENU) {
+		prompt("init sp1 mode")
+		special(SPC_NOMOD)
+		menu(digitelS1MS)
+	}
+	field(II1,DBF_MENU) {
+		prompt("init sp1 HVI")
+		special(SPC_NOMOD)
+		menu(digitelS1VS)
+	}
+	field(IS2,DBF_DOUBLE) {
+		prompt("init sp2")
+		special(SPC_NOMOD)
+	}
+	field(IH2,DBF_DOUBLE) {
+		prompt("init sp2 HY")
+		special(SPC_NOMOD)
+	}
+	field(IM2,DBF_MENU) {
+		prompt("init sp2 mode")
+		special(SPC_NOMOD)
+		menu(digitelS1MS)
+	}
+	field(II2,DBF_MENU) {
+		prompt("init sp2 HVI")
+		special(SPC_NOMOD)
+		menu(digitelS1VS)
+	}
+	field(IS3,DBF_DOUBLE) {
+		prompt("init sp3")
+		special(SPC_NOMOD)
+	}
+	field(IH3,DBF_DOUBLE) {
+		prompt("init sp3 HY")
+		special(SPC_NOMOD)
+	}
+	field(IM3,DBF_MENU) {
+		prompt("init sp3 mode")
+		special(SPC_NOMOD)
+		menu(digitelS1MS)
+	}
+	field(II3,DBF_MENU) {
+		prompt("init sp3 HVI")
+		special(SPC_NOMOD)
+		menu(digitelS1VS)
+	}
+	field(IB3,DBF_MENU) {
+		prompt("init sp3 bake time md")
+		special(SPC_NOMOD)
+		menu(digitelS3BS)
+	}
+	field(IT3,DBF_DOUBLE) {
+		prompt("init sp3 bake time")
+		special(SPC_NOMOD)
+	}
+	field(ITON,DBF_ULONG) {
+		prompt("init tonl")
+		special(SPC_NOMOD)
+	}
+	field(ICRN,DBF_DOUBLE) {
+		prompt("init current")
+		special(SPC_NOMOD)
+	}
+	field(IVOL,DBF_DOUBLE) {
+		prompt("init voltage")
+		special(SPC_NOMOD)
+	}
+	field(CYCL,DBF_LONG) {
+		prompt("Cycle count")
+		special(SPC_NOMOD)
+	}
+        field(ERR,DBF_SHORT) {
+                prompt("Error Count")
+                special(SPC_NOMOD)
+        }
+        field(IERR,DBF_SHORT) {
+                prompt("init Error Count")
+                special(SPC_NOMOD)
+        }
+
+}

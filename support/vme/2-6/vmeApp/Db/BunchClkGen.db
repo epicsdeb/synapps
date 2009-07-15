@@ -1,0 +1,155 @@
+grecord(ai,"S$(UNIT)BnchClkGenFineDelayAI") {
+	field(SCAN,"2 second")
+	field(DTYP,"APS Bunch Clock")
+	field(INP,"#C$(C) S3 @")
+	field(PREC,"3")
+	field(LINR,"LINEAR")
+	field(EGUF,"4.6")
+	field(EGU,"nsec")
+	field(HOPR,"4.6")
+}
+grecord(ai,"S$(UNIT)BnchClkGenP0DelayAI") {
+	field(SCAN,"2 second")
+	field(DTYP,"APS Bunch Clock")
+	field(INP,"#C$(C) S4 @")
+	field(EGU,"Buckets")
+}
+grecord(ao,"S$(UNIT)BnchClkGenFineDelayAO") {
+	field(PINI,"YES")
+	field(DTYP,"APS Bunch Clock")
+	field(OUT,"#C$(C) S3 @")
+	field(PREC,"3")
+	field(LINR,"LINEAR")
+	field(EGUF,"4.6")
+	field(EGU,"nsec")
+	field(DRVH,"4.6")
+}
+grecord(ao,"S$(UNIT)BnchClkGenP0DelayAO") {
+	field(PINI,"YES")
+	field(DTYP,"APS Bunch Clock")
+	field(OUT,"#C$(C) S4 @")
+	field(EGU,"Buckets")
+	field(DRVH,"1296")
+}
+grecord(ao,"S$(UNIT)BnchClkGenReSetBuckAO") {
+	field(DESC,"Clear Specified Bucket #")
+	field(DTYP,"APS Bunch Clock")
+	field(OUT,"#C$(C) S1 @")
+	field(EGU,"Bunch #")
+	field(DRVH,"1295")
+}
+grecord(ao,"S$(UNIT)BnchClkGenSetBucketAO") {
+	field(DTYP,"APS Bunch Clock")
+	field(OUT,"#C$(C) S0 @")
+	field(EGU,"Bunch #")
+	field(DRVH,"1295")
+}
+grecord(bi,"S$(UNIT)BnchClkGenDisableBI") {
+	field(SCAN,"2 second")
+	field(DTYP,"APS Bunch Clock")
+	field(INP,"#C$(C) S0 @Disable")
+	field(ZNAM,"Enabled")
+	field(ONAM,"Disabled")
+}
+grecord(bi,"S$(UNIT)BnchClkGenP0DetectBI") {
+	field(SCAN,"2 second")
+	field(DTYP,"APS Bunch Clock")
+	field(INP,"#C$(C) S0 @P0_Detect")
+	field(ZNAM,"Error")
+	field(ONAM,"Ok")
+}
+grecord(bi,"S$(UNIT)BnchClkGenRunningBI") {
+	field(SCAN,"2 second")
+	field(DTYP,"APS Bunch Clock")
+	field(INP,"#C$(C) S0 @Running")
+	field(ZNAM,"Stopped")
+	field(ONAM,"Running")
+}
+grecord(bo,"S$(UNIT)BnchClkGenAutoLoadBO") {
+	field(DESC,"Auto Load Bunch Pattern")
+	field(DTYP,"Soft Channel")
+	field(DOL,"1")
+	field(ZNAM,"Off")
+	field(ONAM,"On")
+}
+grecord(bo,"S$(UNIT)BnchClkGenClearMessBO") {
+	field(DESC,"Clear Message")
+	field(DTYP,"Soft Channel")
+	field(ONAM,"Clear")
+}
+grecord(bo,"S$(UNIT)BnchClkGenClearPatBO") {
+	field(DESC,"Clear Bunch Pattern")
+	field(DTYP,"APS Bunch Clock")
+	field(OUT,"#C$(C) S1 @InitRam")
+	field(ONAM,"Clear")
+}
+grecord(bo,"S$(UNIT)BnchClkGenDisableBO") {
+	field(DTYP,"APS Bunch Clock")
+	field(OUT,"#C$(C) S0 @Disable")
+	field(ZNAM,"Enable")
+	field(ONAM,"Disable")
+}
+grecord(bo,"S$(UNIT)BnchClkGenLoadPatBO") {
+	field(DESC,"Load Bunch Pattern")
+	field(DTYP,"Soft Channel")
+	field(FLNK,"S$(UNIT)BnchClkGenListWF.PROC  PP MS")
+	field(ONAM,"Load")
+}
+grecord(bo,"S$(UNIT)BnchClkGenWritePatBO") {
+	field(DESC,"Write Bunch Pattern")
+	field(DTYP,"APS Bunch Clock")
+	field(OUT,"#C$(C) S2 @WriteRam")
+	field(ONAM,"Write")
+}
+grecord(stringin,"S$(UNIT)BnchClkGenMessageSI") {
+	field(DESC,"Message")
+	field(DTYP,"Soft Channel")
+}
+grecord(waveform,"S$(UNIT)BnchClkGenBucketsWF") {
+	field(DESC,"Get List of Active Buckets")
+	field(DTYP,"APS Bunch Clock")
+	field(INP,"#C$(C) S0 @")
+	field(EGU,"Bucket #")
+	field(NELM,"1296")
+	field(FTVL,"SHORT")
+}
+grecord(waveform,"S$(UNIT)BnchClkGenListWF") {
+	field(DESC,"List of Active Buckets")
+	field(DTYP,"Soft Channel")
+	field(INP,"Mt:S:FilledBucketsWF.VAL NPP NMS")
+	field(EGU,"Bucket #")
+	field(NELM,"1296")
+	field(FTVL,"SHORT")
+}
+grecord(waveform,"S$(UNIT)BnchClkGenPatternWF") {
+	field(DESC,"Get Fill Pattern")
+	field(DTYP,"APS Bunch Clock")
+	field(INP,"#C$(C) S1 @")
+	field(NELM,"1296")
+	field(FTVL,"SHORT")
+}
+record(stringout,"S$(UNIT)BnchClkGenDescriptP") {
+	field(DESC,"Description")
+	field(ASG,"")
+	field(SCAN,"Passive")
+	field(PINI,"NO")
+	field(PHAS,"0")
+	field(EVNT,"0")
+	field(TSEL,"")
+	field(DTYP,"Soft Channel")
+	field(DISV,"1")
+	field(SDIS,"")
+	field(ACKT,"YES")
+	field(DISS,"NO_ALARM")
+	field(PRIO,"LOW")
+	field(FLNK,"0")
+	field(VAL,"Description")
+	field(DOL,"")
+	field(OMSL,"supervisory")
+	field(OUT,"")
+	field(SIOL,"")
+	field(SIML,"")
+	field(SIMS,"NO_ALARM")
+	field(IVOA,"Continue normally")
+	field(IVOV,"")
+}

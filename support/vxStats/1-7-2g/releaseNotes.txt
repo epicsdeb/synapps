@@ -1,0 +1,316 @@
+R1.7.2a
+=======
+
+Here's how I modified vxStats 1.7.2 to build on solaris.  Note
+that databases in this module depend on the SNS timestamp
+record, which in not distributed in any module I know of.
+I got a copy of this record from SNS and just shoved it into
+the std module for now.
+--------------------------------------------------------------------------------
+Got the following error when I ran gnumake in top directory:
+--------------------------------------------------------------------------------
+gnumake[1]: Entering directory `/home/oxygen4/MOONEY/epics/synApps_4_6/support/vxStatsR1-7-2/vxStatsApp/src/O.solaris-sparc'
+Expanding dbd
+msi  -I . -I .. -I ../../../dbd -I /home/oxygen/MOONEY/epics/synApps_4_6/support/seq/dbd -I /home/oxygen/SLUITER/local/epics/base_3_14/dbd -o ../O.Common/vxStats.dbd ../vxStatsInclude.dbd
+usage: msi -V -Ipath ... -Msub ... -Ssubfile  template
+    Specifying path will replace the default '.'
+    stdin is used if template is not given
+gnumake[1]: *** [../O.Common/vxStats.dbd] Error 1
+gnumake[1]: Leaving directory `/home/oxygen4/MOONEY/epics/synApps_4_6/support/vxStatsR1-7-2/vxStatsApp/src/O.solaris-sparc'
+gnumake: *** [all] Error 2
+
+-----------------------------------------------------------------------------
+commented out 
+###DBEXPAND = msi
+
+Re-ran gnumake in top directory and got the following error:
+-----------------------------------------------------------------------------
+
+gnumake[3]: Entering directory `/home/oxygen4/MOONEY/epics/synApps_4_6/support/vxStatsR1-7-2/vxStatsApp/src/O.solaris-sparc'
+Expanding dbd
+/home/oxygen/SLUITER/local/epics/base_3_14/bin/solaris-sparc/dbExpand  -I . -I .. -I ../../../dbd -I /home/oxygen/MOONEY/epics/synApps_4_6/support/seq/dbd -I /home/oxygen/SLUITER/local/epics/base_3_14/dbd -o ../O.Common/vxStats.dbd ../vxStatsInclude.dbd
+Error " record type not found"  Last token ")"
+input line: device(ai,INST_IO,devAiStats,"VX stats")
+   in: path ".."  file devStats.dbd line 1
+   in: file ../vxStatsInclude.dbd line 1
+
+Error " record type not found"  Last token ")"
+input line: device(ai,INST_IO,devAiClusts,"VX stats clusts")
+   in: path ".."  file devStats.dbd line 2
+   in: file ../vxStatsInclude.dbd line 1
+
+Error " record type not found"  Last token ")"
+input line: device(ao,INST_IO,devAoStats,"VX stats")
+   in: path ".."  file devStats.dbd line 3
+   in: file ../vxStatsInclude.dbd line 1
+
+Error " record type not found"  Last token ")"
+input line: device(stringin,INST_IO,devStringinStats,"VX stats")
+   in: path ".."  file devStats.dbd line 4
+   in: file ../vxStatsInclude.dbd line 1
+
+db_parse returned -1
+dbExpand: Input errors, no output generated
+gnumake[3]: *** [../O.Common/vxStats.dbd] Error 1
+gnumake[3]: Leaving directory `/home/oxygen4/MOONEY/epics/synApps_4_6/support/vxStatsR1-7-2/vxStatsApp/src/O.solaris-sparc'
+gnumake[2]: *** [install.solaris-sparc] Error 2
+gnumake[2]: Leaving directory `/home/oxygen4/MOONEY/epics/synApps_4_6/support/vxStatsR1-7-2/vxStatsApp/src'
+gnumake[1]: *** [src.install] Error 2
+gnumake[1]: Leaving directory `/home/oxygen4/MOONEY/epics/synApps_4_6/support/vxStatsR1-7-2/vxStatsApp'
+-----------------------------------------------------------------------------
+added 
+include "base.dbd"
+to top of vxStatsInclude.dbd
+
+Re-ran gnumake in top directory and got the following error:
+-----------------------------------------------------------------------------
+
+gnumake[2]: Entering directory `/home/oxygen4/MOONEY/epics/synApps_4_6/support/vxStatsR1-7-2/vxStatsApp/src'
+gnumake -C O.solaris-sparc -f ../Makefile TOP=../../.. T_A=solaris-sparc install
+gnumake[3]: Entering directory `/home/oxygen4/MOONEY/epics/synApps_4_6/support/vxStatsR1-7-2/vxStatsApp/src/O.solaris-sparc'
+Expanding dbd
+/home/oxygen/SLUITER/local/epics/base_3_14/bin/solaris-sparc/dbExpand  -I . -I .. -I ../../../dbd -I /home/oxygen/MOONEY/epics/synApps_4_6/support/seq/dbd -I /home/oxygen/SLUITER/local/epics/base_3_14/dbd -o ../O.Common/vxStats.dbd ../vxStatsInclude.dbd
+Installing dbd file ../../../dbd/vxStats.dbd
+mkdir ../../../dbd
+/opt/SUNWspro/bin/cc -c   -D_POSIX_C_SOURCE=199506L  -D_XOPEN_SOURCE=500  -DOSITHREAD_USE_DEFAULT_STACK       -DUNIX  -DSOLARIS=8  -D__EXTENSIONS__  -Xc -v  -xO4             -I. -I.. -I../../../include/os/solaris -I../../../include -I/home/oxygen/MOONEY/epics/synApps_4_6/support/seq/include/os/solaris -I/home/oxygen/MOONEY/epics/synApps_4_6/support/seq/include -I/home/oxygen/SLUITER/local/epics/base_3_14/include/os/solaris -I/home/oxygen/SLUITER/local/epics/base_3_14/include     -I/home/oxygen/SLUITER/local/epics/base_3_14/src/rsrv -I/home/oxygen/SLUITER/local/epics/base_3_14/src/ca    ../ioc_stats.c
+/opt/SUNWspro/bin/cc -c   -D_POSIX_C_SOURCE=199506L  -D_XOPEN_SOURCE=500  -DOSITHREAD_USE_DEFAULT_STACK       -DUNIX  -DSOLARIS=8  -D__EXTENSIONS__  -Xc -v  -xO4             -I. -I.. -I../../../include/os/solaris -I../../../include -I/home/oxygen/MOONEY/epics/synApps_4_6/support/seq/include/os/solaris -I/home/oxygen/MOONEY/epics/synApps_4_6/support/seq/include -I/home/oxygen/SLUITER/local/epics/base_3_14/include/os/solaris -I/home/oxygen/SLUITER/local/epics/base_3_14/include     -I/home/oxygen/SLUITER/local/epics/base_3_14/src/rsrv -I/home/oxygen/SLUITER/local/epics/base_3_14/src/ca    ../BSlib.c
+"../BSlib.c", line 794: warning: argument #6 is incompatible with prototype:
+        prototype: pointer to unsigned int : "/usr/include/sys/socket.h", line 451
+        argument : pointer to int
+"../BSlib.c", line 891: warning: argument #6 is incompatible with prototype:
+        prototype: pointer to unsigned int : "/usr/include/sys/socket.h", line 451
+        argument : pointer to int
+/opt/SUNWspro/bin/CC -o ioc_stats  -L/home/oxygen/SLUITER/local/epics/base_3_14/lib/solaris-sparc/    -L../../../lib/solaris-sparc     -z ignore -z combreloc -z lazyload  -R/home/oxygen4/MOONEY/epics/synApps_4_6/support/vxStatsR1-7-2/lib/solaris-sparc -R/home/oxygen/MOONEY/epics/synApps_4_6/support/seq/lib/solaris-sparc -R/home/oxygen/SLUITER/local/epics/base_3_14/lib/solaris-sparc        ioc_stats.o BSlib.o    -lcas -lgdd -liocsh -lasHost -ldbStaticHost -lca -lCom 
+Undefined                       first referenced
+ symbol                             in file
+__xnet_bind                         BSlib.o  (symbol belongs to implicit dependency /usr/lib/libsocket.so.1)
+recv                                BSlib.o  (symbol belongs to implicit dependency /usr/lib/libsocket.so.1)
+send                                BSlib.o  (symbol belongs to implicit dependency /usr/lib/libsocket.so.1)
+listen                              BSlib.o  (symbol belongs to implicit dependency /usr/lib/libsocket.so.1)
+setsockopt                          BSlib.o  (symbol belongs to implicit dependency /usr/lib/libsocket.so.1)
+__xnet_socket                       BSlib.o  (symbol belongs to implicit dependency /usr/lib/libsocket.so.1)
+inet_ntoa                           BSlib.o  (symbol belongs to implicit dependency /usr/lib/libnsl.so.1)
+gethostbyname                       BSlib.o  (symbol belongs to implicit dependency /usr/lib/libnsl.so.1)
+recvfrom                            BSlib.o  (symbol belongs to implicit dependency /usr/lib/libsocket.so.1)
+__xnet_connect                      BSlib.o  (symbol belongs to implicit dependency /usr/lib/libsocket.so.1)
+inet_addr                           BSlib.o  (symbol belongs to implicit dependency /usr/lib/libnsl.so.1)
+__xnet_sendto                       BSlib.o  (symbol belongs to implicit dependency /usr/lib/libsocket.so.1)
+ld: fatal: Symbol referencing errors. No output written to ioc_stats
+gnumake[3]: *** [ioc_stats] Error 1
+gnumake[3]: Leaving directory `/home/oxygen4/MOONEY/epics/synApps_4_6/support/vxStatsR1-7-2/vxStatsApp/src/O.solaris-sparc'
+gnumake[2]: *** [install.solaris-sparc] Error 2
+gnumake[2]: Leaving directory `/home/oxygen4/MOONEY/epics/synApps_4_6/support/vxStatsR1-7-2/vxStatsApp/src'
+gnumake[1]: *** [src.install] Error 2
+gnumake[1]: Leaving directory `/home/oxygen4/MOONEY/epics/synApps_4_6/support/vxStatsR1-7-2/vxStatsApp'
+gnumake: *** [vxStatsApp.install] Error 2
+-----------------------------------------------------------------------------
+In BSlib.h:
+- Added 
+	#include <osiSock.h>
+
+- Changed def of len from int to osiSocklen_t in the following code fragment:
+
+	struct bs_udp_data
+	{
+		struct sockaddr sin;
+		osiSocklen_t /*int*/ len;
+	};
+	typedef struct bs_udp_data BSDATA;
+
+In BSlib.c:
+- Changed
+	int done,i,mlen,flen;
+- to
+	int done,i,mlen;
+	osiSocklen_t flen;
+
+
+In vxStatsApp/src/Makefile:
+- Changed
+	ioc_stats_LIBS += $(EPICS_BASE_HOST_LIBS)
+- to
+	ioc_stats_LIBS += $(EPICS_BASE_HOST_LIBS) socket nsl
+	socket_DIR = /usr/lib
+	nsl_DIR = /usr/lib
+
+- (and similarly for rdbls and rdbapplist).  This fixes the implicit
+dependencies problem
+
+Re-ran gnumake and got the error
+-----------------------------------------------------------------------------
+Installing edl file ../../opi/IOC_2_IOC_heartbeat.edl
+Linking to list file colors.list
+        @cp -d colors.list ../../opi
+cp: illegal option -- d
+Usage: cp [-f] [-i] [-p] f1 f2
+       cp [-f] [-i] [-p] f1 ... fn d1
+       cp -r|R [-f] [-i] [-p] d1 ... dn-1 dn
+gnumake[2]: *** [colors.list] Error 2
+
+-----------------------------------------------------------------------------
+Changed RULES.Opi to drop the '-d' flag
+
+Reran gnumake and got the error 
+-----------------------------------------------------------------------------
+gnumake[2]: Entering directory `/home/oxygen4/MOONEY/epics/synApps_4_6/support/vxStatsR1-7-2/vxStatsApp/srcOpi'
+Linking to list file colors.list
+        @cp  colors.list ../../opi
+cp: cannot access colors.list
+gnumake[2]: *** [colors.list] Error 2
+gnumake[2]: Leaving directory `/home/oxygen4/MOONEY/epics/synApps_4_6/support/vxStatsR1-7-2/vxStatsApp/srcOpi'
+gnumake[1]: *** [srcOpi.install] Error 2
+gnumake[1]: Leaving directory `/home/oxygen4/MOONEY/epics/synApps_4_6/support/vxStatsR1-7-2/vxStatsApp'
+gnumake: *** [vxStatsApp.install] Error 2
+
+-----------------------------------------------------------------------------
+We don't have the files colors.list or fonts.list, and might not be able to
+use them with medm in any case.  Deleted references to lists and reran gnumake,
+which succeeded.
+
+Boot ioc
+-----------------------------------------------------------------------------
+dbLoadTemplate("vxStats.substitutions")
+Error   Last token ")"
+input line: record(timestamp, "tmm:Time") {
+   in: file /home/oxygen/MOONEY/epics/synApps_4_6/support/vxStats/db/stats.templatefilen line 176
+ame="../db
+LexRoutines.c" lineError  number=885
+Re"syntax error"cord T  Last token "C8D@(timestamp, "tmm:Time") {
+"
+ype does noinput line: record(timestamp, "tmm:Time") {
+t exist 
+   in: file /home/oxygen/MOONEY/epics/synApps_4_6/support/vxStats/db/stats.template line 176
+
+db_parse returned -1
+-----------------------------------------------------------------------------
+We don't have a timestamp record.
+
+
+R1.7.2b
+=======
+Mark Rivers wrote:
+
+
+I found a number of problems with vxStats. [version 1.7.2a]
+
+1) Your medm screens had the units of the "Rates" in Hz.  In fact the
+numbers in vxStats are not rates, but times, and the units are seconds.
+I updated the medm screens in stdApp to change "Hz" to "sec".
+
+2) There was a bug in the init_record routine for the ao records.  It
+was not correctly initializing the rbv and rval fields, and so the val
+field was not getting initialized correctly.  The actual rates being
+used were the defaults from devVxStats.c, but the values displayed were
+garbage.  I fixed the bug, and while I was at it I made the default
+values of the update times come from the VAL field of the record from
+the database, if that is non-zero.  That way the database designer can
+change the initial rates, which was not possible with the old code.  I
+changed the database to set initial values for the VAL fields in the
+rate records, using the same defaults as the C code.  Here are my
+changes to the C code:
+corvette> diff -u
+~/synApps5-1/vxStats/1-7-2a/vxStatsApp/src/devVxStats.c ./devVxStats.c
+--- /home/epics/synApps5-1/vxStats/1-7-2a/vxStatsApp/src/devVxStats.c
+2003-11-21 15:10:36.000000000 -0600
++++ ./devVxStats.c      2004-11-06 10:23:29.000000000 -0600
+@@ -626,13 +626,15 @@
+                return S_db_badField;
+        }
+ 
+-    /* Initialize value with default */
+-    pr->rbv=pr->rval=scan_rate_sec[--type];
++    pr->dpvt=pvt;
++    /* If VAL field is non-zero use default */
++    if (pr->val == 0.) pr->val = scan_rate_sec[pvt->type];
++    /* Update the private fields for this time */
++    ao_write(pr);
+ 
+     /* Make sure record processing routine does not perform any
+conversion*/
+     pr->linr=0;
+-    pr->dpvt=pvt;
+-    return 0;
++    return 2;  /* Don't convert since we set VAL field directly */
+ }
+ 
+ static long stringin_init_record(stringinRecord* pr)
+
+The bug was the line:
+-    pr->rbv=pr->rval=scan_rate_sec[--type];
+"type" would not have been what the designer intended, since the loop on
+"type" was not exited, it would have been the last "type".  In fact the
+values being set were garbage.
+
+My revised code set the defaults to the C code values if the database
+values are zero.
+
+
+3) 
+3) Here are the changes to stats.template:
+corvette> diff -u
+~/synApps5-1/vxStats/1-7-2a/vxStatsApp/Db/stats.template
+../stats.template 
+--- /home/epics/synApps5-1/vxStats/1-7-2a/vxStatsApp/Db/stats.template
+2003-11-20 15:48:07.000000000 -0600
++++ ./stats.template    2004-11-06 10:59:32.000000000 -0600
+@@ -103,6 +103,7 @@
+   field(DESC, "Rate for CA")
+   field(DTYP, "VX stats")
+   field(OUT, "@ca_scan_rate")
++  field(VAL,"15")
+   field(EGU, "s")
+   field(DRVH, "60")
+   field(DRVL, "1")
+@@ -115,6 +116,7 @@
+   field(DESC, "Rate for FD")
+   field(DTYP, "VX stats")
+   field(OUT, "@fd_scan_rate")
++  field(VAL,"10")
+   field(EGU, "s")
+   field(DRVH, "60")
+   field(DRVL, "1")
+@@ -125,6 +127,7 @@
+   field(DESC, "Rate for CPU Load")
+   field(DTYP, "VX stats")
+   field(OUT, "@cpu_scan_rate")
++  field(VAL,"20")
+   field(EGU, "s")
+   field(DRVH, "60")
+   field(DRVL, "1")
+@@ -135,6 +138,7 @@
+   field(DESC, "Rate for Memory")
+   field(DTYP, "VX stats")
+   field(OUT, "@memory_scan_rate")
++  field(VAL,"10")
+   field(EGU, "s")
+   field(DRVH, "60")
+   field(DRVL, "1")
+
+
+4) As a test I modified stats.template to change the CA rate from 15
+seconds to 1 second.  This caused a crash in cbLow after iocInit (the
+one I just wrote Andrew about).  The trace back is:
+ioc13lab> tt "cbLow"
+19cd38 vxTaskEntry    +60 : 1c2f890 ()
+1c2f8e0 epicsThreadPrivateGet+cc : 1baaba0 ()
+1baac4c callbackSetQueueSize+258: 1ba28f4 ()
+1ba290c scanIoRequest  +21c: 1ba1f78 ()
+1ba2018 scanDelete     +410: dbProcess ()
+1b938c0 dbProcess      +2d8: 1b632ec ()
+1b63354 caSystem type_info function+1088: 1b631b0 ()
+1b63240 caSystem type_info function+f74: 1a990e8 ()
+1a99134 getClusts      +320: 1a999dc ()
+1a99a10 getClusts      +bfc: read_ca_stats ()
+1a9a3dc read_ca_stats  +30 : epicsMutexLock ()
+1c286cc epicsMutexLock +18 : semTake ()
+
+So it looks like that if the callback in devVxStats.c happens too soon
+after iocInit (1 second) that it gets an access violation in
+read_ca_stats.  This seems strange, but I have not looked into it
+further.
+
+
+R1.7.2c
+=======
+Minor modification to vxStatsApp/src/Makefile to permit building from a Linux
+host

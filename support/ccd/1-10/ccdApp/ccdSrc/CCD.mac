@@ -1,0 +1,249 @@
+# This file contains a group of SPEC macros which setup the environment to synchronize SPEC and CCD detector run 
+#	by WinSpec through EPICS control.  The EPICS server software is wrriten by Mark Rivers.  
+# By Zhan Zhang, Argonne National Laboratory Feb-10-2005
+# A pseudo-counter named "ccd_tot" is the center piece of the operation of turning on/off CCD from SPEC side by
+#	cdef() the hook macros "user_precount", "user_postcount" and "user_getcounts".  
+# An overhead time is given to wait for CCD getting ready before a separate-controlled shutter is open.  
+# An access time is given to accommodate the delay between the scan-bar signal change and the CCD actual start 
+#	to count, which is around 1 second but pretty much unpredictable.
+
+global		ccdon_flag		# flag for using CCD or not
+global		ccdfile_flag		# flag for saving CCD image into file
+global 		ccd_total		# read back the total CCD counts in ROI
+global		ccd_autosave		# status before SPEC runs
+global		ccd_roil   		# CCD ROI left
+global          ccd_roir   		# CCD ROI right    
+global          ccd_roib   		# CCD ROI bottom   
+global          ccd_roit   		# CCD ROI top  
+global          ccd_comment1		# Comment1
+global          ccd_seq     		# CCD file Sequence number
+global          ccd_readnoise   	# typical read noise 640
+global          ccd_overh   		# overhead time 0.5 second
+global          ccd_acc     		# access time 1.3 seconds
+global          ccd_poll    		# Polling rate
+global          ccd_filename   		# CCD file template
+global          ccd_binx    		# Binning X
+global          ccd_biny    		# Binning Y
+global		fix_epoch		# fixed EPOCH number for filename or not
+global		epoch0			# Anchor point of EPOCH                
+constant	CCD_OVERHEAD	0.5	# CCD get ready
+constant	CCD_ACCESS	1.3	# CCD_access time, i.e. clearing, reading
+
+def ccd_on 	'{
+	local _i
+	if($#<1) 	{ ccdon_flag=1 }
+	else if($1!=0)	{ ccdon_flag=1 }
+	else 		{ ccdon_flag=0 }
+                
+        _i=cnt_num("ccd_tot")
+        if(_i==-1) {
+                printf("\nCan not turn on/off CCD.\nPlease add a counter with a name \'ccd_tot\'\n")
+                ccdon_flag=0
+        }
+        else if (cnt_name(_i)=="unused") {
+                printf("\nCan not turn on/off CCD.")
+                printf("\nThe counter \'ccd_tot\' is set as \'unused\'. ")
+                printf("\nPlease change the name of the counter.\n")
+                ccdon_flag=0
+        }
+	else {  counter_par(_i, "disable", 1-ccdon_flag) }
+}'
+def ccd_off	'ccd_on 0 '
+def ccdfile_on	'ccdfile_flag = 1'
+def ccdfile_off	'ccdfile_flag = 0'
+
+def ccd_precount'
+{
+local comment3, comment4, temp, curr_epoch
+if(ccdon_flag==1) {
+	epics_put("fenterCCD:det1:Seconds", COUNT_TIME+CCD_OVERHEAD+0.2)
+	epics_put("fenterCCD:det1:NumFrames", 1)
+	ccd_autosave = epics_put("fenterCCD:det1:AutoSave")
+	epics_put("fenterCCD:det1:AutoSave", 0)
+	if(ccdfile_flag==1) {
+		if(!fix_epoch) { 
+			temp = time()- EPOCH 
+			curr_epoch = temp -int(temp/1e5)*1e5 }
+		else		{ curr_epoch = epoch0	}
+		if(ccd_filename==0) {ccd_filename = DATAFILE }
+		ccdfilename=sprintf("%s.%3.3d.%3.3d.%5.5d", ccd_filename, SCAN_N, NPTS, curr_epoch  )
+		ccd_seq = epics_get("fenterCCD:det1:SeqNumber")
+		printf("\nCCD file name: %s_%3.3d.spe\n", ccdfilename, ccd_seq);
+		epics_put("fenterCCD:det1:FileTemplate", ccdfilename)
+		comment3=sprintf("%6.2f %6.2f %6.2f %8.5f", H, K, L, hc_over_e/LAMBDA)
+		epics_put("fenterCCD:det1:Comment3", comment3)
+		comment4=sprintf("%6.2f %6.2f %6.2f %6.2f", A[tth], A[th], A[chi], A[phi])
+		epics_put("fenterCCD:det1:Comment4", comment4)
+		epics_put("fenterCCD:det1:Comment5", date())
+		}
+	
+	epics_put("fenterCCD:det1:ComputeROICts", 1)	# compute ROI total on
+
+	while( index(epics_get("fenterCCD:det1:DetectorState"), "Idle") == 0 ) { }
+	epics_put("fenterCCD:det1:AcquireCLBK", 1)	# Acquire
+	sleep(CCD_OVERHEAD/2+CCD_ACCESS)
+	printf("\nCounting for %.1f seconds...", COUNT_TIME)
+	}
+}'
+
+def ccd_postcount'{ if(ccdon_flag == 1 ){ sleep(CCD_OVERHEAD/2+0.2) } }'
+
+def ccd_getcounts'
+{
+	if(ccdon_flag==1){
+		while( index(epics_get("fenterCCD:det1:DetectorState"), "Idle") == 0 ) { sleep(0.1) }
+		sleep(1)
+		ccd_total=epics_get("fenterCCD:det1:ROITotal")
+		if(ccdfile_flag==1){	
+			comment2=sprintf("%3d %10d %12d", S[0], S[MON], ccd_total)
+			epics_put("fenterCCD:det1:Comment2", comment2)
+			epics_put("fenterCCD:det1:SaveFile", 1)	
+			while( index(epics_get("fenterCCD:det1:DetectorState"), "Idle") == 0 ) { sleep(0.5) }
+			}
+		ccd_net = ccd_total - ccd_readnoise*(ccd_roir-ccd_roil+1)*(ccd_roib-ccd_roit+1)
+		S[ccd_tot]=ccd_total
+		}
+	#epics_put("fenterCCD:det1:AutoSave", ccd_autosave)
+}'
+
+# setup the CCD
+def ccd_setup'
+{
+	local totnum, op, opp 
+
+	totnum=16	# total number of parameters included here
+	tty_cntl("cl")
+	tty_move(1,2)
+	ccd_roil = epics_get("fenterCCD:det1:ROILeft")
+	ccd_roir = epics_get("fenterCCD:det1:ROIRight")
+	ccd_roib = epics_get("fenterCCD:det1:ROIBottom")
+	ccd_roit = epics_get("fenterCCD:det1:ROITop")
+	ccd_comment1 = epics_get("fenterCCD:det1:Comment1")
+	ccd_seq = epics_get("fenterCCD:det1:SeqNumber")
+	ccd_poll = epics_get("fenterCCD:det1:PollDetState.SCAN")
+	ccd_binx = epics_get("fenterCCD:det1:BinX")
+	ccd_biny = epics_get("fenterCCD:det1:BinY")
+	ccd_overh = CCD_OVERHEAD
+	ccd_acc = CCD_ACCESS
+	printf("CCD setup:\n")
+	printf("\n 1) CCD ROI left 		\t: %d", ccd_roil)
+	printf("\n 2) CCD ROI right 		\t: %d", ccd_roir)
+	printf("\n 3) CCD ROI bottom 		\t: %d", ccd_roib)
+	printf("\n 4) CCD ROI top 		\t: %d", ccd_roit)
+	printf("\n 5) CCD Commment1		\t: %s", ccd_comment1)
+	printf("\n 6) CCD next file sequence	\t: %d", ccd_seq)
+	printf("\n 7) CCD on (1) / off (0)	\t: %d", ccdon_flag)
+	printf("\n 8) CCD file on (1) / off (0)	\t: %d", ccdfile_flag)
+	printf("\n 9) CCD read noise		\t: %d", ccd_readnoise)
+	printf("\n10) CCD overhead time		\t: %.1f", ccd_overh)
+	printf("\n11) CCD access time		\t: %.1f", ccd_acc)
+	printf("\n12) CCD polling rate		\t: %s", ccd_poll)
+	printf("\n13) CCD filename		\t: ")
+        if(ccdfile_flag) { printf("%s", ccd_filename) }
+	printf("\n14) CCD Binning X		\t: %d", ccd_binx)
+	printf("\n15) CCD Binning Y		\t: %d", ccd_biny)
+	printf("\n16) Fixed EPOCH # in Filename	\t: %d", fix_epoch)
+
+	op=0
+	opp=-1
+	while (opp) {
+		opp=-1
+		while (opp < 0 || opp > totnum){
+			tty_move(0,12+totnum)
+			tty_cntl("cd")
+			str1=sprintf("Enter 1-%d to change the parameters, or 0 to quit",totnum)
+			opp = getval(str1, op)
+		}
+		op = opp
+		if (op!=0)	{ _ccd_opt op }
+		op = (opp + 1)%(totnum+1)
+		}
+	ccd_on ccdon_flag
+	ccd_init
+}'
+
+# copied from xsw macro, for ccd_setup
+def _ccd_par'
+{
+	local pos
+	pos=42
+	tty_move(1, 22); tty_cntl("cd")
+	$4 = getval("     $1", $4)
+	tty_move(pos, $3); tty_cntl("ce")
+	printf("$2", $4)
+}'
+
+# copied from xsw macro, for ccd_setup
+def _ccd_opt'
+{
+	local base
+	base=4
+	if ($1==1) {
+	 _ccd_par "ROI left 	" "%d" base ccd_roil
+	} else if ($1==2) {
+	 _ccd_par "ROI right 	" "%d" base+1 ccd_roir
+	} else if ($1==3) {
+	 _ccd_par "ROI bottom 	" "%d" base+2 ccd_roib
+	} else if ($1==4) {
+	 _ccd_par "ROI top 	" "%d" base+3 ccd_roit
+	} else if ($1==5) {
+	 _ccd_par "CCD Comment1" "%s" base+4 ccd_comment1
+	} else if ($1==6) {
+	 _ccd_par "CCD next file sequence" "%d" base+5 ccd_seq
+	} else if ($1==7) {
+	 _ccd_par "CCD on (1) / off (0)" "%d" base+6 ccdon_flag
+	} else if ($1==8) {
+	 _ccd_par "CCD file on (1) / off (0)" "%d" base+7 ccdfile_flag
+	} else if ($1==9) {
+	 _ccd_par "CCD read noise / pixel" "%d" base+8 ccd_readnoise
+	} else if ($1==10) {
+	 _ccd_par "CCD overhead time" "%.1f" base+9 ccd_overh
+	} else if ($1==11) {
+	 _ccd_par "CCD access time" "%.1f" base+10 ccd_acc
+	} else if ($1==12) {
+	 _ccd_par "CCD polling rate" "%s" base+11 ccd_poll
+	} else if ($1==13) {
+	 _ccd_par "CCD filename (\'-\' to use the current SPEC file)" "%s" base+12 ccd_filename
+	 if(ccd_filename=="-") { ccd_filename=DATAFILE }
+	 tty_move(42, base+12); tty_cntl("ce")
+         printf("%s", ccd_filename)
+	} else if ($1==14) {
+	 _ccd_par "CCD Binning X" "%d" base+13 ccd_binx
+	} else if ($1==15) {
+	 _ccd_par "CCD Binning Y" "%d" base+14 ccd_biny
+	} else if ($1==16) {
+	 _ccd_par "Fixed EPOCH #" "%d" base+15 fix_epoch
+        }
+}'
+
+# initialize the CCD function, both softwarely and hardwarely
+def ccd_init '
+{
+	epics_put("fenterCCD:det1:ROILeft", ccd_roil)
+	epics_put("fenterCCD:det1:ROIRight", ccd_roir)
+	epics_put("fenterCCD:det1:ROIBottom", ccd_roib)
+	epics_put("fenterCCD:det1:ROITop", ccd_roit)
+	epics_put("fenterCCD:det1:Comment1", ccd_comment1)
+	epics_put("fenterCCD:det1:SeqNumber", ccd_seq)
+	epics_put("fenterCCD:det1:PollDetState.SCAN", ccd_poll)
+	epics_put("fenterCCD:det1:BinX", ccd_binx)
+	epics_put("fenterCCD:det1:BinY", ccd_biny)
+	constant CCD_OVERHEAD ccd_overh 
+	constant CCD_ACCESS ccd_acc
+	if(fix_epoch!=0) { 
+		fix_epoch = 1 
+		setepoch
+		}
+}'
+
+def setepoch'
+{
+	local temp
+	temp = time()- EPOCH 
+	epoch0 = temp -int(temp/1e5)*1e5 
+}'
+
+cdef("user_precount", ";{ccd_precount}", "ccd_tot", 0x22)
+cdef("user_postcount", ";{ccd_postcount}", "ccd_tot", 0x22)
+cdef("user_getcounts", ";{ccd_getcounts}", "ccd_tot", 0x22)
+

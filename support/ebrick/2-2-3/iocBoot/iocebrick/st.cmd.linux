@@ -1,0 +1,55 @@
+#------------------------------------------------------------------------------
+# Linux startup file for the EBRICK
+#------------------------------------------------------------------------------
+
+#------------------------------------------------------------------------------
+# Register all support components
+dbLoadDatabase("../../dbd/iocebrickAppLinux.dbd")
+iocebrickAppLinux_registerRecordDeviceDriver(pdbbase)
+
+#------------------------------------------------------------------------------
+# Configure asyn
+< asyn.cmd
+
+#------------------------------------------------------------------------------
+# Configure Calcs
+< calcs.cmd
+
+#------------------------------------------------------------------------------
+# Configure sscan support
+< sscan.cmd
+
+#------------------------------------------------------------------------------
+# Configure EPICS brick
+< ebr.cmd
+
+#------------------------------------------------------------------------------
+# Configure Serial-Link Protocol
+< serialLink.cmd
+
+#------------------------------------------------------------------------------
+# Configure Save/Restore
+< save_restore.cmd
+
+#------------------------------------------------------------------------------
+# Start IOC
+iocInit()
+
+#------------------------------------------------------------------------------
+# Start any sequence programs
+#seq sncExample,"user=ebrick"
+
+#------------------------------------------------------------------------------
+# Start autosave
+
+# Monitor every five seconds
+create_monitor_set("auto_positions.req",5,"P=ebrick:")
+
+# Monitor every ten seconds
+create_monitor_set("auto_settings.req",10,"P=ebrick:")
+
+# saveData init
+#saveData_Init("saveData.req","P=ebrick:")
+
+#
+#------------------------------------------------------------------------------

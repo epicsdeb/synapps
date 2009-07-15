@@ -1,0 +1,105 @@
+
+#=============================================================================
+# vxWorks-based IOC STARTUP SCRIPT
+
+#-----------------------------------------------------------------------------
+# Load commands
+cd ""
+#< ../nfsCommands
+< cdCommands
+
+#-----------------------------------------------------------------------------
+# If the VxWorks kernel was built using the project facility, the following
+# must be added before any C++ code is loaded (see SPR #28980).
+sysCplusEnable=1
+
+#-----------------------------------------------------------------------------
+# Load custom EPICS software from user tree and from share
+cd topbin
+ld < loveApp.munch
+cd startup
+
+#-----------------------------------------------------------------------------
+# Load database
+cd top
+dbLoadDatabase( "dbd/loveAppVX.dbd" )
+loveAppVX_registerRecordDeviceDriver(pdbbase)
+
+#-----------------------------------------------------------------------------
+# Configure components
+
+#-----------------------------------------------------------------------------
+# IPAC (2.8)
+# Carrier contents
+#   slot a: IP-Octal (serial RS-485)
+#   slot b: empty
+#   slot c: empty
+#   slot d: empty
+# Initialize IP carrier: "A16,A32" addresses
+ipacAddVIPC616_01("0x2000,0xA0000000")
+
+#-----------------------------------------------------------------------------
+# Initialize SBS OctalUart IP module
+
+# Indicate number of modules to support
+tyGSOctalDrv(4)
+
+# Initialize module: module type, IRQ, carrier, slot
+tyIdx = tyGSOctalModuleInit("Mod","RS485",0x80,0,0)
+
+# Create device: name, module#, port#, rdbuf, wrbuf
+tyDev = tyGSOctalDevCreate("/dev/ttyS0","Mod",0,1000,1000)
+
+# Configure the port
+tyGSOctalConfig("/dev/ttyS0",19200,'N',1,8,'N')
+
+#-----------------------------------------------------------------------------
+# Configure Asyn
+drvAsynSerialPortConfigure("S0","/dev/ttyS0",0,0,0)
+asynSetOption("S0",0,"baud","19200")
+asynSetOption("S0",0,"bits","8")
+asynSetOption("S0",0,"parity","none")
+asynSetOption("S0",0,"stop","1")
+asynSetOption("S0",0,"clocal","Y")
+asynSetOption("S0",0,"crtscts","N")
+
+#-----------------------------------------------------------------------------
+# Configure Love
+
+# Driver support (NOTE: Love addr is hex)
+drvLoveInit("L0","S0",0)
+drvLoveConfig("L0",0x1,"1600")
+drvLoveConfig("L0",0x2,"1600")
+drvLoveConfig("L0",0x3,"1600")
+drvLoveConfig("L0",0x4,"16A")
+
+#-----------------------------------------------------------------------------
+# Load records
+
+# Asyn records for individual controllers (NOTE: Love addr is hex)
+dbLoadRecords("$(ASYN)/db/asynRecord.db","P=dmk0,R=PortS0,PORT=S0,ADDR=0,OMAX=0,IMAX=0")
+dbLoadRecords("$(ASYN)/db/asynRecord.db","P=dmk0,R=Instr1,PORT=L0,ADDR=0x01,OMAX=0,IMAX=0")
+dbLoadRecords("$(ASYN)/db/asynRecord.db","P=dmk0,R=Instr2,PORT=L0,ADDR=0x02,OMAX=0,IMAX=0")
+dbLoadRecords("$(ASYN)/db/asynRecord.db","P=dmk0,R=Instr3,PORT=L0,ADDR=0x03,OMAX=0,IMAX=0")
+dbLoadRecords("$(ASYN)/db/asynRecord.db","P=dmk0,R=Instr4,PORT=L0,ADDR=0x04,OMAX=0,IMAX=0")
+
+# For beamline database
+dbLoadRecords("db/LoveController.db","P=dmk0:,Q=Love1:,PORT=L0,ADDR=0x01")
+dbLoadRecords("db/LoveControllerControl.db","P=dmk0:,Q=Love1:,PORT=L0,ADDR=0x01")
+
+dbLoadRecords("db/LoveController.db","P=dmk0:,Q=Love2:,PORT=L0,ADDR=0x02")
+dbLoadRecords("db/LoveControllerControl.db","P=dmk0:,Q=Love2:,PORT=L0,ADDR=0x01")
+
+dbLoadRecords("db/LoveController.db","P=dmk0:,Q=Love3:,PORT=L0,ADDR=0x03")
+dbLoadRecords("db/LoveControllerControl.db","P=dmk0:,Q=Love3:,PORT=L0,ADDR=0x01")
+
+dbLoadRecords("db/LoveController.db","P=dmk0:,Q=Love4:,PORT=L0,ADDR=0x04")
+dbLoadRecords("db/LoveControllerControl.db","P=dmk0:,Q=Love4:,PORT=L0,ADDR=0x01")
+
+#-----------------------------------------------------------------------------
+# Start IOC
+iocInit()
+
+#
+#=============================================================================
+

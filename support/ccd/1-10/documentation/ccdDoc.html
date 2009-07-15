@@ -1,0 +1,145 @@
+<HTML>
+<HEAD>
+<TITLE>XIA DXP-4 Device Device Support for the MCA Record</TITLE>
+</HEAD>
+<BODY>
+<H1>ccd: Area detector support</H1>
+
+<ADDRESS>Mark Rivers</ADDRESS>
+
+<H2>&nbsp;</H2>
+
+<HR>
+
+<A NAME="Overview">
+</A>
+<h2 align="center">Goal: Uniform interface for controlling area detectors (CCD, online image plates) from EPICS
+</h2>
+<p>Any EPICS client (e.g. spec, IDL, scan record) can control (at a bare minimum).</p>
+<ul>
+  <li>Exposure time
+</li>
+  <li>File name
+</li>
+  <li>Start collection, wait for completion
+</li>
+  <li>Much more control for most detectors
+</li>
+</ul>
+<h2 align="center">Current status</h2>
+<ul>
+  <li>MAR 165 CCD (complete, in use)</li>
+  <li>Roper CCD detectors (complete, in use) </li>
+  <li>Bruker CCD detectors (soon)</li>
+  <ul>
+    <li>Will be based on Tim Graber’s work</li>
+    <li>Will use the smartService socket interface</li>
+    <li>There is a functioning software package that allows the Bruker SMART 
+    software to control EPICS goniometers and shutters.&nbsp; It runs as a SNL 
+    program in an EPICS IOC, and emulates the Bruker GGCS RS-232 goniometer 
+    controller. This package is called <a href="smartControl.html">smartContro</a>l 
+    and is documented separately.</li>
+  </ul>
+  <li>MAR 345 online image plate (soon)</li>
+  <ul>
+    <li>Will be based on Keith Brister’s work </li>
+  </ul>
+</ul>
+<h2 align="center">Implementation</h2>
+<p>Use manufacturer’s software for primary user interface. <br>
+<ul>
+<li>Minimizes amount of new code</li>
+<li>Uses existing file formats, unwarping algorithms, etc.</li>
+</ul>
+These programs include:<br>
+<ul>
+<li>marccd for MAR165</li>
+<li>Winview/Winspec for Roper cameras</li>
+<li>SMART for Bruker cameras (can also use WinView)</li>
+<li>scan345 for MAR 345 image plate </li>
+</ul>
+
+<p>Control these programs from EPICS<br>
+<ul>
+<li>Each of these programs has a “remote control” interface, typically using TCP/IP 
+sockets</li>
+<li>Using EPICS means each client (e.g. spec) does not have to know how to talk to 
+each type of detector. Only has to know how to talk to EPICS.</li>
+<li>EPICS software consists of</li>
+<ul>
+<li>Database of records (PVs), identical for all detectors</li>
+<li>State-notation-language (SNL) programs, unique for each detector. Reads/writes 
+PVs and communicates with remote control interface over sockets.</li>
+<li>The database and SNL programs are typically run on the same machine that the 
+user interface software runs on (e.g. Linux box for MAR detectors, Windows for 
+Roper and Bruker). No VME crate required.</li>
+</ul>
+</ul>
+
+<h2>&nbsp;</h2>
+
+<h2 align="center">Schematic System Architecture</h2>
+<p><img border="0" src="ccd_schematic.png" width="1416" height="1003"></p>
+<h2>&nbsp;</h2>
+<h2 align="center">Relationship with Brian Tieman’s Package</h2>
+<ul>
+<li>Complementary to, and compatible with, Brian’s package.</li>
+<ul>
+<li>My software uses the same PV names as Brian’s wherever possible, so EPICS 
+clients that work with his software should work with mine</li>
+</ul>
+<li>Brian’s uses the EPICS portable channel access server, rather than running a 
+real EPICS database and SNL program on the server machine</li>
+<ul>
+Only option when Brian wrote his code, before EPICS 3.14.</li>
+</ul>
+<li>Brian’s program calls library (DLL) layer directly, bypasses manufacturers user 
+interface program</li>
+<ul>
+<li>More flexible</li>
+<li>More code</li>
+<li>File format is HDF, not manufacturers format that many data processing 
+applications expect</li>
+<li>Unwarping is not implemented</li>
+</ul>
+<li>Brian’s program is a Windows application, and so only works on Windows detectors 
+(Roper, several others). Not MAR or other Unix detectors.</li>
+</ul>
+
+<p>&nbsp;</p>
+<h2 align="center">MEDM User Interface</h2>
+<p>This screen is the complete collection of PVs.&nbsp; Not all of these PVs are 
+implemented for any particular detector type, depending upon the limitations in 
+the manufacturers control software.</p>
+
+<p><a href="ccd_medm.png">
+<img border="0" src="ccd_medm.png" width="1026" height="644"></a></p>
+<p>&nbsp;</p>
+<h2 align="center">EPICS Process Variables (PVS)</h2>
+<p align="center"><a href="ccd_PVs.gif">
+<img border="0" src="ccd_PVs.gif" width="931" height="579"></a></p>
+<p align="center">&nbsp;</p>
+<p align="center">&nbsp;</p>
+<h2 align="center">marCCD interface</h2>
+<p align="center"><a href="ccd_marccd.png">
+<img border="0" src="ccd_marccd.png" width="1467" height="1137"></a></p>
+
+<P>
+
+<P>
+
+<P>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h2 align="center">Roper Interface</h2>
+<p><img border="0" src="ccd_Roper.png" width="1463" height="1040"></p>
+<HR>
+<ADDRESS>
+Suggestions and comments to: 
+<A HREF="mailto:rivers@cars.uchicago.edu">
+Mark Rivers </A> : (rivers@cars.uchicago.edu)
+<BR>
+Last modified: January 27, 2004</ADDRESS>
+
+</BODY>
+</HTML>

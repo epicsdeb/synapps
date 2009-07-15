@@ -1,0 +1,182 @@
+                          Changes to CAMAC package
+                                 Mark Rivers
+                                 March, 1996
+
+
+                            Changes to camacLib.c
+
+- Added cclnk routine
+  This routine allows one to specify a callback routine to be run when a
+  specified LAM occurs.  The callback routine can be passed a single pointer
+  parameter.  This pointer is specified in inta[1], the optional parameter
+  to cdlam().
+
+- Added optional user specified values for F, A, and Masks for LAM Test, Clear
+  Enable, and Disable.  This permits the library to use LAMs on a much larger
+  variety of modules, i.e. those which don't strictly follow the ESONE
+  standards for LAM handling.  The user specifies these LAM parameters via
+  a lamParams structure passed in inta[0], the optional parameter to cdlam.
+
+  Included in this is the ability to deal with modules which do not have a
+  LAM disable function.  The user indicates that the module lacks this function
+  by passing the optional lamParams structure to cdlam(), with F_DISABLE set
+  to -1.  If this is done then camacLib will attempt to call the optional
+  function pfunc->disableSlotLam to disable LAMs from this module.
+  disableSlotLam typically will use a LAM mask register to disable LAMs from
+  this slot.  Note that there are several important side effects of adding this
+  feature, which may be important when adding support for other Branch types.
+
+  camacLib.c allows 2 different models for temporarily disabling LAMs in the
+  interrupt service routine and then re-enabling them in routine deliver_LAMS().
+
+  1) The interrupt service routine disables LAMs for the particular slot which
+     caused the LAM and passes this slot number in the message to
+     camacLamMonitor. After deliver_LAM has cleared the LAM, camacLamMonitor 
+     re-enables the LAMs for that slot with enableSlotLam.
+
+  2) The interrupt service routine disables LAMs for the entire crate
+     controller and passes an invalid slot number (e.g. N=0) in the message to
+     camacLamMonitor.  After deliver_LAM has cleared the LAM, camacLamMonitor 
+     re-enables the LAMs for the entire crate controller with resetCrateLam.
+
+  At first appearance method 1) looks like a better way to go.  However, this
+  will NOT work now that camacLib.c supports disabling LAMs with disableSlotLam
+  (for modules without a disable LAM function) and now that cclnk has been
+  implemented.  The reason it does not work is as follows:
+
+    - Suppose we have a module which does not have a disable LAM function, and 
+      cclnk has been called to establish a callback routine.
+    - The module generates a LAM
+    - The interrupt service routine disables the slot LAM with the mask
+      register.
+    - deliver_LAM calls the user-specified callback routine.  Suppose this
+      routine disables the LAM with ctlm(lam,0), which is in fact a rather
+      common thing to do in a callback routine.  Since this is a module which 
+      does not support the disable LAM function, it is done by calling
+      disableSlotLam, which disables this slot in the LAM mask register. (In
+      fact his has already been done in the interrupt service routine).
+    - deliver_LAM returns to camacLamMonitor, which then re-enables the slot
+      LAM, by calling enableSlotLam. THIS IS THE PROBLEM.  It has re-enabled
+      LAMs for this slot, when this should not be done because the callback
+      routine called ctlm(), but there is no way for camacLamMonitor to know
+      this.
+
+  There is a simple solution to this problem, which is to use method 2) above. 
+  In this case the following occurs:
+
+    - The module generates a LAM
+    - The interrupt service routine disables LAMs from entire crate controller.
+    - camacLamMonitor now figures out which module caused the LAM and calls
+      deliver_LAM.
+    - deliver_LAM calls the user-specified callback routine.  This routine 
+      disables the LAM with ctlm(lam,0). Since this is a module which 
+      does not support the disable LAM function, it is done by calling
+      disableSlotLam, which disables this slot in the LAM mask register. 
+    - deliver_LAM returns to camacLamMonitor, which then re-enables LAMs in the
+      crate controller by calling resetCrateLam.
+
+  There is now no problem, since the slot LAMs are left disabled, as desired.
+  However, for this scheme to work the following must be true:
+    - Routine hw_getLamPattern must not simply return the pattern of
+      outstanding LAMs in the crate.  Rather it must return the logical AND of
+      the outstanding LAMs and the LAM mask register.  The reason for this is
+      that a module which lacks a disable LAM function may be asserting LAM,
+      but may have had its LAM disabled in the LAM mask register. If 
+      hw_getLamPattern simply returned the LAM pattern to camacLamMonitor, 
+      then camacLamMonitor would think that this module had generated a LAM 
+      and would incorrectly call deliver_LAM for it.  In fact that module 
+      could not have generated a LAM, since its bit is clear in the LAM mask 
+      register.  This problem is avoided simply by having hw_getLamPattern 
+      return the logical AND of the outstanding LAMs and the LAM mask
+      register, i.e. the pattern of all possible sources of the LAM interrupt.
+
+
+-  Fixed minor problems with setting errno in the several of the routines.
+
+-  Increased the stack size of the lamMonitor task from 600 to 2000 bytes. It
+   was crashing with the smaller stack.
+
+-  Added #ifdef EPICS to allow compiling for EPICS or for a non-EPICS (vxWorks
+   only) environment.  Added -DEPICS to Makefile.Vx to compile for EPICS by
+   default. I have verified that when compiling without -DEPICS and loading the
+   resulting driver into an IOC with no EPICS components present that the
+   camacLib stuff works fine.
+
+
+                            Changes to camacLib.h
+
+- Changed the type of inta[] from int[] to void*[]. Added documentation
+  for inta[].
+
+- Changed the type of rtn() from void() to FUNCPTR.
+
+- Added lamParams structure definition and typedef.
+
+
+
+
+                            Changes to ksc2917.h
+
+- Added hw_disableSlotLam, hw_enableSlotLam, hw_resetCrateLam
+
+- Replaced hw_camacInterrupt with 4 separate interrupt service routines,
+  hw_lamInterrupt, hw_DoneInterrupt,  hw_DMAInterrupt, hw_AbortInterrupt.
+
+- Enhancements to make LAMs work.
+
+- Changed the block mode (DMA) wait logic to use interrupts rather than
+  polling and hogging the CPU.
+
+- Modified the hwInfo structure
+
+- Improved the error checking and reporting
+
+
+                            Changes to devCamac.c
+
+- Added support for the Waveform record.  It uses block mode transfers.
+
+
+                            Generic CAMAC record
+
+The package now includes a Generic CAMAC record.  This record is very useful
+for debugging and for accessing modules for which full record support is not
+yet available.  The files to support this record are:
+
+  camac/rec/recCamac.c
+    The record source code.
+
+  camac/rec/recCamac.doc
+    The record documentation.
+
+  camac/rec/README
+    Instructions on building the record.
+
+  camac/rec/CAMAC_IO.adl
+    Example medm screen for displaying a Generic CAMAC record.
+
+  camac/cat_ascii/camacRecord.ascii 
+    File which defines the fields in this record.
+
+  camac/cat_ascii/choiceRecCamac.ascii 
+    File which defines choice values for this record.
+  
+  camac/cat_ascii/choiceCamac.h
+    Choice definitions for this record.
+
+
+
+                               Known Problems
+
+There appears to be a hardware problem on the KSC 2917/3922. When doing a
+Q-Stop block transfer on an empty slot and using interrupts to detect when the
+operation completes I observe flaky behavior.  The wrong interrupt (DMA Buffer
+Empty rather than Abort List) is generated about 20% of the time.  Usually
+after doing this a few times the board hangs up and is completely unresponsive,
+genrating bus errors and crashing vxWorks tasks. The problem does not occur for
+Q-Repeat transfers.  
+
+Kinetic Systems is investigating the problem.  
+
+The workaround is to be careful not to attempt Q-Stop transfers to empty slots.
+

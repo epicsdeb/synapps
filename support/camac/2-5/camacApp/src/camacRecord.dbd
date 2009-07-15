@@ -1,0 +1,97 @@
+menu(camacTMOD) {
+	choice(camacTMOD_Single,"Single")
+	choice(camacTMOD_Q_Stop,"Q Stop")
+	choice(camacTMOD_Q_Repeat,"Q Repeat")
+	choice(camacTMOD_Q_Scan,"Q Scan")
+}
+menu(camacCCMD) {
+	choice(camacCCMD_None,"None")
+	choice(camacCCMD_Clear_Inhibit,"Clear Inhibit")
+	choice(camacCCMD_Set_Inhibit,"Set Inhibit")
+	choice(camacCCMD_Clear__C_,"Clear (C)")
+	choice(camacCCMD_Initialize__Z_,"Initialize (Z)")
+}
+recordtype(camac) {
+	include "dbCommon.dbd" 
+	field(VAL,DBF_LONG) {
+		prompt("Current value")
+		asl(ASL0)
+		special(SPC_DBADDR)
+		pp(TRUE)
+	}
+	field(BPTR,DBF_NOACCESS) {
+		prompt("Buffer Pointer")
+		special(SPC_NOMOD)
+		interest(4)
+		size(4)
+		extra("void *bptr")
+	}
+	field(Q,DBF_LONG) {
+		prompt("Q  response")
+		asl(ASL0)
+		special(SPC_NOMOD)
+	}
+	field(X,DBF_LONG) {
+		prompt("X  response")
+		asl(ASL0)
+		special(SPC_NOMOD)
+	}
+	field(INHB,DBF_LONG) {
+		prompt("Inhibit status")
+		asl(ASL0)
+		special(SPC_NOMOD)
+	}
+	field(B,DBF_LONG) {
+		prompt("Branch")
+		promptgroup(GUI_DISPLAY)
+		interest(1)
+	}
+	field(C,DBF_LONG) {
+		prompt("Crate")
+		promptgroup(GUI_DISPLAY)
+		interest(1)
+	}
+	field(N,DBF_LONG) {
+		prompt("Station")
+		promptgroup(GUI_DISPLAY)
+		interest(1)
+		initial("1")
+	}
+	field(A,DBF_LONG) {
+		prompt("Subaddress")
+		promptgroup(GUI_DISPLAY)
+		interest(1)
+	}
+	field(F,DBF_LONG) {
+		prompt("Function")
+		promptgroup(GUI_DISPLAY)
+		interest(1)
+	}
+	field(TMOD,DBF_MENU) {
+		prompt("Transfer mode")
+		promptgroup(GUI_COMMON)
+		interest(1)
+		menu(camacTMOD)
+	}
+	field(NMAX,DBF_LONG) {
+		prompt("Max. number of values")
+		promptgroup(GUI_DISPLAY)
+		interest(1)
+	}
+	field(NUSE,DBF_LONG) {
+		prompt("Number of values to R/W")
+		promptgroup(GUI_DISPLAY)
+		interest(1)
+	}
+	field(NACT,DBF_LONG) {
+		prompt("Actual number of values")
+		promptgroup(GUI_DISPLAY)
+		interest(1)
+	}
+	field(CCMD,DBF_MENU) {
+		prompt("Crate command")
+		pp(TRUE)
+		interest(1)
+		menu(camacCCMD)
+	}
+}

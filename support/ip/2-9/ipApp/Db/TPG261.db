@@ -1,0 +1,101 @@
+record(stringin,"$(P)$(GAUGE):ID") {
+	field(DTYP,"asyn TPG261")
+	field(INP,"@asyn($(PORT) $(ADDR))GET_ID")
+	field(PINI,"YES")
+        field(FLNK,"$(P)$(GAUGE):UNIT PP MS")
+}
+record(mbbi,"$(P)$(GAUGE):UNIT") {
+	field(DTYP,"asyn TPG261")
+	field(INP,"@asyn($(PORT) $(ADDR))GET_UNIT")
+        field(ZRVL,"0")
+        field(ONVL,"1")
+        field(TWVL,"2")
+        field(ZRST,"bar")
+        field(ONST,"Torr")
+        field(TWST,"Pascal")
+}
+
+record(ai,"$(P)$(GAUGE):PRES") {
+	field(DTYP,"asyn TPG261")
+	field(SCAN,"2 second")
+	field(INP,"@asyn($(PORT) $(ADDR))GET_PRESSURE")
+	field(PREC,"3")
+	field(EGU,"Torr")
+        field(FLNK,"$(P)$(GAUGE):STATUS PP MS")
+}
+record(bi,"$(P)$(GAUGE):STATUS") {
+	field(DTYP,"asyn TPG261")
+	field(INP,"@asyn($(PORT) $(ADDR))GET_SENSOR")
+        field(ZSV,"MAJOR")
+        field(ZNAM,"Off")
+        field(ONAM,"On")
+        field(FLNK,"$(P)$(GAUGE):SP1S PP MS")
+}
+record(bi,"$(P)$(GAUGE):SP1S") {
+	field(DTYP,"asyn TPG261")
+	field(INP,"@asyn($(PORT) $(ADDR))GET_SPS1")
+        field(ZSV,"MAJOR")
+        field(ZNAM,"Off")
+        field(ONAM,"On")
+       field(FLNK,"$(P)$(GAUGE):SP2S PP MS")
+}
+record(bi,"$(P)$(GAUGE):SP2S") {
+	field(DTYP,"asyn TPG261")
+	field(INP,"@asyn($(PORT) $(ADDR))GET_SPS2")
+        field(ZSV,"MAJOR")
+        field(ZNAM,"Off")
+        field(ONAM,"On")
+        field(FLNK,"$(P)$(GAUGE):UNIT PP MS")
+}
+
+record(ai,"$(P)$(GAUGE):SP1V") {
+	field(DTYP,"asyn TPG261")
+	field(SCAN,"10 second")
+	field(PREC,"1")
+	field(INP,"@asyn($(PORT) $(ADDR))GET_SPVAL1")
+        field(FLNK,"$(P)$(GAUGE):SP2V PP MS")
+}
+record(ai,"$(P)$(GAUGE):SP2V") {
+	field(DTYP,"asyn TPG261")
+	field(PREC,"1")
+	field(INP,"@asyn($(PORT) $(ADDR))GET_SPVAL2")
+}
+
+record(bo,"$(P)$(GAUGE):START") {
+	field(DTYP,"asyn TPG261")
+	field(OUT,"@asyn($(PORT) $(ADDR))SET_SENSOR")
+        field(ZSV,"MAJOR")
+        field(ZNAM,"STOP")
+        field(ONAM,"START")
+}
+
+record(mbbo,"$(P)$(GAUGE):SUNIT") {
+	field(DTYP,"asyn TPG261")
+	field(OUT,"@asyn($(PORT) $(ADDR))SET_UNIT")
+        field(ZRVL,"0")
+        field(ONVL,"1")
+        field(TWVL,"2")
+        field(ZRST,"bar")
+        field(ONST,"Torr")
+        field(TWST,"Pascal")
+        field(FLNK,"$(P)$(GAUGE):UNIT PP MS")
+}
+record(ao,"$(P)$(GAUGE):SET1") {
+	field(DTYP,"asyn TPG261")
+        field(OMSL,"supervisory")
+	field(PREC,"1")
+	field(OUT,"@asyn($(PORT) $(ADDR))SET_SP1")
+	field(VAL,"1.0E-06")
+        field(FLNK,"$(P)$(GAUGE):SP1V PP MS")
+}
+
+record(ao,"$(P)$(GAUGE):SET2") {
+	field(DTYP,"asyn TPG261")
+        field(OMSL,"supervisory")
+	field(PREC,"1")
+	field(OUT,"@asyn($(PORT) $(ADDR))SET_SP2")
+	field(VAL,"1.0E-06")
+        field(FLNK,"$(P)$(GAUGE):SP2V PP MS")
+}
+
+

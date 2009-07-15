@@ -1,0 +1,416 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<meta name="GENERATOR" content="Microsoft FrontPage 4.0">
+<title>ipUnidig</title>
+</head>
+
+<body>
+
+<h1 align="center">ipUnidig Documentaion</h1>
+
+<h2 align="center">Author: Mark Rivers</h2>
+
+<p>This package provides EPICS device support for the Greenspring IP-UD
+(formerly called the IP-Unidig)
+series of digital I/O Industry Pack modules. It also supports the Systran
+DIO316I and the SBS IP-OPTOIO-8. The IP-UD family includes more than 20
+separate models. This software provides support for most of these
+models. Most models provide 24 bits, with each bit individually
+programmable as an input or an output. The last section of this
+document describes any special features or restrictions on
+particular models.</p>
+
+<p>The software is written in C++, and consists of an IpUnidig class that
+communicates with the hardware, an input server, an output server, and EPICS
+device support for the bi, bo and longin records.&nbsp; The servers use the
+Message Passing Facility (MPF).</p>
+
+<hr>
+
+<h3>Output</h3>
+
+<p>For output device support sends Int32Messages with the
+following info:</p>
+
+<p>address - &quot;mask&quot;, a bit pattern of bits to be set or
+cleared</p>
+
+<p>value - DAC value when cmd=cmdSetDAC. Otherwise not used</p>
+
+<p>cmd - cmdSetBits, cmdClearBits, or cmdSetDAC</p>
+
+<p>cmdSetBits: All bits which are 1 in the mask will be set to 1
+in the output register. Bits which are 0 in the mask will be
+unaffected in the output register.</p>
+
+<p>cmdClearBits: All bits which are 1 in the mask will be set to
+0 in the output register. Bits which are 0 in the mask will be
+unaffected in the output register.</p>
+
+<p>cmdSetDAC: This command is used to set the digital-to-analog
+converter (DAC) in the IP-Unidig-HV series of modules. This DAC
+is used to set the input threshold on a comparator. The value is
+12 bits, in 15 mV units, for a range of 0-61 volts. </p>
+
+<p>The output server returns an Int32Message with status=(0,-1)
+for (success, failure). </p>
+
+<hr>
+
+<h3>Input</h3>
+
+<p>For input device support sends Int32Messages with the
+following info:</p>
+
+<p>address - not used</p>
+
+<p>value - not used </p>
+
+<p>cmd - cmdStartMonitor or cmdStopMonitor</p>
+
+<p>The input server polls the input register at a user-specified rate
+(default=10Hz). The IP-Unidig-I models can also be set to generate interrupts
+when any user-specified bits changed state, which also causes the input register
+to be read.&nbsp; Whenever it
+detects that any input bit has changed it sends a reply message
+to the last client which sent it a cmdStartMonitor command. This
+reply message is an Int32Message that contains the current
+value of all input bits. If the server receives a cmdStopMonitor
+command it stops sending reply messages until it receives another
+cmdStartMonitor command. </p>
+
+<p>The reply messages sent by the server to the client on change
+of any input bit are Int32Messages containing the following
+information:</p>
+
+<p>address - not used</p>
+
+<p>value - The current value of the input register</p>
+
+<hr>
+
+<h3>Server configuration</h3>
+
+<p>initIpUnidig(&quot;moduleName&quot;, &quot;carrier&quot;, &quot;site&quot;,
+queueSize, msecPoll, intVec, risingMask, fallingMask, biMask, maxClients)</p>
+
+<p>where </p>
+
+<p>moduleName - The &quot;base&quot; server name (see note below)
+</p>
+
+<p>carrier - The ip carrier name</p>
+
+<p>site - carrier IP site (e.g. &quot;Ip_a&quot; </p>
+
+<p>queueSize - message queue size. Make this the maximum number
+of records attached to this device. </p>
+
+<p>msecPoll - the number of millisecond between polls of the input
+register.&nbsp; Default=100 msec if this parameter is 0.&nbsp; This is the
+worst-case response time detecting a change of state for bits or modules that
+are not using interrupts.&nbsp; If interrupts are used then much faster
+responses can be obtained. </p>
+
+<p>intVec - the interrupt vector for modules that support interrupts.&nbsp; Zero
+if interrupts are not to be used. </p>
+
+<p>risingMask - bit mask of bits that should generate interrupts on the rising
+edge (low to high) </p>
+
+<p>fallingMask - bit mask of bits that should generate interrupts on the falling
+edge (high to low) </p>
+
+<p>biMask - bit mask of bits that should generate callbacks to the binary input
+record (bi) support when they interrupt. </p>
+
+<p>maxClients - maximum number of clients that will request callbacks from the
+IpUnidig interrupt routine.&nbsp; This is not the number of EPICS clients, but
+rather the number of device support classes that want to be called from IpUnidig.&nbsp;
+5 is the default if this parameter is 0, and should be plenty. </p>
+
+<p>initIpUnidig starts two separate server tasks, one for output
+and one for input. The names of these servers are
+&quot;moduleName&quot;Out and &quot;moduleName&quot;In
+respectively. The reason for having separate input and output
+servers is that the input server polls the read register (at 10Hz by default),
+with a semGet(delay)&nbsp; between polls. If the same
+server were used for output it would introduce a 0.1 second
+latency in responding to output commands, which is not desireable.</p>
+
+<hr>
+
+<h3>Interrupts</h3>
+
+<p>Beginning with release R1-2 interrupts on the IP-Unidig-I models are fully
+supported.&nbsp; For each input bit the hardware can be programmed to generate
+interrupts on rising or falling transitions, or neither.&nbsp; The interrupt
+service routine software is written to allow alternating which transition
+generates interrupts, so that it is also possible to generate interrupts on both
+rising and falling transitions.</p>
+
+<p>The risingMask and fallingMask parameters to initIpUnidig are used to specify
+which bits should generate interrupts on each edge.&nbsp; It is possible to have
+some bits set in neither mask, some in one mask and not the other, and some
+specified in both masks.&nbsp; For example if risingMask=5 (binary 101) and
+fallingMask=6 (binary 110), then the first input will generate interrupts on the
+rising edge, the second input will generate interrupts on the falling edge, the
+third input will generate interrupts on both rising and falling edges, and all
+other inputs will not generate interrupts at all.</p>
+
+<p>The biMask parameter is used to specify which bits should generate callbacks
+to the binary input device support when an interrupts occurs on that line.&nbsp;
+If it is specified as the bitwise &quot;or&quot; of risingMask and fallingMask
+(or alternatively 0xffff), then all interrupts will result in callbacks to the
+binary input device support.&nbsp; If some bits are set in risingMask or
+fallingMask, but are not set in biMask, then transitions on those bits will
+generate interrupts, but will not result in a callback to the bi device
+support.&nbsp; This can be useful because it is possible for other device
+support modules to request callbacks at interrupt level from the IpUnidig class
+on receipt of an interrupt on one or more inputs.&nbsp; If these interrupts are
+occurring very quickly, and the other device support is very efficient, it may
+be desirable for such interrupts to only result in callbacks to the other device
+support, and not to the binary input device support.&nbsp; The binary input
+device support is relatively &quot;expensive&quot; because it results in an MPF
+message and channel access monitors being posted every time an interrupt occurs.</p>
+
+<p>&nbsp;</p>
+
+<hr>
+
+<h2 align="center">IpUnidig class</h2>
+
+<p align="left">The call to initIpUnidig creates the input and output server
+tasks described above.&nbsp; It also creates an instance of the IpUnidig class,
+which is the class that actually communicates with the hardware.&nbsp; This
+class provides the following methods:</p>
+
+<pre>
+static IpUnidig * init(
+&nbsp;&nbsp;&nbsp;&nbsp; const char *moduleName, const char *carrierName, const char *siteName,
+&nbsp;&nbsp;&nbsp;&nbsp; int intVec, int risingMask, int fallingMask, int maxClients);
+
+IpUnidig(IndustryPackModule* pIPM, unsigned char manufacturer,&nbsp;
+&nbsp;&nbsp;&nbsp; unsigned char model,&nbsp;
+&nbsp;&nbsp;&nbsp; int intVec, int risingMask,&nbsp;
+&nbsp;&nbsp;&nbsp; int fallingMask, int maxClients);
+int setBits(UINT32 mask);
+int clearBits(UINT32 mask);
+int readBits(UINT32 *value);
+int setDAC(UINT16 value);
+int registerCallback(IpUnidigCallback callback, void *pvt, int mask);
+</pre>
+The init() and constructor methods are called from initIpUnidig() described
+above.&nbsp; setBits and clearBits are called from the output server, and
+readBits is called from the input server.&nbsp; registerCallback is called from
+the input server if interrupts are being used.&nbsp; Note, however that other device support can call setBits,
+clearBits, readBits and setDAC.&nbsp;&nbsp;
+<p>Most importantly other device support can call registerCallback.&nbsp; This
+will cause the the specified callback routine to be called when an interrupt
+occurs, passing a user-specified pointer (pvt) and the current value of the
+inputs.&nbsp; The mask parameter to registerCallback specifies which bits should
+result in callbacks being generated.&nbsp; Note that those bits must have had
+their interrupts enabled in the risingMask and fallingMask parameters to
+initIpUnidig.&nbsp; The callback routine is called at interrupt level, so it
+should be very fast and must obey the rules for interrupt routines.&nbsp; It can
+do floating point arithmetic because the floating point registers are saved and
+restored in the IpUnidig interrupt service routine.</p>
+
+<hr>
+
+<h2 align="center">EPICS Device Support</h2>
+
+<p>EPICS device support is currently provided for 3 records,
+binary output (bo), long input (longin) and binary input (bi). </p>
+
+<p>The bo record format is: </p>
+
+<p>field(DTYP,&quot;Greenspring IP-Unidig&quot;) </p>
+
+<p>field(INP,&quot;#C{card} S{signal} @{serverName}) </p>
+
+<blockquote>
+    <p>card = The location of the server </p>
+    <p>signal = The output bit, starting with 0. Most models have
+    24 bits, so signal is typically in the range 0-23. </p>
+    <p>serverName = Must be &quot;moduleName&quot;Out, where
+    &quot;moduleName&quot; was specified with initIpUnidig </p>
+</blockquote>
+
+<p>For input the device support is done as follows:</p>
+
+<ul>
+    <li>A single longin record is attached to each server. This
+        longin record receives the asynchronous reply messages
+        from the server whenever any input bit changes state. The
+        longin record thus contains current state of all of the
+        input bits.</li>
+    <li>The longin record should set PINI=YES so that it processes
+        once at iocInit.  This causes it to send a message to the MPF
+        server, initiating the reply messages on polling or interrupts.</li>
+    <li>Multiple binary input (bi) records are attached to the
+        longin record. These bi records are normally set to use
+        &quot;I/O Intr&quot; scanning, and they will all be
+        processed whenever the associated longin record is
+        notified that any input bit has changed state. These bi
+        records obtain their values directly from the longin
+        record, so there is no MPF message traffic generated when
+        these records process. </li>
+</ul>
+
+<p>The longin record should be configured as follows:</p>
+
+<p>field(DTYP,&quot;Greenspring IP-Unidig&quot;) </p>
+
+<p>field(INP,&quot;#C{card} S{signal} @{serverName})</p>
+
+<blockquote>
+    <p>card = The location of the server</p>
+    <p>signal = Not used </p>
+    <p>serverName = Must be &quot;moduleName&quot;In, where
+    &quot;moduleName&quot; was specified with initIpUnidig </p>
+</blockquote>
+
+<p>field(SCAN,&quot;Passive&quot;) </p>
+
+<p>&nbsp;</p>
+
+<p>The bi records should be configured as follows:</p>
+
+<p>field(DTYP,&quot;Greenspring IP-Unidig&quot;)</p>
+
+<p>field(INP,&quot;#C{card} S{signal} @{recordName})</p>
+
+<blockquote>
+    <p>card = Not used</p>
+    <p>signal = The input bit, starting with 0. Most models have
+    24 bits, so signal is in the range 0-23. </p>
+    <p>recordname = The name of the longin record described above
+    Note that there is currently no device support for the
+    cmdSetDAC command with the IP-Unidig-HV modules. It is easy
+    to add ao record support for this. </p>
+</blockquote>
+
+<p>field(SCAN,&quot;I/O Intr&quot;)</p>
+
+<hr>
+
+<h2 align="center">IP-Unidig Models</h2>
+
+<p>The IP-Unidig family consists of more than 20 different
+models. These models differ in the following ways:</p>
+
+<ul>
+    <li>The input and output drivers can be TTL (IP-Unidig),
+        differential (IP-Unidig-D), optically isolated
+        (IP-Unidig-O), high-voltage (IP-Unidig-HV), or LineSafe
+        (IP-Unidig-E).</li>
+    <li>On some models the inputs are capable of generating
+        interrupts. Models which can generate interrupts have a
+        &quot;-I&quot; in the model name, e.g. IP-Unidig-I and
+        IP-Unidig-I-HV. The interrupt capability of the modules is now fully
+      supported in this software (it was not supported in releases prior to
+      R1-2.).&nbsp; For each input bit the modules can be programmed to generate an
+        interrupt on the rising edge, on the falling edge,&nbsp; on both edges,
+      or never.&nbsp; If interrupts are not supported or desired, then the inputs on all
+        models are polled (default rate = 10 Hz, any rate up to the 60Hz system
+      clock can be used), and
+        &quot;pseudo-interrupts&quot; are generated by the input
+        server if any input changes state.</li>
+</ul>
+
+<p>The following provides information on specific models. Note
+that only the IP-Unidig-I and Systran DIO316I have actually been
+tested. The support for other models is based on reading the
+manuals. Users who have problems are encouraged to contact the
+author so that fixes can be incorporated. </p>
+
+<dl>
+    <dt>IP-Unidig, IP-Unidig-I</dt>
+    <dd>The basic model (IP-Unidig) provides 24 bits of parallel
+        I/O. Each bit can either be an input or an output. The
+        outputs are open-collector. Writing a 1 to a bit turns
+        off the open collector driver. In this state the on-board
+        1k pullup resistors will pull the line up to +5V, and an
+        external device can pull the line low. Thus, writing a 1
+        to a bit allows that bit to be an input. At power-up all
+        bits are set to 1, allowing them to be inputs. </dd>
+    <dt>&nbsp;</dt>
+    <dt>IP-Unidig-E, IP-Unidig-I-E</dt>
+    <dd>This is identical to the IP-Unidig except that the inputs
+        have LineSafe protection. </dd>
+    <dt>&nbsp;</dt>
+    <dt>IP-Unidig-E48</dt>
+    <dd>This is identical to the IP-Unidig except that the inputs
+        have LineSafe protection and there are 48 lines, rather
+        than 24. This software currently only supports the first
+        24 bits when used with the IP-Unidig-E48. </dd>
+    <dt>&nbsp;</dt>
+    <dt>IP-Unidig-D, IP-Unidig-I-D</dt>
+    <dd>This is identical to the IP-Unidig except that the inputs
+        and outputs use differential line drivers. The outputs
+        are not open collector, and hence if a line is used as an
+        output it cannot be used as an input. This software
+        enables the output drivers dynamically. If a bit is set
+        or cleared then that line is assumed to be an output, and
+        its output driver is turned on. Once it is turned on it
+        is never turned off. At powerup all output drivers are
+        turned off, so all lines can be inputs. </dd>
+    <dt>&nbsp;</dt>
+    <dt>IP-Unidig-HV, IP-Unidig-I-HV </dt>
+    <dd>This is similar to the IP-Unidig except that the inputs
+        and outputs are high-voltage capable. There are 2
+        options, -16I8O (16 inputs and 8 outputs) and -8I160 (8
+        inputs, 16 outputs). Each high-voltage input is converted
+        to a digital signal by the use of a voltage comparator.
+        The reference for this comparator is an on-board 12 bit
+        D/A converter, with a resolution of 15 mV/bit. At
+        initialization the D/A is programmed for 2.5 volts.
+        Device support can send messages with cmd = cmdSetDAC,
+        and value=DAC value in the range 0 to 4095, corresponding
+        to 0V to 61V threshold. On the 16I8O model the inputs are
+        bits 0-15, and the outputs are bits 16-23. On the 8I16O
+        model the inputs are bits 0-7, and the outputs are bits
+        8-23. </dd>
+    <dt>&nbsp;</dt>
+    <dt>IP-Unidig-O, IP-Unidig-I-O </dt>
+    <dd>This is similar to the IP-Unidig except that the inputs
+        and outputs are optically isolated. There are 3 options,
+        -24IO (24 inputs/outputs), 12I12O (12 inputs, 12
+        outputs), -24I (24 inputs). On models with outputs the
+        outputs are all enabled in the initialization code. On
+        the 24IO model each line can be individually set to be an
+        input by setting the output value to 1, just as with the
+        basic IP-Unidig model. On the 12I12O model the inputs are
+        bits 0-11 and the outputs are bits 12-23. </dd>
+    <dt>&nbsp;</dt>
+    <dt>Other IP-Unidig models</dt>
+    <dd>The IP-Unidig-T, IP-Unidig-T-D, IP-Unidig-P and
+        IP-Unidig-P-D are not currently supported because they
+        are quite different from the other IP-Unidig models </dd>
+    <dt>&nbsp;</dt>
+    <dt>Systran DIO316I </dt>
+    <dd>This is a digital I/O module which is similar to the
+        IP-Unidig. This software support sets the module up as
+        follows: - Ports 0-3 are output ports. This provides 32
+        bits of output. However, device support currently only
+        supports the first 24 bits (ports 0-2). - All output
+        ports are enabled. - Ports 4 and 5 are input ports. This
+        provides 16 bits of input, bits 0-15. </dd>
+    <dt>&nbsp;</dt>
+
+</dl>
+
+<hr>
+
+<address>
+    Suggestions and Comments to: <br>
+    <a href="mailto:rivers@cars.uchicago.edu">Mark Rivers </a>:
+    (rivers@cars.uchicago.edu) <br>
+    Last modified: February 18, 2004
+</address>
+</body>
+</html>

@@ -1,0 +1,30 @@
+record(bo,"$(P):HBtAlarm_$(SIG)") {
+    field(DESC,"Heartbeat Alarm")
+    field(OMSL,"closed_loop")
+    field(DOL,"$(P):HBtOK_$(SIG).VAL ")
+    field(ZNAM,"OK")
+    field(ONAM,"Fault")
+    field(OSV,"MAJOR")
+}
+record(calc,"$(P):HBtLast_$(SIG)") {
+    field(DESC,"Last value of my hrtbt")
+    field(CALC,"B")
+    field(INPA,"$(P_his):HBt CP NMS")
+    field(INPB,"$(P):HBt")
+    field(EGU,"ticks")
+}
+record(calc,"$(P):HBtOK_$(SIG)") {
+    field(DESC,"Heartbeat OK calculation")
+    field(SCAN,"$(SCAN) second")
+    field(FLNK,"$(P):HBtAlarm_$(SIG).VAL ")
+    field(CALC,"D?D:ABS((C>A?(E+A):A)-C)>B")
+    field(INPA,"$(P):HBt")
+    field(INPB,"$(TICKS)")
+    field(INPC,"$(P):HBtLast_$(SIG).VAL .NPP.NMS")
+    field(INPD,"$(P):HBtOK_$(SIG).VAL .NPP.NMS")
+    field(INPE,"$(MAX)")
+    field(EGU,"units")
+    field(PREC,"0")
+    field(HIGH,"1.0")
+    field(HSV,"MAJOR")
+}

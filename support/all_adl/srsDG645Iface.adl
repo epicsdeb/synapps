@@ -1,0 +1,961 @@
+
+file {
+	name="/home/epicsioc/epics/iocs/backup/delaygenApp/op/adl/srsDG645Iface.adl"
+	version=030101
+}
+display {
+	object {
+		x=74
+		y=40
+		width=668
+		height=666
+	}
+	clr=14
+	bclr=3
+	cmap=""
+	gridSpacing=5
+	gridOn=0
+	snapToGrid=0
+}
+"color map" {
+	ncolors=65
+	colors {
+		ffffff,
+		ececec,
+		dadada,
+		c8c8c8,
+		bbbbbb,
+		aeaeae,
+		9e9e9e,
+		919191,
+		858585,
+		787878,
+		696969,
+		5a5a5a,
+		464646,
+		2d2d2d,
+		000000,
+		00d800,
+		1ebb00,
+		339900,
+		2d7f00,
+		216c00,
+		fd0000,
+		de1309,
+		be190b,
+		a01207,
+		820400,
+		5893ff,
+		597ee1,
+		4b6ec7,
+		3a5eab,
+		27548d,
+		fbf34a,
+		f9da3c,
+		eeb62b,
+		e19015,
+		cd6100,
+		ffb0ff,
+		d67fe2,
+		ae4ebc,
+		8b1a96,
+		610a75,
+		a4aaff,
+		8793e2,
+		6a73c1,
+		4d52a4,
+		343386,
+		c7bb6d,
+		b79d5c,
+		a47e3c,
+		7d5627,
+		58340f,
+		99ffff,
+		73dfff,
+		4ea5f9,
+		2a63e4,
+		0a00b8,
+		ebf1b5,
+		d4db9d,
+		bbc187,
+		a6a462,
+		8b8239,
+		73ff6b,
+		52da3b,
+		3cb420,
+		289315,
+		1a7309,
+	}
+}
+rectangle {
+	object {
+		x=4
+		y=29
+		width=660
+		height=4
+	}
+	"basic attribute" {
+		clr=6
+		width=3
+	}
+}
+rectangle {
+	object {
+		x=1
+		y=0
+		width=664
+		height=616
+	}
+	"basic attribute" {
+		clr=14
+		fill="outline"
+		width=3
+	}
+}
+"text update" {
+	object {
+		x=238
+		y=317
+		width=220
+		height=22
+	}
+	monitor {
+		chan="$(P)$(R)ifaceLanStateBI"
+		clr=14
+		bclr=1
+	}
+	clrmod="alarm"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=8
+		y=7
+		width=650
+		height=18
+	}
+	monitor {
+		chan="$(P)$(R)identSI"
+		clr=14
+		bclr=3
+	}
+	clrmod="alarm"
+	align="horiz. centered"
+	format="string"
+	limits {
+	}
+}
+text {
+	object {
+		x=551
+		y=627
+		width=100
+		height=22
+	}
+	"basic attribute" {
+		clr=20
+		fill="outline"
+	}
+	"dynamic attribute" {
+		vis="if not zero"
+		chan="$(P)$(R)statusLI"
+	}
+	textix="ERROR!!"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=472
+		y=629
+		width=74
+		height=18
+	}
+	"basic attribute" {
+		clr=20
+		fill="outline"
+	}
+	"dynamic attribute" {
+		vis="if not zero"
+		chan="$(P)$(R)disableScanBI"
+	}
+	textix="OFF LINE"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=474
+		y=629
+		width=74
+		height=18
+	}
+	"basic attribute" {
+		clr=62
+		fill="outline"
+	}
+	"dynamic attribute" {
+		vis="if zero"
+		chan="$(P)$(R)disableScanBI"
+	}
+	textix="ON LINE"
+	align="horiz. centered"
+}
+"text update" {
+	object {
+		x=10
+		y=317
+		width=220
+		height=22
+	}
+	monitor {
+		chan="$(P)$(R)ifaceLanStateBI.DESC"
+		clr=14
+		bclr=2
+	}
+	limits {
+	}
+}
+"choice button" {
+	object {
+		x=462
+		y=317
+		width=160
+		height=22
+	}
+	control {
+		chan="$(P)$(R)ifaceLanStateBO"
+		clr=14
+		bclr=51
+	}
+	stacking="column"
+}
+"text update" {
+	object {
+		x=10
+		y=343
+		width=220
+		height=22
+	}
+	monitor {
+		chan="$(P)$(R)ifaceDhcpStateBI.DESC"
+		clr=14
+		bclr=2
+	}
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=238
+		y=343
+		width=220
+		height=22
+	}
+	monitor {
+		chan="$(P)$(R)ifaceDhcpStateBI"
+		clr=14
+		bclr=1
+	}
+	clrmod="alarm"
+	limits {
+	}
+}
+"choice button" {
+	object {
+		x=462
+		y=343
+		width=160
+		height=22
+	}
+	control {
+		chan="$(P)$(R)ifaceDhcpStateBO"
+		clr=14
+		bclr=51
+	}
+	stacking="column"
+}
+"text update" {
+	object {
+		x=10
+		y=369
+		width=220
+		height=22
+	}
+	monitor {
+		chan="$(P)$(R)ifaceAutoIpStateBI.DESC"
+		clr=14
+		bclr=2
+	}
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=238
+		y=369
+		width=220
+		height=22
+	}
+	monitor {
+		chan="$(P)$(R)ifaceAutoIpStateBI"
+		clr=14
+		bclr=1
+	}
+	clrmod="alarm"
+	limits {
+	}
+}
+"choice button" {
+	object {
+		x=462
+		y=369
+		width=160
+		height=22
+	}
+	control {
+		chan="$(P)$(R)ifaceAutoIpStateBO"
+		clr=14
+		bclr=51
+	}
+	stacking="column"
+}
+"text update" {
+	object {
+		x=10
+		y=395
+		width=220
+		height=22
+	}
+	monitor {
+		chan="$(P)$(R)ifaceStaticIpStateBI.DESC"
+		clr=14
+		bclr=2
+	}
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=238
+		y=395
+		width=220
+		height=22
+	}
+	monitor {
+		chan="$(P)$(R)ifaceStaticIpStateBI"
+		clr=14
+		bclr=1
+	}
+	clrmod="alarm"
+	limits {
+	}
+}
+"choice button" {
+	object {
+		x=462
+		y=395
+		width=160
+		height=22
+	}
+	control {
+		chan="$(P)$(R)ifaceStaticIpStateBO"
+		clr=14
+		bclr=51
+	}
+	stacking="column"
+}
+"text update" {
+	object {
+		x=10
+		y=421
+		width=220
+		height=22
+	}
+	monitor {
+		chan="$(P)$(R)ifaceBareSocketStateBI.DESC"
+		clr=14
+		bclr=2
+	}
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=238
+		y=421
+		width=220
+		height=22
+	}
+	monitor {
+		chan="$(P)$(R)ifaceBareSocketStateBI"
+		clr=14
+		bclr=1
+	}
+	clrmod="alarm"
+	limits {
+	}
+}
+"choice button" {
+	object {
+		x=462
+		y=421
+		width=160
+		height=22
+	}
+	control {
+		chan="$(P)$(R)ifaceBareSocketStateBO"
+		clr=14
+		bclr=51
+	}
+	stacking="column"
+}
+"text update" {
+	object {
+		x=10
+		y=447
+		width=220
+		height=22
+	}
+	monitor {
+		chan="$(P)$(R)ifaceTelnetStateBI.DESC"
+		clr=14
+		bclr=2
+	}
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=238
+		y=447
+		width=220
+		height=22
+	}
+	monitor {
+		chan="$(P)$(R)ifaceTelnetStateBI"
+		clr=14
+		bclr=1
+	}
+	clrmod="alarm"
+	limits {
+	}
+}
+"choice button" {
+	object {
+		x=462
+		y=447
+		width=160
+		height=22
+	}
+	control {
+		chan="$(P)$(R)ifaceTelnetStateBO"
+		clr=14
+		bclr=51
+	}
+	stacking="column"
+}
+"text update" {
+	object {
+		x=10
+		y=473
+		width=220
+		height=22
+	}
+	monitor {
+		chan="$(P)$(R)ifaceVxiStateBI.DESC"
+		clr=14
+		bclr=2
+	}
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=238
+		y=473
+		width=220
+		height=22
+	}
+	monitor {
+		chan="$(P)$(R)ifaceVxiStateBI"
+		clr=14
+		bclr=1
+	}
+	clrmod="alarm"
+	limits {
+	}
+}
+"choice button" {
+	object {
+		x=462
+		y=473
+		width=160
+		height=22
+	}
+	control {
+		chan="$(P)$(R)ifaceVxiStateBO"
+		clr=14
+		bclr=51
+	}
+	stacking="column"
+}
+"text update" {
+	object {
+		x=10
+		y=499
+		width=220
+		height=22
+	}
+	monitor {
+		chan="$(P)$(R)ifaceIpAddrSI.DESC"
+		clr=14
+		bclr=2
+	}
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=238
+		y=499
+		width=220
+		height=22
+	}
+	monitor {
+		chan="$(P)$(R)ifaceIpAddrSI"
+		clr=14
+		bclr=1
+	}
+	clrmod="alarm"
+	limits {
+	}
+}
+"text entry" {
+	object {
+		x=462
+		y=499
+		width=160
+		height=22
+	}
+	control {
+		chan="$(P)$(R)ifaceIpAddrSO"
+		clr=14
+		bclr=51
+	}
+	format="string"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=10
+		y=525
+		width=220
+		height=22
+	}
+	monitor {
+		chan="$(P)$(R)ifaceNetMaskSI.DESC"
+		clr=14
+		bclr=2
+	}
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=238
+		y=525
+		width=220
+		height=22
+	}
+	monitor {
+		chan="$(P)$(R)ifaceNetMaskSI"
+		clr=14
+		bclr=1
+	}
+	clrmod="alarm"
+	limits {
+	}
+}
+"text entry" {
+	object {
+		x=462
+		y=525
+		width=160
+		height=22
+	}
+	control {
+		chan="$(P)$(R)ifaceNetMaskSO"
+		clr=14
+		bclr=51
+	}
+	format="string"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=10
+		y=551
+		width=220
+		height=22
+	}
+	monitor {
+		chan="$(P)$(R)ifaceGatewaySI.DESC"
+		clr=14
+		bclr=2
+	}
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=238
+		y=551
+		width=220
+		height=22
+	}
+	monitor {
+		chan="$(P)$(R)ifaceGatewaySI"
+		clr=14
+		bclr=1
+	}
+	clrmod="alarm"
+	limits {
+	}
+}
+"text entry" {
+	object {
+		x=462
+		y=551
+		width=160
+		height=22
+	}
+	control {
+		chan="$(P)$(R)ifaceGatewaySO"
+		clr=14
+		bclr=51
+	}
+	format="string"
+	limits {
+	}
+}
+"message button" {
+	object {
+		x=11
+		y=581
+		width=220
+		height=22
+	}
+	control {
+		chan="$(P)$(R)ifaceLanResetBO"
+		clr=14
+		bclr=51
+	}
+	label="RESET LAN INTERFACE"
+	press_msg="1"
+}
+text {
+	object {
+		x=10
+		y=269
+		width=648
+		height=18
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="LAN INTERFACE CONFIGURATION"
+	align="horiz. centered"
+}
+rectangle {
+	object {
+		x=5
+		y=261
+		width=656
+		height=4
+	}
+	"basic attribute" {
+		clr=6
+		width=3
+	}
+}
+text {
+	object {
+		x=10
+		y=37
+		width=648
+		height=18
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="RS-232 INTERFACE CONFIGURATION"
+	align="horiz. centered"
+}
+"text update" {
+	object {
+		x=10
+		y=59
+		width=220
+		height=22
+	}
+	monitor {
+		chan="$(P)$(R)ifaceSerialStateBI.DESC"
+		clr=14
+		bclr=2
+	}
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=238
+		y=59
+		width=220
+		height=22
+	}
+	monitor {
+		chan="$(P)$(R)ifaceSerialStateBI"
+		clr=14
+		bclr=1
+	}
+	clrmod="alarm"
+	limits {
+	}
+}
+"choice button" {
+	object {
+		x=462
+		y=59
+		width=160
+		height=22
+	}
+	control {
+		chan="$(P)$(R)ifaceSerialStateBO"
+		clr=14
+		bclr=51
+	}
+	stacking="column"
+}
+"text update" {
+	object {
+		x=10
+		y=85
+		width=220
+		height=22
+	}
+	monitor {
+		chan="$(P)$(R)ifaceSerialBaudMI.DESC"
+		clr=14
+		bclr=2
+	}
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=238
+		y=85
+		width=220
+		height=22
+	}
+	monitor {
+		chan="$(P)$(R)ifaceSerialBaudMI"
+		clr=14
+		bclr=1
+	}
+	clrmod="alarm"
+	limits {
+	}
+}
+menu {
+	object {
+		x=462
+		y=85
+		width=80
+		height=22
+	}
+	control {
+		chan="$(P)$(R)ifaceSerialBaudMO"
+		clr=14
+		bclr=51
+	}
+}
+rectangle {
+	object {
+		x=5
+		y=145
+		width=656
+		height=4
+	}
+	"basic attribute" {
+		clr=6
+		width=3
+	}
+}
+text {
+	object {
+		x=10
+		y=153
+		width=648
+		height=18
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="GPIB INTERFACE CONFIGURATION"
+	align="horiz. centered"
+}
+"text update" {
+	object {
+		x=10
+		y=175
+		width=220
+		height=22
+	}
+	monitor {
+		chan="$(P)$(R)ifaceGpibStateBI.DESC"
+		clr=14
+		bclr=2
+	}
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=238
+		y=175
+		width=220
+		height=22
+	}
+	monitor {
+		chan="$(P)$(R)ifaceGpibStateBI"
+		clr=14
+		bclr=1
+	}
+	clrmod="alarm"
+	limits {
+	}
+}
+"choice button" {
+	object {
+		x=462
+		y=175
+		width=160
+		height=22
+	}
+	control {
+		chan="$(P)$(R)ifaceGpibStateBO"
+		clr=14
+		bclr=51
+	}
+	stacking="column"
+}
+"text update" {
+	object {
+		x=10
+		y=201
+		width=220
+		height=22
+	}
+	monitor {
+		chan="$(P)$(R)ifaceGpibAddrLI.DESC"
+		clr=14
+		bclr=2
+	}
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=238
+		y=201
+		width=220
+		height=22
+	}
+	monitor {
+		chan="$(P)$(R)ifaceGpibAddrLI"
+		clr=14
+		bclr=1
+	}
+	clrmod="alarm"
+	limits {
+	}
+}
+"text entry" {
+	object {
+		x=462
+		y=201
+		width=80
+		height=22
+	}
+	control {
+		chan="$(P)$(R)ifaceGpibAddrLO"
+		clr=14
+		bclr=51
+	}
+	limits {
+	}
+}
+"message button" {
+	object {
+		x=11
+		y=115
+		width=220
+		height=22
+	}
+	control {
+		chan="$(P)$(R)ifaceSerialResetBO"
+		clr=14
+		bclr=51
+	}
+	label="RESET RS-232 INTERFACE"
+	press_msg="1"
+}
+"message button" {
+	object {
+		x=10
+		y=231
+		width=220
+		height=22
+	}
+	control {
+		chan="$(P)$(R)ifaceGpibResetBO"
+		clr=14
+		bclr=51
+	}
+	label="RESET GPIB INTERFACE"
+	press_msg="1"
+}
+"text update" {
+	object {
+		x=10
+		y=291
+		width=220
+		height=22
+	}
+	monitor {
+		chan="$(P)$(R)ifaceMacAddrSI.DESC"
+		clr=14
+		bclr=2
+	}
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=238
+		y=291
+		width=220
+		height=22
+	}
+	monitor {
+		chan="$(P)$(R)ifaceMacAddrSI"
+		clr=14
+		bclr=1
+	}
+	clrmod="alarm"
+	limits {
+	}
+}

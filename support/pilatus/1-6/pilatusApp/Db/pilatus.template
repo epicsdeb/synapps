@@ -1,0 +1,419 @@
+# Pilatus template for IOC
+#
+# rivers
+# 2007/05/25 15:44:51
+# 1.2
+
+#--------------------------------------------------------------------
+#
+# Macros:
+#   NAME  - Name of the (soft) IOC (max. 18 chars)
+#   EXAMPLE given in comment header of each Channel
+#   BL_ID: Beamline specific prefix
+#--------------------------------------------------------------------
+
+##specify a file name or path and filename
+record (stringout, "$(DET)FILENAME")
+{
+	field(DESC, "File name specifier")
+}
+
+##specify an exposure time: caput BL_ID:EXPTIME-SET 1.5
+record (ao, "$(DET)EXPTIME-SET")
+{
+	field (DESC, "Exposure time set")
+	field (DTYP, "stream")
+	field (OUT,  "@pilatus.protocol exptime.set pilatus")
+	field (EGU,  "s")
+	field (PREC, "6")
+}
+
+##read back which exposure time is active: caget BL_ID:EXPTIME-GET 
+record (ai, "$(DET)EXPTIME-GET")
+{
+	field (DESC, "Exposure time readback")
+	field (DTYP, "stream")
+	field (INP,  "@pilatus.protocol exptime.get pilatus")
+	field (EGU,  "s")
+	field (PREC, "6")
+}
+
+##specify an image path caput PILATUS:IMGPATH-SET /home/det/...
+record (stringout, "$(DET)IMGPATH-SET")
+{
+	field (DESC, "Set Image Path")
+	field (DTYP, "stream")
+	field (OMSL, "closed_loop")
+	field (OUT,  "@pilatus.protocol imgpath.set pilatus")
+}
+
+##read back the current image path
+record (stringout, "$(DET)IMGPATH-GET")
+{
+	field (DESC, "Set Image Path")
+	field (DTYP, "stream")
+	field (OMSL, "closed_loop")
+	field (OUT,  "@pilatus.protocol imgpath.get pilatus")
+}
+
+
+##start taking an image (be sure that image name and exp time are set)
+record (seq, "$(DET)EXPOSURE-START")
+{
+	field (DESC, "Take an image")	
+	field (LNK1, "$(DET)EXPOSURE.PROC")
+}
+
+##start taking an image (be sure that image name and exp time are set)
+record (stringout, "$(DET)EXPOSURE-IMG")
+{
+	field (DESC, "Take image filename")
+	field (DTYP, "stream")
+	field (OMSL, "closed_loop")
+	field (FLNK, "$(DET)EXP-IMG.PROC")
+	field (OUT,  "@pilatus.protocol expimg pilatus")
+	
+}
+#record (seq, "$(DET)EXPOSURE-IMG")
+#{
+#	field (DESC, "Take an image providing the img name")
+#	field (LNK1, "$(DET)EXP-IMG.PROC")
+#}
+
+##stop an ongoing exposure
+record (ao, "$(DET)EXPOSURE-STOP")
+{
+	field (DESC, "Stop the current Exposure")
+	field (DTYP, "stream")
+	field (OUT,  "@pilatus.protocol exposure.stop pilatus")
+	field (FLNK, "$(DET)FINISHING")	
+}
+
+
+##record for an arbitrary command (if you know camserver)
+record (stringout, "$(DET)COMMAND")
+{
+	field (DTYP, "stream")
+	field (OUT,  "@pilatus.protocol cmd pilatus")
+}
+
+
+##make a control image using chip internal calibrate signals 
+record (stringout, "$(DET)CALIBRATE")
+{
+ 	field (DESC, "Trigger a calibrate")
+	field (DTYP, "stream")
+	field (DOL,  "$(DET)FILENAME")
+	field (OMSL, "closed_loop")
+	field (OUT,  "@pilatus.protocol calibrate pilatus")
+}
+
+##make a control image using the 
+record (stringout, "$(DET)RBD")
+{
+	field (DESC, "Digital readback")
+	field (DTYP, "stream")
+	field (DOL,  "$(DET)FILENAME")
+	field (OMSL, "closed_loop")
+	field (OUT,  "@pilatus.protocol rbd pilatus")
+}
+
+##disconnect from device
+record (bo, "$(DET)DISCONNECT")
+{
+	field (DESC, "Disconnect from camera")
+	field (DTYP, "stream")
+	field (OUT,  "@pilatus.protocol disconnect pilatus")
+}
+
+##connect to camera
+record (bo, "$(DET)CONNECT")
+{
+	field (DESC, "Connect to camera")
+	field (DTYP, "stream")
+	field (OUT,  "@pilatus.protocol connect pilatus")
+}
+
+##set PIULATUS DACs to default values: caput PILATUS:DAC-SET 1
+record (ao, "$(DET)DAC-SET")
+{
+	field (DESC, "Set all DACs to default")
+	field (DTYP, "stream")
+	field (OUT,  "@pilatus.protocol setdac pilatus")
+}
+
+
+##specify a file name or path and filename for the trimfile
+record (stringout, "$(DET)TRIMFILE")
+{
+	field(DESC, "File name specifier")
+}
+
+##request camserver status: Measuring-> camserver busy; Done-> camserver ready
+record (bi, "$(DET)STATUS")
+{
+	field (VAL,  "1")
+	field (ZNAM, "Measuring")
+	field (ONAM, "Done")
+}
+
+##load the specified trimfile
+record (stringout, "$(DET)TRIM")
+{
+	field (DTYP, "stream")
+	field (DOL,  "$(DET)TRIMFILE")
+	field (OMSL, "closed_loop")
+	field (OUT,  "@pilatus.protocol trim pilatus")
+	#field (FLNK, "$(DET)STARTING")
+}
+
+##specify the number of images that should be taken with the given parameters.
+##NOTE: the image name will automatically be enumerated.
+record (ao, "$(DET)NIMAGE-SET")
+{
+	field (DESC, "Number of images value set")
+	field (DTYP, "stream")
+	field (OUT,  "@pilatus.protocol nimage.set pilatus")
+}
+
+##read back the number of frames that is active
+record (ai, "$(DET)NIMAGE-GET")
+{
+	field (DESC, "Number of images readback")
+	field (DTYP, "stream")
+	field (INP,  "@pilatus.protocol nimage.get pilatus")
+} 
+
+##specify an  ( |exptime|rdouttime|......| ) exposure period
+##              |-----exposure period----| * nframes
+record (ao, "$(DET)EXPPER-SET")
+{
+	field (DESC, "Exposure Period set")
+	field (DTYP, "stream")
+	field (OUT,  "@pilatus.protocol expper.set pilatus")
+	field (EGU,  "s")
+	field (PREC, "6")
+}
+
+##read back the number of frames that is active
+record (ai, "$(DET)EXPPER-GET")
+{
+	field (DESC, "Exposure Period get")
+	field (DTYP, "stream")
+	field (INP,  "@pilatus.protocol expper.get pilatus")
+	field (EGU,  "s")
+	field (PREC, "6")
+} 
+
+##specity a number of exposures to be done within one frame
+##very special command only Femto BL is interested in
+record (ao, "$(DET)NEXPFRM-SET")
+{
+	field (DESC, "No. of Exposures per frame")
+	field (DTYP, "stream")
+	field (OUT,  "@pilatus.protocol nexpfrm.set pilatus")
+}
+
+##read back the number of frames that is active
+record (ai, "$(DET)NEXPFRM-GET")
+{
+	field (DESC, "NoOf Exp per frame get")
+	field (DTYP, "stream")
+	field (INP,  "@pilatus.protocol nexpfrm.get pilatus")
+}
+ 
+##specity a delay time: THIS IS ONLY ACTIVE IN EXTERNAL MODE
+##when using an external trigger signal delay defines when an exposure
+##is started after a trigger was received. 
+record (ao, "$(DET)DELAY-SET")
+{
+	field (DESC, "Exposure Delay")
+	field (DTYP, "stream")
+	field (OUT,  "@pilatus.protocol delay.set pilatus")
+	field (EGU,  "s")
+	field (PREC, "6")
+}
+
+##read back the number of frames that is active
+record (ai, "$(DET)DELAY-GET")
+{
+	field (DESC, "Exposure Delay")
+	field (DTYP, "stream")
+	field (INP,  "@pilatus.protocol delay.get pilatus")
+	field (EGU,  "s")
+	field (PREC, "6")
+}
+ 
+
+##start exposure in  EXTERNAL TRIGGER MODE
+##If a trigger arrives it performs exposures with the settings
+##like Exposure Time, Exposure Period, Number of Frames, 
+##Eposures Per Frame and Delay
+##is started after a trigger is received.
+###################################################################
+#######---TRIGGER HAS TO BE RECEIVED BEFORE 15s TIMEOUT---#########
+################################################################### 
+record (seq, "$(DET)EXT-TRIG-START")
+{
+	field (DESC, "External triggered")
+	field (LNK1, "$(DET)EXT-TRIG.PROC")
+}
+
+##alternative way to start an external triggered image mode.
+##be sure to provide an image name when releasing this command
+record (stringout, "$(DET)EXT-TRIG-IMG")
+{
+	field (DESC, "Take image filename")
+	field (DTYP, "stream")
+	field (OMSL, "closed_loop")
+	field (FLNK, "$(DET)EXT-IMG.PROC")
+	field (OUT,  "@pilatus.protocol extimg pilatus")
+	
+}
+
+##start exposure in  EXTERNAL ENABLE MODE
+##If a trigger arrives it performs exposures with the settings
+##like Exposure Period, Number of Frames, 
+##Eposures Per Frame and Delay
+##is started after a trigger is received and the gatelength defines  
+##the exposure time.
+###################################################################
+#######---TRIGGER HAS TO BE RECEIVED BEFORE 15s TIMEOUT---#########
+###################################################################  
+record (seq, "$(DET)EXT-ENBL-START")
+{
+	field (DESC, "External Enable")
+	field (LNK1, "$(DET)EXT-ENBL.PROC")
+}
+
+
+#-------------------------------------------------------------------
+#Private record section
+#-------------------------------------------------------------------
+#record (waveform, "$(DET)SPY")
+#{
+#	field (DTYP, "stream")
+#	field (INP,  "@pilatus.protocol spy pilatus")
+#	field (FTVL, "CHAR")
+#	field (NELM, "1000")
+#	field (SCAN, "I/O Intr")
+#}
+
+record (stringout, "$(DET)EXPOSURE")
+{
+	field (DTYP, "stream")
+	field (DOL,  "$(DET)FILENAME")
+	field (OMSL, "closed_loop")
+	field (OUT,  "@pilatus.protocol exposure pilatus")
+	field (FLNK, "$(DET)STARTING-EXP")
+}
+
+record (stringout, "$(DET)EXT-TRIG")
+{
+	field (DTYP, "stream")
+	field (DOL,  "$(DET)FILENAME")
+	field (OMSL, "closed_loop")
+	field (OUT,  "@pilatus.protocol exttrig pilatus")
+	field (FLNK, "$(DET)STARTING-EXTT")
+}
+
+record (stringout, "$(DET)EXT-ENBL")
+{
+	field (DTYP, "stream")
+	field (DOL,  "$(DET)FILENAME")
+	field (OMSL, "closed_loop")
+	field (OUT,  "@pilatus.protocol extenbl pilatus")
+	field (FLNK, "$(DET)STARTING-EXTE")
+}
+
+record (calcout, "$(DET)STARTING-EXP")
+{
+	field (INPA, "$(DET)EXPOSURE.SEVR")
+	field (CALC, "A#0")
+	field (OOPT, "When Zero")
+	field (OUT,  "$(DET)STATUS PP")
+	field (FLNK, "$(DET)EXPOSURE-WAIT")
+}
+
+record (calcout, "$(DET)STARTING-EXTT")
+{
+	field (INPA, "$(DET)EXT-TRIG.SEVR")
+	field (CALC, "A#0")
+	field (OOPT, "When Zero")
+	field (OUT,  "$(DET)STATUS PP")
+}
+
+record (calcout, "$(DET)STARTING-EXTE")
+{
+	field (INPA, "$(DET)EXT-ENBL.SEVR")
+	field (CALC, "A#0")
+	field (OOPT, "When Zero")
+	field (OUT,  "$(DET)STATUS PP")
+}
+
+#record (bi, "$(DET)EXPOSURE-READY")
+#{
+#	field (DTYP, "stream")
+#	field (INP,  "@pilatus.protocol exposure-ready pilatus")
+#	field (SCAN, "I/O Intr")
+#	field (FLNK, "$(DET)FINISHING")
+#}
+
+record (bi, "$(DET)EXPOSURE-WAIT")
+{
+	field (DTYP, "stream")
+	field (INP,  "@pilatus.protocol exposure-wait pilatus")
+	field (FLNK, "$(DET)FINISHING")
+}
+
+record (bo, "$(DET)FINISHING")
+{
+	field (VAL,  "1")
+	field (OUT,  "$(DET)STATUS PP")
+}
+
+
+record (calcout, "$(DET)EXP-IMG")
+{
+	#field (INPA, "$(DET)EXPOSURE-IMG.SEVR")
+	#field (CALC, "A#0")
+	#field (OOPT, "When Zero")
+	#field (OUT,  "$(DET)STATUS PP")
+	field (VAL,  "0")
+	field (OUT,  "$(DET)STATUS PP")
+}
+
+record (calcout, "$(DET)EXT-IMG")
+{
+	#field (INPA, "$(DET)EXT-TRIG-IMG.SEVR")
+	#field (CALC, "A#0")
+	#field (OOPT, "When Zero")
+	#field (OUT,  "$(DET)STATUS PP")
+	field (VAL,  "0")
+	field (OUT,  "$(DET)STATUS PP")
+}
+
+
+#######TEST SECTION#######
+
+#record (stringout, "$(DET)EXP-IMG")
+#{
+#	field (DTYP, "stream")
+#	field (DOL,  "$(DET)FILENAME")
+#	field (OMSL, "closed_loop")
+#	field (OUT,  "@pilatus.protocol expimg pilatus")
+#	field (FLNK, "$(DET)START-EXPIMG")
+#	#field (VAL,  "0")
+#	#field (OUT,  "$(DET)STATUS PP")
+#}
+
+#record (calcout, "$(DET)START-EXPIMG")
+#{
+#	field (INPA, "$(DET)EXP-IMG.SEVR")
+#	field (CALC, "A#0")
+#	field (OOPT, "When Zero")
+#	field (OUT,  "$(DET)STATUS PP")
+#}
+
+
+

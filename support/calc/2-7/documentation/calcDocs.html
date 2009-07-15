@@ -1,0 +1,319 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<title>calcDocs</title>
+</head>
+
+<body bgcolor="#FFFFFF">
+
+<h1 align="center">calc module Documentation</h1>
+
+<P><a href="calcReleaseNotes.html">Release Notes</a>
+
+<h2>Records</h2>
+
+<dl>
+<P><dt><a href="aCalcoutRecord.html">aCalcoutRecord.html</a>
+<dd>The <b>aCalcout</b> record is much like the <b>calcout</b> record in EPICS base, but it
+supports array fields and calculations, and its output link can wait for completion.
+
+<P><dt><a href="sCalcoutRecord.html">sCalcoutRecord.html</a>
+<dd>The <b>sCalcout</b> record is much like the <b>calcout</b> record in EPICS base, but it
+supports string fields and calculations, and its output link can wait for completion.
+
+<P><dt><a href="transformRecord.html">transformRecord.html</a>
+<dd>The <b>transform</b> record is sort of like 16 <b>calcout</b> records collected together
+into a single record.  The 16 calc expressions use a common set of 16
+value fields, but each calc expression writes to its own value field.
+
+<P><dt><a href="swaitRecord.html">swaitRecord.html</a>
+
+<dd>The <b>swait</b> record is much like the <b>calcout</b> record in EPICS
+base, but it uses an older form of retargetable links, and its output link waits
+for completion.  The <b>swait</b> record is not recommended for new development;
+use a <b>calcout</b> record instead.
+
+</dl>
+
+<h2>EPICS Databases, MEDM display files, and autosave-request files</h2>
+
+
+
+
+<dl>
+
+<P><dt>
+arrayTest.db<br>
+arrayTest.adl
+
+<dd>This database contains an <b>aSub</b> record that maintains two array fields:
+"$(P)arrayTest.VALA", and "$(P)arrayTest.VALB".  The "VALB"
+field contains double values from 0 to $(N)-1, where $(N) is a macro supplied to
+the <tt>dbLoadRecords()</tt> command that loads the database.  The "VALA"
+field  contains double values from M to M+$(N)-1, where M is supplied at run
+time to the field "$(P)arrayTest_start".
+
+<P><dt>CalcRecord.adl<br>
+CalcRecord_full.adl
+
+<dd>The <b>calc</b> record, in EPICS base, does not come with display files.  But,
+frequently, one would like to  be able to display and interact with a <b>calc</b>
+record embedded in a database.  The files serve that purpose.
+
+<P><dt>
+calcExamples.adl<br>
+calcAlgebraicExamples.adl<br>
+calcArrayExamples.adl<br>
+calcBitwiseExamples.adl<br>
+calcMiscExamples.adl<br>
+calcRelationalExamples.adl<br>
+calcStringExamples.adl<br>
+calcTrigExamples.adl<br>
+
+<dd>These files document the expressions evaluated by <b>calc</b>,
+<b>calcout</b>, <b>sCalcout</b>, and <b>aCalcout</b> records.
+
+<P><dt>
+calcout_settings.req
+
+<dd>The <b>calcout</b> record, in EPICS base, does not come with an autosave-request
+file.
+
+<P><dt>
+yyCalcoutRecord.adl<br>
+yyCalcoutRecord_full.adl
+
+<dd>The <b>calcout</b> record, in EPICS base, does not come with display files.  But,
+frequently, one would like to  be able to display and interact with a <b>calcout</b>
+record embedded in a database.  The files serve that purpose.
+
+
+<P><dt>
+interp.db<br>
+interp_settings.req<br>
+interp.adl
+
+<dd>This database implements array interpolation, and hosts three arrays: an
+independent variable array, X, whose PV name is "$(P)interp.VALA"); and two
+dependent variable arrays, Y1(X) and Y2(X), whose PV names are, respectively,
+"$(P)interp.VALB", and "$(P)interp.VALC".
+
+<P>The arrays can be loaded at boot time, using autosave; written to at run time
+by a CA client; or built up element by element at run time, by setting the MODE
+switch ("$(P)interp_mode") to "Add Entry".
+
+<P>To interpolate, one sets the mode switch to "Interpolate", and writes
+a number to the X-input field, "$(P)interp_x".  This causes an underlying
+<b>aSub</b> record to interpolate the Yi arrays to find values that would
+correspond with that value of X, to display them as "$(P)interp_y1" and
+"$(P)interp_y2", and, optionally, to write them to the external PVs named in the
+link fields "$(P)interp_y1.OUT", and "$(P)interp_y2.OUT".
+
+<P>The interpolation performed is a Lagrange interpolation, where the degree of
+the polynomial can be specified by writing to "$(P)interp.F".  The order must be
+in the range 1..10.  Currently the database doesn't visibly enforce these
+limits, but silently clips to them if they are violated.
+
+<p>To add an element to the arrays, one sets the mode switch to "Add
+Element", writes Yi values to "$(P)interp_y1" and
+"$(P)interp_y2", and then writes the corresponding X value to
+"$(P)interp_x".  The number of entries, "$(P)interp_n" will then
+increase by one.
+
+<P>The arrays can be cleared by setting the mode switch to "Clear All" and
+writing anything to X.
+
+<P>For more information, see <a href="interp.README">interp.README</a>.
+
+
+
+<P><dt>
+userAve10.db<br>
+userAve10_settings.req<br>
+userAve.adl<br>
+userAve10.adl<br>
+
+<dd>These files implement, manage, and display a set of 10 <b>sub</b> records
+programmed (thanks to Frank Lenkszus) to calculate the average of M values, where M is given by
+"$(P)userAve$(N).A", which are read via the input link "$(P)userAve$(N).INPB". 
+These records are intended for use in run-time programming.  The records can
+operate in two ways:
+
+<dl>
+
+<P><dt>Running average ("$(P)userAve$(N)_mode" == "CONTINUOUS")
+
+<dd>After M values have been recorded, output the average of the most recent M
+value whenever a new value is read.
+
+<P><dt>One-shot average ("$(P)userAve$(N)_mode" == "ONE-SHOT")
+
+<dd>Clear the output, read M values, output the average of those values, and
+ignore new values until a restart command is received ("$(P)userAve$(N).C is set
+to 1).
+
+</dl>
+
+<P>In either mode, the record uses its alarm field to indicate whether the
+output value it is displaying ("$(P)userAve$(N).VAL") is valid (i.e., is the
+result of M readings).  Until M readings have been read, the record will be in
+alarm (STAT=="SOFT", SEVR=="MAJOR").  After M readings have been averaged,
+STAT=="NO_ALARM", SEVR=="NO_ALARM".
+
+<P><dt>
+userCalcN.db<br>
+userCalcN_noDisable.db<br>
+userCalcs10.db<br>
+userCalcN_settings.req<br>
+userCalcs10_settings.req<br>
+swait_settings.req<br>
+userCalc.adl<br>
+userCalcMeter.adl<br>
+userCalc_full.adl<br>
+userCalc_help.adl<br>
+userCalcs10.adl<br>
+userCalcs20.adl<br>
+
+<dd>A <i>userCalc</i> is simply a <b>swait</b> record implemented for use in
+run-time programming.  "Implemented" means that a database containing several
+uncommitted <b>swait</b> records, with an overall enable switch, is loaded;
+corresponding entries are made in autosave files to save and restore selected
+field values; and reasonably comprehensive MEDM displays are provided so that a
+user can exercise most of the records' features.
+
+<blockquote>
+Although the <b>swait</b>
+record is not recommended for new development, it is retained in this case
+because many users have become accustomed to the way it behaves -- in
+particular, to the way its links are programmed: they take only a PV name,
+without the link attributes (e.g., NPP, NMS) that standard EPICS links have.
+</blockquote>
+
+<P><dt>
+userCalcOuts10.db<br>
+userCalcOuts10_settings.req<br>
+userCalcOut.adl<br>
+userCalcOut_full.adl<br>
+userCalcOuts10.adl<br>
+
+<dd>Just like a <i>userCalc</i>, but based on the <b>calcout</b> record, instead of
+the <b>swait</b> record.
+
+<P><dt>
+userArrayCalcs10.db<br>
+userArrayCalcs10_settings.req<br>
+acalcout_settings.req<br>
+userArrayCalc.adl<br>
+userArrayCalcPlot.adl<br>
+userArrayCalcPlots10.adl<br>
+userArrayCalc_full.adl<br>
+userArrayCalc_plot.adl<br>
+userArrayCalcs10.adl<br>
+arrayPlot8.adl<br>
+
+<dd>Just like a <i>userCalc</i>, but based on the <b>aCalcout</b> (array calcout)
+record, instead of the <b>swait</b> record.
+
+<P><dt>
+userStringCalcs10.db<br>
+userStringCalcs10_settings.req<br>
+scalcout_settings.req<br>
+userStringCalc.adl<br>
+userStringCalc_demo.adl<br>
+userStringCalc_full.adl<br>
+userStringCalcs10.adl<br>
+
+<dd>Just like a <i>userCalc</i>, but based on the <b>aCalcout</b> (array calcout)
+record, instead of the <b>swait</b> record.
+
+
+<P><dt>
+yysCalcoutRecord.adl<br>
+yysCalcoutRecord_demo.adl<br>
+yysCalcoutRecord_full.adl
+
+<dd>MEDM displays for a plain <b>sCalcout</b> record, i.e., one that is not also
+a userStringCalc.
+
+
+<P><dt>
+userTransform.db<br>
+userTransforms10.db<br>
+userTransforms20.db<br>
+userTransforms10_settings.req<br>
+userTransforms20_settings.req<br>
+userTransform.adl<br>
+userTransform_full.adl<br>
+userTransforms10.adl<br>
+userTransforms20.adl<br>
+
+<dd>Just like a <i>userCalc</i>, but based on the <b>transform</b> record, instead
+of the <b>swait</b> record.
+
+
+<P><dt>
+Transform.adl<br>
+Transform_full.adl<br>
+Transforms10.adl<br>
+transforms10.db<br>
+transforms10_settings.req<br>
+transform_settings.req<br>
+
+<dd>Just like a userTransform, but individually enabled/disabled.
+
+<P><dt>
+yyTransform.adl<br>
+yyTransform_full.adl<br>
+
+<dd>MEDM displays for a plain <b>transform</b> record, i.e., one that is not
+also a userTransform.
+
+
+<P><dt>
+waitRecN.db<br>
+yyWaitRecord.adl<br>
+yyWaitRecord_full.adl
+
+<dd>MEDM displays for a plain <b>swait</b> record, i.e., one that is not also a
+userCalc, and a database to load a single <b>swait</b> record.  These files are
+retained mostly for backward compatibility.
+
+</dl>
+
+<h2 align="center">How to build and use</h2>
+<ul>
+
+<li>Edit <code>configure/RELEASE</code> to specify the paths to <b>EPICS
+base</b>, and to the <b>sscan</b> module.  If you don't have <b>sscan</b>, or
+don't want it to be used by the <b>calc</b> module, comment the definition out,
+and the <b>calc</b> module will adjust its build accordingly.  The only thing
+<b>calc</b> can't build without <b>sscan</b> is the swait record, which is
+retained in <b>calc</b> mostly for historical reasons.
+
+<blockquote>
+
+The swait record is the original "userCalc" record, and many users at APS have
+become accustomed to the way it works.  The calcout record from EPICS base, with
+"Async Soft Channel" device support, is a reasonable substitute for the swait
+record,
+
+</blockquote>
+
+<li>Run Gnu Make to build.
+<li>Note that the <b>calc</b> module is not useful on its own, but only produces
+code that can be used by other modules.  (A good example of a module that uses
+the calc module is synApps' <b>xxx</b> module.) A module that uses <b>calc</b>
+should include <code>calcSupport.dbd</code> into the <code>.dbd</code> file it
+creates for loading into an ioc, or for export to other modules, and it should
+link to <code>libcalc</code>.
+</ul>
+
+<address>
+    Suggestions and Comments to: <br>
+    Tim Mooney (mooney@aps.anl.gov) <br>
+    Last modified: February 27, 2009 
+</address>
+</body>
+</html>

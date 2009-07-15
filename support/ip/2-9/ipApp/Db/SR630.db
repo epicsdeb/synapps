@@ -1,0 +1,16 @@
+grecord(asyn,"$(P)$(R)$(N)_READ")
+{
+        field(PORT,"$(PORT)")
+        field(AOUT,"MEAS?$(N)")
+        field(FLNK,"$(P)$(R)$(N)")
+        field(SCAN,"$(SCAN)")
+}
+
+grecord(scalcout,"$(P)$(R)$(N)")
+{
+        field(INAA,"$(P)$(R)$(N)_READ.AINP NPP NMS")
+        field(CALC,"$S(AA,'%f')")
+        field(PREC,"$(PREC)")
+        field(DESC,"$(DESC)")
+}
+

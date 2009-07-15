@@ -1,0 +1,14 @@
+#!/usr/local/bin/tcsh
+# EPICS startup script for IOC (shell application)
+#
+
+## CD to project root directory
+setenv DIR `ls -d iocBoot/ioc*`
+cd $DIR
+
+## Specific settings
+setenv EPICS_CA_MAX_ARRAY_BYTES 128000
+
+## Launch application
+setenv APP `ls ../../bin/vl-linux-x86/*App`
+launch $APP st.cmd.linux

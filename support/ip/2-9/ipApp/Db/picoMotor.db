@@ -1,0 +1,279 @@
+# Note: with the older serial record this database set the IEOS string to ">".
+# The asyn record ignores these fields at iocInit, so the terminator strings must be set
+# in the serial port configuration routines.
+
+grecord(ai,"$(P)$(S):$(D):pM$(M)_acc") {
+	field(DTYP,"Soft Channel")
+	field(FLNK,"$(P)$(S):$(D):pM$(M)_clcA.PROC  PP MS")
+	field(PREC,"5")
+}
+grecord(ai,"$(P)$(S):$(D):pM$(M)_mvel") {
+	field(DTYP,"Soft Channel")
+	field(FLNK,"$(P)$(S):$(D):pM$(M)_clcMv.PROC  PP MS")
+	field(PREC,"5")
+}
+grecord(ai,"$(P)$(S):$(D):pM$(M)_prev") {
+	field(DTYP,"Soft Channel")
+}
+grecord(ai,"$(P)$(S):$(D):pM$(M)_res") {
+	field(DTYP,"Soft Channel")
+	field(PREC,"5")
+}
+grecord(ai,"$(P)$(S):$(D):pM$(M)_vel") {
+	field(DTYP,"Soft Channel")
+	field(FLNK,"$(P)$(S):$(D):pM$(M)_clcV.PROC  PP MS")
+	field(PREC,"5")
+}
+grecord(ao,"$(P)$(S):$(D):pM$(M)_pos") {
+	field(DESC,"PicoMotor Position in EGUs")
+	field(DTYP,"Soft Channel")
+	field(SDIS,"$(P)$(S):$(D):pM$(M)_movn.VAL  NPP NMS")
+	field(FLNK,"0")
+	field(OUT,"$(P)$(S):$(D):pM$(M)_rel.A  PP MS")
+	field(PREC,"3")
+}
+grecord(ao,"$(P)$(S):$(D):pM$(M)_twSet") {
+	field(DTYP,"Soft Channel")
+	field(PREC,"3")
+}
+grecord(bi,"$(P)$(S):$(D):pM$(M)_hi") {
+	field(DTYP,"Soft Channel")
+}
+grecord(bi,"$(P)$(S):$(D):pM$(M)_lo") {
+	field(DTYP,"Soft Channel")
+}
+grecord(bo,"$(P)$(S):$(D):pM$(M)_disa") {
+	field(DTYP,"Soft Channel")
+	field(ZNAM,"Use")
+	field(ONAM,"Set")
+}
+grecord(bo,"$(P)$(S):$(D):pM$(M)_don") {
+	field(DTYP,"Soft Channel")
+	field(OUT,"$(P)$(S):$(D):pM$(M)_mkd.A  PP MS")
+	field(ZNAM,"Off")
+	field(ONAM,"On")
+}
+grecord(bo,"$(P)$(S):$(D):pM$(M)_jon") {
+	field(DTYP,"Soft Channel")
+	field(OUT,"$(P)$(S):$(D):pM$(M)_mkj.A  PP MS")
+	field(ZNAM,"Off")
+	field(ONAM,"On")
+}
+grecord(bo,"$(P)$(S):$(D):pM$(M)_movn") {
+	field(DTYP,"Soft Channel")
+	field(ZNAM,"Done")
+	field(ONAM,"MOVING")
+}
+grecord(bo,"$(P)$(S):$(D):pM$(M)_putS") {
+	field(DTYP,"Soft Channel")
+	field(OMSL,"closed_loop")
+	field(DOL,"0")
+	field(OUT,"$(P)$(S):$(D):pM$(M)_movn.VAL  PP MS")
+}
+grecord(bo,"$(P)$(S):$(D):pM$(M)_dir") {
+	field(DTYP,"Soft Channel")
+	field(ZNAM,"Pos")
+	field(ONAM,"Neg")
+}
+grecord(calcout,"$(P)$(S):$(D):pM$(M)_trunc") {
+	field(SDIS,"$(P)$(S):$(D):pM$(M)_disa.VAL  NPP MS")
+	field(FLNK,"$(P)$(S):$(D):pM$(M)_sndM.PROC  PP MS")
+	field(CALC,"A")
+	field(OUT,"0")
+}
+grecord(seq,"$(P)$(S):$(D):pM$(M)_seq") {
+	field(PREC,"3")
+	field(DOL1,"1")
+	field(LNK1,"$(P)$(S):$(D):pM$(M)_movn.VAL  PP MS")
+	field(DOL2,"0")
+	field(LNK2,"$(P)$(S):$(D):pM$(M)_movn.VAL  PP MS")
+}
+grecord(asyn,"$(P)$(S):$(D):pM$(M)_go") {
+	field(FLNK,"$(P)$(S):$(D):pM$(M)_eta.PROC  PP MS")
+	field(AOUT,"go")
+	field(PORT,"$(PORT)")
+}
+grecord(asyn,"$(P)$(S):$(D):pM$(M)_jodo") {
+	field(PORT,"$(PORT)")
+}
+grecord(asyn,"$(P)$(S):$(D):pM$(M)_sav") {
+	field(AOUT,"sav")
+	field(PORT,"$(PORT)")
+}
+grecord(asyn,"$(P)$(S):$(D):pM$(M)_ser") {
+	field(PORT,"$(PORT)")
+}
+grecord(asyn,"$(P)$(S):$(D):pM$(M)_sndD") {
+	field(PORT,"$(PORT)")
+}
+grecord(asyn,"$(P)$(S):$(D):pM$(M)_sndM") {
+	field(FLNK,"$(P)$(S):$(D):pM$(M)_cmd.PROC  PP MS")
+	field(AOUT,"chl $(D)=$(M)")
+	field(PORT,"$(PORT)")
+}
+grecord(asyn,"$(P)$(S):$(D):pM$(M)_sndp") {
+	field(FLNK,"$(P)$(S):$(D):pM$(M)_go.VAL  PP MS")
+	field(PORT,"$(PORT)")
+}
+grecord(asyn,"$(P)$(S):$(D):pM$(M)_stop") {
+	field(FLNK,"$(P)$(S):$(D):pM$(M)_putS.PROC  PP MS")
+	field(AOUT,"hal")
+	field(PORT,"$(PORT)")
+}
+grecord(transform,"$(P)$(S):$(D):pM$(M)_eta") {
+	field(CLCE,"ABS(C)")
+	field(CLCF,"E=0?0:(E*(1/A))+(A/B)")
+	field(INPA,"$(P)$(S):$(D):pM$(M)_clcV.VAL  NPP MS")
+	field(INPB,"$(P)$(S):$(D):pM$(M)_clcA.VAL  NPP MS")
+	field(INPC,"$(P)$(S):$(D):pM$(M)_trunc.VAL  NPP MS")
+	field(INPD,"$(P)$(S):$(D):pM$(M)_clcMv.VAL  NPP MS")
+	field(OUTF,"$(P)$(S):$(D):pM$(M)_seq.DLY2  PP MS")
+	field(OUTJ,"0")
+	field(OUTK,"0")
+	field(PREC,"2")
+	field(CMTA,"Vel (steps/sec)")
+	field(CMTB,"Acc (steps/sec/sec)")
+	field(CMTC,"Steps to move")
+	field(CMTD,"Vel start (initial)")
+	field(CMTE,"abs(steps)")
+	field(CMTF,"N/A")
+	field(CMTG,"Ta (sec)")
+	field(CMTH,"No. steps @ V")
+	field(CMTI,"Tv (sec)")
+	field(CMTJ,"Ttot(sec)")
+}
+grecord(transform,"$(P)$(S):$(D):pM$(M)_lim") {
+	field(CLCD,"A>=C?1:0")
+	field(CLCE,"A<=B?1:0")
+	field(INPA,"$(P)$(S):$(D):pM$(M)_pos.VAL  PP MS")
+	field(INPB,"$(P)$(S):$(D):pM$(M)_pos.DRVL  PP MS")
+	field(INPC,"$(P)$(S):$(D):pM$(M)_pos.DRVH  PP MS")
+	field(OUTD,"$(P)$(S):$(D):pM$(M)_hi.VAL  PP MS")
+	field(OUTE,"$(P)$(S):$(D):pM$(M)_lo.VAL  PP MS")
+}
+grecord(transform,"$(P)$(S):$(D):pM$(M)_rel") {
+	field(DESC,"Convert EGUs to rel steps")
+	field(FLNK,"$(P)$(S):$(D):pM$(M)_lim.PROC")
+	field(CLCD,"(A>B)?(A-B):(A<B)?(-1*(B-A)):0")
+	field(CLCE,"NINT((1/C)*D)")
+	field(CLCF,"A")
+	field(CLCH,"G=0?E:G=1?((-1)*E)")
+	field(INPA,"0")
+	field(INPB,"$(P)$(S):$(D):pM$(M)_prev.VAL  NPP MS")
+	field(INPC,"$(P)$(S):$(D):pM$(M)_res.VAL  NPP MS")
+	field(INPG,"$(P)$(S):$(D):pM$(M)_dir.VAL  NPP MS")
+	field(OUTC,"0")
+	field(OUTD,"0")
+	field(OUTE,"0")
+	field(OUTF,"$(P)$(S):$(D):pM$(M)_prev.VAL  PP MS")
+	field(OUTG,"0")
+	field(OUTH,"$(P)$(S):$(D):pM$(M)_trunc.A  PP MS")
+	field(PREC,"6")
+	field(CMTC,"user input EGUs/step")
+	field(CMTD,"rel change in EGUs")
+	field(CMTE,"rel change in steps")
+}
+grecord(transform,"$(P)$(S):$(D):pM$(M)_twf") {
+	field(SDIS,"$(P)$(S):$(D):pM$(M)_movn.VAL  NPP NMS")
+	field(CLCC,"B+A")
+	field(INPA,"$(P)$(S):$(D):pM$(M)_twSet.VAL  NPP MS")
+	field(INPB,"$(P)$(S):$(D):pM$(M)_pos.VAL  NPP MS")
+	field(OUTC,"$(P)$(S):$(D):pM$(M)_pos.VAL  PP MS")
+}
+grecord(transform,"$(P)$(S):$(D):pM$(M)_twr") {
+	field(SDIS,"$(P)$(S):$(D):pM$(M)_movn.VAL  NPP NMS")
+	field(CLCC,"B-A")
+	field(INPA,"$(P)$(S):$(D):pM$(M)_twSet.VAL  NPP MS")
+	field(INPB,"$(P)$(S):$(D):pM$(M)_pos.VAL  NPP MS")
+	field(OUTC,"$(P)$(S):$(D):pM$(M)_pos.VAL  PP MS")
+}
+grecord(scalcout,"$(P)$(S):$(D):pM$(M)_clcA") {
+	field(FLNK,"$(P)$(S):$(D):pM$(M)_strA.PROC  PP MS")
+	field(CALC,"NINT(A*(1/B))")
+	field(INPA,"$(P)$(S):$(D):pM$(M)_acc.VAL  NPP MS")
+	field(INPB,"$(P)$(S):$(D):pM$(M)_res.VAL  NPP MS")
+	field(INAA,"0")
+	field(OUT,"0")
+	field(HOPR,"0")
+	field(HIHI,"32000")
+	field(LOLO,"16")
+	field(HIGH,"28000")
+	field(LOW,"16")
+	field(HHSV,"MAJOR")
+	field(LLSV,"MAJOR")
+	field(HSV,"MINOR")
+}
+grecord(scalcout,"$(P)$(S):$(D):pM$(M)_clcMv") {
+	field(FLNK,"$(P)$(S):$(D):pM$(M)_strMv.PROC  PP MS")
+	field(CALC,"NINT(A*(1/B))")
+	field(INPA,"$(P)$(S):$(D):pM$(M)_mvel.VAL  NPP MS")
+	field(INPB,"$(P)$(S):$(D):pM$(M)_res.VAL  NPP MS")
+	field(INAA,"0")
+	field(OUT,"0")
+	field(HIHI,"1999")
+	field(LOLO,"0")
+	field(HIGH,"1500")
+	field(LOW,"0")
+	field(HHSV,"MAJOR")
+	field(LLSV,"MAJOR")
+	field(HSV,"MINOR")
+}
+grecord(scalcout,"$(P)$(S):$(D):pM$(M)_clcV") {
+	field(FLNK,"$(P)$(S):$(D):pM$(M)_strV.PROC  PP MS")
+	field(CALC,"NINT(A*(1/B))")
+	field(INPA,"$(P)$(S):$(D):pM$(M)_vel.VAL  NPP MS")
+	field(INPB,"$(P)$(S):$(D):pM$(M)_res.VAL  NPP MS")
+	field(INAA,"0")
+	field(OUT,"0")
+	field(HIHI,"2000")
+	field(LOLO,"0")
+	field(HIGH,"1500")
+	field(HHSV,"MAJOR")
+	field(LLSV,"MAJOR")
+	field(HSV,"MINOR")
+}
+grecord(scalcout,"$(P)$(S):$(D):pM$(M)_cmd") {
+	field(CALC,"BB+CC+STR(AA)")
+	field(INAA,"$(P)$(S):$(D):pM$(M)_trunc.VAL  PP MS")
+	field(OUT,"$(P)$(S):$(D):pM$(M)_sndp.AOUT  PP MS")
+	field(BB,"rel")
+	field(CC," $(D)=")
+}
+grecord(scalcout,"$(P)$(S):$(D):pM$(M)_mkd") {
+	field(CALC,"A=0?AA:BB")
+	field(OUT,"$(P)$(S):$(D):pM$(M)_jodo.AOUT  PP MS")
+	field(AA,"mof $(D)")
+	field(BB,"mon $(D)")
+}
+grecord(scalcout,"$(P)$(S):$(D):pM$(M)_mkj") {
+	field(CALC,"A=0?AA:BB")
+	field(OUT,"$(P)$(S):$(D):pM$(M)_jodo.AOUT  PP MS")
+	field(AA,"jof")
+	field(BB,"jon")
+}
+grecord(scalcout,"$(P)$(S):$(D):pM$(M)_strA") {
+	field(CALC,"BB+CC+AA")
+	field(INPA,"0")
+	field(INPB,"0")
+	field(INAA,"$(P)$(S):$(D):pM$(M)_clcA.VAL  NPP MS")
+	field(OUT,"$(P)$(S):$(D):pM$(M)_sndD.AOUT  PP MS")
+	field(BB,"acc")
+	field(CC," $(D) $(M)=")
+}
+grecord(scalcout,"$(P)$(S):$(D):pM$(M)_strMv") {
+	field(CALC,"BB+CC+AA")
+	field(INPA,"0")
+	field(INPB,"0")
+	field(INAA,"$(P)$(S):$(D):pM$(M)_clcMv.VAL  NPP MS")
+	field(OUT,"$(P)$(S):$(D):pM$(M)_sndD.AOUT  PP MS")
+	field(BB,"mpv $(D) $(M)=")
+}
+grecord(scalcout,"$(P)$(S):$(D):pM$(M)_strV") {
+	field(CALC,"BB+CC+AA")
+	field(INPA,"0")
+	field(INPB,"0")
+	field(INAA,"$(P)$(S):$(D):pM$(M)_clcV.VAL  NPP MS")
+	field(OUT,"$(P)$(S):$(D):pM$(M)_sndD.AOUT  PP MS")
+	field(BB,"vel")
+	field(CC," $(D) $(M)=")
+}

@@ -1,0 +1,89 @@
+
+Setting up the Heidenhain IK320 for EPICS (synApps):
+====================================================
+
+*** IK320card.db ***
+
+Here is an example of a record from the IK320card.db database:
+
+record(mbbo,"$(P)IK320:$(sw2)$(axis)function")
+{
+        field(DTYP,"Heidenhain IK320 Command")
+        field(OUT,"#C$(switches) S$(irq) @$(axis)")
+}
+
+Here is an example of IK320card.db being loaded in the startup command file:
+
+dbLoadRecords("$(VME)/vmeApp/Db/IK320card.db","P=kag:,sw2=card0:,axis=1,
+              switches=41344,irq=3")
+
+The substitutions that need a little more explanation are $(switches) and
+$(irq).
+
+::: switches :::
+The "switches=" argument is derived by taking the hexadecimal value of the S1/S2
+switch banks and converting it to decimal (a switch in the off portion is a 1).
+
+Therefore,
+
+Switch sw1        |          Switch sw2
+-----------       |         ------------
+1000 0101         |          0000 0001
+        ^- MSB    |                  ^- MSB
+
+returning to more familiar notation (MSB on left), we have:
+
+1010 0001         |          1000 0000
+= A   1           |            8   0
+
+0xA180 = 41344, hence "switches=41344" in the above dbLoadRecords() call.
+
+The IK320 occupies space in both the A16 and A24 VMEbus address spaces.  The
+formula for determining the address space based on the switch settings are as
+follows;
+
+A24 base address = 0x00C0 0000 + (0x4000 * S2)
+
+In this example, since S2 = 0x80,
+A24 base address = 0x00C0 0000 + (0x4000 * 0x80) = 0xE0 0000
+
+A16 base address = (S1 & 0xE0) * 0x100
+
+In this example, since S1 = 0xA1,
+A16 base address = (0xA1 & 0xE0) * 0x100 = 0xA0 * 0x100 = 0xA000
+
+::: irq :::
+irq should be the irq level set by the jumpers J1 and J2 on the IK320 board.
+According to the manual, these levels *must* be the same.  Typically we leave
+these set to the factory default of 3.
+
+::: J3 :::
+Most VME CPU's do not support the ADO cycle.  Therefore, it is recommended that
+J3 be jumpered, generating a DTACK, per page 14 of the IK320 manual.  For a group 
+of IK320 boards, _one_ of the boards should have J3 jumpered.  
+
+
+*** IK320group.db ***
+
+Here is an example of IK320.db being loaded in the startup command file:
+
+dbLoadRecords("stdApp/Db/IK320group.db","P=kag:,group=5", share)
+
+In order to use more than one channel, even if it's on the same board, a copy 
+of the IK320group.db database must be loaded.  This database contains one AI
+record that must be processed in order for readings to be taken.  There is a
+$(group) substitution that can be derived by taking the decimal value of bits
+8, 7 and 6 on sw1.  In my case these were set to 1 0 1, which means group = 5.
+
+
+
+DISCLAIMER: This document is under construction.  Also I have only tried this
+software using one board so far.  Therefore, if you want to use more than one
+board and run into trouble or find that something is missing from or wrong 
+about this document, please let me know. 
+
+Kurt Goetze
+goetze@aps.anl.gov
+
+PLEASE NOTE that this software was written by Till Strauman of PTB at BESSY.
+(Till's been moving around recently.  Currently, he's at SLAC.)

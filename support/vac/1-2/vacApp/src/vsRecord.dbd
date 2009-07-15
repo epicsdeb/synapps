@@ -1,0 +1,435 @@
+menu(vsOFFON) {
+	choice(vsOFFON_Off,"Off")
+	choice(vsOFFON_On,"On")
+}
+menu(vsTYPE) {
+	choice(vsTYPE_GP307,"GP307")
+	choice(vsTYPE_GP350,"GP350")
+	choice(vsTYPE_MM200,"MM200")
+}
+recordtype(vs) {
+	include "dbCommon.dbd" 
+	field(INP,DBF_INLINK) {
+		prompt("Device Specification")
+		promptgroup(GUI_COMMON)
+		special(SPC_NOMOD)
+		interest(1)
+	}
+	field(TYPE,DBF_MENU) {
+		prompt("Controller Type")
+		special(SPC_MOD)
+		menu(vsTYPE)
+		interest(1)
+	}
+	field(ERR,DBF_SHORT) {
+		prompt("Controller Err Cnt")
+		special(SPC_MOD)
+		initial("5")
+		interest(1)
+	}
+	field(IG1S,DBF_MENU) {
+		prompt("Ion Gauge 1 Set")
+		promptgroup(GUI_ALARMS)
+		special(SPC_MOD)
+		pp(TRUE)
+		interest(1)
+		menu(vsOFFON)
+	}
+	field(IG2S,DBF_MENU) {
+		prompt("Ion Gauge 2 Set")
+		promptgroup(GUI_ALARMS)
+		special(SPC_MOD)
+		pp(TRUE)
+		interest(1)
+		menu(vsOFFON)
+	}
+	field(DGSS,DBF_MENU) {
+		prompt("Degas Set")
+		promptgroup(GUI_BITS1)
+		special(SPC_MOD)
+		pp(TRUE)
+		interest(1)
+		menu(vsOFFON)
+	}
+	field(IG1R,DBF_MENU) {
+		prompt("Ion Gauge 1 Read")
+		special(SPC_NOMOD)
+		menu(vsOFFON)
+	}
+	field(IG2R,DBF_MENU) {
+		prompt("Ion Gauge 2 Read")
+		special(SPC_NOMOD)
+		menu(vsOFFON)
+	}
+	field(DGSR,DBF_MENU) {
+		prompt("Degas Read")
+		special(SPC_NOMOD)
+		menu(vsOFFON)
+	}
+        field(FLTR,DBF_MENU) {
+                prompt("Fault Read")
+                special(SPC_NOMOD)
+                menu(vsOFFON)
+        }
+ 	field(SP1,DBF_MENU) {
+		prompt("Set Point 1")
+		special(SPC_NOMOD)
+		menu(vsOFFON)
+	}
+	field(SP2,DBF_MENU) {
+		prompt("Set Point 2")
+		special(SPC_NOMOD)
+		menu(vsOFFON)
+	}
+	field(SP3,DBF_MENU) {
+		prompt("Set Point 3")
+		special(SPC_NOMOD)
+		menu(vsOFFON)
+	}
+	field(SP4,DBF_MENU) {
+		prompt("Set Point 4")
+		special(SPC_NOMOD)
+		menu(vsOFFON)
+	}
+	field(SP5,DBF_MENU) {
+		prompt("Set Point 5")
+		special(SPC_NOMOD)
+		menu(vsOFFON)
+	}
+	field(SP6,DBF_MENU) {
+		prompt("Set Point 6")
+		special(SPC_NOMOD)
+		menu(vsOFFON)
+	}
+	field(SP1S,DBF_DOUBLE) {
+		prompt("SP 1 Setpoint Set")
+		special(SPC_MOD)
+		pp(TRUE)
+	}
+	field(SP1R,DBF_DOUBLE) {
+		prompt("SP 1 Readback")
+		special(SPC_NOMOD)
+	}
+	field(SP2S,DBF_DOUBLE) {
+		prompt("SP 2 Setpoint Set")
+		special(SPC_MOD)
+		pp(TRUE)
+	}
+	field(SP2R,DBF_DOUBLE) {
+		prompt("SP 2 Readback")
+		special(SPC_NOMOD)
+	}
+	field(SP3S,DBF_DOUBLE) {
+		prompt("SP 3 Setpoint Set")
+		special(SPC_MOD)
+		pp(TRUE)
+	}
+	field(SP3R,DBF_DOUBLE) {
+		prompt("SP 3 Readback")
+		special(SPC_NOMOD)
+	}
+	field(SP4S,DBF_DOUBLE) {
+		prompt("SP 4 Setpoint Set")
+		special(SPC_MOD)
+		pp(TRUE)
+	}
+	field(SP4R,DBF_DOUBLE) {
+		prompt("SP 4 Readback")
+		special(SPC_NOMOD)
+	}
+	field(VAL,DBF_DOUBLE) {
+		prompt("Gauge Pressure")
+		special(SPC_NOMOD)
+	}
+	field(PRES,DBF_DOUBLE) {
+		prompt("Gauge Pressure")
+		special(SPC_NOMOD)
+	}
+	field(CGAP,DBF_DOUBLE) {
+		prompt("Convectron-A Pressure")
+		special(SPC_NOMOD)
+	}
+	field(CGBP,DBF_DOUBLE) {
+		prompt("Convectron-B Pressure")
+		special(SPC_NOMOD)
+	}
+	field(LPRS,DBF_DOUBLE) {
+		prompt("IG Log10 Pressure")
+		special(SPC_NOMOD)
+	}
+	field(LCAP,DBF_DOUBLE) {
+		prompt("Conv-A Log10 Pressure")
+		special(SPC_NOMOD)
+	}
+	field(LCBP,DBF_DOUBLE) {
+		prompt("Conv-B Log10 Pressure")
+		special(SPC_NOMOD)
+	}
+	field(CHGC,DBF_USHORT) {
+		prompt("Changed Control")
+		special(SPC_NOMOD)
+	}
+	field(HOPR,DBF_FLOAT) {
+		prompt("IG Pres High Display")
+		promptgroup(GUI_HIST)
+		interest(1)
+		initial("0.0001")
+	}
+	field(LOPR,DBF_FLOAT) {
+		prompt("IG Pres Low Display")
+		promptgroup(GUI_INPUTS)
+		interest(1)
+		initial("1e-12")
+	}
+	field(HLPR,DBF_FLOAT) {
+		prompt("IG Log10 High Display")
+		promptgroup(GUI_LINKS)
+		interest(1)
+		initial("-4")
+	}
+	field(LLPR,DBF_FLOAT) {
+		prompt("IG Log10 Low Display")
+		promptgroup(GUI_MBB)
+		interest(1)
+		initial("-12")
+	}
+	field(HAPR,DBF_FLOAT) {
+		prompt("CGA Pres High Display")
+		promptgroup(GUI_OUTPUT)
+		interest(1)
+		initial("1000")
+	}
+	field(LAPR,DBF_FLOAT) {
+		prompt("CGA Pres Low Display")
+		promptgroup(GUI_PID)
+		interest(1)
+		initial("0.0001")
+	}
+	field(HALR,DBF_FLOAT) {
+		prompt("CGA Log10 High Display")
+		promptgroup(GUI_PULSE)
+		interest(1)
+		initial("3")
+	}
+	field(LALR,DBF_FLOAT) {
+		prompt("CGA Log10 Low Display")
+		promptgroup(GUI_SELECT)
+		interest(1)
+		initial("-4")
+	}
+	field(HBPR,DBF_FLOAT) {
+		prompt("CGB Pres High Display")
+		promptgroup(GUI_SEQ2)
+		interest(1)
+		initial("1000")
+	}
+	field(LBPR,DBF_FLOAT) {
+		prompt("CGB Pres Low Display")
+		promptgroup(GUI_SEQ3)
+		interest(1)
+		initial("0.0001")
+	}
+	field(HBLR,DBF_FLOAT) {
+		prompt("CGB Log10 High Display")
+		promptgroup(GUI_SUB)
+		interest(1)
+		initial("3")
+	}
+	field(LBLR,DBF_FLOAT) {
+		prompt("CGB Log10 Low Display")
+		promptgroup(GUI_TIMER)
+		interest(1)
+		initial("-4")
+	}
+	field(PI1S,DBF_MENU) {
+		prompt("prev Ion Gauge 1")
+		special(SPC_NOMOD)
+		menu(vsOFFON)
+	}
+	field(PI2S,DBF_MENU) {
+		prompt("prev Ion Gauge 2")
+		special(SPC_NOMOD)
+		menu(vsOFFON)
+	}
+	field(PDSS,DBF_MENU) {
+		prompt("prev Degas")
+		special(SPC_NOMOD)
+		menu(vsOFFON)
+	}
+	field(PIG1,DBF_MENU) {
+		prompt("prev Ion Gauge 1")
+		special(SPC_NOMOD)
+		menu(vsOFFON)
+	}
+	field(PIG2,DBF_MENU) {
+		prompt("prev Ion Gauge 2")
+		special(SPC_NOMOD)
+		menu(vsOFFON)
+	}
+	field(PDGS,DBF_MENU) {
+		prompt("prev Degas")
+		special(SPC_NOMOD)
+		menu(vsOFFON)
+	}
+	field(PFLT,DBF_MENU) {
+		prompt("prev Fault")
+		special(SPC_NOMOD)
+		menu(vsOFFON)
+	}
+	field(PSP1,DBF_MENU) {
+		prompt("prev Set Point 1")
+		special(SPC_NOMOD)
+		menu(vsOFFON)
+	}
+	field(PSP2,DBF_MENU) {
+		prompt("prev Set Point 2")
+		special(SPC_NOMOD)
+		menu(vsOFFON)
+	}
+	field(PSP3,DBF_MENU) {
+		prompt("prev Set Point 3")
+		special(SPC_NOMOD)
+		menu(vsOFFON)
+	}
+	field(PSP4,DBF_MENU) {
+		prompt("prev Set Point 4")
+		special(SPC_NOMOD)
+		menu(vsOFFON)
+	}
+	field(PSP5,DBF_MENU) {
+		prompt("prev Set Point 5")
+		special(SPC_NOMOD)
+		menu(vsOFFON)
+	}
+	field(PSP6,DBF_MENU) {
+		prompt("prev Set Point 6")
+		special(SPC_NOMOD)
+		menu(vsOFFON)
+	}
+	field(PS1S,DBF_DOUBLE) {
+		prompt("prev SP1 Set")
+		special(SPC_NOMOD)
+	}
+	field(PS2S,DBF_DOUBLE) {
+		prompt("prev SP2 Set")
+		special(SPC_NOMOD)
+	}	
+	field(PS3S,DBF_DOUBLE) {
+		prompt("prev SP3 Set")
+		special(SPC_NOMOD)
+	}
+	field(PS4S,DBF_DOUBLE) {
+		prompt("prev SP4 Set")
+		special(SPC_NOMOD)
+	}
+	field(PS1R,DBF_DOUBLE) {
+		prompt("prev SP1 Readback")
+		special(SPC_NOMOD)
+	}
+	field(PS2R,DBF_DOUBLE) {
+		prompt("prev SP2 Readback")
+		special(SPC_NOMOD)
+	}
+	field(PS3R,DBF_DOUBLE) {
+		prompt("prev SP3 Readback")
+		special(SPC_NOMOD)
+	}
+	field(PS4R,DBF_DOUBLE) {
+		prompt("prev SP4 Readback")
+		special(SPC_NOMOD)
+	}
+	field(PVAL,DBF_DOUBLE) {
+		prompt("prev Gauge Pres")
+		special(SPC_NOMOD)
+	}
+	field(PPRE,DBF_DOUBLE) {
+		prompt("prev Gauge Pres")
+		special(SPC_NOMOD)
+	}
+	field(PCGA,DBF_DOUBLE) {
+		prompt("prev Conv-A Pres")
+		special(SPC_NOMOD)
+	}
+	field(PCGB,DBF_DOUBLE) {
+		prompt("prev Conv-B Pres")
+		special(SPC_NOMOD)
+	}
+	field(PLPE,DBF_DOUBLE) {
+		prompt("prev IG Log10 Pres")
+		special(SPC_NOMOD)
+	}
+	field(PLCA,DBF_DOUBLE) {
+		prompt("prev Conv-A Log10 Pres")
+		special(SPC_NOMOD)
+	}
+	field(PLCB,DBF_DOUBLE) {
+		prompt("prev Conv-B Log10 Pres")
+		special(SPC_NOMOD)
+	}
+	field(HIHI,DBF_FLOAT) {
+		prompt("IG Hihi Alarm")
+		promptgroup(GUI_DISPLAY)
+		pp(TRUE)
+		interest(1)
+		initial("1e-06")
+	}
+	field(LOLO,DBF_FLOAT) {
+		prompt("IG Lolo Alarm")
+		promptgroup(GUI_DISPLAY)
+		pp(TRUE)
+		interest(1)
+		initial("1e-12")
+	}
+	field(HIGH,DBF_FLOAT) {
+		prompt("IG High Alarm")
+		promptgroup(GUI_DISPLAY)
+		pp(TRUE)
+		interest(1)
+		initial("1e-07")
+	}
+	field(LOW,DBF_FLOAT) {
+		prompt("IG Low Alarm")
+		promptgroup(GUI_DISPLAY)
+		pp(TRUE)
+		interest(1)
+		initial("2e-12")
+	}
+	field(HHSV,DBF_MENU) {
+		prompt("IG Hihi Severity")
+		promptgroup(GUI_DISPLAY)
+		pp(TRUE)
+		interest(1)
+		menu(menuAlarmSevr)
+	}
+	field(LLSV,DBF_MENU) {
+		prompt("IG Lolo Severity")
+		promptgroup(GUI_DISPLAY)
+		pp(TRUE)
+		interest(1)
+		menu(menuAlarmSevr)
+	}
+	field(HSV,DBF_MENU) {
+		prompt("IG High Severity")
+		promptgroup(GUI_DISPLAY)
+		pp(TRUE)
+		interest(1)
+		menu(menuAlarmSevr)
+	}
+	field(LSV,DBF_MENU) {
+		prompt("IG Low Severity")
+		promptgroup(GUI_DISPLAY)
+		pp(TRUE)
+		interest(1)
+		menu(menuAlarmSevr)
+	}
+	field(HYST,DBF_DOUBLE) {
+		prompt("IG Alarm Deadband")
+		promptgroup(GUI_DISPLAY)
+		interest(1)
+	}
+	field(LALM,DBF_DOUBLE) {
+		prompt("IG Last Value Alarmed")
+		special(SPC_NOMOD)
+		interest(3)
+	}
+}

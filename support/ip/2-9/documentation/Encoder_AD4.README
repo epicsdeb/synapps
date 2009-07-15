@@ -1,0 +1,43 @@
+US Digital (www.usdigital.com)
+AD4 Quadrature to Serial Adaptor
+Implemented with 'streams' protocols (Version 2.3)
+
+Serial Setup: 9600 Baud, 8 Data, 1 Stop, No Parity, NO EOS (Binary)
+
+Files:
+   ipApp/Db/Encoder_AD4.db
+   ipApp/Db/Encoder_AD4.proto
+   ipApp/Db/Encoder_AD4_settings.req
+   ipApp/op/adl/Encoder_AD4.adl
+
+iocBoot Examples:
+
+------------ iocvxWorks/serial.cmd ---------------
+
+tyGSAsynInit("serial1",  "UART_0", 0, 9600,'N',1,8,'N',"","")  /* AD4 Encoder (binary) */ 
+
+------------ iocLinux/serial.cmd ---------------
+
+#USDigital AD4 (Encoder Box)
+drvAsynSerialPortConfigure("serial1", "/dev/ttyS0", 0, 0, 1)
+asynSetOption(serial1,0,baud,9600)
+
+------------ st.cmd --------------------
+
+epicsEnvSet ("STREAM_PROTOCOL_PATH", "$(IP)/ipApp/Db")
+***NOTE*** The vxWorks shell does not expand macros so the IP
+           path has to be fully typed in. 
+dbLoadRecords("$(IP)/ipApp/Db/Encoder_AD4.db","P=xxx:,N=1,PORT=serial1")
+
+
+------------ auto_settings.req  --------------------
+
+file Encoder_AD4_settings.req P=$(P),N=1
+
+
+
+MEDM Display:
+
+   Encoder_AD4.adl P=$(P), N=1
+
+

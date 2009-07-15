@@ -1,0 +1,1277 @@
+
+file {
+	name="/home/oxygen/GOETZE/epics/synApps_5_1/ioc/kag/kagApp/op/adl/IpUnidig_top.adl"
+	version=030004
+}
+display {
+	object {
+		x=599
+		y=161
+		width=500
+		height=321
+	}
+	clr=4
+	bclr=4
+	cmap=""
+	gridSpacing=5
+	gridOn=0
+	snapToGrid=0
+}
+"color map" {
+	ncolors=65
+	colors {
+		ffffff,
+		ececec,
+		dadada,
+		c8c8c8,
+		bbbbbb,
+		aeaeae,
+		9e9e9e,
+		919191,
+		858585,
+		787878,
+		696969,
+		5a5a5a,
+		464646,
+		2d2d2d,
+		000000,
+		00d800,
+		1ebb00,
+		339900,
+		2d7f00,
+		216c00,
+		fd0000,
+		de1309,
+		be190b,
+		a01207,
+		820400,
+		5893ff,
+		597ee1,
+		4b6ec7,
+		3a5eab,
+		27548d,
+		fbf34a,
+		f9da3c,
+		eeb62b,
+		e19015,
+		cd6100,
+		ffb0ff,
+		d67fe2,
+		ae4ebc,
+		8b1a96,
+		610a75,
+		a4aaff,
+		8793e2,
+		6a73c1,
+		4d52a4,
+		343386,
+		c7bb6d,
+		b79d5c,
+		a47e3c,
+		7d5627,
+		58340f,
+		99ffff,
+		73dfff,
+		4ea5f9,
+		2a63e4,
+		0a00b8,
+		ebf1b5,
+		d4db9d,
+		bbc187,
+		a6a462,
+		8b8239,
+		73ff6b,
+		52da3b,
+		3cb420,
+		289315,
+		1a7309,
+	}
+}
+rectangle {
+	object {
+		x=57
+		y=96
+		width=18
+		height=22
+	}
+	"basic attribute" {
+		clr=1
+	}
+}
+rectangle {
+	object {
+		x=57
+		y=62
+		width=18
+		height=22
+	}
+	"basic attribute" {
+		clr=1
+	}
+}
+text {
+	object {
+		x=107
+		y=5
+		width=200
+		height=26
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="IP-Unidig ($(P)$(R))"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=16
+		y=64
+		width=20
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="0"
+	align="horiz. centered"
+}
+"choice button" {
+	object {
+		x=95
+		y=66
+		width=65
+		height=15
+	}
+	control {
+		chan="$(P)$(R)Bo0"
+		clr=14
+		bclr=51
+	}
+	stacking="column"
+}
+"related display" {
+	object {
+		x=269
+		y=65
+		width=35
+		height=18
+	}
+	display[0] {
+		name="IpUnidig_more.adl"
+		args="P=$(P), R=$(R)Bi0"
+	}
+	clr=14
+	bclr=51
+}
+text {
+	object {
+		x=12
+		y=38
+		width=35
+		height=19
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Ch#"
+}
+text {
+	object {
+		x=42
+		y=38
+		width=53
+		height=19
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Input"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=98
+		y=38
+		width=63
+		height=19
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Output"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=181
+		y=38
+		width=63
+		height=19
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Scan (in)"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=347
+		y=38
+		width=63
+		height=19
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Desc."
+	align="horiz. centered"
+}
+text {
+	object {
+		x=54
+		y=64
+		width=25
+		height=20
+	}
+	"basic attribute" {
+		clr=62
+	}
+	"dynamic attribute" {
+		vis="if zero"
+		chan="$(P)$(R)Bi0.VAL"
+	}
+	textix="0"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=54
+		y=64
+		width=25
+		height=20
+	}
+	"basic attribute" {
+		clr=20
+	}
+	"dynamic attribute" {
+		vis="if not zero"
+		chan="$(P)$(R)Bi0.VAL"
+	}
+	textix="1"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=255
+		y=38
+		width=63
+		height=19
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="More"
+	align="horiz. centered"
+}
+"text entry" {
+	object {
+		x=316
+		y=64
+		width=176
+		height=20
+	}
+	control {
+		chan="$(P)$(R)Bi0.DESC"
+		clr=14
+		bclr=3
+	}
+	limits {
+	}
+}
+menu {
+	object {
+		x=172
+		y=64
+		width=82
+		height=20
+	}
+	control {
+		chan="$(P)$(R)Bi0.SCAN"
+		clr=14
+		bclr=3
+	}
+}
+polyline {
+	object {
+		x=4
+		y=57
+		width=490
+		height=0
+	}
+	"basic attribute" {
+		clr=14
+	}
+	"dynamic attribute" {
+		chan="$(P)$(R)Bi0.DESC"
+	}
+	points {
+		(4,57)
+		(494,57)
+	}
+}
+text {
+	object {
+		x=16
+		y=98
+		width=20
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="1"
+	align="horiz. centered"
+}
+"choice button" {
+	object {
+		x=95
+		y=100
+		width=65
+		height=15
+	}
+	control {
+		chan="$(P)$(R)Bo1"
+		clr=14
+		bclr=51
+	}
+	stacking="column"
+}
+"related display" {
+	object {
+		x=269
+		y=99
+		width=35
+		height=18
+	}
+	display[0] {
+		name="IpUnidig_more.adl"
+		args="P=$(P), R=$(R)Bi1"
+	}
+	clr=14
+	bclr=51
+}
+text {
+	object {
+		x=54
+		y=98
+		width=25
+		height=20
+	}
+	"basic attribute" {
+		clr=62
+	}
+	"dynamic attribute" {
+		vis="if zero"
+		chan="$(P)$(R)Bi1.VAL"
+	}
+	textix="0"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=54
+		y=98
+		width=25
+		height=20
+	}
+	"basic attribute" {
+		clr=20
+	}
+	"dynamic attribute" {
+		vis="if not zero"
+		chan="$(P)$(R)Bi1.VAL"
+	}
+	textix="1"
+	align="horiz. centered"
+}
+"text entry" {
+	object {
+		x=316
+		y=97
+		width=176
+		height=20
+	}
+	control {
+		chan="$(P)$(R)Bi1.DESC"
+		clr=14
+		bclr=3
+	}
+	limits {
+	}
+}
+menu {
+	object {
+		x=172
+		y=98
+		width=82
+		height=20
+	}
+	control {
+		chan="$(P)$(R)Bi1.SCAN"
+		clr=14
+		bclr=3
+	}
+}
+polyline {
+	object {
+		x=4
+		y=90
+		width=490
+		height=0
+	}
+	"basic attribute" {
+		clr=14
+	}
+	"dynamic attribute" {
+		chan="$(P)$(R)Bi0.DESC"
+	}
+	points {
+		(4,90)
+		(494,90)
+	}
+}
+rectangle {
+	object {
+		x=57
+		y=162
+		width=18
+		height=22
+	}
+	"basic attribute" {
+		clr=1
+	}
+}
+rectangle {
+	object {
+		x=57
+		y=128
+		width=18
+		height=22
+	}
+	"basic attribute" {
+		clr=1
+	}
+}
+text {
+	object {
+		x=16
+		y=130
+		width=20
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="2"
+	align="horiz. centered"
+}
+"choice button" {
+	object {
+		x=95
+		y=132
+		width=65
+		height=15
+	}
+	control {
+		chan="$(P)$(R)Bo2"
+		clr=14
+		bclr=51
+	}
+	stacking="column"
+}
+"related display" {
+	object {
+		x=269
+		y=131
+		width=35
+		height=18
+	}
+	display[0] {
+		name="IpUnidig_more.adl"
+		args="P=$(P), R=$(R)Bi2"
+	}
+	clr=14
+	bclr=51
+}
+text {
+	object {
+		x=54
+		y=130
+		width=25
+		height=20
+	}
+	"basic attribute" {
+		clr=62
+	}
+	"dynamic attribute" {
+		vis="if zero"
+		chan="$(P)$(R)Bi2.VAL"
+	}
+	textix="0"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=54
+		y=130
+		width=25
+		height=20
+	}
+	"basic attribute" {
+		clr=20
+	}
+	"dynamic attribute" {
+		vis="if not zero"
+		chan="$(P)$(R)Bi2.VAL"
+	}
+	textix="1"
+	align="horiz. centered"
+}
+"text entry" {
+	object {
+		x=316
+		y=130
+		width=176
+		height=20
+	}
+	control {
+		chan="$(P)$(R)Bi2.DESC"
+		clr=14
+		bclr=3
+	}
+	limits {
+	}
+}
+menu {
+	object {
+		x=172
+		y=130
+		width=82
+		height=20
+	}
+	control {
+		chan="$(P)$(R)Bi2.SCAN"
+		clr=14
+		bclr=3
+	}
+}
+polyline {
+	object {
+		x=4
+		y=123
+		width=490
+		height=0
+	}
+	"basic attribute" {
+		clr=14
+	}
+	"dynamic attribute" {
+		chan="$(P)$(R)Bi0.DESC"
+	}
+	points {
+		(4,123)
+		(494,123)
+	}
+}
+text {
+	object {
+		x=16
+		y=164
+		width=20
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="3"
+	align="horiz. centered"
+}
+"choice button" {
+	object {
+		x=95
+		y=166
+		width=65
+		height=15
+	}
+	control {
+		chan="$(P)$(R)Bo3"
+		clr=14
+		bclr=51
+	}
+	stacking="column"
+}
+"related display" {
+	object {
+		x=269
+		y=165
+		width=35
+		height=18
+	}
+	display[0] {
+		name="IpUnidig_more.adl"
+		args="P=$(P), R=$(R)Bi3"
+	}
+	clr=14
+	bclr=51
+}
+text {
+	object {
+		x=54
+		y=164
+		width=25
+		height=20
+	}
+	"basic attribute" {
+		clr=62
+	}
+	"dynamic attribute" {
+		vis="if zero"
+		chan="$(P)$(R)Bi3.VAL"
+	}
+	textix="0"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=54
+		y=164
+		width=25
+		height=20
+	}
+	"basic attribute" {
+		clr=20
+	}
+	"dynamic attribute" {
+		vis="if not zero"
+		chan="$(P)$(R)Bi3.VAL"
+	}
+	textix="1"
+	align="horiz. centered"
+}
+"text entry" {
+	object {
+		x=316
+		y=163
+		width=176
+		height=20
+	}
+	control {
+		chan="$(P)$(R)Bi3.DESC"
+		clr=14
+		bclr=3
+	}
+	limits {
+	}
+}
+menu {
+	object {
+		x=172
+		y=164
+		width=82
+		height=20
+	}
+	control {
+		chan="$(P)$(R)Bi3.SCAN"
+		clr=14
+		bclr=3
+	}
+}
+polyline {
+	object {
+		x=4
+		y=156
+		width=490
+		height=0
+	}
+	"basic attribute" {
+		clr=14
+	}
+	"dynamic attribute" {
+		chan="$(P)$(R)Bi0.DESC"
+	}
+	points {
+		(4,156)
+		(494,156)
+	}
+}
+rectangle {
+	object {
+		x=57
+		y=228
+		width=18
+		height=22
+	}
+	"basic attribute" {
+		clr=1
+	}
+}
+rectangle {
+	object {
+		x=57
+		y=194
+		width=18
+		height=22
+	}
+	"basic attribute" {
+		clr=1
+	}
+}
+text {
+	object {
+		x=16
+		y=196
+		width=20
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="4"
+	align="horiz. centered"
+}
+"choice button" {
+	object {
+		x=95
+		y=198
+		width=65
+		height=15
+	}
+	control {
+		chan="$(P)$(R)Bo4"
+		clr=14
+		bclr=51
+	}
+	stacking="column"
+}
+"related display" {
+	object {
+		x=269
+		y=197
+		width=35
+		height=18
+	}
+	display[0] {
+		name="IpUnidig_more.adl"
+		args="P=$(P), R=$(R)Bi4"
+	}
+	clr=14
+	bclr=51
+}
+text {
+	object {
+		x=54
+		y=196
+		width=25
+		height=20
+	}
+	"basic attribute" {
+		clr=62
+	}
+	"dynamic attribute" {
+		vis="if zero"
+		chan="$(P)$(R)Bi4.VAL"
+	}
+	textix="0"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=54
+		y=196
+		width=25
+		height=20
+	}
+	"basic attribute" {
+		clr=20
+	}
+	"dynamic attribute" {
+		vis="if not zero"
+		chan="$(P)$(R)Bi4.VAL"
+	}
+	textix="1"
+	align="horiz. centered"
+}
+"text entry" {
+	object {
+		x=316
+		y=196
+		width=176
+		height=20
+	}
+	control {
+		chan="$(P)$(R)Bi4.DESC"
+		clr=14
+		bclr=3
+	}
+	limits {
+	}
+}
+menu {
+	object {
+		x=172
+		y=196
+		width=82
+		height=20
+	}
+	control {
+		chan="$(P)$(R)Bi4.SCAN"
+		clr=14
+		bclr=3
+	}
+}
+polyline {
+	object {
+		x=4
+		y=189
+		width=490
+		height=0
+	}
+	"basic attribute" {
+		clr=14
+	}
+	"dynamic attribute" {
+		chan="$(P)$(R)Bi0.DESC"
+	}
+	points {
+		(4,189)
+		(494,189)
+	}
+}
+text {
+	object {
+		x=16
+		y=230
+		width=20
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="5"
+	align="horiz. centered"
+}
+"choice button" {
+	object {
+		x=95
+		y=232
+		width=65
+		height=15
+	}
+	control {
+		chan="$(P)$(R)Bo5"
+		clr=14
+		bclr=51
+	}
+	stacking="column"
+}
+"related display" {
+	object {
+		x=269
+		y=231
+		width=35
+		height=18
+	}
+	display[0] {
+		name="IpUnidig_more.adl"
+		args="P=$(P), R=$(R)Bi5"
+	}
+	clr=14
+	bclr=51
+}
+text {
+	object {
+		x=54
+		y=230
+		width=25
+		height=20
+	}
+	"basic attribute" {
+		clr=62
+	}
+	"dynamic attribute" {
+		vis="if zero"
+		chan="$(P)$(R)Bi5.VAL"
+	}
+	textix="0"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=54
+		y=230
+		width=25
+		height=20
+	}
+	"basic attribute" {
+		clr=20
+	}
+	"dynamic attribute" {
+		vis="if not zero"
+		chan="$(P)$(R)Bi5.VAL"
+	}
+	textix="1"
+	align="horiz. centered"
+}
+"text entry" {
+	object {
+		x=316
+		y=229
+		width=176
+		height=20
+	}
+	control {
+		chan="$(P)$(R)Bi5.DESC"
+		clr=14
+		bclr=3
+	}
+	limits {
+	}
+}
+menu {
+	object {
+		x=172
+		y=230
+		width=82
+		height=20
+	}
+	control {
+		chan="$(P)$(R)Bi5.SCAN"
+		clr=14
+		bclr=3
+	}
+}
+polyline {
+	object {
+		x=4
+		y=222
+		width=490
+		height=0
+	}
+	"basic attribute" {
+		clr=14
+	}
+	"dynamic attribute" {
+		chan="$(P)$(R)Bi0.DESC"
+	}
+	points {
+		(4,222)
+		(494,222)
+	}
+}
+rectangle {
+	object {
+		x=57
+		y=294
+		width=18
+		height=22
+	}
+	"basic attribute" {
+		clr=1
+	}
+}
+rectangle {
+	object {
+		x=57
+		y=260
+		width=18
+		height=22
+	}
+	"basic attribute" {
+		clr=1
+	}
+}
+text {
+	object {
+		x=16
+		y=262
+		width=20
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="6"
+	align="horiz. centered"
+}
+"choice button" {
+	object {
+		x=95
+		y=264
+		width=65
+		height=15
+	}
+	control {
+		chan="$(P)$(R)Bo6"
+		clr=14
+		bclr=51
+	}
+	stacking="column"
+}
+"related display" {
+	object {
+		x=269
+		y=263
+		width=35
+		height=18
+	}
+	display[0] {
+		name="IpUnidig_more.adl"
+		args="P=$(P), R=$(R)Bi6"
+	}
+	clr=14
+	bclr=51
+}
+text {
+	object {
+		x=54
+		y=262
+		width=25
+		height=20
+	}
+	"basic attribute" {
+		clr=62
+	}
+	"dynamic attribute" {
+		vis="if zero"
+		chan="$(P)$(R)Bi6.VAL"
+	}
+	textix="0"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=54
+		y=262
+		width=25
+		height=20
+	}
+	"basic attribute" {
+		clr=20
+	}
+	"dynamic attribute" {
+		vis="if not zero"
+		chan="$(P)$(R)Bi6.VAL"
+	}
+	textix="1"
+	align="horiz. centered"
+}
+"text entry" {
+	object {
+		x=316
+		y=262
+		width=176
+		height=20
+	}
+	control {
+		chan="$(P)$(R)Bi6.DESC"
+		clr=14
+		bclr=3
+	}
+	limits {
+	}
+}
+menu {
+	object {
+		x=172
+		y=262
+		width=82
+		height=20
+	}
+	control {
+		chan="$(P)$(R)Bi6.SCAN"
+		clr=14
+		bclr=3
+	}
+}
+polyline {
+	object {
+		x=4
+		y=255
+		width=490
+		height=0
+	}
+	"basic attribute" {
+		clr=14
+	}
+	"dynamic attribute" {
+		chan="$(P)$(R)Bi0.DESC"
+	}
+	points {
+		(4,255)
+		(494,255)
+	}
+}
+text {
+	object {
+		x=16
+		y=296
+		width=20
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="7"
+	align="horiz. centered"
+}
+"choice button" {
+	object {
+		x=95
+		y=298
+		width=65
+		height=15
+	}
+	control {
+		chan="$(P)$(R)Bo7"
+		clr=14
+		bclr=51
+	}
+	stacking="column"
+}
+"related display" {
+	object {
+		x=269
+		y=297
+		width=35
+		height=18
+	}
+	display[0] {
+		name="IpUnidig_more.adl"
+		args="P=$(P), R=$(R)Bi7"
+	}
+	clr=14
+	bclr=51
+}
+text {
+	object {
+		x=54
+		y=296
+		width=25
+		height=20
+	}
+	"basic attribute" {
+		clr=62
+	}
+	"dynamic attribute" {
+		vis="if zero"
+		chan="$(P)$(R)Bi7.VAL"
+	}
+	textix="0"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=54
+		y=296
+		width=25
+		height=20
+	}
+	"basic attribute" {
+		clr=20
+	}
+	"dynamic attribute" {
+		vis="if not zero"
+		chan="$(P)$(R)Bi7.VAL"
+	}
+	textix="1"
+	align="horiz. centered"
+}
+"text entry" {
+	object {
+		x=316
+		y=295
+		width=176
+		height=20
+	}
+	control {
+		chan="$(P)$(R)Bi7.DESC"
+		clr=14
+		bclr=3
+	}
+	limits {
+	}
+}
+menu {
+	object {
+		x=172
+		y=296
+		width=82
+		height=20
+	}
+	control {
+		chan="$(P)$(R)Bi7.SCAN"
+		clr=14
+		bclr=3
+	}
+}
+polyline {
+	object {
+		x=4
+		y=288
+		width=490
+		height=0
+	}
+	"basic attribute" {
+		clr=14
+	}
+	"dynamic attribute" {
+		chan="$(P)$(R)Bi0.DESC"
+	}
+	points {
+		(4,288)
+		(494,288)
+	}
+}
+"related display" {
+	object {
+		x=449
+		y=5
+		width=45
+		height=22
+	}
+	display[0] {
+		name="IpUnidig_all.adl"
+		args="P=$(P),R=$(R)"
+		policy="replace display"
+	}
+	clr=0
+	bclr=17
+	label="-More"
+}
+"related display" {
+	object {
+		x=478
+		y=31
+		width=15
+		height=20
+	}
+	display[0] {
+		name="IpUnidig_help.adl"
+	}
+	clr=7
+	bclr=4
+	visual="invisible"
+}
+text {
+	object {
+		x=481
+		y=33
+		width=10
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="?"
+}

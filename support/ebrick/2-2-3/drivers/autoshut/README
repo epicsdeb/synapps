@@ -1,0 +1,24 @@
+            EPICS Brick Automatic Shutdown Linux Device Driver
+                            October 27, 2006
+
+    This device driver was written by David Kline of the ANL/APS
+    BCDA group. It was derived from the example driver as presented
+    in "Linux Device Drivers, 3th Edition" by Jonathan Corbet,
+    Alessandro Rubini, and Greg Kroah-Hartman.
+
+    The files contained in the distribution are as follows:
+        Makefile    - Used to build the driver and application.
+        autoshut.c  - Linux device driver.
+        autoshut.h  - Include files for driver and application.
+        asmon.c     - Interrupt monitoring application.
+        astest.c    - Test application
+        rc.autoshut - Script for loading the driver.
+        README      - This file.
+
+    Notes:
+        1. The driver has been written for the 2.6.x kernel.
+        2. At this time, it only can be used with the parallel port.
+        3. The rc.autoshut file should be placed in /etc/rc.d and
+           called from rc.local.
+        4. The file asmon should be called from rc.local passing
+           the device file name (i.e. /dev/autoshut).

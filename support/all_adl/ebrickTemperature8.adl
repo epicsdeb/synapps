@@ -1,0 +1,2199 @@
+
+file {
+	name="/home/oxygen12/DKLINE/EPICS/static/synApps/support/ebrick/work/op/adl/ebrickTemperature8.adl"
+	version=030101
+}
+display {
+	object {
+		x=16
+		y=36
+		width=918
+		height=356
+	}
+	clr=0
+	bclr=10
+	cmap=""
+	gridSpacing=5
+	gridOn=0
+	snapToGrid=0
+}
+"color map" {
+	ncolors=65
+	colors {
+		ffffff,
+		ececec,
+		dadada,
+		c8c8c8,
+		bbbbbb,
+		aeaeae,
+		9e9e9e,
+		919191,
+		858585,
+		787878,
+		696969,
+		5a5a5a,
+		464646,
+		2d2d2d,
+		000000,
+		00d800,
+		1ebb00,
+		339900,
+		2d7f00,
+		216c00,
+		fd0000,
+		de1309,
+		be190b,
+		a01207,
+		820400,
+		5893ff,
+		597ee1,
+		4b6ec7,
+		3a5eab,
+		27548d,
+		fbf34a,
+		f9da3c,
+		eeb62b,
+		e19015,
+		cd6100,
+		ffb0ff,
+		d67fe2,
+		ae4ebc,
+		8b1a96,
+		610a75,
+		a4aaff,
+		8793e2,
+		6a73c1,
+		4d52a4,
+		343386,
+		c7bb6d,
+		b79d5c,
+		a47e3c,
+		7d5627,
+		58340f,
+		99ffff,
+		73dfff,
+		4ea5f9,
+		2a63e4,
+		0a00b8,
+		ebf1b5,
+		d4db9d,
+		bbc187,
+		a6a462,
+		8b8239,
+		73ff6b,
+		52da3b,
+		3cb420,
+		289315,
+		1a7309,
+	}
+}
+text {
+	object {
+		x=9
+		y=116
+		width=214
+		height=10
+	}
+	"basic attribute" {
+		clr=0
+		fill="outline"
+	}
+	textix="Current temperature"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=9
+		y=167
+		width=100
+		height=10
+	}
+	"basic attribute" {
+		clr=0
+		fill="outline"
+	}
+	textix="Low alarm"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=117
+		y=167
+		width=100
+		height=10
+	}
+	"basic attribute" {
+		clr=0
+		fill="outline"
+	}
+	textix="High alarm"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=64
+		y=36
+		width=164
+		height=14
+	}
+	"basic attribute" {
+		clr=51
+		fill="outline"
+	}
+	textix="$(PV)ai01"
+	align="horiz. centered"
+}
+"text update" {
+	object {
+		x=24
+		y=87
+		width=100
+		height=25
+	}
+	monitor {
+		chan="$(PV)ai01.VAL"
+		clr=60
+		bclr=10
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+oval {
+	object {
+		x=129
+		y=87
+		width=6
+		height=6
+	}
+	"basic attribute" {
+		clr=60
+		fill="outline"
+	}
+}
+"text update" {
+	object {
+		x=141
+		y=89
+		width=40
+		height=20
+	}
+	monitor {
+		chan="$(PV)ai01.EGU"
+		clr=60
+		bclr=10
+	}
+	limits {
+	}
+}
+rectangle {
+	object {
+		x=4
+		y=82
+		width=224
+		height=48
+	}
+	"basic attribute" {
+		clr=0
+		fill="outline"
+		width=1
+	}
+}
+rectangle {
+	object {
+		x=4
+		y=134
+		width=224
+		height=48
+	}
+	"basic attribute" {
+		clr=0
+		fill="outline"
+		width=1
+	}
+}
+rectangle {
+	object {
+		x=9
+		y=89
+		width=10
+		height=20
+	}
+	"basic attribute" {
+		clr=20
+	}
+	"dynamic attribute" {
+		vis="calc"
+		calc="A>B"
+		chan="$(PV)ai01.VAL"
+		chanB="$(PV)ai01.HOPR"
+	}
+}
+rectangle {
+	object {
+		x=9
+		y=89
+		width=10
+		height=20
+	}
+	"basic attribute" {
+		clr=51
+	}
+	"dynamic attribute" {
+		vis="calc"
+		calc="A<B"
+		chan="$(PV)ai01.VAL"
+		chanB="$(PV)ai01.LOPR"
+	}
+}
+rectangle {
+	object {
+		x=9
+		y=89
+		width=10
+		height=20
+	}
+	"basic attribute" {
+		clr=60
+	}
+	"dynamic attribute" {
+		vis="calc"
+		calc="(A>=B)&&(A<=C)"
+		chan="$(PV)ai01.VAL"
+		chanB="$(PV)ai01.LOPR"
+		chanC="$(PV)ai01.HOPR"
+	}
+}
+text {
+	object {
+		x=4
+		y=4
+		width=910
+		height=22
+	}
+	"basic attribute" {
+		clr=31
+		fill="outline"
+	}
+	textix="Temperature Sensors"
+	align="horiz. centered"
+}
+rectangle {
+	object {
+		x=4
+		y=54
+		width=224
+		height=24
+	}
+	"basic attribute" {
+		clr=0
+		fill="outline"
+		width=1
+	}
+}
+text {
+	object {
+		x=237
+		y=116
+		width=214
+		height=10
+	}
+	"basic attribute" {
+		clr=0
+		fill="outline"
+	}
+	textix="Current temperature"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=237
+		y=167
+		width=100
+		height=10
+	}
+	"basic attribute" {
+		clr=0
+		fill="outline"
+	}
+	textix="Low alarm"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=345
+		y=167
+		width=100
+		height=10
+	}
+	"basic attribute" {
+		clr=0
+		fill="outline"
+	}
+	textix="High alarm"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=293
+		y=36
+		width=164
+		height=14
+	}
+	"basic attribute" {
+		clr=51
+		fill="outline"
+	}
+	textix="$(PV)ai02"
+	align="horiz. centered"
+}
+"text update" {
+	object {
+		x=252
+		y=87
+		width=100
+		height=25
+	}
+	monitor {
+		chan="$(PV)ai02.VAL"
+		clr=60
+		bclr=10
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+oval {
+	object {
+		x=357
+		y=87
+		width=6
+		height=6
+	}
+	"basic attribute" {
+		clr=60
+		fill="outline"
+	}
+}
+"text update" {
+	object {
+		x=369
+		y=89
+		width=40
+		height=20
+	}
+	monitor {
+		chan="$(PV)ai02.EGU"
+		clr=60
+		bclr=10
+	}
+	limits {
+	}
+}
+rectangle {
+	object {
+		x=232
+		y=82
+		width=224
+		height=48
+	}
+	"basic attribute" {
+		clr=0
+		fill="outline"
+		width=1
+	}
+}
+rectangle {
+	object {
+		x=232
+		y=134
+		width=224
+		height=48
+	}
+	"basic attribute" {
+		clr=0
+		fill="outline"
+		width=1
+	}
+}
+rectangle {
+	object {
+		x=237
+		y=89
+		width=10
+		height=20
+	}
+	"basic attribute" {
+		clr=20
+	}
+	"dynamic attribute" {
+		vis="calc"
+		calc="A>B"
+		chan="$(PV)ai02.VAL"
+		chanB="$(PV)ai02.HOPR"
+	}
+}
+rectangle {
+	object {
+		x=237
+		y=89
+		width=10
+		height=20
+	}
+	"basic attribute" {
+		clr=51
+	}
+	"dynamic attribute" {
+		vis="calc"
+		calc="A<B"
+		chan="$(PV)ai02.VAL"
+		chanB="$(PV)ai02.LOPR"
+	}
+}
+rectangle {
+	object {
+		x=237
+		y=89
+		width=10
+		height=20
+	}
+	"basic attribute" {
+		clr=60
+	}
+	"dynamic attribute" {
+		vis="calc"
+		calc="(A>=B)&&(A<=C)"
+		chan="$(PV)ai02.VAL"
+		chanB="$(PV)ai02.LOPR"
+		chanC="$(PV)ai02.HOPR"
+	}
+}
+rectangle {
+	object {
+		x=232
+		y=54
+		width=224
+		height=24
+	}
+	"basic attribute" {
+		clr=0
+		fill="outline"
+		width=1
+	}
+}
+text {
+	object {
+		x=465
+		y=116
+		width=214
+		height=10
+	}
+	"basic attribute" {
+		clr=0
+		fill="outline"
+	}
+	textix="Current temperature"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=465
+		y=167
+		width=100
+		height=10
+	}
+	"basic attribute" {
+		clr=0
+		fill="outline"
+	}
+	textix="Low alarm"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=573
+		y=167
+		width=100
+		height=10
+	}
+	"basic attribute" {
+		clr=0
+		fill="outline"
+	}
+	textix="High alarm"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=521
+		y=36
+		width=164
+		height=14
+	}
+	"basic attribute" {
+		clr=51
+		fill="outline"
+	}
+	textix="$(PV)ai03"
+	align="horiz. centered"
+}
+"text update" {
+	object {
+		x=480
+		y=87
+		width=100
+		height=25
+	}
+	monitor {
+		chan="$(PV)ai03.VAL"
+		clr=60
+		bclr=10
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+oval {
+	object {
+		x=585
+		y=87
+		width=6
+		height=6
+	}
+	"basic attribute" {
+		clr=60
+		fill="outline"
+	}
+}
+"text update" {
+	object {
+		x=597
+		y=89
+		width=40
+		height=20
+	}
+	monitor {
+		chan="$(PV)ai03.EGU"
+		clr=60
+		bclr=10
+	}
+	limits {
+	}
+}
+rectangle {
+	object {
+		x=460
+		y=82
+		width=224
+		height=48
+	}
+	"basic attribute" {
+		clr=0
+		fill="outline"
+		width=1
+	}
+}
+rectangle {
+	object {
+		x=460
+		y=134
+		width=224
+		height=48
+	}
+	"basic attribute" {
+		clr=0
+		fill="outline"
+		width=1
+	}
+}
+rectangle {
+	object {
+		x=465
+		y=89
+		width=10
+		height=20
+	}
+	"basic attribute" {
+		clr=20
+	}
+	"dynamic attribute" {
+		vis="calc"
+		calc="A>B"
+		chan="$(PV)ai03.VAL"
+		chanB="$(PV)ai03.HOPR"
+	}
+}
+rectangle {
+	object {
+		x=465
+		y=89
+		width=10
+		height=20
+	}
+	"basic attribute" {
+		clr=51
+	}
+	"dynamic attribute" {
+		vis="calc"
+		calc="A<B"
+		chan="$(PV)ai03.VAL"
+		chanB="$(PV)ai03.LOPR"
+	}
+}
+rectangle {
+	object {
+		x=465
+		y=89
+		width=10
+		height=20
+	}
+	"basic attribute" {
+		clr=60
+	}
+	"dynamic attribute" {
+		vis="calc"
+		calc="(A>=B)&&(A<=C)"
+		chan="$(PV)ai03.VAL"
+		chanB="$(PV)ai03.LOPR"
+		chanC="$(PV)ai03.HOPR"
+	}
+}
+rectangle {
+	object {
+		x=460
+		y=54
+		width=224
+		height=24
+	}
+	"basic attribute" {
+		clr=0
+		fill="outline"
+		width=1
+	}
+}
+text {
+	object {
+		x=693
+		y=116
+		width=214
+		height=10
+	}
+	"basic attribute" {
+		clr=0
+		fill="outline"
+	}
+	textix="Current temperature"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=693
+		y=167
+		width=100
+		height=10
+	}
+	"basic attribute" {
+		clr=0
+		fill="outline"
+	}
+	textix="Low alarm"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=801
+		y=167
+		width=100
+		height=10
+	}
+	"basic attribute" {
+		clr=0
+		fill="outline"
+	}
+	textix="High alarm"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=749
+		y=36
+		width=164
+		height=14
+	}
+	"basic attribute" {
+		clr=51
+		fill="outline"
+	}
+	textix="$(PV)ai04"
+	align="horiz. centered"
+}
+"text update" {
+	object {
+		x=708
+		y=87
+		width=100
+		height=25
+	}
+	monitor {
+		chan="$(PV)ai04.VAL"
+		clr=60
+		bclr=10
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+oval {
+	object {
+		x=813
+		y=87
+		width=6
+		height=6
+	}
+	"basic attribute" {
+		clr=60
+		fill="outline"
+	}
+}
+"text update" {
+	object {
+		x=825
+		y=89
+		width=40
+		height=20
+	}
+	monitor {
+		chan="$(PV)ai04.EGU"
+		clr=60
+		bclr=10
+	}
+	limits {
+	}
+}
+rectangle {
+	object {
+		x=688
+		y=82
+		width=224
+		height=48
+	}
+	"basic attribute" {
+		clr=0
+		fill="outline"
+		width=1
+	}
+}
+rectangle {
+	object {
+		x=688
+		y=134
+		width=224
+		height=48
+	}
+	"basic attribute" {
+		clr=0
+		fill="outline"
+		width=1
+	}
+}
+rectangle {
+	object {
+		x=693
+		y=89
+		width=10
+		height=20
+	}
+	"basic attribute" {
+		clr=20
+	}
+	"dynamic attribute" {
+		vis="calc"
+		calc="A>B"
+		chan="$(PV)ai04.VAL"
+		chanB="$(PV)ai04.HOPR"
+	}
+}
+rectangle {
+	object {
+		x=693
+		y=89
+		width=10
+		height=20
+	}
+	"basic attribute" {
+		clr=51
+	}
+	"dynamic attribute" {
+		vis="calc"
+		calc="A<B"
+		chan="$(PV)ai04.VAL"
+		chanB="$(PV)ai04.LOPR"
+	}
+}
+rectangle {
+	object {
+		x=693
+		y=89
+		width=10
+		height=20
+	}
+	"basic attribute" {
+		clr=60
+	}
+	"dynamic attribute" {
+		vis="calc"
+		calc="(A>=B)&&(A<=C)"
+		chan="$(PV)ai04.VAL"
+		chanB="$(PV)ai04.LOPR"
+		chanC="$(PV)ai04.HOPR"
+	}
+}
+rectangle {
+	object {
+		x=688
+		y=54
+		width=224
+		height=24
+	}
+	"basic attribute" {
+		clr=0
+		fill="outline"
+		width=1
+	}
+}
+"text entry" {
+	object {
+		x=9
+		y=140
+		width=102
+		height=25
+	}
+	control {
+		chan="$(PV)ai01.LOPR"
+		clr=51
+		bclr=10
+	}
+	limits {
+	}
+}
+"text entry" {
+	object {
+		x=117
+		y=140
+		width=102
+		height=25
+	}
+	control {
+		chan="$(PV)ai01.HOPR"
+		clr=20
+		bclr=10
+	}
+	limits {
+	}
+}
+"text entry" {
+	object {
+		x=237
+		y=140
+		width=102
+		height=25
+	}
+	control {
+		chan="$(PV)ai02.LOPR"
+		clr=51
+		bclr=10
+	}
+	limits {
+	}
+}
+"text entry" {
+	object {
+		x=345
+		y=140
+		width=102
+		height=25
+	}
+	control {
+		chan="$(PV)ai02.HOPR"
+		clr=20
+		bclr=10
+	}
+	limits {
+	}
+}
+"text entry" {
+	object {
+		x=465
+		y=140
+		width=102
+		height=25
+	}
+	control {
+		chan="$(PV)ai03.LOPR"
+		clr=51
+		bclr=10
+	}
+	limits {
+	}
+}
+"text entry" {
+	object {
+		x=573
+		y=140
+		width=102
+		height=25
+	}
+	control {
+		chan="$(PV)ai03.HOPR"
+		clr=20
+		bclr=10
+	}
+	limits {
+	}
+}
+"text entry" {
+	object {
+		x=693
+		y=140
+		width=102
+		height=25
+	}
+	control {
+		chan="$(PV)ai04.LOPR"
+		clr=51
+		bclr=10
+	}
+	limits {
+	}
+}
+"text entry" {
+	object {
+		x=801
+		y=140
+		width=102
+		height=25
+	}
+	control {
+		chan="$(PV)ai04.HOPR"
+		clr=20
+		bclr=10
+	}
+	limits {
+	}
+}
+menu {
+	object {
+		x=4
+		y=35
+		width=56
+		height=16
+	}
+	control {
+		chan="$(PV)ai01:dis"
+		clr=14
+		bclr=51
+	}
+}
+menu {
+	object {
+		x=233
+		y=35
+		width=56
+		height=16
+	}
+	control {
+		chan="$(PV)ai02:dis"
+		clr=14
+		bclr=51
+	}
+}
+menu {
+	object {
+		x=461
+		y=35
+		width=56
+		height=16
+	}
+	control {
+		chan="$(PV)ai03:dis"
+		clr=14
+		bclr=51
+	}
+}
+menu {
+	object {
+		x=689
+		y=35
+		width=56
+		height=16
+	}
+	control {
+		chan="$(PV)ai04:dis"
+		clr=14
+		bclr=51
+	}
+}
+"text entry" {
+	object {
+		x=8
+		y=58
+		width=217
+		height=18
+	}
+	control {
+		chan="$(PV)ai01.DESC"
+		clr=30
+		bclr=10
+	}
+	limits {
+	}
+}
+"text entry" {
+	object {
+		x=236
+		y=58
+		width=217
+		height=18
+	}
+	control {
+		chan="$(PV)ai02.DESC"
+		clr=30
+		bclr=10
+	}
+	limits {
+	}
+}
+"text entry" {
+	object {
+		x=464
+		y=57
+		width=217
+		height=18
+	}
+	control {
+		chan="$(PV)ai03.DESC"
+		clr=30
+		bclr=10
+	}
+	limits {
+	}
+}
+"text entry" {
+	object {
+		x=692
+		y=57
+		width=217
+		height=18
+	}
+	control {
+		chan="$(PV)ai04.DESC"
+		clr=30
+		bclr=10
+	}
+	limits {
+	}
+}
+text {
+	object {
+		x=9
+		y=277
+		width=214
+		height=10
+	}
+	"basic attribute" {
+		clr=0
+		fill="outline"
+	}
+	textix="Current temperature"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=9
+		y=328
+		width=100
+		height=10
+	}
+	"basic attribute" {
+		clr=0
+		fill="outline"
+	}
+	textix="Low alarm"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=117
+		y=328
+		width=100
+		height=10
+	}
+	"basic attribute" {
+		clr=0
+		fill="outline"
+	}
+	textix="High alarm"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=64
+		y=197
+		width=164
+		height=14
+	}
+	"basic attribute" {
+		clr=51
+		fill="outline"
+	}
+	textix="$(PV)ai05"
+	align="horiz. centered"
+}
+"text update" {
+	object {
+		x=24
+		y=248
+		width=100
+		height=25
+	}
+	monitor {
+		chan="$(PV)ai05.VAL"
+		clr=60
+		bclr=10
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+oval {
+	object {
+		x=129
+		y=248
+		width=6
+		height=6
+	}
+	"basic attribute" {
+		clr=60
+		fill="outline"
+	}
+}
+"text update" {
+	object {
+		x=141
+		y=250
+		width=40
+		height=20
+	}
+	monitor {
+		chan="$(PV)ai05.EGU"
+		clr=60
+		bclr=10
+	}
+	limits {
+	}
+}
+rectangle {
+	object {
+		x=4
+		y=243
+		width=224
+		height=48
+	}
+	"basic attribute" {
+		clr=0
+		fill="outline"
+		width=1
+	}
+}
+rectangle {
+	object {
+		x=4
+		y=295
+		width=224
+		height=48
+	}
+	"basic attribute" {
+		clr=0
+		fill="outline"
+		width=1
+	}
+}
+rectangle {
+	object {
+		x=9
+		y=250
+		width=10
+		height=20
+	}
+	"basic attribute" {
+		clr=20
+	}
+	"dynamic attribute" {
+		vis="calc"
+		calc="A>B"
+		chan="$(PV)ai05.VAL"
+		chanB="$(PV)ai05.HOPR"
+	}
+}
+rectangle {
+	object {
+		x=9
+		y=250
+		width=10
+		height=20
+	}
+	"basic attribute" {
+		clr=51
+	}
+	"dynamic attribute" {
+		vis="calc"
+		calc="A<B"
+		chan="$(PV)ai05.VAL"
+		chanB="$(PV)ai05.LOPR"
+	}
+}
+rectangle {
+	object {
+		x=9
+		y=250
+		width=10
+		height=20
+	}
+	"basic attribute" {
+		clr=60
+	}
+	"dynamic attribute" {
+		vis="calc"
+		calc="(A>=B)&&(A<=C)"
+		chan="$(PV)ai05.VAL"
+		chanB="$(PV)ai05.LOPR"
+		chanC="$(PV)ai05.HOPR"
+	}
+}
+rectangle {
+	object {
+		x=4
+		y=215
+		width=224
+		height=24
+	}
+	"basic attribute" {
+		clr=0
+		fill="outline"
+		width=1
+	}
+}
+text {
+	object {
+		x=237
+		y=277
+		width=214
+		height=10
+	}
+	"basic attribute" {
+		clr=0
+		fill="outline"
+	}
+	textix="Current temperature"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=237
+		y=328
+		width=100
+		height=10
+	}
+	"basic attribute" {
+		clr=0
+		fill="outline"
+	}
+	textix="Low alarm"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=345
+		y=328
+		width=100
+		height=10
+	}
+	"basic attribute" {
+		clr=0
+		fill="outline"
+	}
+	textix="High alarm"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=293
+		y=197
+		width=164
+		height=14
+	}
+	"basic attribute" {
+		clr=51
+		fill="outline"
+	}
+	textix="$(PV)ai06"
+	align="horiz. centered"
+}
+"text update" {
+	object {
+		x=252
+		y=248
+		width=100
+		height=25
+	}
+	monitor {
+		chan="$(PV)ai06.VAL"
+		clr=60
+		bclr=10
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+oval {
+	object {
+		x=357
+		y=248
+		width=6
+		height=6
+	}
+	"basic attribute" {
+		clr=60
+		fill="outline"
+	}
+}
+"text update" {
+	object {
+		x=369
+		y=250
+		width=40
+		height=20
+	}
+	monitor {
+		chan="$(PV)ai06.EGU"
+		clr=60
+		bclr=10
+	}
+	limits {
+	}
+}
+rectangle {
+	object {
+		x=232
+		y=243
+		width=224
+		height=48
+	}
+	"basic attribute" {
+		clr=0
+		fill="outline"
+		width=1
+	}
+}
+rectangle {
+	object {
+		x=232
+		y=295
+		width=224
+		height=48
+	}
+	"basic attribute" {
+		clr=0
+		fill="outline"
+		width=1
+	}
+}
+rectangle {
+	object {
+		x=237
+		y=250
+		width=10
+		height=20
+	}
+	"basic attribute" {
+		clr=20
+	}
+	"dynamic attribute" {
+		vis="calc"
+		calc="A>B"
+		chan="$(PV)ai06.VAL"
+		chanB="$(PV)ai06.HOPR"
+	}
+}
+rectangle {
+	object {
+		x=237
+		y=250
+		width=10
+		height=20
+	}
+	"basic attribute" {
+		clr=51
+	}
+	"dynamic attribute" {
+		vis="calc"
+		calc="A<B"
+		chan="$(PV)ai06.VAL"
+		chanB="$(PV)ai06.LOPR"
+	}
+}
+rectangle {
+	object {
+		x=237
+		y=250
+		width=10
+		height=20
+	}
+	"basic attribute" {
+		clr=60
+	}
+	"dynamic attribute" {
+		vis="calc"
+		calc="(A>=B)&&(A<=C)"
+		chan="$(PV)ai06.VAL"
+		chanB="$(PV)ai06.LOPR"
+		chanC="$(PV)ai06.HOPR"
+	}
+}
+rectangle {
+	object {
+		x=232
+		y=215
+		width=224
+		height=24
+	}
+	"basic attribute" {
+		clr=0
+		fill="outline"
+		width=1
+	}
+}
+text {
+	object {
+		x=465
+		y=277
+		width=214
+		height=10
+	}
+	"basic attribute" {
+		clr=0
+		fill="outline"
+	}
+	textix="Current temperature"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=465
+		y=328
+		width=100
+		height=10
+	}
+	"basic attribute" {
+		clr=0
+		fill="outline"
+	}
+	textix="Low alarm"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=573
+		y=328
+		width=100
+		height=10
+	}
+	"basic attribute" {
+		clr=0
+		fill="outline"
+	}
+	textix="High alarm"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=521
+		y=197
+		width=164
+		height=14
+	}
+	"basic attribute" {
+		clr=51
+		fill="outline"
+	}
+	textix="$(PV)ai07"
+	align="horiz. centered"
+}
+"text update" {
+	object {
+		x=480
+		y=248
+		width=100
+		height=25
+	}
+	monitor {
+		chan="$(PV)ai07.VAL"
+		clr=60
+		bclr=10
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+oval {
+	object {
+		x=585
+		y=248
+		width=6
+		height=6
+	}
+	"basic attribute" {
+		clr=60
+		fill="outline"
+	}
+}
+"text update" {
+	object {
+		x=597
+		y=250
+		width=40
+		height=20
+	}
+	monitor {
+		chan="$(PV)ai07.EGU"
+		clr=60
+		bclr=10
+	}
+	limits {
+	}
+}
+rectangle {
+	object {
+		x=460
+		y=243
+		width=224
+		height=48
+	}
+	"basic attribute" {
+		clr=0
+		fill="outline"
+		width=1
+	}
+}
+rectangle {
+	object {
+		x=460
+		y=295
+		width=224
+		height=48
+	}
+	"basic attribute" {
+		clr=0
+		fill="outline"
+		width=1
+	}
+}
+rectangle {
+	object {
+		x=465
+		y=250
+		width=10
+		height=20
+	}
+	"basic attribute" {
+		clr=20
+	}
+	"dynamic attribute" {
+		vis="calc"
+		calc="A>B"
+		chan="$(PV)ai07.VAL"
+		chanB="$(PV)ai07.HOPR"
+	}
+}
+rectangle {
+	object {
+		x=465
+		y=250
+		width=10
+		height=20
+	}
+	"basic attribute" {
+		clr=51
+	}
+	"dynamic attribute" {
+		vis="calc"
+		calc="A<B"
+		chan="$(PV)ai07.VAL"
+		chanB="$(PV)ai07.LOPR"
+	}
+}
+rectangle {
+	object {
+		x=465
+		y=250
+		width=10
+		height=20
+	}
+	"basic attribute" {
+		clr=60
+	}
+	"dynamic attribute" {
+		vis="calc"
+		calc="(A>=B)&&(A<=C)"
+		chan="$(PV)ai07.VAL"
+		chanB="$(PV)ai07.LOPR"
+		chanC="$(PV)ai07.HOPR"
+	}
+}
+rectangle {
+	object {
+		x=460
+		y=215
+		width=224
+		height=24
+	}
+	"basic attribute" {
+		clr=0
+		fill="outline"
+		width=1
+	}
+}
+text {
+	object {
+		x=693
+		y=277
+		width=214
+		height=10
+	}
+	"basic attribute" {
+		clr=0
+		fill="outline"
+	}
+	textix="Current temperature"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=693
+		y=328
+		width=100
+		height=10
+	}
+	"basic attribute" {
+		clr=0
+		fill="outline"
+	}
+	textix="Low alarm"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=801
+		y=328
+		width=100
+		height=10
+	}
+	"basic attribute" {
+		clr=0
+		fill="outline"
+	}
+	textix="High alarm"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=749
+		y=197
+		width=164
+		height=14
+	}
+	"basic attribute" {
+		clr=51
+		fill="outline"
+	}
+	textix="$(PV)ai08"
+	align="horiz. centered"
+}
+"text update" {
+	object {
+		x=708
+		y=248
+		width=100
+		height=25
+	}
+	monitor {
+		chan="$(PV)ai08.VAL"
+		clr=60
+		bclr=10
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+oval {
+	object {
+		x=813
+		y=248
+		width=6
+		height=6
+	}
+	"basic attribute" {
+		clr=60
+		fill="outline"
+	}
+}
+"text update" {
+	object {
+		x=825
+		y=250
+		width=40
+		height=20
+	}
+	monitor {
+		chan="$(PV)ai08.EGU"
+		clr=60
+		bclr=10
+	}
+	limits {
+	}
+}
+rectangle {
+	object {
+		x=688
+		y=243
+		width=224
+		height=48
+	}
+	"basic attribute" {
+		clr=0
+		fill="outline"
+		width=1
+	}
+}
+rectangle {
+	object {
+		x=688
+		y=295
+		width=224
+		height=48
+	}
+	"basic attribute" {
+		clr=0
+		fill="outline"
+		width=1
+	}
+}
+rectangle {
+	object {
+		x=693
+		y=250
+		width=10
+		height=20
+	}
+	"basic attribute" {
+		clr=20
+	}
+	"dynamic attribute" {
+		vis="calc"
+		calc="A>B"
+		chan="$(PV)ai08.VAL"
+		chanB="$(PV)ai08.HOPR"
+	}
+}
+rectangle {
+	object {
+		x=693
+		y=250
+		width=10
+		height=20
+	}
+	"basic attribute" {
+		clr=51
+	}
+	"dynamic attribute" {
+		vis="calc"
+		calc="A<B"
+		chan="$(PV)ai08.VAL"
+		chanB="$(PV)ai08.LOPR"
+	}
+}
+rectangle {
+	object {
+		x=693
+		y=250
+		width=10
+		height=20
+	}
+	"basic attribute" {
+		clr=60
+	}
+	"dynamic attribute" {
+		vis="calc"
+		calc="(A>=B)&&(A<=C)"
+		chan="$(PV)ai08.VAL"
+		chanB="$(PV)ai08.LOPR"
+		chanC="$(PV)ai08.HOPR"
+	}
+}
+rectangle {
+	object {
+		x=688
+		y=215
+		width=224
+		height=24
+	}
+	"basic attribute" {
+		clr=0
+		fill="outline"
+		width=1
+	}
+}
+"text entry" {
+	object {
+		x=9
+		y=301
+		width=102
+		height=25
+	}
+	control {
+		chan="$(PV)ai05.LOPR"
+		clr=51
+		bclr=10
+	}
+	limits {
+	}
+}
+"text entry" {
+	object {
+		x=117
+		y=301
+		width=102
+		height=25
+	}
+	control {
+		chan="$(PV)ai05.HOPR"
+		clr=20
+		bclr=10
+	}
+	limits {
+	}
+}
+"text entry" {
+	object {
+		x=237
+		y=301
+		width=102
+		height=25
+	}
+	control {
+		chan="$(PV)ai06.LOPR"
+		clr=51
+		bclr=10
+	}
+	limits {
+	}
+}
+"text entry" {
+	object {
+		x=345
+		y=301
+		width=102
+		height=25
+	}
+	control {
+		chan="$(PV)ai06.HOPR"
+		clr=20
+		bclr=10
+	}
+	limits {
+	}
+}
+"text entry" {
+	object {
+		x=465
+		y=301
+		width=102
+		height=25
+	}
+	control {
+		chan="$(PV)ai07.LOPR"
+		clr=51
+		bclr=10
+	}
+	limits {
+	}
+}
+"text entry" {
+	object {
+		x=573
+		y=301
+		width=102
+		height=25
+	}
+	control {
+		chan="$(PV)ai07.HOPR"
+		clr=20
+		bclr=10
+	}
+	limits {
+	}
+}
+"text entry" {
+	object {
+		x=693
+		y=301
+		width=102
+		height=25
+	}
+	control {
+		chan="$(PV)ai08.LOPR"
+		clr=51
+		bclr=10
+	}
+	limits {
+	}
+}
+"text entry" {
+	object {
+		x=801
+		y=301
+		width=102
+		height=25
+	}
+	control {
+		chan="$(PV)ai08.HOPR"
+		clr=20
+		bclr=10
+	}
+	limits {
+	}
+}
+menu {
+	object {
+		x=4
+		y=196
+		width=56
+		height=16
+	}
+	control {
+		chan="$(PV)ai05:dis"
+		clr=14
+		bclr=51
+	}
+}
+menu {
+	object {
+		x=233
+		y=196
+		width=56
+		height=16
+	}
+	control {
+		chan="$(PV)ai06:dis"
+		clr=14
+		bclr=51
+	}
+}
+menu {
+	object {
+		x=461
+		y=196
+		width=56
+		height=16
+	}
+	control {
+		chan="$(PV)ai07:dis"
+		clr=14
+		bclr=51
+	}
+}
+menu {
+	object {
+		x=689
+		y=196
+		width=56
+		height=16
+	}
+	control {
+		chan="$(PV)ai08:dis"
+		clr=14
+		bclr=51
+	}
+}
+"text entry" {
+	object {
+		x=8
+		y=219
+		width=217
+		height=18
+	}
+	control {
+		chan="$(PV)ai05.DESC"
+		clr=30
+		bclr=10
+	}
+	limits {
+	}
+}
+"text entry" {
+	object {
+		x=236
+		y=219
+		width=217
+		height=18
+	}
+	control {
+		chan="$(PV)ai06.DESC"
+		clr=30
+		bclr=10
+	}
+	limits {
+	}
+}
+"text entry" {
+	object {
+		x=464
+		y=218
+		width=217
+		height=18
+	}
+	control {
+		chan="$(PV)ai07.DESC"
+		clr=30
+		bclr=10
+	}
+	limits {
+	}
+}
+"text entry" {
+	object {
+		x=692
+		y=218
+		width=217
+		height=18
+	}
+	control {
+		chan="$(PV)ai08.DESC"
+		clr=30
+		bclr=10
+	}
+	limits {
+	}
+}
+"related display" {
+	object {
+		x=200
+		y=87
+		width=24
+		height=18
+	}
+	display[0] {
+		name="ebrickTemperature.adl"
+		args="PV=$(PV)ai01"
+	}
+	clr=14
+	bclr=51
+}
+"related display" {
+	object {
+		x=428
+		y=87
+		width=24
+		height=18
+	}
+	display[0] {
+		name="ebrickTemperature.adl"
+		args="PV=$(PV)ai02"
+	}
+	clr=14
+	bclr=51
+}
+"related display" {
+	object {
+		x=656
+		y=87
+		width=24
+		height=18
+	}
+	display[0] {
+		name="ebrickTemperature.adl"
+		args="PV=$(PV)ai03"
+	}
+	clr=14
+	bclr=51
+}
+"related display" {
+	object {
+		x=884
+		y=87
+		width=24
+		height=18
+	}
+	display[0] {
+		name="ebrickTemperature.adl"
+		args="PV=$(PV)ai04"
+	}
+	clr=14
+	bclr=51
+}
+"related display" {
+	object {
+		x=884
+		y=248
+		width=24
+		height=18
+	}
+	display[0] {
+		name="ebrickTemperature.adl"
+		args="PV=$(PV)ai08"
+	}
+	clr=14
+	bclr=51
+}
+"related display" {
+	object {
+		x=656
+		y=248
+		width=24
+		height=18
+	}
+	display[0] {
+		name="ebrickTemperature.adl"
+		args="PV=$(PV)ai07"
+	}
+	clr=14
+	bclr=51
+}
+"related display" {
+	object {
+		x=428
+		y=248
+		width=24
+		height=18
+	}
+	display[0] {
+		name="ebrickTemperature.adl"
+		args="PV=$(PV)ai06"
+	}
+	clr=14
+	bclr=51
+}
+"related display" {
+	object {
+		x=200
+		y=248
+		width=24
+		height=18
+	}
+	display[0] {
+		name="ebrickTemperature.adl"
+		args="PV=$(PV)ai05"
+	}
+	clr=14
+	bclr=51
+}

@@ -1,0 +1,49 @@
+#==============================================================================
+# Common IOC definitions
+#------------------------------------------------------------------------------
+
+#------------------------------------------------------------------------------
+# Include common IOC definition files
+include "base.dbd"
+
+#------------------------------------------------------------------------------
+# Asyn support
+include "drvAsynSerialPort.dbd"
+include "drvAsynIPPort.dbd"
+
+#------------------------------------------------------------------------------
+# Autosave support
+include "asSupport.dbd"
+
+#------------------------------------------------------------------------------
+# Std support
+include "sseqRecord.dbd"
+
+#------------------------------------------------------------------------------
+# Ip support
+registrar(tyGSAsynInitRegister)
+variable(tyGSAsynInitBuffsize,int)
+
+#------------------------------------------------------------------------------
+# Ipac support
+include "drvIpac.dbd"
+include "tyGSOctal.dbd"
+
+#-----------------------------------------------------------------------------
+# National Instruments NI GPIB-RS232
+include "nigpibSupport.dbd"
+
+#-----------------------------------------------------------------------------
+# SRS DG645 delay generator support
+include "drvAsynDG645.dbd"
+
+#-----------------------------------------------------------------------------
+# SRS DG535 delay generator support
+include "devDG535.dbd"
+
+#-----------------------------------------------------------------------------
+# Colby Instruments PDL100A programmable delay line support
+include "drvAsynColby.dbd"
+
+#
+#==============================================================================

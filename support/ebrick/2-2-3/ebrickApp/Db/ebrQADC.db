@@ -1,0 +1,17 @@
+#
+# Taken from MCF5282 support
+#
+record(ai, "$(P)$(R)QADC$(C)")
+{
+    field(DESC, "Queued ADC channel $(C)")
+    field(SCAN, "1 second")
+    field(DTYP, "asynInt32")
+    field(INP,  "@asyn(QADC $(I) 0)")
+    field(LINR, "LINEAR")
+    field(EGU,  "Volts")
+    field(PREC, "3")
+    field(EGUL, "0")
+    field(EGUF, "3.3")
+    field(LOPR, "0")
+    field(HOPR, "3.3")
+}

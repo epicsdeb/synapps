@@ -1,0 +1,432 @@
+# Database for CCD and image plate detector control.
+# Mark Rivers
+# Sept. 27, 2003
+
+# These PVs have the same names as those defined by Brian Tieman in his portable
+# channel access server
+
+record(stringout, "$(P)$(C)CCDManufacturer")
+{
+   field(VAL, "Unknown")
+}
+
+record(stringout, "$(P)$(C)CCDModel")
+{
+   field(VAL, "Unknown")
+}
+
+record(longin, "$(P)$(C)BitDepth")
+{
+}
+
+record(ao, "$(P)$(C)SetTemp")
+{
+   field(VAL, "0")
+   field(PREC, "2")
+}
+
+record(ai, "$(P)$(C)MeasuredTemp")
+{
+   field(VAL, "0")
+   field(PREC, "2")
+}
+
+record(bo, "$(P)$(C)ADC")
+{
+   field(VAL, "0")
+   field(ZNAM, "Slow")
+   field(ONAM, "Fast")
+}
+
+record(longout, "$(P)$(C)BinX")
+{
+   field(VAL, "1")
+}
+
+record(longout, "$(P)$(C)BinY")
+{
+   field(VAL, "1")
+}
+
+record(ao, "$(P)$(C)Hours")
+{
+   field(VAL, "0")
+   field(PREC, "3")
+}
+
+record(ao, "$(P)$(C)Minutes")
+{
+   field(VAL, "0")
+   field(PREC, "3")
+}
+
+record(ao, "$(P)$(C)Seconds")
+{
+   field(VAL, "1")
+   field(PREC, "3")
+}
+
+record(ao, "$(P)$(C)Milliseconds")
+{
+   field(VAL, "0")
+   field(PREC, "3")
+}
+
+record(longin, "$(P)$(C)SeqNumber")
+{
+   field(VAL, "1")
+}
+
+record(longin, "$(P)$(C)NumExposures")
+{
+   field(VAL, "0")
+}
+
+record(busy, "$(P)$(C)AcquireCLBK")
+{
+   field(VAL, "0")
+}
+
+record(bo, "$(P)$(C)AcquirePOLL")
+{
+   field(VAL, "0")
+   field(ZNAM, "Done")
+   field(ONAM, "Acquiring")
+}
+
+record(bo, "$(P)$(C)Abort")
+{
+   field(VAL, "0")
+}
+
+record(bo, "$(P)$(C)Initialize")
+{
+   field(VAL, "0")
+}
+
+record(stringout, "$(P)$(C)FileTemplate")
+{
+   field(VAL, "test")
+}
+
+record(mbbo, "$(P)$(C)Compression")
+{
+   field(ZRST,  "None")
+   field(ONST,  "LZW")
+   field(TWST, "Skip-Huff")
+   field(THST, "RL Encoding")
+}
+
+record(stringout, "$(P)$(C)HDFTemplate")
+{
+   field(VAL, "junk")
+}
+
+# The following PVs are new to this database, they don't exist in Brian Tieman's
+# portable channel access server application
+
+record(ai, "$(P)$(C)ActualSeconds")
+{
+   field(PREC, "3")
+}
+
+record(longout, "$(P)$(C)ROITop")
+{
+   field(VAL, "1")
+}
+
+record(longout, "$(P)$(C)ROIBottom")
+{
+   field(VAL, "1024")
+}
+
+record(longout, "$(P)$(C)ROILeft")
+{
+   field(VAL, "1")
+}
+
+record(longout, "$(P)$(C)ROIRight")
+{
+   field(VAL, "1024")
+}
+
+record(longin, "$(P)$(C)ActualROITop")
+{
+}
+
+record(longin, "$(P)$(C)ActualROIBottom")
+{
+}
+
+record(longin, "$(P)$(C)ActualROILeft")
+{
+}
+
+record(longin, "$(P)$(C)ActualROIRight")
+{
+}
+
+record(longin, "$(P)$(C)ActualBinX")
+{
+}
+
+record(longin, "$(P)$(C)ActualBinY")
+{
+}
+
+record(longout, "$(P)$(C)NumFrames")
+{
+   field(VAL, "1")
+}
+
+record(longin, "$(P)$(C)ActualNumFrames")
+{
+}
+
+record(bo, "$(P)$(C)ComputeROICts")
+{
+   field(VAL, "0")
+   field(ZNAM, "No")
+   field(ONAM, "Yes")
+}
+
+record(ai, "$(P)$(C)ROITotal")
+{
+   field(PREC, "5")
+}
+
+record(ai, "$(P)$(C)ROINet")
+{
+   field(PREC, "5")
+}
+
+record(stringout, "$(P)$(C)ServerName")
+{
+   field(VAL, "localhost")
+}
+
+record(longout, "$(P)$(C)ServerPort")
+{
+   field(VAL, "2002")
+}
+
+record(bi, "$(P)$(C)ConnectState")
+{
+   field(VAL, "0")
+   field(ZNAM, "Disconnected")
+   field(ZSV, "MAJOR")
+   field(ONAM, "Connected")
+   field(OSV, "NO_ALARM")
+}
+
+# The following record is a watchdog timer. A 0 value means the SNL program is not running.
+# The SNL program should set the VAL to 5 whenever it becomes less than 5, so it never reaches 0.
+record(calc, "$(P)$(C)SNLWatchdog")
+{
+   field(INPA, "$(P)$(C)SNLWatchdog.VAL NPP NMS")
+   field(CALC, "A>0?A-1:A")
+   field(SCAN, "2 second")
+}
+
+# This record causes the SNL to poll the detector.  It just flips between 0 and 1.
+# The SNL should poll on every transition.
+record(calc, "$(P)$(C)PollDetState")
+{
+   field(INPA, "$(P)$(C)PollDetState.VAL NPP NMS")
+   field(CALC, "A=0?1:0")
+   field(SCAN, "10 second")
+}
+
+record(mbbo, "$(P)$(C)DetectorState")
+{
+   field(PINI, "YES")
+   field(VAL, "0")
+   field(ZRST, "Idle")
+   field(ZRSV, "NO_ALARM")
+   field(ONST, "Acquire")
+   field(ONSV, "MINOR")
+   field(TWST, "Readout")
+   field(TWSV, "MINOR")
+   field(THST, "Correct")
+   field(THSV, "MINOR")
+   field(FRST, "Writing")
+   field(FRSV, "MINOR")
+   field(FVST, "Aborting")
+   field(FVSV, "MINOR")
+   field(SXST, "Unavailable")
+   field(SXSV, "MAJOR")
+   field(SVST, "Error")
+   field(SVSV, "MAJOR")
+   field(EIST, "Busy")
+   field(EISV, "MAJOR")
+}
+
+record(bo, "$(P)$(C)AutoSave")
+{
+   field(VAL, "1")
+   field(ZNAM, "No")
+   field(ONAM, "Yes")
+}
+
+record(busy, "$(P)$(C)SaveFile")
+{
+}
+
+record(stringout, "$(P)$(C)FilePath")
+{
+   field(VAL, "./")
+}
+
+record(stringout, "$(P)$(C)FilenameFormat")
+{
+   field(VAL, "%s.%3.3d")
+}
+
+record(stringout, "$(P)$(C)FullFilename")
+{
+   field(VAL, " ")
+}
+
+record(bi, "$(P)$(C)CorrectBackground")
+{
+   field(VAL, "0")
+   field(ZNAM, "No")
+   field(ONAM, "Yes")
+}
+
+record(bi, "$(P)$(C)CorrectFlatfield")
+{
+   field(VAL, "0")
+   field(ZNAM, "No")
+   field(ONAM, "Yes")
+}
+
+record(bi, "$(P)$(C)CorrectSpatial")
+{
+   field(VAL, "0")
+   field(ZNAM, "No")
+   field(ONAM, "Yes")
+}
+
+record(mbbo, "$(P)$(C)FrameType")
+{
+   field(VAL, "0")
+   field(ZRST, "Normal")
+   field(ONST, "Dbl correlation")
+   field(TWST, "Background")
+   field(THST, "Flatfield")
+}
+
+record(ao, "$(P)$(C)TimeRemaining")
+{
+   field(VAL, "0")
+   field(PREC, "1")
+}
+
+record(stringout, "$(P)$(C)OpenShutterStr")
+{
+   field(VAL, "1")
+}
+
+record(bo, "$(P)$(C)OpenShutter")
+{
+}
+
+record(stringout, "$(P)$(C)CloseShutterStr")
+{
+   field(VAL, "0")
+}
+
+record(bo, "$(P)$(C)CloseShutter")
+{
+}
+
+record(ao, "$(P)$(C)OpenShutterDly")
+{
+   field(VAL, ".05")
+   field(PREC, "3")
+}
+
+record(ao, "$(P)$(C)CloseShutterDly")
+{
+   field(VAL, ".05")
+   field(PREC, "3")
+}
+
+record(mbbo, "$(P)$(C)ShutterMode")
+{
+   field(VAL, "2")
+   field(ZRST, "None")
+   field(ONST, "Camera output")
+   field(TWST, "EPICS PV")
+}
+
+record(bo, "$(P)$(C)Shutter")
+{
+   field(PINI, "YES")
+   field(VAL, "0")
+   field(ZNAM, "Closed")
+   field(ZSV, "MAJOR")
+   field(ONAM, "Open")
+   field(OSV, "NO_ALARM")
+}
+
+record(stringin, "$(P)$(C)ShutterStatus")
+{
+   field(PINI, "YES")
+   field(INP, "$(P)$(C)Shutter CP MS")
+}
+
+record(bi, "$(P)$(C)DebugFlag")
+{
+   field(ZNAM, "No")
+   field(ONAM, "Yes")
+}
+
+record(stringout, "$(P)$(C)DetInStr")
+{
+}
+
+record(stringout, "$(P)$(C)DetOutStr")
+{
+}
+
+record(stringin, "$(P)$(C)Comment1")
+{
+   field(DESC, "Comment 1")
+}
+
+record(stringin, "$(P)$(C)Comment2")
+{
+   field(DESC, "Comment 2")
+}
+
+record(stringin, "$(P)$(C)Comment3")
+{
+   field(DESC, "Comment 3")
+}
+
+record(stringin, "$(P)$(C)Comment4")
+{
+   field(DESC, "Comment 4")
+}
+
+record(stringin, "$(P)$(C)Comment5")
+{
+   field(DESC, "Comment 5")
+}
+
+record(stringin, "$(P)$(C)Comment1")
+{
+   field(DESC, "Comment 1")
+}
+
+# This asynRecord is used for interactive communication and debug flags for
+# with TCP/IP servers. 
+# Set ASYN_TRACEIO_ESCAPE bit
+record(asyn,"$(P)$(C)AsynIO")
+{
+    field(TIB1,"1")
+    field(IEOS,"\n")
+    field(OEOS,"\n")
+}

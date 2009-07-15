@@ -1,0 +1,423 @@
+# Note: with the older serial record this database set the OEOS and IEOS strings to \n.
+# The asyn record ignores these fields at iocInit, so the terminator strings must be set
+# in the serial port configuration routines.
+
+grecord(ao,"$(P)$(S)p1_drive") {
+	field(DESC,"PI500 PZT 1")
+	field(DTYP,"Soft Channel")
+	field(FLNK,"$(P)$(S)p1_selMode.PROC  PP MS")
+	field(PREC,"3")
+	field(EGU,"um")
+}
+grecord(ao,"$(P)$(S)p1_sendPOS") {
+	field(DTYP,"asyn ao stringParm")
+	field(FLNK,"$(P)$(S)p1_read_dly.PROC  PP MS")
+	field(OUT,"@asyn($(PORT))TERM=0a,TO=100,FMT=inst:sel ch1;SOUR:POS %4.3lf")
+	field(DOL,"$(P)$(S)p1_drive.VAL  NPP NMS")
+	field(OMSL,"closed_loop")
+	field(PREC,"3")
+}
+grecord(ao,"$(P)$(S)p1_sendVOLT") {
+	field(DTYP,"asyn ao stringParm")
+	field(FLNK,"$(P)$(S)p1_read_dly.PROC  PP MS")
+	field(OUT,"@asyn($(PORT))TERM=0a,TO=100,FMT=inst:sel ch1;SOUR:VOLT %4.3lf")
+	field(DOL,"$(P)$(S)p1_drive.VAL  NPP NMS")
+	field(OMSL,"closed_loop")
+	field(PREC,"3")
+}
+grecord(ao,"$(P)$(S)p1_twkSet") {
+	field(DTYP,"Soft Channel")
+	field(PREC,"3")
+}
+grecord(ao,"$(P)$(S)p2_drive") {
+	field(DESC,"PI500 PZT 2")
+	field(DTYP,"Soft Channel")
+	field(FLNK,"$(P)$(S)p2_selMode.PROC  PP MS")
+	field(PREC,"3")
+	field(EGU,"um")
+}
+grecord(ao,"$(P)$(S)p2_sendPOS") {
+	field(DTYP,"asyn ao stringParm")
+	field(FLNK,"$(P)$(S)p2_read_dly.VAL  PP MS")
+	field(OUT,"@asyn($(PORT))TERM=0a,TO=100,FMT=inst:sel ch2;SOUR:POS %4.3lf")
+	field(DOL,"$(P)$(S)p2_drive.VAL  NPP NMS")
+	field(OMSL,"closed_loop")
+	field(PREC,"3")
+}
+grecord(ao,"$(P)$(S)p2_sendVOLT") {
+	field(DTYP,"asyn ao stringParm")
+	field(FLNK,"$(P)$(S)p2_read_dly.VAL  PP MS")
+	field(OUT,"@asyn($(PORT))TERM=0a,TO=100,FMT=inst:sel ch2;SOUR:VOLT %4.3lf")
+	field(DOL,"$(P)$(S)p2_drive.VAL  NPP NMS")
+	field(OMSL,"closed_loop")
+	field(PREC,"3")
+}
+grecord(ao,"$(P)$(S)p2_twkSet") {
+	field(DTYP,"Soft Channel")
+	field(PREC,"3")
+}
+grecord(ao,"$(P)$(S)p3_drive") {
+	field(DESC,"PI500 PZT 3")
+	field(DTYP,"Soft Channel")
+	field(FLNK,"$(P)$(S)p3_selMode.PROC  PP MS")
+	field(PREC,"3")
+	field(EGU,"um")
+}
+grecord(ao,"$(P)$(S)p3_sendPOS") {
+	field(DTYP,"asyn ao stringParm")
+	field(FLNK,"$(P)$(S)p3_read_dly.VAL  PP MS")
+	field(OUT,"@asyn($(PORT))TERM=0a,TO=100,FMT=inst:sel ch3;SOUR:POS %4.3lf")
+	field(DOL,"$(P)$(S)p3_drive.VAL  NPP NMS")
+	field(OMSL,"closed_loop")
+	field(PREC,"3")
+}
+grecord(ao,"$(P)$(S)p3_sendVOLT") {
+	field(DTYP,"asyn ao stringParm")
+	field(FLNK,"$(P)$(S)p3_read_dly.VAL  PP MS")
+	field(OUT,"@asyn($(PORT))TERM=0a,TO=100,FMT=inst:sel ch3;SOUR:VOLT %4.3lf")
+	field(DOL,"$(P)$(S)p3_drive.VAL  NPP NMS")
+	field(OMSL,"closed_loop")
+	field(PREC,"3")
+}
+grecord(ao,"$(P)$(S)p3_twkSet") {
+	field(DTYP,"Soft Channel")
+	field(PREC,"3")
+}
+grecord(bo,"$(P)$(S)Loc_Rem") {
+	field(DTYP,"Soft Channel")
+	field(FLNK,"$(P)$(S)loc_rem_fan.VAL  PP MS")
+	field(ZNAM,"Remote")
+	field(ONAM,"Local")
+}
+grecord(bo,"$(P)$(S)Loc_Rem_Init") {
+	field(PINI,"YES")
+	field(DTYP,"Soft Channel")
+	field(OMSL,"closed_loop")
+	field(DOL,"1")
+	field(OUT,"$(P)$(S)Loc_Rem.VAL  PP MS")
+}
+grecord(bo,"$(P)$(S)p1_rdbk") {
+	field(DTYP,"Soft Channel")
+	field(FLNK,"$(P)$(S)p1_select_ch1.VAL  PP MS")
+}
+grecord(bo,"$(P)$(S)p1_rdbk_enable") {
+	field(DTYP,"Soft Channel")
+	field(ZNAM,"Read ENABLE")
+	field(ONAM,"Read DISABLE")
+}
+grecord(bo,"$(P)$(S)p1_servo_select") {
+	field(DTYP,"Soft Channel")
+	field(FLNK,"$(P)$(S)p1_servo_fan.VAL  PP MS")
+	field(OUT,"$(P)$(S)p1_fanSelect.A  PP MS")
+	field(ZNAM,"Servo ON")
+	field(ONAM,"Servo OFF")
+}
+grecord(bo,"$(P)$(S)p2_rdbk") {
+	field(DTYP,"Soft Channel")
+	field(FLNK,"$(P)$(S)p2_select_ch2.VAL  PP MS")
+}
+grecord(bo,"$(P)$(S)p2_rdbk_enable") {
+	field(DTYP,"Soft Channel")
+	field(ZNAM,"Read ENABLE")
+	field(ONAM,"Read DISABLE")
+}
+grecord(bo,"$(P)$(S)p2_servo_select") {
+	field(DTYP,"Soft Channel")
+	field(FLNK,"$(P)$(S)p2_servo_fan.VAL  PP MS")
+	field(OUT,"$(P)$(S)p2_fanSelect.A  PP MS")
+	field(ZNAM,"Servo ON")
+	field(ONAM,"Servo OFF")
+}
+grecord(bo,"$(P)$(S)p3_rdbk") {
+	field(DTYP,"Soft Channel")
+	field(FLNK,"$(P)$(S)p3_select_ch3.VAL  PP MS")
+}
+grecord(bo,"$(P)$(S)p3_rdbk_enable") {
+	field(DTYP,"Soft Channel")
+	field(ZNAM,"Read ENABLE")
+	field(ONAM,"Read DISABLE")
+}
+grecord(bo,"$(P)$(S)p3_servo_select") {
+	field(DTYP,"Soft Channel")
+	field(FLNK,"$(P)$(S)p3_servo_fan.VAL  PP MS")
+	field(OUT,"$(P)$(S)p3_fanSelect.A  PP MS")
+	field(ZNAM,"Servo ON")
+	field(ONAM,"Servo OFF")
+}
+grecord(bo,"$(P)$(S)push_servo_off1") {
+	field(DTYP,"Soft Channel")
+	field(OMSL,"closed_loop")
+	field(DOL,"1")
+	field(OUT,"$(P)$(S)p1_servo_select.VAL  PP MS")
+}
+grecord(bo,"$(P)$(S)push_servo_off2") {
+	field(DTYP,"Soft Channel")
+	field(OMSL,"closed_loop")
+	field(DOL,"1")
+	field(OUT,"$(P)$(S)p2_servo_select.VAL  PP MS")
+}
+grecord(bo,"$(P)$(S)push_servo_off3") {
+	field(DTYP,"Soft Channel")
+	field(OMSL,"closed_loop")
+	field(DOL,"1")
+	field(OUT,"$(P)$(S)p3_servo_select.VAL  PP MS")
+}
+grecord(calc,"$(P)$(S)p1_fanSelect") {
+	field(CALC,"A=0?1:2")
+}
+grecord(calc,"$(P)$(S)p1_sel_choice") {
+	field(CALC,"(A=0)?2:1")
+	field(INPA,"$(P)$(S)p1_servo_select.VAL  NPP NMS")
+}
+grecord(calc,"$(P)$(S)p2_fanSelect") {
+	field(CALC,"A=0?1:2")
+}
+grecord(calc,"$(P)$(S)p2_sel_choice") {
+	field(CALC,"(A=0)?2:1")
+	field(INPA,"$(P)$(S)p2_servo_select.VAL  NPP NMS")
+}
+grecord(calc,"$(P)$(S)p3_fanSelect") {
+	field(CALC,"A=0?1:2")
+}
+grecord(calc,"$(P)$(S)p3_sel_choice") {
+	field(CALC,"(A=0)?2:1")
+	field(INPA,"$(P)$(S)p3_servo_select.VAL  NPP NMS")
+}
+grecord(calc,"$(P)$(S)select_choice") {
+	field(CALC,"(A=0)?2:1")
+	field(INPA,"$(P)$(S)Loc_Rem.VAL  NPP NMS")
+}
+grecord(fanout,"$(P)$(S)loc_rem_fan") {
+	field(SELM,"Specified")
+	field(SELL,"$(P)$(S)select_choice.VAL  PP MS")
+	field(LNK1,"$(P)$(S)local_mode.VAL  PP MS")
+	field(LNK2,"$(P)$(S)remote_mode.VAL  PP MS")
+}
+grecord(fanout,"$(P)$(S)p1_selMode") {
+	field(SELM,"Specified")
+	field(SELL,"$(P)$(S)p1_fanSelect.VAL  NPP NMS")
+	field(LNK1,"$(P)$(S)p1_sendPOS.VAL  PP MS")
+	field(LNK2,"$(P)$(S)p1_sendVOLT.VAL  PP MS")
+}
+grecord(fanout,"$(P)$(S)p1_servo_fan") {
+	field(SELM,"Specified")
+	field(SELL,"$(P)$(S)p1_sel_choice.VAL  PP MS")
+	field(LNK1,"$(P)$(S)p1_servo_off.VAL  PP MS")
+	field(LNK2,"$(P)$(S)p1_servo_on.VAL  PP MS")
+}
+grecord(fanout,"$(P)$(S)p2_selMode") {
+	field(SELM,"Specified")
+	field(SELL,"$(P)$(S)p2_fanSelect.VAL  NPP NMS")
+	field(LNK1,"$(P)$(S)p2_sendPOS.VAL  PP MS")
+	field(LNK2,"$(P)$(S)p2_sendVOLT.VAL  PP MS")
+}
+grecord(fanout,"$(P)$(S)p2_servo_fan") {
+	field(SELM,"Specified")
+	field(SELL,"$(P)$(S)p2_sel_choice.VAL  PP MS")
+	field(LNK1,"$(P)$(S)p2_servo_off.VAL  PP MS")
+	field(LNK2,"$(P)$(S)p2_servo_on.VAL  PP MS")
+}
+grecord(fanout,"$(P)$(S)p3_selMode") {
+	field(SELM,"Specified")
+	field(SELL,"$(P)$(S)p3_fanSelect.VAL  NPP NMS")
+	field(LNK1,"$(P)$(S)p3_sendPOS.VAL  PP MS")
+	field(LNK2,"$(P)$(S)p3_sendVOLT.VAL  PP MS")
+}
+grecord(fanout,"$(P)$(S)p3_servo_fan") {
+	field(SELM,"Specified")
+	field(SELL,"$(P)$(S)p3_sel_choice.VAL  PP MS")
+	field(LNK1,"$(P)$(S)p3_servo_off.VAL  PP MS")
+	field(LNK2,"$(P)$(S)p3_servo_on.VAL  PP MS")
+}
+grecord(seq,"$(P)$(S)p1_read_dly") {
+	field(DLY1,"1.0")
+	field(DOL1,"1")
+	field(LNK1,"$(P)$(S)p1_get_position.VAL  PP MS")
+}
+grecord(seq,"$(P)$(S)p1_read_dly0") {
+	field(DLY1,"0.3")
+	field(DOL1,"1")
+	field(LNK1,"$(P)$(S)p1_get_position.VAL  PP MS")
+}
+grecord(seq,"$(P)$(S)p2_read_dly") {
+	field(DLY1,"1.0")
+	field(DOL1,"1")
+	field(LNK1,"$(P)$(S)p2_get_position.VAL  PP MS")
+}
+grecord(seq,"$(P)$(S)p2_read_dly0") {
+	field(DLY1,"0.3")
+	field(DOL1,"1")
+	field(LNK1,"$(P)$(S)p2_get_position.VAL  PP MS")
+}
+grecord(seq,"$(P)$(S)p3_read_dly") {
+	field(DLY1,"1.0")
+	field(DOL1,"1")
+	field(LNK1,"$(P)$(S)p3_get_position.VAL  PP MS")
+}
+grecord(seq,"$(P)$(S)p3_read_dly0") {
+	field(DLY1,"0.3")
+	field(DOL1,"1")
+	field(LNK1,"$(P)$(S)p3_get_position.VAL  PP MS")
+}
+grecord(seq,"$(P)$(S)seq_servo_off") {
+	field(DOL1,"1")
+	field(LNK1,"$(P)$(S)push_servo_off1.VAL  PP MS")
+	field(DLY2,"0.5")
+	field(DOL2,"1")
+	field(LNK2,"$(P)$(S)push_servo_off2.VAL  PP MS")
+	field(DLY3,"0.5")
+	field(DOL3,"1")
+	field(LNK3,"$(P)$(S)push_servo_off3.VAL  PP MS")
+}
+grecord(stringout,"$(P)$(S)local_mode") {
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(S)seq_servo_off.VAL  PP MS")
+	field(VAL,"dev:cont loc")
+	field(OUT,"@asyn($(PORT))TERM=0a,TO=100")
+}
+grecord(stringout,"$(P)$(S)p1_select_ch1") {
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(S)p1_read_dly0.PROC  PP MS")
+	field(VAL,"inst:sel ch1")
+	field(OUT,"@asyn($(PORT))TERM=0a,TO=100")
+}
+grecord(stringout,"$(P)$(S)p1_servo_off") {
+	field(DTYP,"asyn so stringParm")
+	field(VAL,"inst:sel ch1;dev:serv off")
+	field(OUT,"@asyn($(PORT))TERM=0a,TO=100")
+}
+grecord(stringout,"$(P)$(S)p1_servo_on") {
+	field(DTYP,"asyn so stringParm")
+	field(VAL,"inst:sel ch1;dev:serv on")
+	field(OUT,"@asyn($(PORT))TERM=0a,TO=100")
+}
+grecord(stringout,"$(P)$(S)p2_select_ch2") {
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(S)p2_read_dly0.VAL  PP MS")
+	field(VAL,"inst:sel ch2")
+	field(OUT,"@asyn($(PORT))TERM=0a,TO=100")
+}
+grecord(stringout,"$(P)$(S)p2_servo_off") {
+	field(DTYP,"asyn so stringParm")
+	field(VAL,"inst:sel ch2;dev:serv off")
+	field(OUT,"@asyn($(PORT))TERM=0a,TO=100")
+}
+grecord(stringout,"$(P)$(S)p2_servo_on") {
+	field(DTYP,"asyn so stringParm")
+	field(VAL,"inst:sel ch2;dev:serv on")
+	field(OUT,"@asyn($(PORT))TERM=0a,TO=100")
+}
+grecord(stringout,"$(P)$(S)p3_select_ch3") {
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(S)p3_read_dly0.VAL  PP MS")
+	field(VAL,"inst:sel ch3")
+	field(OUT,"@asyn($(PORT))TERM=0a,TO=100")
+}
+grecord(stringout,"$(P)$(S)p3_servo_off") {
+	field(DTYP,"asyn so stringParm")
+	field(VAL,"inst:sel ch3;dev:serv off")
+	field(OUT,"@asyn($(PORT))TERM=0a,TO=100")
+}
+grecord(stringout,"$(P)$(S)p3_servo_on") {
+	field(DTYP,"asyn so stringParm")
+	field(VAL,"inst:sel ch3;dev:serv on")
+	field(OUT,"@asyn($(PORT))TERM=0a,TO=100")
+}
+grecord(stringout,"$(P)$(S)remote_mode") {
+	field(DTYP,"asyn so stringParm")
+	field(VAL,"dev:cont rem")
+	field(OUT,"@asyn($(PORT))TERM=0a,TO=100")
+}
+grecord(asyn,"$(P)$(S)p1_get_position") {
+	field(SDIS,"$(P)$(S)p1_rdbk_enable.VAL  NPP NMS")
+	field(FLNK,"$(P)$(S)p1_position.PROC  PP MS")
+	field(AOUT,"meas:pos?")
+	field(PORT,"$(PORT)")
+}
+grecord(asyn,"$(P)$(S)p1_get_volts") {
+	field(FLNK,"$(P)$(S)p1_volts.VAL  PP MS")
+	field(AOUT,"meas:volt?")
+	field(PORT,"$(PORT)")
+}
+grecord(asyn,"$(P)$(S)p2_get_position") {
+	field(SDIS,"$(P)$(S)p2_rdbk_enable.VAL  NPP NMS")
+	field(FLNK,"$(P)$(S)p2_position.VAL  PP MS")
+	field(AOUT,"meas:pos?")
+	field(PORT,"$(PORT)")
+}
+grecord(asyn,"$(P)$(S)p2_get_volts") {
+	field(FLNK,"$(P)$(S)p2_volts.VAL  PP MS")
+	field(AOUT,"meas:volt?")
+	field(PORT,"$(PORT)")
+}
+grecord(asyn,"$(P)$(S)p3_get_position") {
+	field(SDIS,"$(P)$(S)p3_rdbk_enable.VAL  NPP NMS")
+	field(FLNK,"$(P)$(S)p3_position.VAL  PP MS")
+	field(AOUT,"meas:pos?")
+	field(PORT,"$(PORT)")
+}
+grecord(asyn,"$(P)$(S)p3_get_volts") {
+	field(FLNK,"$(P)$(S)p3_volts.VAL  PP MS")
+	field(AOUT,"meas:volt?")
+	field(PORT,"$(PORT)")
+}
+grecord(transform,"$(P)$(S)p1_tweak") {
+	field(CLCE,"a?d+c:b?d-c:d")
+	field(INPC,"$(P)$(S)p1_twkSet.VAL  NPP NMS")
+	field(INPD,"$(P)$(S)p1_drive.VAL  NPP NMS")
+	field(OUTE,"$(P)$(S)p1_drive.VAL  PP MS")
+	field(OUTF,"$(P)$(S)p1_tweak.A  PP MS")
+	field(OUTG,"$(P)$(S)p1_tweak.B  PP MS")
+	field(PREC,"3")
+}
+grecord(transform,"$(P)$(S)p2_tweak") {
+	field(CLCE,"a?d+c:b?d-c:d")
+	field(INPC,"$(P)$(S)p2_twkSet.VAL  NPP NMS")
+	field(INPD,"$(P)$(S)p2_drive.VAL  NPP NMS")
+	field(OUTE,"$(P)$(S)p2_drive.VAL  PP MS")
+	field(OUTF,"$(P)$(S)p2_tweak.A  PP MS")
+	field(OUTG,"$(P)$(S)p2_tweak.B  PP MS")
+	field(PREC,"3")
+}
+grecord(transform,"$(P)$(S)p3_tweak") {
+	field(CLCE,"a?d+c:b?d-c:d")
+	field(INPC,"$(P)$(S)p3_twkSet.VAL  NPP NMS")
+	field(INPD,"$(P)$(S)p3_drive.VAL  NPP NMS")
+	field(OUTE,"$(P)$(S)p3_drive.VAL  PP MS")
+	field(OUTF,"$(P)$(S)p3_tweak.A  PP MS")
+	field(OUTG,"$(P)$(S)p3_tweak.B  PP MS")
+	field(PREC,"3")
+}
+grecord(scalcout,"$(P)$(S)p1_position") {
+	field(FLNK,"$(P)$(S)p1_get_volts.VAL  PP MS")
+	field(CALC,"DBL(AA)")
+	field(INAA,"$(P)$(S)p1_get_position.AINP  NPP NMS")
+	field(PREC,"3")
+}
+grecord(scalcout,"$(P)$(S)p1_volts") {
+	field(CALC,"DBL(AA)")
+	field(INAA,"$(P)$(S)p1_get_volts.AINP  NPP NMS")
+	field(PREC,"3")
+}
+grecord(scalcout,"$(P)$(S)p2_position") {
+	field(FLNK,"$(P)$(S)p2_get_volts.VAL  PP MS")
+	field(CALC,"DBL(AA)")
+	field(INAA,"$(P)$(S)p2_get_position.AINP  NPP NMS")
+	field(PREC,"3")
+}
+grecord(scalcout,"$(P)$(S)p2_volts") {
+	field(CALC,"DBL(AA)")
+	field(INAA,"$(P)$(S)p2_get_volts.AINP  NPP NMS")
+	field(PREC,"3")
+}
+grecord(scalcout,"$(P)$(S)p3_position") {
+	field(FLNK,"$(P)$(S)p3_get_volts.VAL  PP MS")
+	field(CALC,"DBL(AA)")
+	field(INAA,"$(P)$(S)p3_get_position.AINP  NPP NMS")
+	field(PREC,"3")
+}
+grecord(scalcout,"$(P)$(S)p3_volts") {
+	field(CALC,"DBL(AA)")
+	field(INAA,"$(P)$(S)p3_get_volts.AINP  NPP NMS")
+	field(PREC,"3")
+}

@@ -1,0 +1,26 @@
+# Stuff that we can build without support from any other module
+
+include "transformRecord.dbd"
+include "sCalcoutRecord.dbd"
+include "aCalcoutRecord.dbd"
+
+device(scalcout,CONSTANT,devsCalcoutSoft,"Soft Channel")
+device(acalcout,CONSTANT,devaCalcoutSoft,"Soft Channel")
+
+registrar(calcRegister)
+
+variable(debugSubAve, int)
+registrar(subAveRegister)
+
+variable(sCalcPostfixDebug, int)
+variable(sCalcPerformDebug, int)
+variable(sCalcoutRecordDebug, int)
+variable(devsCalcoutSoftDebug, int)
+
+variable(aCalcPostfixDebug, int)
+variable(aCalcPerformDebug, int)
+variable(aCalcoutRecordDebug, int)
+variable(devaCalcoutSoftDebug, int)
+variable(aCalcArraySize, int)
+
+variable(transformRecordDebug, int)

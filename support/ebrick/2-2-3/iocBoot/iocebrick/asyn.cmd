@@ -1,0 +1,33 @@
+drvAsynSerialPortConfigure ("S1", "/dev/ttyS1", 0, 0, 0)
+asynSetOption("S1", -1, "baud",    "9600")
+asynSetOption("S1", -1, "bits",    "8")
+asynSetOption("S1", -1, "parity",  "none")
+asynSetOption("S1", -1, "stop",    "1")
+asynSetOption("S1", -1, "clocal",  "Y")
+asynSetOption("S1", -1, "crtscts", "N")
+
+drvAsynSerialPortConfigure ("S2", "/dev/ttyS2", 0, 0, 0)
+asynSetOption("S2", -1, "baud",    "9600")
+asynSetOption("S2", -1, "bits",    "8")
+asynSetOption("S2", -1, "parity",  "none")
+asynSetOption("S2", -1, "stop",    "1")
+asynSetOption("S2", -1, "clocal",  "Y")
+asynSetOption("S2", -1, "crtscts", "N")
+
+drvAsynSerialPortConfigure ("S3", "/dev/ttyS3", 0, 0, 0)
+asynSetOption("S3", -1, "baud",    "9600")
+asynSetOption("S3", -1, "bits",    "8")
+asynSetOption("S3", -1, "parity",  "none")
+asynSetOption("S3", -1, "stop",    "1")
+asynSetOption("S3", -1, "clocal",  "Y")
+asynSetOption("S3", -1, "crtscts", "N")
+
+dbLoadRecords("../../db/asynRecord.db","P=ebrick:,R=ttyS1,PORT=S1,ADDR=0,OMAX=0,IMAX=0")
+dbLoadRecords("../../db/asynRecord.db","P=ebrick:,R=ttyS2,PORT=S2,ADDR=0,OMAX=0,IMAX=0")
+dbLoadRecords("../../db/asynRecord.db","P=ebrick:,R=ttyS3,PORT=S3,ADDR=0,OMAX=0,IMAX=0")
+
+#drvOmsPcx8Init("P0","/dev/oms0")
+#dbLoadRecords("../../db/asynRecord.db","P=ebrick:,R=oms0,PORT=P0,ADDR=0,OMAX=0,IMAX=0")
+
+#drvOmsPcx8Init("P1","/dev/oms1")
+#dbLoadRecords("../../db/asynRecord.db","P=ebrick:,R=oms1,PORT=P1,ADDR=0,OMAX=0,IMAX=0")

@@ -1,0 +1,129 @@
+  	      Generic Digital I/O Scaler Input/Output Assignments
+                            Version  1.4
+
+
+====================================================================
+INPUTS:
+
+Func	Signal		Jumper Block	Altera ID
+--------------------------------------------------------------------
+CTR1	IND0		J7-1		ALTIN0
+CTR2	IND1		J7-2		ALTIN1
+CTR3	IND2		J7-3		ALTIN2
+CTR4	IND3		J7-4		ALTIN3
+
+CTR5	IND4		J12-1		ALTIN4
+CTR6	IND5		J12-2		ALTIN5
+CTR7	IND6		J12-3		ALTIN6
+CTR8	IND7		J12-4		ALTIN7
+
+CTR9	IND8		J14-1		ALTIN8
+CTR10	IND9		J14-2		ALTIN9
+CTR11	IND10		J14-3		ALTIN10
+CTR12	IND11		J14-4		ALTIN11
+
+CTR13	IND12		J15-1		ALTIN12
+CTR14	IND13		J15-2		ALTIN13
+CTR15	IND14		J15-3		ALTIN14
+CTR16	IND15		J15-4		ALTIN15
+
+ARMIN	CON3		J22-3		CON3
+GATEIN	CON5		J22-5		CON5
+GRPIN	CON7		J22-7		CON7
+
+ADDR0	ALTSW1		SW1		    ALTSW1
+ADDR1	ALTSW2		SW2		    ALTSW2
+====================================================================
+OUTPUTS:
+
+Func	Signal		Jumper Block	Altera ID
+--------------------------------------------------------------------
+CLKOUT	CON4		J22-4		CON4
+ARMOUT	CON6		J22-6		CON6
+GRPSIG	CON8		J22-8		CON8
+ACCESS	CON10		J22-10		CON10
+INTR	CON12		J22-12		CON12
+====================================================================
+LEDS:
+
+Func	Signal		Jumper Block	Altera ID
+--------------------------------------------------------------------
+ARMOUT	ALTLED11 (GREEN)
+ARMIN	ALTLED10 (RED)
+GATEIN	ALTLED09 (RED)
+ACCESS	ALTLED07 (BLUE)
+
+--------------------------------------------------------------------
+***CLOSET TO XTAL***
+LED-D
+	    ALTLED11
+	    ALTLED10
+	    ALTLED9
+	    ALTLED8
+LED-C
+	    ALTLED4
+	    ALTLED5
+	    ALTLED6
+	    ALTLED7
+LED-B
+	    ALTLED12
+	    ALTLED13
+	    ALTLED14
+	    ALTLED15
+LED_A
+	    ALTLED3
+	    ALTLED2
+	    ALTLED1
+	    ALTLED0
+***FURTHEST FROM XTAL***
+====================================================================
+BIT ASSIGNMENTS:
+
+MASTER SCALER     0
+XXXX XXXX XXXX XXXX
+             |    |
+             |    +-- armout (enable)
+             +------- grp signal
+
+SCALER            0
+XXXX XXXX XXXX XXXX
+             | ||||
+             | |||+-- enable
+             | ||+--- preset
+             | |+---- up/dwn (1/0)
+             | +----- grp enable
+             |
+             +------- grp signal
+
+EPICS STATUS      0
+XXXX XXXX XXXX XXXX
+ ||| |||| |||| ||||
+ ||| |||| |||| |||+-- enable
+ ||| |||| |||| ||+--- disable
+ ||| |||| |||| |+---- preset
+ ||| |||| |||| +----- reset
+ ||| |||| ||||
+ ||| |||| |||+------- up
+ ||| |||| ||+-------- down
+ ||| |||| |+--------- firmware version
+ ||| |||| +---------- test pattern
+ ||| ||||
+ ||| |||+------------ grp enable
+ ||| ||+------------- grp disable
+ ||| |+-------------- data lo
+ ||| +--------------- data hi
+ |||
+ ||+----------------- status lo
+ |+------------------ status hi
+ +------------------- grp signal
+====================================================================
+SERIAL LINK FORMAT (45bits)
+
+4                              1 11 1
+4                              3 21 0   6 5    0
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX XX XXXXX XXXXXX
+                               |  |     |      |
+                               |  |     |      +-- Counter select
+                               |  |     +--------- Command select
+                               |  +--------------- Address select
+                               +------------------ Preset data

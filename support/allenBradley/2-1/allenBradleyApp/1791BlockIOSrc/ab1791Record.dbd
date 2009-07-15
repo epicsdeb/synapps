@@ -1,0 +1,111 @@
+menu(ab1791TYPE) {
+	choice(ab1791TYPE_Voltage,"Voltage")
+	choice(ab1791TYPE_Current,"Current")
+}
+menu(ab1791RANG) {
+	choice(ab1791RANG__10_to_10,"-10 to 10")
+	choice(ab1791RANG__5_to_5,"-5 to 5")
+	choice(ab1791RANG_0_to_10,"0 to 10")
+	choice(ab1791RANG_0_to_5,"0 to 5")
+}
+menu(ab1791FILT) {
+	choice(ab1791FILT_None,"None")
+	choice(ab1791FILT_200ms,"200ms")
+	choice(ab1791FILT_300ms,"300ms")
+	choice(ab1791FILT_400ms,"400ms")
+	choice(ab1791FILT_500ms,"500ms")
+	choice(ab1791FILT_600ms,"600ms")
+	choice(ab1791FILT_700ms,"700ms")
+	choice(ab1791FILT_800ms,"800ms")
+	choice(ab1791FILT_900ms,"900ms")
+	choice(ab1791FILT_1000ms,"1000ms")
+	choice(ab1791FILT_1100ms,"1100ms")
+	choice(ab1791FILT_1200ms,"1200ms")
+	choice(ab1791FILT_1300ms,"1300ms")
+	choice(ab1791FILT_1400ms,"1400ms")
+	choice(ab1791FILT_1500ms,"1500ms")
+}
+recordtype(ab1791) {
+	include "dbCommon.dbd" 
+	field(VAL,DBF_SHORT) {
+		prompt("Value - Not Used")
+		asl(ASL0)
+		interest(4)
+	}
+	field(TYPE,DBF_MENU) {
+		prompt("Type")
+		promptgroup(GUI_INPUTS)
+		special(SPC_MOD)
+		interest(1)
+		menu(ab1791TYPE)
+	}
+	field(RANG,DBF_MENU) {
+		prompt("Range")
+		promptgroup(GUI_INPUTS)
+		special(SPC_MOD)
+		interest(1)
+		menu(ab1791RANG)
+	}
+	field(FILT,DBF_MENU) {
+		prompt("Filter")
+		promptgroup(GUI_INPUTS)
+		special(SPC_MOD)
+		interest(1)
+		menu(ab1791FILT)
+	}
+	field(LKST,DBF_STRING) {
+		prompt("Link Status")
+		size(40)
+	}
+	field(LOCA,DBF_MENU) {
+		prompt("scanIoRequest comm err")
+		promptgroup(GUI_INPUTS)
+		interest(1)
+		menu(menuYesNo)
+	}
+	field(LINK,DBF_USHORT) {
+		prompt("Scanner Number")
+		promptgroup(GUI_INPUTS)
+		interest(1)
+	}
+	field(RACK,DBF_USHORT) {
+		prompt("Rack")
+		promptgroup(GUI_INPUTS)
+		interest(1)
+	}
+	field(SLOT,DBF_USHORT) {
+		prompt("Slot")
+		promptgroup(GUI_INPUTS)
+		interest(1)
+	}
+	field(NFAI,DBF_SHORT) {
+		prompt("Number Failures")
+		interest(1)
+	}
+	field(INP0,DBF_SHORT) {
+		prompt("Input Channel 0")
+		interest(1)
+	}
+	field(INP1,DBF_SHORT) {
+		prompt("Input Channel 1")
+		interest(1)
+	}
+	field(INP2,DBF_SHORT) {
+		prompt("Input Channel 2")
+		interest(1)
+	}
+	field(INP3,DBF_SHORT) {
+		prompt("Input Channel 3")
+		interest(1)
+	}
+	field(OUT0,DBF_SHORT) {
+		prompt("Output Channel 0")
+		pp(TRUE)
+		interest(1)
+	}
+	field(OUT1,DBF_SHORT) {
+		prompt("Output Channel 1")
+		pp(TRUE)
+		interest(1)
+	}
+}

@@ -1,0 +1,118 @@
+Note that this support will soon be superceded by something based on
+Dirk Zimoch's streams support -- tmm 11/17/03
+
+After writing lots of MPF serial-device support as separate modules,
+I found that most of the modules I had written differed from each other
+in trivial ways, such as in the choice of string termination
+characters.  To minimize the number of modules I have to maintain, I've
+written a set of fairly general-purpose MPF device-support modules
+that use the vmeio->parm string to store parameters governing string
+termination, conversion to/from the supported record's .VAL field, the
+input-buffer size, and the timeout period.  The device-support
+entry-table names for these modules, and the device-type strings you'll
+see in a database-configuration tool, are listed in the following excerpt
+from ipSupport.dbd:
+
+device(ao,VME_IO,devAoStrParm,"MPF ao stringParm")
+device(ai,VME_IO,devAiStrParm,"MPF ai stringParm")
+device(bi,VME_IO,devBiStrParm,"MPF bi stringParm")
+device(longin,VME_IO,devLiStrParm,"MPF li stringParm")
+device(stringin,VME_IO,devSiStrParm,"MPF si stringParm")
+device(stringout,VME_IO,devSoStrParm,"MPF so stringParm")
+
+To use these device support modules in an EPICS database, you must
+arrange for the database (.db) file to contain parameters as in the
+following example from a database written by gdct.  Carats point out
+the additional characters required to specify a <CR><LF><LF> terminator
+and a 100 millisecond timeout.  It is permissible to use macros in this
+text so that, for example, the timeout is specified in the startup file
+rather than being hardwired in the database.  If you do this, allowed
+string lengths are the lengths of strings after macro substitution.
+
+        grecord(stringin,"$(P)$(M):getReply")
+        {
+                field(DTYP,"MPF si stringParm")
+                field(FLNK,"$(P)$(M):reqInfo.VAL PP MS")
+                field(INP,"#C1 S0 @SERVER=serial1,TERM=0d0a0a,TO=100")
+                                                  ^^^^^^^^^^^^^^^^^^^
+        }
+
+The parameters supported by various devXxStrParm.cc modules are listed
+and described below.
+-------------------------------------------------------------------------------
+TERM	input&output string terminator string
+-------------------------------------------------------------------------------
+comment:	Specify zero to four terminator characters as 2-digit hex
+		numbers.  This terminator will be appended to output strings
+		and deleted from the end of input strings.
+record types:	AI, AO, BI, LI, LO, SI, SO
+default value:	0d0a (<CR><LF>)
+examples:	...,TERM=,...	no terminator
+		...,TERM=0d,...	carriage return
+		...,TERM=0d0a0a
+
+-------------------------------------------------------------------------------
+IX	input-buffer index at which convertible character (sequence) begins
+-------------------------------------------------------------------------------
+comment:	This is effectively an array index.  No bounds checking is done.
+record types:	AI, AO, BI, LI, LO, SI, SO
+default value:	'signal' element (of the same vmeio struct as the parm element)
+example:	...,IX=3,...	conversion begins with the fourth character
+		(since string indices begin at zero in the C programming
+		language)
+
+-------------------------------------------------------------------------------
+FMT	sprintf/sscanf format string
+-------------------------------------------------------------------------------
+comment:	This string is used in a sprintf() call (for output records) or
+		a sscanf() call (for input records) to convert between ascii
+		and the type of the record's .VAL field.  The string may not
+		contain more than 31 characters.
+		NOTE: formats for sscanf() conversions MUST contain the correct
+		type and size specifiers, even in situations for which sprintf()
+		would allow a little sloppiness.  See the examples below.
+record types:	AI, AO, BI, LI, LO
+default value:	The content of the record's .DESC field
+examples:	...,FMT=%lf,...	convert to/from double (for AI/AO record)
+		...,FMT=%f,...	THIS WILL NOT WORK!
+		...,FMT=%ld,...	convert to/from long (for LI/LO record)
+		...,FMT=%d,...	THIS WILL NOT WORK!
+
+-------------------------------------------------------------------------------
+TO	timeout in milliseconds
+-------------------------------------------------------------------------------
+comment:	For input records, this is the length of time the device
+		support will wait for the hardware to finish sending a complete
+		response (either a buffer full or a string ending with the
+		string terminator).  For output records, this is the length of
+		time the device support will wait for permission to send data.
+record types:	AI, AO, BI, LI, LO, SI, SO
+default value:	1000 for input records, 3000 for output records
+
+-------------------------------------------------------------------------------
+N	input-buffer size
+-------------------------------------------------------------------------------
+comment:	Input characters will be accumulated until the buffer is full
+		or the terminator string has been seen, whichever comes first.
+		If neither happens before the timeout period has elapsed, the
+		device support will return an error to the record.
+record types:	AI, BI, LI, SI
+default value:	100
+
+-------------------------------------------------------------------------------
+0STR	string that will be interpreted as '0'
+-------------------------------------------------------------------------------
+comment:	This string may contain at most 31 characters.
+record types:	BI
+default value:	none (the empty string)
+
+-------------------------------------------------------------------------------
+1STR	string that will be interpreted as '1'
+-------------------------------------------------------------------------------
+comment:	This string may contain at most 31 characters.  If both 0STR
+		and 1STR occur in the portion of the input buffer selected by
+		IX, a '1' will be returned.
+record types:	BI
+default value:	none (the empty string)
+
+-------------------------------------------------------------------------------

@@ -1,0 +1,21 @@
+# %gda,interface,$(interface),general,ip330ADC,ip330 ADC
+# %gda,subsystem,$(interface),controlPoint,ScanMode,Set Scan Mode 
+record(mbbo,"$(P)$(R)ScanMode")
+{
+        field(PINI,"YES")
+        field(VAL,"$(SCANMODE)")
+        field(DTYP,"asynInt32")
+        field(OUT,"@asyn($(PORT))SCAN_MODE")
+        field(ZRVL,"0")
+        field(ONVL,"1")
+        field(TWVL,"2")
+        field(THVL,"3")
+        field(FRVL,"4")
+        field(FVVL,"5")
+        field(ZRST,"Disable")
+        field(ONST,"Uni Cont")
+        field(TWST,"Uni Single")
+        field(THST,"Burst Cont")
+        field(FRST,"Burst Single")
+        field(FVST,"Ext trigger")
+}

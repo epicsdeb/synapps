@@ -1,0 +1,382 @@
+grecord(ao,"$(P)LS340:$(Q):wr_SP1") {
+	field(DTYP,"Soft Channel")
+	field(FLNK,"$(P)LS340:$(Q):SP1_scalc.VAL  PP MS")
+	field(PREC,"2")
+}
+grecord(ao,"$(P)LS340:$(Q):wr_SP2") {
+	field(DTYP,"Soft Channel")
+	field(FLNK,"$(P)LS340:$(Q):SP2_scalc.VAL  PP MS")
+	field(PREC,"2")
+}
+grecord(fanout,"$(P)LS340:$(Q):fan1") {
+	field(LNK1,"$(P)LS340:$(Q):P1.VAL  PP MS")
+	field(LNK2,"$(P)LS340:$(Q):I1.VAL  PP MS")
+	field(LNK3,"$(P)LS340:$(Q):D1.VAL  PP MS")
+}
+grecord(fanout,"$(P)LS340:$(Q):fan2") {
+	field(LNK1,"$(P)LS340:$(Q):P2.VAL  PP MS")
+	field(LNK2,"$(P)LS340:$(Q):I2.VAL  PP MS")
+	field(LNK3,"$(P)LS340:$(Q):D2.VAL  PP MS")
+}
+grecord(mbbi,"$(P)LS340:$(Q):Rg_rdbk") {
+	field(DTYP,"Soft Channel")
+	field(INP,"$(P)LS340:$(Q):Range.VAL  NPP MS")
+	field(ZRST,"OFF")
+	field(ONST,"10 mA")
+	field(TWST,"33 mA")
+	field(THST,"100 mA")
+	field(FRST,"333 mA")
+	field(FVST,"1 A")
+}
+grecord(mbbo,"$(P)LS340:$(Q):Ctl_sel") {
+	field(DTYP,"Soft Channel")
+	field(ZRVL,"0")
+	field(ONVL,"1")
+	field(TWVL,"2")
+	field(THVL,"3")
+	field(ZRST,"A")
+	field(ONST,"B")
+	field(TWST,"C")
+	field(THST,"D")
+}
+grecord(mbbo,"$(P)LS340:$(Q):HeatRg") {
+	field(DTYP,"Soft Channel")
+	field(FLNK,"$(P)LS340:$(Q):SetHeat.VAL  PP MS")
+	field(ZRVL,"0")
+	field(ONVL,"1")
+	field(TWVL,"2")
+	field(THVL,"3")
+	field(FRVL,"4")
+	field(FVVL,"5")
+	field(ZRST,"OFF")
+	field(ONST,"10 mA")
+	field(TWST,"33 mA")
+	field(THST,"100 mA")
+	field(FRST,"333 mA")
+	field(FVST,"1 A")
+}
+grecord(mbbo,"$(P)LS340:$(Q):Ramp1_on") {
+	field(DTYP,"Soft Channel")
+	field(FLNK,"$(P)LS340:$(Q):setRamp1.VAL  PP MS")
+	field(ZRVL,"0")
+	field(ONVL,"1")
+	field(TWVL,"0")
+	field(THVL,"0")
+	field(ZRST,"OFF")
+	field(ONST,"ON")
+}
+grecord(mbbo,"$(P)LS340:$(Q):Ramp2_on") {
+	field(DTYP,"Soft Channel")
+	field(FLNK,"$(P)LS340:$(Q):setRamp2.VAL  PP MS")
+	field(ZRVL,"0")
+	field(ONVL,"1")
+	field(TWVL,"0")
+	field(THVL,"0")
+	field(ZRST,"OFF")
+	field(ONST,"ON")
+}
+grecord(mbbo,"$(P)LS340:$(Q):Spl_sel") {
+	field(DTYP,"Soft Channel")
+	field(ZRVL,"0")
+	field(ONVL,"1")
+	field(TWVL,"2")
+	field(THVL,"3")
+	field(ZRST,"A")
+	field(ONST,"B")
+	field(TWST,"C")
+	field(THST,"D")
+}
+grecord(seq,"$(P)LS340:$(Q):read") {
+	field(PREC,"1")
+	field(LNK1,"$(P)LS340:$(Q):SetCtl.PROC  PP MS")
+	field(DLY2,".3")
+	field(LNK2,"$(P)LS340:$(Q):SetSpl.PROC  PP MS")
+	field(DLY3,".3")
+	field(LNK3,"$(P)LS340:$(Q):rd_Heater.PROC  PP MS")
+	field(DLY4,".3")
+	field(LNK4,"$(P)LS340:$(Q):readSP1.PROC  PP MS")
+	field(DLY5,".3")
+	field(LNK5,"$(P)LS340:$(Q):readSP2.PROC  PP MS")
+}
+grecord(seq,"$(P)LS340:$(Q):readPID") {
+	field(PREC,"1")
+	field(LNK1,"$(P)LS340:$(Q):rd_PID1.PROC  PP MS")
+	field(DLY2,".3")
+	field(LNK2,"$(P)LS340:$(Q):rd_PID2.PROC  PP MS")
+	field(DLY3,".3")
+	field(LNK3,"$(P)LS340:$(Q):rd_Ramp1.PROC  PP MS")
+	field(DLY4,".3")
+	field(LNK4,"$(P)LS340:$(Q):rd_Ramp2.PROC  PP MS")
+	field(DLY5,"0")
+}
+grecord(stringout,"$(P)LS340:$(Q):rd_PID1") {
+	field(DTYP,"Soft Channel")
+	field(FLNK,"0")
+	field(VAL,"PID? 1")
+	field(OUT,"$(P)LS340:$(Q):wr_rd_PID1.AOUT  PP MS")
+}
+grecord(stringout,"$(P)LS340:$(Q):rd_PID2") {
+	field(DTYP,"Soft Channel")
+	field(FLNK,"0")
+	field(VAL,"PID? 2")
+	field(OUT,"$(P)LS340:$(Q):wr_rd_PID2.AOUT  PP MS")
+}
+grecord(stringout,"$(P)LS340:$(Q):rd_Ramp1") {
+	field(DTYP,"Soft Channel")
+	field(FLNK,"0")
+	field(VAL,"RAMP? 1")
+	field(OUT,"$(P)LS340:$(Q):wr_rd_Ramp1.AOUT  PP MS")
+}
+grecord(stringout,"$(P)LS340:$(Q):rd_Ramp2") {
+	field(DTYP,"Soft Channel")
+	field(FLNK,"0")
+	field(VAL,"RAMP? 2")
+	field(OUT,"$(P)LS340:$(Q):wr_rd_Ramp2.AOUT  PP MS")
+}
+grecord(stringout,"$(P)LS340:$(Q):readSP1") {
+	field(DTYP,"Soft Channel")
+	field(FLNK,"0")
+	field(VAL,"SETP? 1")
+	field(OUT,"$(P)LS340:$(Q):rd_SP1.AOUT  PP MS")
+}
+grecord(stringout,"$(P)LS340:$(Q):readSP2") {
+	field(DTYP,"Soft Channel")
+	field(FLNK,"0")
+	field(VAL,"SETP? 2")
+	field(OUT,"$(P)LS340:$(Q):rd_SP2.AOUT  PP MS")
+}
+grecord(asyn,"$(P)LS340:$(Q):rd_Ctl") {
+	field(FLNK,"$(P)LS340:$(Q):Control.VAL  PP MS")
+	field(PORT,"$(PORT)")
+}
+grecord(asyn,"$(P)LS340:$(Q):rd_Heater") {
+	field(FLNK,"$(P)LS340:$(Q):Heater.VAL  PP MS")
+	field(AOUT,"HTR?")
+	field(PORT,"$(PORT)")
+}
+grecord(asyn,"$(P)LS340:$(Q):rd_SP1") {
+	field(FLNK,"$(P)LS340:$(Q):SP1.VAL  PP MS")
+	field(PORT,"$(PORT)")
+}
+grecord(asyn,"$(P)LS340:$(Q):rd_SP2") {
+	field(FLNK,"$(P)LS340:$(Q):SP2.VAL  PP MS")
+	field(PORT,"$(PORT)")
+}
+grecord(asyn,"$(P)LS340:$(Q):rd_Spl") {
+	field(FLNK,"$(P)LS340:$(Q):Sample.VAL  PP MS")
+	field(PORT,"$(PORT)")
+}
+grecord(asyn,"$(P)LS340:$(Q):serial") {
+	field(PORT,"$(PORT)")
+}
+grecord(asyn,"$(P)LS340:$(Q):wr_rd_Htr") {
+	field(FLNK,"$(P)LS340:$(Q):Range.VAL  PP MS")
+	field(PORT,"$(PORT)")
+}
+grecord(asyn,"$(P)LS340:$(Q):wr_rd_PID1") {
+	field(FLNK,"$(P)LS340:$(Q):fan1.VAL  PP MS")
+	field(PORT,"$(PORT)")
+}
+grecord(asyn,"$(P)LS340:$(Q):wr_rd_PID2") {
+	field(FLNK,"$(P)LS340:$(Q):fan2.VAL  PP MS")
+	field(PORT,"$(PORT)")
+}
+grecord(asyn,"$(P)LS340:$(Q):wr_rd_Ramp1") {
+	field(FLNK,"$(P)LS340:$(Q):Ramp1.VAL  PP MS")
+	field(PORT,"$(PORT)")
+}
+grecord(asyn,"$(P)LS340:$(Q):wr_rd_Ramp2") {
+	field(FLNK,"$(P)LS340:$(Q):Ramp2.VAL  PP MS")
+	field(PORT,"$(PORT)")
+}
+grecord(scalcout,"$(P)LS340:$(Q):Control") {
+	field(DESC,"Format string for Ctl query")
+	field(CALC,"DBL(AA)")
+	field(INAA,"$(P)LS340:$(Q):rd_Ctl.AINP  NPP MS")
+	field(INEE,"0")
+	field(PREC,"2")
+}
+grecord(scalcout,"$(P)LS340:$(Q):D1") {
+	field(CALC,"DBL(AA[14,17])")
+	field(INAA,"$(P)LS340:$(Q):wr_rd_PID1.AINP  NPP MS")
+}
+grecord(scalcout,"$(P)LS340:$(Q):D2") {
+	field(CALC,"DBL(AA[14,17])")
+	field(INAA,"$(P)LS340:$(Q):wr_rd_PID2.AINP  NPP MS")
+}
+grecord(scalcout,"$(P)LS340:$(Q):Heater") {
+	field(DESC,"Format string for Ctl query")
+	field(CALC,"DBL(AA)")
+	field(INAA,"$(P)LS340:$(Q):rd_Heater.AINP  NPP MS")
+	field(INEE,"0")
+	field(PREC,"1")
+}
+grecord(scalcout,"$(P)LS340:$(Q):I1") {
+	field(CALC,"DBL(AA[7,12])")
+	field(INAA,"$(P)LS340:$(Q):wr_rd_PID1.AINP  NPP MS")
+	field(PREC,"1")
+}
+grecord(scalcout,"$(P)LS340:$(Q):I2") {
+	field(CALC,"DBL(AA[7,12])")
+	field(INAA,"$(P)LS340:$(Q):wr_rd_PID2.AINP  NPP MS")
+	field(PREC,"1")
+}
+grecord(scalcout,"$(P)LS340:$(Q):P1") {
+	field(CALC,"DBL(AA)")
+	field(INAA,"$(P)LS340:$(Q):wr_rd_PID1.AINP  NPP MS")
+	field(PREC,"1")
+}
+grecord(scalcout,"$(P)LS340:$(Q):P2") {
+	field(CALC,"DBL(AA)")
+	field(INAA,"$(P)LS340:$(Q):wr_rd_PID2.AINP  NPP MS")
+	field(PREC,"1")
+}
+grecord(scalcout,"$(P)LS340:$(Q):Ramp1") {
+	field(FLNK,"$(P)LS340:$(Q):Ramp1_state.VAL  PP MS")
+	field(CALC,"DBL(AA[2,6])")
+	field(INAA,"$(P)LS340:$(Q):wr_rd_Ramp1.AINP  NPP MS")
+	field(PREC,"1")
+}
+grecord(scalcout,"$(P)LS340:$(Q):Ramp1_state") {
+	field(CALC,"INT(AA)")
+	field(INAA,"$(P)LS340:$(Q):wr_rd_Ramp1.AINP  NPP MS")
+	field(PREC,"1")
+}
+grecord(scalcout,"$(P)LS340:$(Q):Ramp2") {
+	field(FLNK,"$(P)LS340:$(Q):Ramp2_state.VAL  PP MS")
+	field(CALC,"DBL(AA[2,6])")
+	field(INAA,"$(P)LS340:$(Q):wr_rd_Ramp2.AINP  NPP MS")
+	field(PREC,"1")
+}
+grecord(scalcout,"$(P)LS340:$(Q):Ramp2_state") {
+	field(CALC,"INT(AA)")
+	field(INAA,"$(P)LS340:$(Q):wr_rd_Ramp2.AINP  NPP MS")
+	field(PREC,"1")
+}
+grecord(scalcout,"$(P)LS340:$(Q):Range") {
+	field(DESC,"Format string for Ctl query")
+	field(FLNK,"$(P)LS340:$(Q):Rg_rdbk.PROC  PP MS")
+	field(CALC,"DBL(AA)")
+	field(INAA,"$(P)LS340:$(Q):wr_rd_Htr.AINP  NPP MS")
+	field(INEE,"0")
+	field(PREC,"2")
+}
+grecord(scalcout,"$(P)LS340:$(Q):SP1") {
+	field(DESC,"Format string for Ctl query")
+	field(CALC,"DBL(AA)")
+	field(INAA,"$(P)LS340:$(Q):rd_SP1.AINP  NPP MS")
+	field(INEE,"0")
+	field(PREC,"2")
+}
+grecord(scalcout,"$(P)LS340:$(Q):SP1_scalc") {
+	field(DESC,"Format string for Ctl query")
+	field(CALC,"$P('SETP 1, %5.2f;SETP?1',A)")
+	field(INPA,"$(P)LS340:$(Q):wr_SP1.VAL  NPP MS")
+	field(INEE,"0")
+	field(OUT,"$(P)LS340:$(Q):rd_SP1.AOUT  PP MS")
+	field(PREC,"1")
+}
+grecord(scalcout,"$(P)LS340:$(Q):SP2") {
+	field(DESC,"Format string for Ctl query")
+	field(CALC,"DBL(AA)")
+	field(INAA,"$(P)LS340:$(Q):rd_SP2.AINP  NPP MS")
+	field(INEE,"0")
+	field(PREC,"2")
+}
+grecord(scalcout,"$(P)LS340:$(Q):SP2_scalc") {
+	field(DESC,"Format string for Ctl query")
+	field(CALC,"$P('SETP 2, %5.2f;SETP?2',A)")
+	field(INPA,"$(P)LS340:$(Q):wr_SP2.VAL  NPP MS")
+	field(INEE,"0")
+	field(OUT,"$(P)LS340:$(Q):rd_SP2.AOUT  PP MS")
+	field(PREC,"1")
+}
+grecord(scalcout,"$(P)LS340:$(Q):Sample") {
+	field(DESC,"Format string for Ctl query")
+	field(CALC,"DBL(AA)")
+	field(INAA,"$(P)LS340:$(Q):rd_Spl.AINP  PP MS")
+	field(INEE,"0")
+	field(PREC,"2")
+}
+grecord(scalcout,"$(P)LS340:$(Q):SetCtl") {
+	field(DESC,"Format string for Ctl query")
+	field(CALC,"AA+BB")
+	field(INAA,"0")
+	field(INBB,"$(P)LS340:$(Q):Ctl_sel.VAL  NPP MS")
+	field(OUT,"$(P)LS340:$(Q):rd_Ctl.AOUT  PP MS")
+	field(PREC,"1")
+	field(AA,"KRDG? ")
+	field(BB,"0")
+	field(CC,"0")
+}
+grecord(scalcout,"$(P)LS340:$(Q):SetHeat") {
+	field(DESC,"Format string for Ctl query")
+	field(CALC,"AA+BB+CC")
+	field(INAA,"0")
+	field(INBB,"$(P)LS340:$(Q):HeatRg.RVAL  NPP MS")
+	field(OUT,"$(P)LS340:$(Q):wr_rd_Htr.AOUT  PP MS")
+	field(PREC,"1")
+	field(AA,"RANGE ")
+	field(BB,"0")
+	field(CC,";RANGE?")
+}
+grecord(scalcout,"$(P)LS340:$(Q):SetSpl") {
+	field(DESC,"Format string for Ctl query")
+	field(CALC,"AA+BB")
+	field(INBB,"$(P)LS340:$(Q):Spl_sel.VAL  NPP MS")
+	field(OUT,"$(P)LS340:$(Q):rd_Spl.AOUT  PP MS")
+	field(PREC,"1")
+	field(AA,"KRDG? ")
+	field(BB,"0")
+	field(CC,"0")
+}
+grecord(scalcout,"$(P)LS340:$(Q):setPID1") {
+	field(DESC,"Format string for PID input")
+	field(CALC,"DD+AA+EE+BB+EE+CC+FF")
+	field(OUT,"$(P)LS340:$(Q):wr_rd_PID1.AOUT  PP MS")
+	field(PREC,"1")
+	field(AA,"0")
+	field(BB,"0")
+	field(CC,"0")
+	field(DD,"PID 1,")
+	field(EE,",")
+	field(FF,";PID? 1")
+}
+grecord(scalcout,"$(P)LS340:$(Q):setPID2") {
+	field(DESC,"Format string for PID input")
+	field(CALC,"DD+AA+EE+BB+EE+CC+FF")
+	field(OUT,"$(P)LS340:$(Q):wr_rd_PID2.AOUT  PP MS")
+	field(PREC,"1")
+	field(AA,"0")
+	field(BB,"0")
+	field(CC,"0")
+	field(DD,"PID 2,")
+	field(EE,",")
+	field(FF,";PID? 2")
+}
+grecord(scalcout,"$(P)LS340:$(Q):setRamp1") {
+	field(DESC,"Format string for PID input")
+	field(CALC,"DD+(STR(A))+EE+BB+FF")
+	field(INPA,"$(P)LS340:$(Q):Ramp1_on.RVAL  NPP MS")
+	field(OUT,"$(P)LS340:$(Q):wr_rd_Ramp1.AOUT  PP MS")
+	field(PREC,"1")
+	field(AA,"0")
+	field(BB,"0")
+	field(CC,"0")
+	field(DD,"RAMP 1,")
+	field(EE,",")
+	field(FF,";RAMP? 1")
+}
+grecord(scalcout,"$(P)LS340:$(Q):setRamp2") {
+	field(DESC,"Format string for PID input")
+	field(CALC,"DD+(STR(A))+EE+BB+FF")
+	field(INPA,"$(P)LS340:$(Q):Ramp2_on.VAL  NPP MS")
+	field(OUT,"$(P)LS340:$(Q):wr_rd_Ramp2.AOUT  PP MS")
+	field(PREC,"1")
+	field(AA,"0")
+	field(BB,"0")
+	field(CC,"0")
+	field(DD,"RAMP 2,")
+	field(EE,",")
+	field(FF,";RAMP? 2")
+}

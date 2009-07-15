@@ -1,0 +1,755 @@
+grecord(ao,"$(P)$(Dmm)Dmm_raw") {
+	field(FLNK,"$(P)$(Dmm)return.PROC  PP MS")
+	field(OUT,"$(P)$(Dmm)Dmm_calc.A  PP MS")
+	field(DOL,"$(P)$(Dmm)dmm_get_str.VAL  NPP NMS")
+	field(OMSL,"closed_loop")
+	field(PREC,"4")
+}
+grecord(ao,"$(P)$(Dmm)Ch9_raw") {
+	field(FLNK,"$(P)$(Dmm)fanout10.PROC  PP MS")
+	field(OUT,"$(P)$(Dmm)Ch9_calc.A  PP MS")
+	field(DOL,"$(P)$(Dmm)ch9_get_str.VAL  NPP NMS")
+	field(OMSL,"closed_loop")
+	field(PREC,"4")
+}
+grecord(ao,"$(P)$(Dmm)Ch8_raw") {
+	field(FLNK,"$(P)$(Dmm)fanout9.PROC  PP MS")
+	field(OUT,"$(P)$(Dmm)Ch8_calc.A  PP MS")
+	field(DOL,"$(P)$(Dmm)ch8_get_str.VAL  NPP NMS")
+	field(OMSL,"closed_loop")
+	field(PREC,"4")
+}
+grecord(ao,"$(P)$(Dmm)Ch7_raw") {
+	field(FLNK,"$(P)$(Dmm)fanout8.PROC  PP MS")
+	field(OUT,"$(P)$(Dmm)Ch7_calc.A  PP MS")
+	field(DOL,"$(P)$(Dmm)ch7_get_str.VAL  NPP NMS")
+	field(OMSL,"closed_loop")
+	field(PREC,"4")
+}
+grecord(ao,"$(P)$(Dmm)Ch6_raw") {
+	field(FLNK,"$(P)$(Dmm)fanout7.PROC  PP MS")
+	field(OUT,"$(P)$(Dmm)Ch6_calc.A  PP MS")
+	field(DOL,"$(P)$(Dmm)ch6_get_str.VAL  NPP NMS")
+	field(OMSL,"closed_loop")
+	field(PREC,"4")
+}
+grecord(ao,"$(P)$(Dmm)Ch5_raw") {
+	field(FLNK,"$(P)$(Dmm)fanout6.PROC  PP MS")
+	field(OUT,"$(P)$(Dmm)Ch5_calc.A  PP MS")
+	field(DOL,"$(P)$(Dmm)ch5_get_str.VAL  NPP NMS")
+	field(OMSL,"closed_loop")
+	field(PREC,"4")
+}
+grecord(ao,"$(P)$(Dmm)Ch4_raw") {
+	field(FLNK,"$(P)$(Dmm)fanout5.PROC  PP MS")
+	field(OUT,"$(P)$(Dmm)Ch4_calc.A  PP MS")
+	field(DOL,"$(P)$(Dmm)ch4_get_str.VAL  NPP NMS")
+	field(OMSL,"closed_loop")
+	field(PREC,"4")
+}
+grecord(ao,"$(P)$(Dmm)Ch3_raw") {
+	field(FLNK,"$(P)$(Dmm)fanout4.PROC  PP MS")
+	field(OUT,"$(P)$(Dmm)Ch3_calc.A  PP MS")
+	field(DOL,"$(P)$(Dmm)ch3_get_str.VAL  NPP NMS")
+	field(OMSL,"closed_loop")
+	field(PREC,"4")
+}
+grecord(ao,"$(P)$(Dmm)Ch2_raw") {
+	field(FLNK,"$(P)$(Dmm)fanout3.PROC  PP MS")
+	field(OUT,"$(P)$(Dmm)Ch2_calc.A  PP MS")
+	field(DOL,"$(P)$(Dmm)ch2_get_str.VAL  NPP NMS")
+	field(OMSL,"closed_loop")
+	field(PREC,"4")
+}
+grecord(ao,"$(P)$(Dmm)Ch1_raw") {
+	field(FLNK,"$(P)$(Dmm)fanout2.PROC  PP MS")
+	field(OUT,"$(P)$(Dmm)Ch1_calc.A  PP MS")
+	field(DOL,"$(P)$(Dmm)ch1_get_str.VAL  NPP NMS")
+	field(OMSL,"closed_loop")
+	field(PREC,"4")
+}
+grecord(ao,"$(P)$(Dmm)Ch10_raw") {
+	field(FLNK,"$(P)$(Dmm)multi_return.PROC  PP MS")
+	field(OUT,"$(P)$(Dmm)Ch10_calc.A  PP MS")
+	field(DOL,"$(P)$(Dmm)ch10_get_str.VAL  NPP NMS")
+	field(OMSL,"closed_loop")
+	field(PREC,"4")
+}
+grecord(bo,"$(P)$(Dmm)init_dmm") {
+	field(FLNK,"$(P)$(Dmm)init_string.VAL  PP MS")
+}
+grecord(bo,"$(P)$(Dmm)done_read") {
+	field(FLNK,"$(P)$(Dmm)sing_multi_tst.PROC  PP MS")
+	field(ZNAM,"DONE")
+	field(ONAM,"READ")
+}
+grecord(bo,"$(P)$(Dmm)return") {
+	field(OUT,"$(P)$(Dmm)done_read.VAL  PP MS")
+	field(ZNAM,"0")
+	field(ONAM,"0")
+}
+grecord(bo,"$(P)$(Dmm)onesh_cont") {
+	field(OUT,"$(P)$(Dmm)scanner.SCAN  NPP NMS")
+	field(ZNAM,"ONE SH.")
+	field(ONAM,"CONT.")
+}
+grecord(bo,"$(P)$(Dmm)single_multi") {
+	field(FLNK,"$(P)$(Dmm)dmm_chan.PROC  PP MS")
+	field(ZNAM,"SINGLE")
+	field(ONAM,"MULT.")
+}
+grecord(bo,"$(P)$(Dmm)toggle_one") {
+	field(OMSL,"closed_loop")
+	field(DOL,"$(P)$(Dmm)const_one.VAL  PP MS")
+	field(OUT,"$(P)$(Dmm)scan_toggle.VAL  PP MS")
+}
+grecord(bo,"$(P)$(Dmm)toggle_zero") {
+	field(OMSL,"closed_loop")
+	field(DOL,"$(P)$(Dmm)const_zero.VAL  PP MS")
+	field(OUT,"$(P)$(Dmm)scan_toggle.VAL  PP MS")
+}
+grecord(bo,"$(P)$(Dmm)scan_toggle") {
+}
+grecord(bo,"$(P)$(Dmm)init_mode") {
+	field(PINI,"YES")
+	field(OUT,"$(P)$(Dmm)ch_mode_sel.VAL  PP MS")
+}
+grecord(bo,"$(P)$(Dmm)Dmm_on_off") {
+	field(ZNAM,"ON")
+	field(ONAM,"OFF")
+}
+grecord(bo,"$(P)$(Dmm)Ch9_on_off") {
+	field(ZNAM,"ON")
+	field(ONAM,"OFF")
+}
+grecord(bo,"$(P)$(Dmm)Ch8_on_off") {
+	field(ZNAM,"ON")
+	field(ONAM,"OFF")
+}
+grecord(bo,"$(P)$(Dmm)Ch7_on_off") {
+	field(ZNAM,"ON")
+	field(ONAM,"OFF")
+}
+grecord(bo,"$(P)$(Dmm)Ch6_on_off") {
+	field(ZNAM,"ON")
+	field(ONAM,"OFF")
+}
+grecord(bo,"$(P)$(Dmm)Ch5_on_off") {
+	field(ZNAM,"ON")
+	field(ONAM,"OFF")
+}
+grecord(bo,"$(P)$(Dmm)Ch4_on_off") {
+	field(ZNAM,"ON")
+	field(ONAM,"OFF")
+}
+grecord(bo,"$(P)$(Dmm)Ch3_on_off") {
+	field(ZNAM,"ON")
+	field(ONAM,"OFF")
+}
+grecord(bo,"$(P)$(Dmm)Ch2_on_off") {
+	field(ZNAM,"ON")
+	field(ONAM,"OFF")
+}
+grecord(bo,"$(P)$(Dmm)Ch1_on_off") {
+	field(ZNAM,"ON")
+	field(ONAM,"OFF")
+}
+grecord(bo,"$(P)$(Dmm)Ch10_on_off") {
+	field(ZNAM,"ON")
+	field(ONAM,"OFF")
+}
+grecord(calc,"$(P)$(Dmm)ch1_sw_calc") {
+	field(CALC,"(A=0)?1:2")
+	field(INPA,"$(P)$(Dmm)Ch1_on_off.VAL  PP MS")
+}
+grecord(calc,"$(P)$(Dmm)ch2_sw_calc") {
+	field(CALC,"(A=0)?1:2")
+	field(INPA,"$(P)$(Dmm)Ch2_on_off.VAL  PP MS")
+}
+grecord(calc,"$(P)$(Dmm)ch3_sw_calc") {
+	field(CALC,"(A=0)?1:2")
+	field(INPA,"$(P)$(Dmm)Ch3_on_off.VAL  PP MS")
+}
+grecord(calc,"$(P)$(Dmm)ch4_sw_calc") {
+	field(CALC,"(A=0)?1:2")
+	field(INPA,"$(P)$(Dmm)Ch4_on_off.VAL  PP MS")
+}
+grecord(calc,"$(P)$(Dmm)ch5_sw_calc") {
+	field(CALC,"(A=0)?1:2")
+	field(INPA,"$(P)$(Dmm)Ch5_on_off.VAL  PP MS")
+}
+grecord(calc,"$(P)$(Dmm)ch6_sw_calc") {
+	field(CALC,"(A=0)?1:2")
+	field(INPA,"$(P)$(Dmm)Ch6_on_off.VAL  PP MS")
+}
+grecord(calc,"$(P)$(Dmm)ch7_sw_calc") {
+	field(CALC,"(A=0)?1:2")
+	field(INPA,"$(P)$(Dmm)Ch7_on_off.VAL  PP MS")
+}
+grecord(calc,"$(P)$(Dmm)ch8_sw_calc") {
+	field(CALC,"(A=0)?1:2")
+	field(INPA,"$(P)$(Dmm)Ch8_on_off.VAL  PP MS")
+}
+grecord(calc,"$(P)$(Dmm)ch9_sw_calc") {
+	field(CALC,"(A=0)?1:2")
+	field(INPA,"$(P)$(Dmm)Ch9_on_off.VAL  PP MS")
+}
+grecord(calc,"$(P)$(Dmm)ch10_sw_calc") {
+	field(CALC,"(A=0)?1:2")
+	field(INPA,"$(P)$(Dmm)Ch10_on_off.VAL  PP MS")
+}
+grecord(calc,"$(P)$(Dmm)sing_multi_sw") {
+	field(CALC,"(A=0)?1:2")
+	field(INPA,"$(P)$(Dmm)single_multi.VAL  NPP NMS")
+}
+grecord(calc,"$(P)$(Dmm)const_one") {
+	field(CALC,"A")
+	field(INPA,"1")
+}
+grecord(calc,"$(P)$(Dmm)const_zero") {
+	field(CALC,"A")
+}
+grecord(fanout,"$(P)$(Dmm)fanout1") {
+	field(DISV,"0")
+	field(SDIS,"$(P)$(Dmm)done_read.VAL  NPP NMS")
+	field(FLNK,"$(P)$(Dmm)toggle_one.PROC  PP MS")
+	field(SELM,"Specified")
+	field(SELL,"$(P)$(Dmm)ch1_sw_calc.VAL  PP MS")
+	field(LNK1,"$(P)$(Dmm)ch1_close.PROC  PP MS")
+	field(LNK2,"$(P)$(Dmm)fanout2.PROC  PP MS")
+}
+grecord(fanout,"$(P)$(Dmm)fanout2") {
+	field(SELM,"Specified")
+	field(SELL,"$(P)$(Dmm)ch2_sw_calc.VAL  PP MS")
+	field(LNK1,"$(P)$(Dmm)ch2_close.PROC  PP MS")
+	field(LNK2,"$(P)$(Dmm)fanout3.PROC  PP MS")
+}
+grecord(fanout,"$(P)$(Dmm)fanout3") {
+	field(SELM,"Specified")
+	field(SELL,"$(P)$(Dmm)ch3_sw_calc.VAL  PP MS")
+	field(LNK1,"$(P)$(Dmm)ch3_close.PROC  PP MS")
+	field(LNK2,"$(P)$(Dmm)fanout4.PROC  PP MS")
+}
+grecord(fanout,"$(P)$(Dmm)fanout4") {
+	field(SELM,"Specified")
+	field(SELL,"$(P)$(Dmm)ch4_sw_calc.VAL  PP MS")
+	field(LNK1,"$(P)$(Dmm)ch4_close.PROC  PP MS")
+	field(LNK2,"$(P)$(Dmm)fanout5.PROC  PP MS")
+}
+grecord(fanout,"$(P)$(Dmm)fanout5") {
+	field(SELM,"Specified")
+	field(SELL,"$(P)$(Dmm)ch5_sw_calc.VAL  PP MS")
+	field(LNK1,"$(P)$(Dmm)ch5_close.PROC  PP MS")
+	field(LNK2,"$(P)$(Dmm)fanout6.PROC  PP MS")
+}
+grecord(fanout,"$(P)$(Dmm)fanout6") {
+	field(SELM,"Specified")
+	field(SELL,"$(P)$(Dmm)ch6_sw_calc.VAL  PP MS")
+	field(LNK1,"$(P)$(Dmm)ch6_close.PROC  PP MS")
+	field(LNK2,"$(P)$(Dmm)fanout7.PROC  PP MS")
+}
+grecord(fanout,"$(P)$(Dmm)fanout7") {
+	field(SELM,"Specified")
+	field(SELL,"$(P)$(Dmm)ch7_sw_calc.VAL  PP MS")
+	field(LNK1,"$(P)$(Dmm)ch7_close.PROC  PP MS")
+	field(LNK2,"$(P)$(Dmm)fanout8.PROC  PP MS")
+}
+grecord(fanout,"$(P)$(Dmm)fanout8") {
+	field(SELM,"Specified")
+	field(SELL,"$(P)$(Dmm)ch8_sw_calc.VAL  PP MS")
+	field(LNK1,"$(P)$(Dmm)ch8_close.PROC  PP MS")
+	field(LNK2,"$(P)$(Dmm)fanout9.PROC  PP MS")
+}
+grecord(fanout,"$(P)$(Dmm)fanout9") {
+	field(SELM,"Specified")
+	field(SELL,"$(P)$(Dmm)ch9_sw_calc.VAL  PP MS")
+	field(LNK1,"$(P)$(Dmm)ch9_close.PROC  PP MS")
+	field(LNK2,"$(P)$(Dmm)fanout10.PROC  PP MS")
+}
+grecord(fanout,"$(P)$(Dmm)fanout10") {
+	field(SELM,"Specified")
+	field(SELL,"$(P)$(Dmm)ch10_sw_calc.VAL  PP MS")
+	field(LNK1,"$(P)$(Dmm)ch10_close.PROC  PP MS")
+	field(LNK2,"$(P)$(Dmm)multi_return.PROC  PP MS")
+}
+grecord(fanout,"$(P)$(Dmm)sing_multi_tst") {
+	field(SELM,"Specified")
+	field(SELL,"$(P)$(Dmm)sing_multi_sw.VAL  PP MS")
+	field(LNK1,"$(P)$(Dmm)dmm_read.PROC  PP MS")
+	field(LNK2,"$(P)$(Dmm)fanout1.PROC  PP MS")
+}
+grecord(fanout,"$(P)$(Dmm)multi_return") {
+	field(LNK1,"$(P)$(Dmm)relay.VAL  PP MS")
+	field(LNK2,"$(P)$(Dmm)toggle_zero.PROC  PP MS")
+}
+grecord(fanout,"$(P)$(Dmm)relay") {
+	field(LNK1,"$(P)$(Dmm)return.PROC  PP MS")
+}
+grecord(fanout,"$(P)$(Dmm)init_fanout") {
+	field(LNK1,"$(P)$(Dmm)dmm_chan.PROC  PP MS")
+	field(LNK2,"$(P)$(Dmm)init_mode.VAL  PP MS")
+}
+grecord(mbbo,"$(P)$(Dmm)ch_mode_sel") {
+	field(FLNK,"$(P)$(Dmm)mode_seq.PROC  PP MS")
+	field(ZRVL,"0x1")
+	field(ONVL,"0x2")
+	field(TWVL,"0x3")
+	field(THVL,"0x4")
+	field(FRVL,"0x5")
+	field(FVVL,"0x6")
+	field(SXVL,"0x7")
+	field(SVVL,"0x8")
+	field(EIVL,"0x9")
+	field(NIVL,"0xa")
+	field(ZRST,"V DC")
+	field(ONST,"V AC")
+	field(TWST,"I DC")
+	field(THST,"I AC")
+	field(FRST,"OHM 2W")
+	field(FVST,"OHM 4W")
+	field(SXST,"FREQ")
+	field(SVST,"TEMP J")
+	field(EIST,"TEMP K")
+	field(NIST,"TEMP T")
+}
+grecord(mbbo,"$(P)$(Dmm)dmm_chan") {
+	field(PINI,"YES")
+	field(FLNK,"$(P)$(Dmm)dmm_ch_select.PROC  PP MS")
+	field(ZRVL,"0x1")
+	field(ONVL,"0x2")
+	field(TWVL,"0x3")
+	field(THVL,"0x4")
+	field(FRVL,"0x5")
+	field(FVVL,"0x6")
+	field(SXVL,"0x7")
+	field(SVVL,"0x8")
+	field(EIVL,"0x9")
+	field(NIVL,"0xa")
+	field(ZRST,"Ch1")
+	field(ONST,"Ch2")
+	field(TWST,"Ch3")
+	field(THST,"Ch4")
+	field(FRST,"Ch5")
+	field(FVST,"Ch6")
+	field(SXST,"Ch7")
+	field(SVST,"Ch8")
+	field(EIST,"Ch9")
+	field(NIST,"Ch10")
+}
+grecord(seq,"$(P)$(Dmm)dmm_ch_select") {
+	field(SELM,"Specified")
+	field(SELL,"$(P)$(Dmm)dmm_chan.RVAL  NPP NMS")
+	field(LNK1,"$(P)$(Dmm)dmm_clos_ch1.PROC  PP MS")
+	field(LNK2,"$(P)$(Dmm)dmm_clos_ch2.PROC  PP MS")
+	field(LNK3,"$(P)$(Dmm)dmm_clos_ch3.PROC  PP MS")
+	field(LNK4,"$(P)$(Dmm)dmm_clos_ch4.PROC  PP MS")
+	field(LNK5,"$(P)$(Dmm)dmm_clos_ch5.PROC  PP MS")
+	field(LNK6,"$(P)$(Dmm)dmm_clos_ch6.PROC  PP MS")
+	field(LNK7,"$(P)$(Dmm)dmm_clos_ch7.PROC  PP MS")
+	field(LNK8,"$(P)$(Dmm)dmm_clos_ch8.PROC  PP MS")
+	field(LNK9,"$(P)$(Dmm)dmm_clos_ch9.PROC  PP MS")
+	field(LNKA,"$(P)$(Dmm)dmm_clos_ch10.PROC  PP MS")
+}
+grecord(seq,"$(P)$(Dmm)scanner") {
+	field(SDIS,"$(P)$(Dmm)scan_toggle.VAL  NPP NMS")
+	field(DOL1,"$(P)$(Dmm)onesh_cont.VAL  NPP NMS")
+	field(LNK1,"$(P)$(Dmm)done_read.VAL  PP MS")
+}
+grecord(seq,"$(P)$(Dmm)mode_seq") {
+	field(SELM,"Specified")
+	field(SELL,"$(P)$(Dmm)ch_mode_sel.RVAL  NPP NMS")
+	field(LNK1,"$(P)$(Dmm)conf_dcv.PROC  PP MS")
+	field(LNK2,"$(P)$(Dmm)conf_acv.PROC  PP MS")
+	field(LNK3,"$(P)$(Dmm)conf_dci.PROC  PP MS")
+	field(LNK4,"$(P)$(Dmm)conf_aci.PROC  PP MS")
+	field(LNK5,"$(P)$(Dmm)conf_ohm2w.PROC  PP MS")
+	field(LNK6,"$(P)$(Dmm)conf_ohm4w.PROC  PP MS")
+	field(LNK7,"$(P)$(Dmm)conf_freq.PROC  PP MS")
+	field(LNK8,"$(P)$(Dmm)conf_tempj.PROC  PP MS")
+	field(LNK9,"$(P)$(Dmm)conf_tempk.PROC  PP MS")
+	field(LNKA,"$(P)$(Dmm)conf_tempt.PROC  PP MS")
+}
+grecord(stringin,"$(P)$(Dmm)general_out") {
+	field(DTYP,"asyn si stringParm")
+	field(INP,"@asyn($(PORT))")
+}
+grecord(stringin,"$(P)$(Dmm)dmm_get_str") {
+	field(DTYP,"asyn si stringParm")
+	field(FLNK,"$(P)$(Dmm)Dmm_raw.VAL  PP MS")
+	field(INP,"@asyn($(PORT))")
+}
+grecord(stringin,"$(P)$(Dmm)ch9_get_str") {
+	field(DTYP,"asyn si stringParm")
+	field(FLNK,"$(P)$(Dmm)Ch9_raw.VAL  PP MS")
+	field(INP,"@asyn($(PORT))")
+}
+grecord(stringin,"$(P)$(Dmm)ch8_get_str") {
+	field(DTYP,"asyn si stringParm")
+	field(FLNK,"$(P)$(Dmm)Ch8_raw.VAL  PP MS")
+	field(INP,"@asyn($(PORT))")
+}
+grecord(stringin,"$(P)$(Dmm)ch7_get_str") {
+	field(DTYP,"asyn si stringParm")
+	field(FLNK,"$(P)$(Dmm)Ch7_raw.VAL  PP MS")
+	field(INP,"@asyn($(PORT))")
+}
+grecord(stringin,"$(P)$(Dmm)ch6_get_str") {
+	field(DTYP,"asyn si stringParm")
+	field(FLNK,"$(P)$(Dmm)Ch6_raw.VAL  PP MS")
+	field(INP,"@asyn($(PORT))")
+}
+grecord(stringin,"$(P)$(Dmm)ch5_get_str") {
+	field(DTYP,"asyn si stringParm")
+	field(FLNK,"$(P)$(Dmm)Ch5_raw.VAL  PP MS")
+	field(INP,"@asyn($(PORT))")
+}
+grecord(stringin,"$(P)$(Dmm)ch4_get_str") {
+	field(DTYP,"asyn si stringParm")
+	field(FLNK,"$(P)$(Dmm)Ch4_raw.VAL  PP MS")
+	field(INP,"@asyn($(PORT))")
+}
+grecord(stringin,"$(P)$(Dmm)ch3_get_str") {
+	field(DTYP,"asyn si stringParm")
+	field(FLNK,"$(P)$(Dmm)Ch3_raw.VAL  PP MS")
+	field(INP,"@asyn($(PORT))")
+}
+grecord(stringin,"$(P)$(Dmm)ch2_get_str") {
+	field(DTYP,"asyn si stringParm")
+	field(FLNK,"$(P)$(Dmm)Ch2_raw.VAL  PP MS")
+	field(INP,"@asyn($(PORT))")
+}
+grecord(stringin,"$(P)$(Dmm)ch1_get_str") {
+	field(DTYP,"asyn si stringParm")
+	field(FLNK,"$(P)$(Dmm)Ch1_raw.VAL  PP MS")
+	field(INP,"@asyn($(PORT))")
+}
+grecord(stringin,"$(P)$(Dmm)units") {
+	field(VAL,"Ohms")
+}
+grecord(stringin,"$(P)$(Dmm)ch10_get_str") {
+	field(DTYP,"asyn si stringParm")
+	field(FLNK,"$(P)$(Dmm)Ch10_raw.VAL  PP MS")
+	field(INP,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Dmm)init_string") {
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Dmm)init_fanout.VAL  PP MS")
+	field(VAL,"*rst")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Dmm)ch1_close") {
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Dmm)ch1_send_read.PROC  PP MS")
+	field(VAL,"rout:clos (@1)")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Dmm)conf_dcv") {
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Dmm)vdc_label.PROC  PP MS")
+	field(VAL,":conf:volt:dc")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Dmm)ch1_send_read") {
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Dmm)ch1_get_str.VAL  PP MS")
+	field(VAL,"read?")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Dmm)ch2_close") {
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Dmm)ch2_send_read.PROC  PP MS")
+	field(VAL,"rout:clos (@2)")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Dmm)ch2_send_read") {
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Dmm)ch2_get_str.VAL  PP MS")
+	field(VAL,"read?")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Dmm)ch3_close") {
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Dmm)ch3_send_read.PROC  PP MS")
+	field(VAL,"rout:clos (@3)")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Dmm)ch3_send_read") {
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Dmm)ch3_get_str.VAL  PP MS")
+	field(VAL,"read?")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Dmm)conf_acv") {
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Dmm)vac_label.PROC  PP MS")
+	field(VAL,":conf:volt:ac")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Dmm)conf_dci") {
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Dmm)idc_label.PROC  PP MS")
+	field(VAL,":conf:curr:dc")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Dmm)conf_aci") {
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Dmm)iac_label.PROC  PP MS")
+	field(VAL,":conf:curr:ac")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Dmm)conf_ohm4w") {
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Dmm)ohms_label.PROC  PP MS")
+	field(VAL,":conf:fres")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Dmm)conf_ohm2w") {
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Dmm)ohms_label.PROC  PP MS")
+	field(VAL,":conf:res")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Dmm)dmm_clos_ch1") {
+	field(DTYP,"asyn so stringParm")
+	field(VAL,":rout:clos (@1)")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Dmm)dmm_clos_ch2") {
+	field(DTYP,"asyn so stringParm")
+	field(VAL,":rout:clos (@2)")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Dmm)dmm_clos_ch3") {
+	field(DTYP,"asyn so stringParm")
+	field(VAL,":rout:clos (@3)")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Dmm)dmm_read") {
+	field(DTYP,"asyn so stringParm")
+	field(DISV,"0")
+	field(SDIS,"$(P)$(Dmm)done_read.VAL  NPP NMS")
+	field(FLNK,"$(P)$(Dmm)dmm_get_str.VAL  PP MS")
+	field(VAL,"read?")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Dmm)general_input") {
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Dmm)general_out.VAL PP MS")
+	field(VAL,"*rst")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Dmm)dmm_clos_ch4") {
+	field(DTYP,"asyn so stringParm")
+	field(VAL,":rout:clos (@4)")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Dmm)dmm_clos_ch5") {
+	field(DTYP,"asyn so stringParm")
+	field(VAL,":rout:clos (@5)")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Dmm)dmm_clos_ch6") {
+	field(DTYP,"asyn so stringParm")
+	field(VAL,":rout:clos (@6)")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Dmm)dmm_clos_ch7") {
+	field(DTYP,"asyn so stringParm")
+	field(VAL,":rout:clos (@7)")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Dmm)dmm_clos_ch8") {
+	field(DTYP,"asyn so stringParm")
+	field(VAL,":rout:clos (@8)")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Dmm)dmm_clos_ch9") {
+	field(DTYP,"asyn so stringParm")
+	field(VAL,":rout:clos (@9)")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Dmm)dmm_clos_ch10") {
+	field(DTYP,"asyn so stringParm")
+	field(VAL,":rout:clos (@10)")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Dmm)ch4_close") {
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Dmm)ch4_send_read.PROC  PP MS")
+	field(VAL,"rout:clos (@4)")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Dmm)ch4_send_read") {
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Dmm)ch4_get_str.VAL  PP MS")
+	field(VAL,"read?")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Dmm)ch5_close") {
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Dmm)ch5_send_read.PROC  PP MS")
+	field(VAL,"rout:clos (@5)")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Dmm)ch5_send_read") {
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Dmm)ch5_get_str.VAL  PP MS")
+	field(VAL,"read?")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Dmm)ch6_close") {
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Dmm)ch6_send_read.PROC  PP MS")
+	field(VAL,"rout:clos (@6)")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Dmm)ch6_send_read") {
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Dmm)ch6_get_str.VAL  PP MS")
+	field(VAL,"read?")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Dmm)ch7_close") {
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Dmm)ch7_send_read.PROC  PP MS")
+	field(VAL,"rout:clos (@7)")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Dmm)ch7_send_read") {
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Dmm)ch7_get_str.VAL  PP MS")
+	field(VAL,"read?")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Dmm)ch8_close") {
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Dmm)ch8_send_read.PROC  PP MS")
+	field(VAL,"rout:clos (@8)")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Dmm)ch8_send_read") {
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Dmm)ch8_get_str.VAL  PP MS")
+	field(VAL,"read?")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Dmm)ch9_close") {
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Dmm)ch9_send_read.PROC  PP MS")
+	field(VAL,"rout:clos (@9)")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Dmm)ch9_send_read") {
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Dmm)ch9_get_str.VAL  PP MS")
+	field(VAL,"read?")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Dmm)ch10_close") {
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Dmm)ch10_send_read.PROC  PP MS")
+	field(VAL,"rout:clos (@10)")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Dmm)ch10_send_read") {
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Dmm)ch10_get_str.VAL  PP MS")
+	field(VAL,"read?")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Dmm)vdc_label") {
+	field(VAL,"VDC")
+	field(OUT,"$(P)$(Dmm)units.VAL  PP MS")
+}
+grecord(stringout,"$(P)$(Dmm)ohms_label") {
+	field(VAL,"OHM")
+	field(OUT,"$(P)$(Dmm)units.VAL  PP MS")
+}
+grecord(stringout,"$(P)$(Dmm)conf_freq") {
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Dmm)freq_label.PROC  PP MS")
+	field(VAL,":conf:freq")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Dmm)conf_tempj") {
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Dmm)temp_label.PROC  PP MS")
+	field(VAL,"conf:temp;:temp:tc:type j")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Dmm)conf_tempk") {
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Dmm)temp_label.PROC  PP MS")
+	field(VAL,":conf:temp;:temp:tc:type k")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Dmm)conf_tempt") {
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Dmm)temp_label.PROC  PP MS")
+	field(VAL,":conf:temp;:temp:tc:type t")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Dmm)idc_label") {
+	field(VAL,"ADC")
+	field(OUT,"$(P)$(Dmm)units.VAL  PP MS")
+}
+grecord(stringout,"$(P)$(Dmm)freq_label") {
+	field(VAL,"HZ")
+	field(OUT,"$(P)$(Dmm)units.VAL  PP MS")
+}
+grecord(stringout,"$(P)$(Dmm)temp_label") {
+	field(VAL,"DegC")
+	field(OUT,"$(P)$(Dmm)units.VAL  PP MS")
+}
+grecord(stringout,"$(P)$(Dmm)vac_label") {
+	field(VAL,"VAC")
+	field(OUT,"$(P)$(Dmm)units.VAL  PP MS")
+}
+grecord(stringout,"$(P)$(Dmm)iac_label") {
+	field(VAL,"AAC")
+	field(OUT,"$(P)$(Dmm)units.VAL  PP MS")
+}
+grecord(swait,"$(P)$(Dmm)Dmm_calc") {
+	field(CALC,"A")
+	field(PREC,"4")
+}
+grecord(swait,"$(P)$(Dmm)Ch9_calc") {
+	field(CALC,"A")
+	field(PREC,"4")
+}
+grecord(swait,"$(P)$(Dmm)Ch8_calc") {
+	field(CALC,"A")
+	field(PREC,"4")
+}
+grecord(swait,"$(P)$(Dmm)Ch7_calc") {
+	field(CALC,"A")
+	field(PREC,"4")
+}
+grecord(swait,"$(P)$(Dmm)Ch6_calc") {
+	field(CALC,"A")
+	field(PREC,"4")
+}
+grecord(swait,"$(P)$(Dmm)Ch5_calc") {
+	field(CALC,"A")
+	field(PREC,"4")
+}
+grecord(swait,"$(P)$(Dmm)Ch4_calc") {
+	field(CALC,"A")
+	field(PREC,"4")
+}
+grecord(swait,"$(P)$(Dmm)Ch3_calc") {
+	field(CALC,"A")
+	field(PREC,"4")
+}
+grecord(swait,"$(P)$(Dmm)Ch2_calc") {
+	field(CALC,"A")
+	field(PREC,"4")
+}
+grecord(swait,"$(P)$(Dmm)Ch1_calc") {
+	field(CALC,"A")
+	field(PREC,"4")
+}
+grecord(swait,"$(P)$(Dmm)Ch10_calc") {
+	field(CALC,"A")
+	field(PREC,"4")
+}

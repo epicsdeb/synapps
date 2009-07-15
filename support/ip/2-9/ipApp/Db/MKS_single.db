@@ -1,0 +1,36 @@
+# Database for MKS SensaVac 937 with a single cold-cathode gauge.  Pirani #1 is gauge 2 rather
+# than 4 in this case.
+grecord(ai,"$(P)$(CC1)")
+  {
+	field(DESC,"Cold Cathode")
+	field(SCAN,"1 second")
+	field(DTYP,"HPS SensaVac 937")
+	field(INP,"@asyn($(PORT) 1)")
+	field(LOLO,"1.0e-10")
+	field(LLSV,"MAJOR")
+	field(FLNK,"$(P)$(CC1)_log.PROC")
+  }
+grecord(calc,"$(P)$(CC1)_log")
+  {
+	field(CALC,"log(A)")
+	field(INPA,"$(P)$(CC1).VAL  NPP MS")
+	field(HOPR,"1")
+	field(LOPR,"-9")
+	field(FLNK,"$(P)$(PR1).PROC")
+  }
+grecord(ai,"$(P)$(PR1)")
+  {
+	field(DESC,"Pirani")
+	field(DTYP,"HPS SensaVac 937")
+	field(INP,"@asyn($(PORT) 2)")
+	field(LOLO,"1.0e-10")
+	field(LLSV,"MAJOR")
+	field(FLNK,"$(P)$(PR1)_log.PROC")
+  }
+grecord(calc,"$(P)$(PR1)_log")
+  {
+	field(CALC,"log(A)")
+	field(INPA,"$(P)$(PR1).VAL  NPP MS")
+	field(HOPR,"1")
+	field(LOPR,"-9")
+  }

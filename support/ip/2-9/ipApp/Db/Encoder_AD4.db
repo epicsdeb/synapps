@@ -1,0 +1,103 @@
+# US Digital AD4 Quadrature Encoder Counter
+# Arguments: P, N, PORT
+
+record(sseq, "$(P)AD4enc$(N):Init") {
+  field(DESC, "Init AD4 Support")
+  field(SCAN,"1 second")
+  field(LNK1, "$(P)AD4enc$(N):setMode.PROC CA NMS")
+  field(WAIT1, "Wait")
+  field(LNK2, "$(P)AD4enc$(N):getPing.PROC CA NMS")
+  field(WAIT2, "Wait")
+  field(LNK3, "$(P)AD4enc$(N):read.PROC CA NMS")
+  field(WAIT3, "Wait")
+  field(LNKA, "$(P)AD4enc$(N):Init.SCAN NPP NMS")  
+}
+
+record(ai, "$(P)AD4enc$(N):count") {
+  field(DESC, "Encoder Counts")
+  field(PREC, "0")
+  field(EGU, "cnt")
+}
+
+record(ai, "$(P)AD4enc$(N):read") {
+  field(DESC, "Read Encoder")
+  field(DTYP, "stream")
+  field(INP, "@Encoder_AD4.proto readCnts $(PORT)")
+  field(PREC, "0")
+  field(EGU, "cnt")
+  field(FLNK, "$(P)AD4enc$(N):countCalc")
+}
+
+record(mbbo, "$(P)AD4enc$(N):setMode") {
+  field(ZRVL, "1")
+  field(ONVL, "2")
+  field(TWVL, "3")
+  field(THVL, "4")
+  field(ZRST, "1x")
+  field(ONST, "2x")
+  field(TWST, "3x")
+  field(THST, "4x")
+  field(FLNK, "$(P)AD4enc$(N):setCntMode")
+}
+
+record(transform, "$(P)AD4enc$(N):countCalc") {
+  field(CMTA, "New Count")
+  field(INPA, "$(P)AD4enc$(N):read")
+  field(OUTA, "$(P)AD4enc$(N):cntPrev")
+  field(CMTB, "Prev Count")
+  field(INPB, "$(P)AD4enc$(N):cntPrev")
+  field(CMTC, "Count Delta")
+  field(CLCC, "A-B")
+  field(CMTD, "Prev Accum Cnt")
+  field(INPD, "$(P)AD4enc$(N):count NPP NMS")
+  field(CMTE, "Read Alarm Status")
+  field(INPE, "$(P)AD4enc$(N):read.SEVR NPP NMS")
+  field(CMTF, "Count Alarm Resync")
+  field(CLCF, "(E|H)?0:C")
+  field(CMTG, "Count Accum")
+  field(CLCG, "D+F")
+  field(OUTG, "$(P)AD4enc$(N):count PP NMS")
+  field(CMTH, "Prev Read Alarm")
+  field(CLCH, "E")
+}
+
+record(ai, "$(P)AD4enc$(N):cntPrev") {
+  field(DESC, "Prev. Count")
+  field(PREC, "0")
+}
+
+record(calcout,"$(P)AD4enc$(N):setCntMode") {
+  field(DTYP,"stream")
+  field(OUT, "@Encoder_AD4.proto setCntMode $(PORT)")
+  field(INPA,"$(P)AD4enc$(N):setMode.RVAL")
+  field(B,   "0")
+  field(FLNK,"$(P)AD4enc$(N):clrcntPrev")
+}	
+
+record(ao, "$(P)AD4enc$(N):clrcntPrev") {
+  field(DESC, "Clear Prev Cnt")
+  field(OUT, "$(P)AD4enc$(N):cntPrev PP NMS")
+}
+
+
+record(ai, "$(P)AD4enc$(N):getPing") {
+  field(DESC, "Test Message")
+  field(DTYP, "stream")
+  field(INP, "@Encoder_AD4.proto ping $(PORT)")
+  field(FLNK, "$(P)AD4enc$(N):ping")
+}
+
+record(calcout, "$(P)AD4enc$(N):ping") {
+  field(DESC,"Comm Check")
+  field(INPA,"$(P)AD4enc$(N):getPing NPP MS")
+#  field(B,   "0x34")
+  field(B,   "52")
+  field(INPC,"$(P)AD4enc$(N):read CP MS")
+  field(CALC,"A=B")
+}
+
+record(asyn, "$(P)AD4enc$(N):serial") {
+  field(PORT, "$(PORT)")
+}
+
+

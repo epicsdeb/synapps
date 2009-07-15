@@ -1,0 +1,1502 @@
+
+file {
+	name="/home/oxygen/MOONEY/epics/synApps/support/optics/2-4/opticsApp/op/adl/table.adl"
+	version=030004
+}
+display {
+	object {
+		x=10
+		y=214
+		width=230
+		height=390
+	}
+	clr=14
+	bclr=3
+	cmap=""
+	gridSpacing=5
+	gridOn=0
+	snapToGrid=0
+}
+"color map" {
+	ncolors=65
+	colors {
+		ffffff,
+		ececec,
+		dadada,
+		c8c8c8,
+		bbbbbb,
+		aeaeae,
+		9e9e9e,
+		919191,
+		858585,
+		787878,
+		696969,
+		5a5a5a,
+		464646,
+		2d2d2d,
+		000000,
+		00d800,
+		1ebb00,
+		339900,
+		2d7f00,
+		216c00,
+		fd0000,
+		de1309,
+		be190b,
+		a01207,
+		820400,
+		5893ff,
+		597ee1,
+		4b6ec7,
+		3a5eab,
+		27548d,
+		fbf34a,
+		f9da3c,
+		eeb62b,
+		e19015,
+		cd6100,
+		ffb0ff,
+		d67fe2,
+		ae4ebc,
+		8b1a96,
+		610a75,
+		a4aaff,
+		8793e2,
+		6a73c1,
+		4d52a4,
+		343386,
+		c7bb6d,
+		b79d5c,
+		a47e3c,
+		7d5627,
+		58340f,
+		99ffff,
+		73dfff,
+		4ea5f9,
+		2a63e4,
+		0a00b8,
+		ebf1b5,
+		d4db9d,
+		bbc187,
+		a6a462,
+		8b8239,
+		73ff6b,
+		52da3b,
+		3cb420,
+		289315,
+		1a7309,
+	}
+}
+"text update" {
+	object {
+		x=0
+		y=0
+		width=230
+		height=20
+	}
+	monitor {
+		chan="$(P)$(T).DESC"
+		clr=54
+		bclr=0
+	}
+	align="horiz. centered"
+	limits {
+	}
+}
+polyline {
+	object {
+		x=-1
+		y=20
+		width=232
+		height=3
+	}
+	"basic attribute" {
+		clr=54
+		width=3
+	}
+	points {
+		(0,21)
+		(229,21)
+	}
+}
+"related display" {
+	object {
+		x=95
+		y=43
+		width=135
+		height=15
+	}
+	display[0] {
+		label="Refresh fixed-point menu"
+		name="table_refresh.adl"
+		args="P=$(P),Q=$(Q),T=$(T),M0X=$(M0X),M0Y=$(M0Y),M1Y=$(M1Y),M2X=$(M2X),M2Y=$(M2Y),M2Z=$(M2Z)"
+		policy="replace display"
+	}
+	clr=0
+	bclr=17
+	label="-REFRESH MENU"
+}
+menu {
+	object {
+		x=95
+		y=23
+		width=135
+		height=20
+	}
+	control {
+		chan="$(P)$(Q)fpSelect"
+		clr=14
+		bclr=51
+	}
+}
+text {
+	object {
+		x=5
+		y=27
+		width=85
+		height=14
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Fixed point:"
+}
+"text update" {
+	object {
+		x=25
+		y=262
+		width=80
+		height=15
+	}
+	monitor {
+		chan="$(P)$(T).EZ"
+		clr=54
+		bclr=3
+	}
+	align="horiz. centered"
+	limits {
+	}
+}
+rectangle {
+	object {
+		x=25
+		y=260
+		width=80
+		height=18
+	}
+	"basic attribute" {
+		clr=30
+		fill="outline"
+		width=2
+	}
+	"dynamic attribute" {
+		vis="if not zero"
+		chan="$(P)$(T).SET"
+	}
+}
+"text update" {
+	object {
+		x=25
+		y=82
+		width=80
+		height=15
+	}
+	monitor {
+		chan="$(P)$(T).EX"
+		clr=54
+		bclr=3
+	}
+	align="horiz. centered"
+	limits {
+	}
+}
+text {
+	object {
+		x=90
+		y=63
+		width=60
+		height=18
+	}
+	"basic attribute" {
+		clr=20
+	}
+	"dynamic attribute" {
+		vis="if not zero"
+		chan="$(P)$(T).LVIO"
+	}
+	textix="Limit"
+	align="horiz. centered"
+}
+"text update" {
+	object {
+		x=25
+		y=63
+		width=70
+		height=15
+	}
+	monitor {
+		chan="$(P)$(T).LEGU"
+		clr=54
+		bclr=3
+	}
+	align="horiz. centered"
+	limits {
+	}
+}
+text {
+	object {
+		x=10
+		y=102
+		width=20
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="X"
+}
+"text entry" {
+	object {
+		x=25
+		y=100
+		width=80
+		height=22
+	}
+	control {
+		chan="$(P)$(T).X"
+		clr=14
+		bclr=51
+	}
+	limits {
+	}
+}
+rectangle {
+	object {
+		x=25
+		y=80
+		width=80
+		height=18
+	}
+	"basic attribute" {
+		clr=30
+		fill="outline"
+		width=2
+	}
+	"dynamic attribute" {
+		vis="if not zero"
+		chan="$(P)$(T).SET"
+	}
+}
+rectangle {
+	object {
+		x=23
+		y=78
+		width=84
+		height=22
+	}
+	"basic attribute" {
+		clr=14
+		fill="outline"
+		width=2
+	}
+	"dynamic attribute" {
+		vis="if not zero"
+		chan="$(P)$(T).SET"
+	}
+}
+"related display" {
+	object {
+		x=8
+		y=140
+		width=35
+		height=20
+	}
+	display[0] {
+		label="Setup scan parameters"
+		name="scanParmsCustom.adl"
+		args="P=$(P),Q=$(Q)X,NAME=$(Q)X,DESC=$(Q)X,EGU=$(T).LEGU"
+	}
+	clr=0
+	bclr=17
+	label="-Scan"
+}
+"message button" {
+	object {
+		x=45
+		y=140
+		width=21
+		height=20
+	}
+	control {
+		chan="$(P)$(Q)X:scanParms.GO"
+		clr=14
+		bclr=51
+	}
+	label="Go"
+	press_msg="1"
+}
+"message button" {
+	object {
+		x=68
+		y=140
+		width=35
+		height=20
+	}
+	control {
+		chan="$(P)allstop.VAL"
+		clr=30
+		bclr=20
+	}
+	label="Kill"
+	press_msg="1"
+}
+rectangle {
+	object {
+		x=5
+		y=138
+		width=100
+		height=24
+	}
+	"basic attribute" {
+		clr=14
+	}
+}
+"text update" {
+	object {
+		x=150
+		y=63
+		width=70
+		height=15
+	}
+	monitor {
+		chan="$(P)$(T).AEGU"
+		clr=54
+		bclr=3
+	}
+	align="horiz. centered"
+	limits {
+	}
+}
+text {
+	object {
+		x=115
+		y=102
+		width=20
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="AX"
+}
+"text entry" {
+	object {
+		x=140
+		y=100
+		width=80
+		height=22
+	}
+	control {
+		chan="$(P)$(T).AX"
+		clr=14
+		bclr=51
+	}
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=140
+		y=82
+		width=80
+		height=15
+	}
+	monitor {
+		chan="$(P)$(T).EAX"
+		clr=54
+		bclr=3
+	}
+	align="horiz. centered"
+	limits {
+	}
+}
+rectangle {
+	object {
+		x=140
+		y=80
+		width=80
+		height=18
+	}
+	"basic attribute" {
+		clr=30
+		fill="outline"
+		width=2
+	}
+	"dynamic attribute" {
+		vis="if not zero"
+		chan="$(P)$(T).SET"
+	}
+}
+rectangle {
+	object {
+		x=138
+		y=78
+		width=84
+		height=22
+	}
+	"basic attribute" {
+		clr=14
+		fill="outline"
+		width=2
+	}
+	"dynamic attribute" {
+		vis="if not zero"
+		chan="$(P)$(T).SET"
+	}
+}
+"related display" {
+	object {
+		x=123
+		y=140
+		width=35
+		height=20
+	}
+	display[0] {
+		label="Setup scan parameters"
+		name="scanParmsCustom.adl"
+		args="P=$(P),Q=$(Q)AX,NAME=$(Q)AX,DESC=$(Q)AX,EGU=$(T).AEGU"
+	}
+	clr=0
+	bclr=17
+	label="-Scan"
+}
+"message button" {
+	object {
+		x=160
+		y=140
+		width=21
+		height=20
+	}
+	control {
+		chan="$(P)$(Q)AX:scanParms.GO"
+		clr=14
+		bclr=51
+	}
+	label="Go"
+	press_msg="1"
+}
+"message button" {
+	object {
+		x=183
+		y=140
+		width=35
+		height=20
+	}
+	control {
+		chan="$(P)allstop.VAL"
+		clr=30
+		bclr=20
+	}
+	label="Kill"
+	press_msg="1"
+}
+rectangle {
+	object {
+		x=120
+		y=138
+		width=100
+		height=24
+	}
+	"basic attribute" {
+		clr=14
+	}
+}
+text {
+	object {
+		x=10
+		y=193
+		width=20
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Y"
+}
+"text entry" {
+	object {
+		x=25
+		y=190
+		width=80
+		height=22
+	}
+	control {
+		chan="$(P)$(T).Y"
+		clr=14
+		bclr=51
+	}
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=25
+		y=172
+		width=80
+		height=15
+	}
+	monitor {
+		chan="$(P)$(T).EY"
+		clr=54
+		bclr=3
+	}
+	align="horiz. centered"
+	limits {
+	}
+}
+rectangle {
+	object {
+		x=25
+		y=170
+		width=80
+		height=18
+	}
+	"basic attribute" {
+		clr=30
+		fill="outline"
+		width=2
+	}
+	"dynamic attribute" {
+		vis="if not zero"
+		chan="$(P)$(T).SET"
+	}
+}
+rectangle {
+	object {
+		x=23
+		y=168
+		width=84
+		height=22
+	}
+	"basic attribute" {
+		clr=14
+		fill="outline"
+		width=2
+	}
+	"dynamic attribute" {
+		vis="if not zero"
+		chan="$(P)$(T).SET"
+	}
+}
+text {
+	object {
+		x=115
+		y=191
+		width=20
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="AY"
+}
+"text entry" {
+	object {
+		x=140
+		y=190
+		width=80
+		height=22
+	}
+	control {
+		chan="$(P)$(T).AY"
+		clr=14
+		bclr=51
+	}
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=140
+		y=172
+		width=80
+		height=15
+	}
+	monitor {
+		chan="$(P)$(T).EAY"
+		clr=54
+		bclr=3
+	}
+	align="horiz. centered"
+	limits {
+	}
+}
+rectangle {
+	object {
+		x=140
+		y=170
+		width=80
+		height=18
+	}
+	"basic attribute" {
+		clr=30
+		fill="outline"
+		width=2
+	}
+	"dynamic attribute" {
+		vis="if not zero"
+		chan="$(P)$(T).SET"
+	}
+}
+rectangle {
+	object {
+		x=138
+		y=168
+		width=84
+		height=22
+	}
+	"basic attribute" {
+		clr=14
+		fill="outline"
+		width=2
+	}
+	"dynamic attribute" {
+		vis="if not zero"
+		chan="$(P)$(T).SET"
+	}
+}
+composite {
+	object {
+		x=5
+		y=228
+		width=215
+		height=24
+	}
+	"composite name"=""
+	children {
+		"related display" {
+			object {
+				x=8
+				y=230
+				width=35
+				height=20
+			}
+			display[0] {
+				label="Setup scan parameters"
+				name="scanParmsCustom.adl"
+				args="P=$(P),Q=$(Q)Y,NAME=$(Q)Y,DESC=$(Q)Y,EGU=$(T).LEGU"
+			}
+			clr=0
+			bclr=17
+			label="-Scan"
+		}
+		"message button" {
+			object {
+				x=45
+				y=230
+				width=21
+				height=20
+			}
+			control {
+				chan="$(P)$(Q)Y:scanParms.GO"
+				clr=14
+				bclr=51
+			}
+			label="Go"
+			press_msg="1"
+		}
+		"message button" {
+			object {
+				x=68
+				y=230
+				width=35
+				height=20
+			}
+			control {
+				chan="$(P)allstop.VAL"
+				clr=30
+				bclr=20
+			}
+			label="Kill"
+			press_msg="1"
+		}
+		rectangle {
+			object {
+				x=5
+				y=228
+				width=100
+				height=24
+			}
+			"basic attribute" {
+				clr=14
+			}
+		}
+		"related display" {
+			object {
+				x=123
+				y=230
+				width=35
+				height=20
+			}
+			display[0] {
+				label="Setup scan parameters"
+				name="scanParmsCustom.adl"
+				args="P=$(P),Q=$(Q)AY,NAME=$(Q)AY,DESC=$(Q)AY,EGU=$(T).AEGU"
+			}
+			clr=0
+			bclr=17
+			label="-Scan"
+		}
+		"message button" {
+			object {
+				x=160
+				y=230
+				width=21
+				height=20
+			}
+			control {
+				chan="$(P)$(Q)AY:scanParms.GO"
+				clr=14
+				bclr=51
+			}
+			label="Go"
+			press_msg="1"
+		}
+		"message button" {
+			object {
+				x=183
+				y=230
+				width=35
+				height=20
+			}
+			control {
+				chan="$(P)allstop.VAL"
+				clr=30
+				bclr=20
+			}
+			label="Kill"
+			press_msg="1"
+		}
+		rectangle {
+			object {
+				x=120
+				y=228
+				width=100
+				height=24
+			}
+			"basic attribute" {
+				clr=14
+			}
+		}
+	}
+}
+"choice button" {
+	object {
+		x=0
+		y=350
+		width=80
+		height=20
+	}
+	control {
+		chan="$(P)$(T).SET"
+		clr=14
+		bclr=51
+	}
+	stacking="column"
+}
+composite {
+	object {
+		x=0
+		y=370
+		width=100
+		height=20
+	}
+	"composite name"=""
+	children {
+		"message button" {
+			object {
+				x=0
+				y=370
+				width=50
+				height=20
+			}
+			control {
+				chan="$(P)$(T).SYNC"
+				clr=14
+				bclr=51
+			}
+			label="Sync"
+			press_msg="1"
+		}
+		"message button" {
+			object {
+				x=50
+				y=370
+				width=50
+				height=20
+			}
+			control {
+				chan="$(P)$(T).INIT"
+				clr=14
+				bclr=51
+			}
+			label="Init"
+			press_msg="1"
+		}
+	}
+}
+"message button" {
+	object {
+		x=80
+		y=350
+		width=35
+		height=20
+	}
+	control {
+		chan="$(P)$(T).ZERO"
+		clr=14
+		bclr=51
+	}
+	label="Zero"
+	press_msg="1"
+}
+"message button" {
+	object {
+		x=120
+		y=366
+		width=60
+		height=25
+	}
+	control {
+		chan="$(P)$(Q):stop.VAL"
+		clr=30
+		bclr=20
+	}
+	label="Stop"
+	press_msg="1"
+}
+composite {
+	object {
+		x=120
+		y=345
+		width=60
+		height=20
+	}
+	"composite name"=""
+	children {
+		text {
+			object {
+				x=120
+				y=345
+				width=60
+				height=20
+			}
+			"basic attribute" {
+				clr=55
+			}
+			"dynamic attribute" {
+				vis="if not zero"
+				chan="$(P)$(Q):done.VAL"
+			}
+			textix="Done"
+			align="horiz. centered"
+		}
+		text {
+			object {
+				x=120
+				y=345
+				width=60
+				height=20
+			}
+			"basic attribute" {
+				clr=55
+			}
+			"dynamic attribute" {
+				vis="if zero"
+				chan="$(P)$(Q):done.VAL"
+			}
+			textix="Moving"
+			align="horiz. centered"
+		}
+	}
+}
+"related display" {
+	object {
+		x=185
+		y=370
+		width=40
+		height=20
+	}
+	display[0] {
+		label="More"
+		name="table_full.adl"
+		args="P=$(P),Q=$(Q),T=$(T),M0X=$(M0X),M0Y=$(M0Y),M1Y=$(M1Y),M2X=$(M2X),M2Y=$(M2Y),M2Z=$(M2Z)"
+		policy="replace display"
+	}
+	display[1] {
+		label="Setup (SRI geometry)"
+		name="table_setup_SRI.adl"
+		args="P=$(P),Q=$(Q),T=$(T)"
+	}
+	display[2] {
+		label="Setup (GEOCARS geometry)"
+		name="table_setup_GEOCARS.adl"
+		args="P=$(P),Q=$(Q),T=$(T)"
+	}
+	display[3] {
+		label="Setup (NEWPORT geometry)"
+		name="table_setup_NEWPORT.adl"
+		args="P=$(P),Q=$(Q),T=$(T)"
+	}
+	display[4] {
+		label="Setup (PNC geometry)"
+		name="table_setup_PNC.adl"
+		args="P=$(P),Q=$(Q),T=$(T)"
+	}
+	display[5] {
+		label="Fixed points"
+		name="table_fixedPoints.adl"
+		args="P=$(P),Q=$(Q),T=$(T),M0X=$(M0X),M0Y=$(M0Y),M1Y=$(M1Y),M2X=$(M2X),M2Y=$(M2Y),M2Z=$(M2Z)"
+	}
+	clr=0
+	bclr=17
+	label="-More"
+}
+"related display" {
+	object {
+		x=185
+		y=350
+		width=40
+		height=20
+	}
+	display[0] {
+		label="Less"
+		name="table_tiny.adl"
+		args="P=$(P),Q=$(Q),T=$(T),M0X=$(M0X),M0Y=$(M0Y),M1Y=$(M1Y),M2X=$(M2X),M2Y=$(M2Y),M2Z=$(M2Z)"
+		policy="replace display"
+	}
+	clr=0
+	bclr=17
+	label="-Less"
+}
+text {
+	object {
+		x=10
+		y=282
+		width=20
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Z"
+}
+"text entry" {
+	object {
+		x=25
+		y=280
+		width=80
+		height=22
+	}
+	control {
+		chan="$(P)$(T).Z"
+		clr=14
+		bclr=51
+	}
+	limits {
+	}
+}
+rectangle {
+	object {
+		x=23
+		y=258
+		width=84
+		height=22
+	}
+	"basic attribute" {
+		clr=14
+		fill="outline"
+		width=2
+	}
+	"dynamic attribute" {
+		vis="if not zero"
+		chan="$(P)$(T).SET"
+	}
+}
+"related display" {
+	object {
+		x=8
+		y=320
+		width=35
+		height=20
+	}
+	display[0] {
+		label="Setup scan parameters"
+		name="scanParmsCustom.adl"
+		args="P=$(P),Q=$(Q)Z,NAME=$(Q)Z,DESC=$(Q)Z,EGU=$(T).LEGU"
+	}
+	clr=0
+	bclr=17
+	label="-Scan"
+}
+"message button" {
+	object {
+		x=45
+		y=320
+		width=21
+		height=20
+	}
+	control {
+		chan="$(P)$(Q)Z:scanParms.GO"
+		clr=14
+		bclr=51
+	}
+	label="Go"
+	press_msg="1"
+}
+"message button" {
+	object {
+		x=68
+		y=320
+		width=35
+		height=20
+	}
+	control {
+		chan="$(P)allstop.VAL"
+		clr=30
+		bclr=20
+	}
+	label="Kill"
+	press_msg="1"
+}
+rectangle {
+	object {
+		x=5
+		y=318
+		width=100
+		height=24
+	}
+	"basic attribute" {
+		clr=14
+	}
+}
+text {
+	object {
+		x=115
+		y=281
+		width=20
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="AZ"
+}
+"text entry" {
+	object {
+		x=140
+		y=280
+		width=80
+		height=22
+	}
+	control {
+		chan="$(P)$(T).AZ"
+		clr=14
+		bclr=51
+	}
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=140
+		y=262
+		width=80
+		height=15
+	}
+	monitor {
+		chan="$(P)$(T).EAZ"
+		clr=54
+		bclr=3
+	}
+	align="horiz. centered"
+	limits {
+	}
+}
+rectangle {
+	object {
+		x=140
+		y=260
+		width=80
+		height=18
+	}
+	"basic attribute" {
+		clr=30
+		fill="outline"
+		width=2
+	}
+	"dynamic attribute" {
+		vis="if not zero"
+		chan="$(P)$(T).SET"
+	}
+}
+rectangle {
+	object {
+		x=138
+		y=258
+		width=84
+		height=22
+	}
+	"basic attribute" {
+		clr=14
+		fill="outline"
+		width=2
+	}
+	"dynamic attribute" {
+		vis="if not zero"
+		chan="$(P)$(T).SET"
+	}
+}
+"related display" {
+	object {
+		x=123
+		y=320
+		width=35
+		height=20
+	}
+	display[0] {
+		label="Setup scan parameters"
+		name="scanParmsCustom.adl"
+		args="P=$(P),Q=$(Q)AZ,NAME=$(Q)AZ,DESC=$(Q)AZ,EGU=$(T).AEGU"
+	}
+	clr=0
+	bclr=17
+	label="-Scan"
+}
+"message button" {
+	object {
+		x=160
+		y=320
+		width=21
+		height=20
+	}
+	control {
+		chan="$(P)$(Q)AZ:scanParms.GO"
+		clr=14
+		bclr=51
+	}
+	label="Go"
+	press_msg="1"
+}
+"message button" {
+	object {
+		x=183
+		y=320
+		width=35
+		height=20
+	}
+	control {
+		chan="$(P)allstop.VAL"
+		clr=30
+		bclr=20
+	}
+	label="Kill"
+	press_msg="1"
+}
+rectangle {
+	object {
+		x=120
+		y=318
+		width=100
+		height=24
+	}
+	"basic attribute" {
+		clr=14
+	}
+}
+"text entry" {
+	object {
+		x=45
+		y=120
+		width=44
+		height=18
+	}
+	control {
+		chan="$(P)$(Q):x_tweakVal.VAL"
+		clr=14
+		bclr=51
+	}
+	limits {
+	}
+}
+"message button" {
+	object {
+		x=89
+		y=120
+		width=20
+		height=18
+	}
+	control {
+		chan="$(P)$(Q):x_tweak.A"
+		clr=14
+		bclr=51
+	}
+	label=">"
+	press_msg="1"
+}
+"message button" {
+	object {
+		x=25
+		y=120
+		width=20
+		height=18
+	}
+	control {
+		chan="$(P)$(Q):x_tweak.B"
+		clr=14
+		bclr=51
+	}
+	label="<"
+	press_msg="1"
+}
+"text entry" {
+	object {
+		x=160
+		y=120
+		width=44
+		height=18
+	}
+	control {
+		chan="$(P)$(Q):ax_tweakVal.VAL"
+		clr=14
+		bclr=51
+	}
+	limits {
+	}
+}
+"message button" {
+	object {
+		x=204
+		y=120
+		width=20
+		height=18
+	}
+	control {
+		chan="$(P)$(Q):ax_tweak.A"
+		clr=14
+		bclr=51
+	}
+	label=">"
+	press_msg="1"
+}
+"message button" {
+	object {
+		x=140
+		y=120
+		width=20
+		height=18
+	}
+	control {
+		chan="$(P)$(Q):ax_tweak.B"
+		clr=14
+		bclr=51
+	}
+	label="<"
+	press_msg="1"
+}
+"text entry" {
+	object {
+		x=45
+		y=210
+		width=44
+		height=18
+	}
+	control {
+		chan="$(P)$(Q):y_tweakVal.VAL"
+		clr=14
+		bclr=51
+	}
+	limits {
+	}
+}
+"message button" {
+	object {
+		x=89
+		y=210
+		width=20
+		height=18
+	}
+	control {
+		chan="$(P)$(Q):y_tweak.A"
+		clr=14
+		bclr=51
+	}
+	label=">"
+	press_msg="1"
+}
+"message button" {
+	object {
+		x=25
+		y=210
+		width=20
+		height=18
+	}
+	control {
+		chan="$(P)$(Q):y_tweak.B"
+		clr=14
+		bclr=51
+	}
+	label="<"
+	press_msg="1"
+}
+"text entry" {
+	object {
+		x=160
+		y=210
+		width=44
+		height=18
+	}
+	control {
+		chan="$(P)$(Q):ay_tweakVal.VAL"
+		clr=14
+		bclr=51
+	}
+	limits {
+	}
+}
+"message button" {
+	object {
+		x=204
+		y=210
+		width=20
+		height=18
+	}
+	control {
+		chan="$(P)$(Q):ay_tweak.A"
+		clr=14
+		bclr=51
+	}
+	label=">"
+	press_msg="1"
+}
+"message button" {
+	object {
+		x=140
+		y=210
+		width=20
+		height=18
+	}
+	control {
+		chan="$(P)$(Q):ay_tweak.B"
+		clr=14
+		bclr=51
+	}
+	label="<"
+	press_msg="1"
+}
+"text entry" {
+	object {
+		x=45
+		y=300
+		width=44
+		height=18
+	}
+	control {
+		chan="$(P)$(Q):z_tweakVal.VAL"
+		clr=14
+		bclr=51
+	}
+	limits {
+	}
+}
+"message button" {
+	object {
+		x=89
+		y=300
+		width=20
+		height=18
+	}
+	control {
+		chan="$(P)$(Q):z_tweak.A"
+		clr=14
+		bclr=51
+	}
+	label=">"
+	press_msg="1"
+}
+"message button" {
+	object {
+		x=25
+		y=300
+		width=20
+		height=18
+	}
+	control {
+		chan="$(P)$(Q):z_tweak.B"
+		clr=14
+		bclr=51
+	}
+	label="<"
+	press_msg="1"
+}
+"text entry" {
+	object {
+		x=160
+		y=300
+		width=44
+		height=18
+	}
+	control {
+		chan="$(P)$(Q):az_tweakVal.VAL"
+		clr=14
+		bclr=51
+	}
+	limits {
+	}
+}
+"message button" {
+	object {
+		x=204
+		y=300
+		width=20
+		height=18
+	}
+	control {
+		chan="$(P)$(Q):az_tweak.A"
+		clr=14
+		bclr=51
+	}
+	label=">"
+	press_msg="1"
+}
+"message button" {
+	object {
+		x=140
+		y=300
+		width=20
+		height=18
+	}
+	control {
+		chan="$(P)$(Q):az_tweak.B"
+		clr=14
+		bclr=51
+	}
+	label="<"
+	press_msg="1"
+}
+polyline {
+	object {
+		x=-1
+		y=58
+		width=233
+		height=2
+	}
+	"basic attribute" {
+		clr=54
+		width=2
+	}
+	points {
+		(0,59)
+		(231,59)
+	}
+}

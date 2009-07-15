@@ -1,0 +1,133 @@
+record(ao,"$(P)$(R)delay")
+{
+    field(DESC, "Colby delay")
+    field(DTYP, "asynFloat64")
+    field(OUT,  "@asyn($(PORT),0)")
+    field(PREC, "$(PREC)")
+    field(FLNK, "$(P)$(R)delay_rbk")
+}
+record(ai,"$(P)$(R)delay_rbk")
+{
+    field(DESC, "Colby delay readback")
+    field(SCAN, "Passive")
+    field(PREC, "$(PREC)")
+    field(DTYP, "asynFloat64")
+    field(INP,  "@asyn($(PORT),1)")
+}
+record(calcout,"$(P)$(R)inc")
+{
+    field(DESC, "Colby increment step")
+    field(INPA, "$(P)$(R)delay NPP NMS")
+    field(INPB, "$(P)$(R)step NPP NMS")
+    field(CALC, "A+B")
+    field(OUT,  "$(P)$(R)delay PP NMS")
+}
+record(calcout,"$(P)$(R)dec")
+{
+    field(DESC, "Increment calc")
+    field(INPA, "$(P)$(R)delay NPP NMS")
+    field(INPB, "$(P)$(R)step NPP NMS")
+    field(CALC, "A-B")
+    field(OUT,  "$(P)$(R)delay PP NMS")
+}
+record(ao,"$(P)$(R)step")
+{
+    field(DESC, "Colby step")
+    field(PREC, "$(PREC)")
+}
+record(ai,"$(P)$(R)step_rbk")
+{
+    field(DESC, "Colby step readback")
+    field(SCAN, "Passive")
+    field(PREC, "$(PREC)")
+    field(DTYP, "asynFloat64")
+    field(INP,  "@asyn($(PORT),5)")
+}
+record(bo,"$(P)$(R)units")
+{
+    field(DESC, "Colby units")
+    field(DTYP, "asynUInt32Digital")
+    field(OUT,  "@asynMask($(PORT),6,0x01)")
+    field(ZNAM, "nS")
+    field(ONAM, "pS")
+}
+record(stringin,"$(P)$(R)ip")
+{
+    field(DESC, "Colby IP address")
+    field(DTYP, "asynOctetRead")
+    field(INP,  "@asyn($(PORT),8)")
+}
+record(stringin,"$(P)$(R)gw")
+{
+    field(DESC, "Colby gateway address")
+    field(DTYP, "asynOctetRead")
+    field(INP,  "@asyn($(PORT),9)")
+}
+record(stringin,"$(P)$(R)nm")
+{
+    field(DESC, "Colby netmask")
+    field(DTYP, "asynOctetRead")
+    field(INP,  "@asyn($(PORT),10)")
+}
+record(stringin,"$(P)$(R)tcp")
+{
+    field(DESC, "Colby port number")
+    field(DTYP, "asynOctetRead")
+    field(INP,  "@asyn($(PORT),11)")
+}
+record(stringin,"$(P)$(R)dhcp")
+{
+    field(DESC, "Colby DHCP status")
+    field(DTYP, "asynOctetRead")
+    field(INP,  "@asyn($(PORT),12)")
+}
+record(stringin,"$(P)$(R)mac")
+{
+    field(DESC, "Colby MAC address")
+    field(DTYP, "asynOctetRead")
+    field(INP,  "@asyn($(PORT),13)")
+}
+record(sseq,"$(P)$(R)disconnect")
+{
+    field(SCAN,  "Passive")
+    field(PREC,  "3")
+    field(DOL1,  "0")
+    field(DLY1,  "0.1")
+    field(LNK1,  "$(P)$(A).CNCT NPP NMS")
+    field(WAIT1, "Wait")
+    field(DOL2,  "0")
+    field(DLY2,  "0.1")
+    field(LNK2,  "$(P)$(A).PCNCT NPP NMS")
+    field(WAIT2, "Wait")
+}
+record(sseq,"$(P)$(R)connect")
+{
+    field(SCAN,  "Passive")
+    field(PREC,  "3")
+    field(DOL1,  "1")
+    field(DLY1,  "0.1")
+    field(LNK1,  "$(P)$(A).CNCT NPP NMS")
+    field(WAIT1, "Wait")
+    field(DOL2,  "1")
+    field(DLY2,  "0.1")
+    field(LNK2,  "$(P)$(A).PCNCT NPP NMS")
+    field(WAIT2, "Wait")
+}
+record(fanout,"$(P)$(R)update")
+{
+    field(DESC, "Update network params")
+    field(SCAN, "Passive")
+    field(LNK1, "$(P)$(R)ip")
+    field(LNK2, "$(P)$(R)gw")
+    field(LNK3, "$(P)$(R)nm")
+    field(LNK4, "$(P)$(R)tcp")
+    field(LNK5, "$(P)$(R)dhcp")
+    field(LNK6, "$(P)$(R)mac")
+}
+record(fanout,"$(P)$(R)init")
+{
+    field(DESC, "Colby initialization")
+    field(SCAN, "Passive")
+    field(LNK1, "$(P)$(R)units")
+    field(LNK2, "$(P)$(R)delay")
+}

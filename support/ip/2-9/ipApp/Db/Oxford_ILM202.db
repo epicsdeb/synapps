@@ -1,0 +1,181 @@
+grecord(ai,"$(P)$(S)_ILM_level1") {
+	field(DTYP,"Soft Channel")
+	field(FLNK,"$(P)$(S)_ILM_dly.VAL  PP MS")
+	field(PREC,"1")
+}
+grecord(ai,"$(P)$(S)_ILM_level1_init") {
+	field(DTYP,"asyn ai stringParm")
+	field(FLNK,"$(P)$(S)_ILM_lev1init.VAL  PP MS")
+	field(INP,"@asyn($(PORT))FMT=%lf,IX=1,TO=3000,TERM=0d")
+	field(ASLO,"0.1")
+}
+grecord(ai,"$(P)$(S)_ILM_level1_raw") {
+	field(DTYP,"asyn ai stringParm")
+	field(FLNK,"$(P)$(S)_ILM_calcout1.VAL  PP MS")
+	field(INP,"@asyn($(PORT))FMT=%lf,IX=1,TO=3000,TERM=0d")
+	field(ASLO,"0.1")
+}
+grecord(ai,"$(P)$(S)_ILM_level2") {
+	field(DTYP,"Soft Channel")
+	field(FLNK,"$(P)$(S)_ILM_get_usage.VAL  PP MS")
+	field(PREC,"1")
+}
+grecord(ai,"$(P)$(S)_ILM_level2_init") {
+	field(DTYP,"asyn ai stringParm")
+	field(FLNK,"$(P)$(S)_ILM_lev2init.VAL  PP MS")
+	field(INP,"@asyn($(PORT))FMT=%lf,IX=1,TO=3000,TERM=0d")
+	field(ASLO,"0.1")
+}
+grecord(ai,"$(P)$(S)_ILM_level2_raw") {
+	field(DTYP,"asyn ai stringParm")
+	field(FLNK,"$(P)$(S)_ILM_calcout2.VAL  PP MS")
+	field(INP,"@asyn($(PORT))FMT=%lf,IX=1,TO=3000,TERM=0d")
+	field(ASLO,"0.1")
+}
+grecord(ai,"$(P)$(S)_ILM_relay_raw") {
+	field(DTYP,"asyn ai stringParm")
+	field(FLNK,"$(P)$(S)_ILM_relay_calcs.VAL  PP MS")
+	field(INP,"@asyn($(PORT))FMT=%lf,IX=12,TO=3000,TERM=0d")
+}
+grecord(ai,"$(P)$(S)_ILM_usage_raw") {
+	field(DTYP,"asyn ai stringParm")
+	field(FLNK,"$(P)$(S)_ILM_status_calcs.VAL  PP MS")
+	field(INP,"@asyn($(PORT))FMT=%lf,IX=1,TO=3000,TERM=0d")
+}
+grecord(ao,"$(P)$(S)_ILM_push1") {
+	field(DTYP,"Soft Channel")
+	field(FLNK,"$(P)$(S)_ILM_dly3s.VAL  PP MS")
+	field(OUT,"$(P)$(S)_ILM_calcout1.VAL  NPP NMS")
+	field(DOL,"$(P)$(S)_ILM_lev1init.VAL  NPP NMS")
+	field(OMSL,"closed_loop")
+	field(ASLO,"0")
+}
+grecord(ao,"$(P)$(S)_ILM_push2") {
+	field(DTYP,"Soft Channel")
+	field(OUT,"$(P)$(S)_ILM_calcout2.VAL  NPP NMS")
+	field(DOL,"$(P)$(S)_ILM_lev2init.VAL  NPP NMS")
+	field(OMSL,"closed_loop")
+}
+grecord(bo,"$(P)$(S)_ILM_init") {
+	field(PINI,"YES")
+	field(DTYP,"Soft Channel")
+	field(FLNK,"$(P)$(S)_ILM_rd1_init.VAL  PP MS")
+	field(DOL,"0")
+}
+grecord(bo,"$(P)$(S)_ILM_init_oo") {
+	field(PINI,"YES")
+	field(DTYP,"Soft Channel")
+	field(FLNK,"0")
+	field(OMSL,"closed_loop")
+	field(DOL,"1")
+	field(OUT,"$(P)$(S)_ILM_on_off.VAL  PP MS")
+}
+grecord(bo,"$(P)$(S)_ILM_on_off") {
+	field(DTYP,"Soft Channel")
+	field(FLNK,"0")
+	field(ZNAM,"ON")
+	field(ONAM,"OFF")
+}
+grecord(calc,"$(P)$(S)_ILM_lev1init") {
+	field(FLNK,"$(P)$(S)_ILM_push1.VAL  PP MS")
+	field(CALC,"A/10")
+	field(INPA,"$(P)$(S)_ILM_level1_init.VAL  NPP NMS")
+	field(INPB,"$(P)$(S)_ILM_level1.VAL  NPP NMS")
+	field(PREC,"1")
+}
+grecord(calc,"$(P)$(S)_ILM_lev2init") {
+	field(FLNK,"$(P)$(S)_ILM_push2.VAL  PP MS")
+	field(CALC,"A/10")
+	field(INPA,"$(P)$(S)_ILM_level2_init.VAL  NPP NMS")
+	field(INPB,"$(P)$(S)_ILM_level1.VAL  NPP NMS")
+	field(PREC,"1")
+}
+grecord(calc,"$(P)$(S)_ILM_relay_ch1") {
+	field(CALC,"(A=10)|(A=30)?1:0")
+	field(INPA,"$(P)$(S)_ILM_relay_raw.VAL  NPP NMS")
+}
+grecord(calc,"$(P)$(S)_ILM_relay_ch2") {
+	field(CALC,"(A=20)|(A=30)?1:0")
+	field(INPA,"$(P)$(S)_ILM_relay_raw.VAL  NPP NMS")
+}
+grecord(calc,"$(P)$(S)_ILM_status_1") {
+	field(CALC,"(A=910)|(A=990)?1:0")
+	field(INPA,"$(P)$(S)_ILM_usage_raw.VAL  NPP NMS")
+}
+grecord(calc,"$(P)$(S)_ILM_status_2") {
+	field(CALC,"(A=190)|(A=990)?1:0")
+	field(INPA,"$(P)$(S)_ILM_usage_raw.VAL  NPP NMS")
+}
+grecord(calcout,"$(P)$(S)_ILM_calcout1") {
+	field(CALC,"(B-(A/10))>5?0:(A/10)")
+	field(INPA,"$(P)$(S)_ILM_level1_raw.VAL  NPP NMS")
+	field(INPB,"$(P)$(S)_ILM_calcout1.VAL  NPP NMS")
+	field(OUT,"$(P)$(S)_ILM_level1.VAL  PP MS")
+	field(OOPT,"When Non-zero")
+}
+grecord(calcout,"$(P)$(S)_ILM_calcout2") {
+	field(CALC,"(B-(A/10))>5?0:(A/10)")
+	field(INPA,"$(P)$(S)_ILM_level2_raw.VAL  NPP NMS")
+	field(INPB,"$(P)$(S)_ILM_calcout2.VAL  NPP NMS")
+	field(OUT,"$(P)$(S)_ILM_level2.VAL  PP MS")
+	field(OOPT,"When Non-zero")
+	field(HIGH,"0")
+}
+grecord(fanout,"$(P)$(S)_ILM_relay_calcs") {
+	field(LNK1,"$(P)$(S)_ILM_relay_ch1.VAL  PP MS")
+	field(LNK2,"$(P)$(S)_ILM_relay_ch2.VAL  PP MS")
+}
+grecord(fanout,"$(P)$(S)_ILM_status_calcs") {
+	field(LNK1,"$(P)$(S)_ILM_status_1.VAL  PP MS")
+	field(LNK2,"$(P)$(S)_ILM_status_2.VAL  PP MS")
+	field(LNK3,"$(P)$(S)_ILM_get_relay.VAL  PP MS")
+}
+grecord(seq,"$(P)$(S)_ILM_dly") {
+	field(PREC,"0")
+	field(DLY1,"1.0")
+	field(DOL1,"1")
+	field(LNK1,"$(P)$(S)_ILM_send_rd_2.PROC  PP MS")
+}
+grecord(seq,"$(P)$(S)_ILM_dly3s") {
+	field(DLY1,"3.0")
+	field(DOL1,"1")
+	field(LNK1,"$(P)$(S)_ILM_rd2_init.PROC  PP MS")
+}
+grecord(stringout,"$(P)$(S)_ILM_get_relay") {
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(S)_ILM_relay_raw.VAL  PP MS")
+	field(VAL,"X")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(S)_ILM_get_usage") {
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(S)_ILM_usage_raw.VAL  PP MS")
+	field(VAL,"X")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(S)_ILM_rd1_init") {
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(S)_ILM_level1_init.VAL  PP MS")
+	field(VAL,"R1")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(S)_ILM_rd2_init") {
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(S)_ILM_level2_init.VAL  PP MS")
+	field(VAL,"R2")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(S)_ILM_send_rd_1") {
+	field(SCAN,"5 second")
+	field(DTYP,"asyn so stringParm")
+	field(SDIS,"$(P)$(S)_ILM_on_off.VAL  NPP NMS")
+	field(FLNK,"$(P)$(S)_ILM_level1_raw.VAL  PP MS")
+	field(VAL,"R1")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(S)_ILM_send_rd_2") {
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(S)_ILM_level2_raw.VAL  PP MS")
+	field(VAL,"R2")
+	field(OUT,"@asyn($(PORT))")
+}

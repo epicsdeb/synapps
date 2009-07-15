@@ -1,0 +1,1307 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN"><HTML>
+<HEAD>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=ISO-8859-1">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+<META NAME="GENERATOR" CONTENT="Adobe FrameMaker 5.5/HTML Export Filter">
+<LINK REL="STYLESHEET" HREF="Manual.css" CHARSET="ISO-8859-1" TYPE="text/css">
+<TITLE>
+ Chapter 6:  The PV (Process Variable) API
+</TITLE>
+
+</HEAD>
+<BODY BGCOLOR="#ffffff">
+<H1 CLASS="LOCALTITLE">
+<A NAME="pgfId-691616"></A><A NAME="98107"></A><A NAME="37461"></A><A NAME="27591"></A>The <A NAME="marker-702695"></A>PV (Process Variable) API</H1>
+<P CLASS="BODY">
+<A NAME="pgfId-700301"></A>&nbsp;</P>
+<P CLASS="BODY">
+<A NAME="pgfId-700317"></A>&nbsp;</P>
+<P CLASS="BODY">
+<A NAME="pgfId-700318"></A>&nbsp;</P>
+<P CLASS="BODY">
+<A NAME="pgfId-700319"></A>&nbsp;</P>
+<P CLASS="BODY">
+<A NAME="pgfId-700417"></A>&nbsp;</P>
+<P CLASS="BODY">
+<A NAME="pgfId-700363"></A>This chapter describes the PV API. It is intended for those who would like to add support for new message systems. It need not be read by those who want to write sequences using message systems that are already supported.</P>
+<P CLASS="BODY">
+<A NAME="pgfId-702689"></A>&nbsp;</P>
+<DIV>
+<H2 CLASS="HEADING1">
+<A NAME="pgfId-700400"></A><A NAME="81690"></A>Introduction<DIV>
+<IMG SRC="Manual-9.gif">
+</DIV>
+</H2>
+<P CLASS="BODY">
+<A NAME="pgfId-702691"></A>The PV (Process Variable) API was introduced at version 2.0 in order to hide the details of the underlying message system from the sequencer code. Previously, the sequencer code (<EM CLASS="Emphasis">
+i.e.</EM>
+ the modules implementing the sequencer run-time support, not the user-written sequences) called <A NAME="marker-702718"></A>CA routines directly. Now it calls PV routines, which in turn call routines of the underlying message system. This allows new message systems to be supported without changing sequencer code.</P>
+</DIV>
+<DIV>
+<H2 CLASS="HEADING1">
+<A NAME="pgfId-702737"></A>Rationale<DIV>
+<IMG SRC="Manual-9.gif">
+</DIV>
+</H2>
+<P CLASS="BODY">
+<A NAME="pgfId-702762"></A>Several EPICS tools support both CA and CDEV. They do so in ad hoc ways. For example, <EM CLASS="Key-word">
+medm</EM>
+ uses an <EM CLASS="Key-word">
+MEDM_CDEV</EM>
+ macro and has <EM CLASS="Key-word">
+medmCA</EM>
+ and <EM CLASS="Key-word">
+medmCdev</EM>
+ modules, whereas <EM CLASS="Key-word">
+alh</EM>
+ has an <EM CLASS="Key-word">
+alCaCdev</EM>
+ module that implements the same interface as the <EM CLASS="Key-word">
+alCA</EM>
+ module.</P>
+<P CLASS="BODY">
+<A NAME="pgfId-702764"></A>The PV API is an attempt at solving the same problem but in a way that is independent of the tool to which it is being applied. It should be possible to use the PV API (maybe with some backwards-compatible extensions) with <EM CLASS="Key-word">
+medm</EM>
+, <EM CLASS="Key-word">
+alh</EM>
+ and other CA-based tools. Having done that, supporting another message system at the PV level automatically supports it for all the tools that use the PV API.</P>
+<P CLASS="BODY">
+<A NAME="pgfId-702772"></A>Doesn't this sound rather like the problem that CDEV is solving? In a way, but PV is a pragmatic solution to a specific problem. The PV API is very close in concept to the CA API and is designed to plug in to a CA-based tool with minimal disruption. Why not use the CA API and implement it for other message systems? That could have been done, but would have made the PV API dependent on the EPICS <EM CLASS="Key-word">
+db_access.h</EM>
+ definitions (currently it is dependent only on the EPICS OSI layer).</P>
+<P CLASS="BODY">
+<A NAME="pgfId-702773"></A>In any case, a new API was defined and the sequencer code was converted to use it.</P>
+</DIV>
+<DIV>
+<H2 CLASS="HEADING1">
+<A NAME="pgfId-702774"></A><A NAME="33834"></A>A tour of the API<DIV>
+<IMG SRC="Manual-9.gif">
+</DIV>
+</H2>
+<DIV>
+<H4 CLASS="UHEADING3">
+<A NAME="pgfId-703402"></A><A NAME="23466"></A>Overview</H4>
+<P CLASS="BODY">
+<A NAME="pgfId-702776"></A>The public interface is defined in the file <EM CLASS="Key-word">
+pv.h</EM>
+<A NAME="marker-703104"></A>, which defines various types such as <EM CLASS="Key-word">
+pvStat</EM>
+, <EM CLASS="Key-word">
+pvSevr</EM>
+, <EM CLASS="Key-word">
+pvValue</EM>
+, <EM CLASS="Key-word">
+pvConnFunc</EM>
+ and <EM CLASS="Key-word">
+pvEventFunc</EM>
+, then defines abstract <EM CLASS="Key-word">
+pvSystem</EM>
+, <EM CLASS="Key-word">
+pvVariable</EM>
+ and <EM CLASS="Key-word">
+pvCallback</EM>
+ classes. Finally it defines a C API.</P>
+<P CLASS="BODY">
+<A NAME="pgfId-702783"></A>The file <EM CLASS="Key-word">
+pv.cc</EM>
+<A NAME="marker-703105"></A> implements generic methods (mostly constructors and destructors) and the C API.</P>
+<P CLASS="BODY">
+<A NAME="pgfId-702785"></A>Each supported message system <EM CLASS="Key-word">
+XXX</EM>
+ creates a <EM CLASS="Key-word">
+pvXxx.h</EM>
+ file that defines <EM CLASS="Key-word">
+xxxSystem</EM>
+ (extending <EM CLASS="Key-word">
+pvSystem</EM>
+) and <EM CLASS="Key-word">
+xxxVariable</EM>
+ (extending <EM CLASS="Key-word">
+pvVariable</EM>
+) classes, and a <EM CLASS="Key-word">
+pvXxx.cc</EM>
+ file that contains the implementations of <EM CLASS="Key-word">
+xxxSystem</EM>
+ and <EM CLASS="Key-word">
+xxxVariable</EM>
+.</P>
+<P CLASS="BODY">
+<A NAME="pgfId-702788"></A>Currently-supported message systems are CA and a Keck-specific one called <A NAME="marker-704588"></A>KTL. The CA layer is very thin (<EM CLASS="Key-word">
+pvCa.h</EM>
+<A NAME="marker-703106"></A> is 104 lines and <EM CLASS="Key-word">
+pvCa.cc</EM>
+<A NAME="marker-703107"></A> is 818 lines; both these figures include comments).</P>
+<P CLASS="BODY">
+<A NAME="pgfId-702784"></A>The file <EM CLASS="Key-word">
+pvNew.cc</EM>
+<A NAME="marker-703108"></A> implements a <EM CLASS="Key-word">
+newPvSystem</EM>
+ function that takes a system name argument (<EM CLASS="Emphasis">
+e.g.</EM>
+ &quot;<EM CLASS="Key-word">
+ca</EM>
+&quot;), calls the appropriate <EM CLASS="Key-word">
+xxxSystem</EM>
+ constructor, and returns it (as a <EM CLASS="Key-word">
+pvSystem</EM>
+ pointer). It would be good to change it to use dynamically-loaded libraries, in which case there would be no direct dependence of the <EM CLASS="Key-word">
+pv</EM>
+ library on any of the <EM CLASS="Key-word">
+pvXxx</EM>
+ libraries (<EM CLASS="Emphasis">
+c.f.</EM>
+ the way CDEV creates <EM CLASS="Key-word">
+cdevService</EM>
+ objects).</P>
+</DIV>
+<DIV>
+<H4 CLASS="UHEADING3">
+<A NAME="pgfId-702791"></A>Simple C++ PV program (comments and error handling have been removed)</H4>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702801"></A>#include &lt;stdio.h&gt;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702802"></A>#include &lt;stdlib.h&gt;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702803"></A>#include &lt;string.h&gt;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702804"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702805"></A>#include &quot;pv.h&quot;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702806"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702808"></A>void event( void *obj, pvType type, int count, pvValue *val,</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702870"></A>			 void *arg, pvStat stat ) {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702810"></A>	pvVariable *var = ( pvVariable * ) obj;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702811"></A>	printf( &quot;event: %s=%g&#92;n&quot;, var-&gt;getName(), val-&gt;doubleVal[0] );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702812"></A>}</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702813"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702815"></A>int main( int argc, char *argv[] ) {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702817"></A>	const char *sysNam = ( argc &gt; 1 ) ? argv[1] : &quot;ca&quot;;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702818"></A>	const char *varNam = ( argc &gt; 2 ) ? argv[2] : &quot;demo:voltage&quot;;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702819"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702821"></A>	pvSystem *sys = newPvSystem( sysNam );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702828"></A>	pvVariable *var = sys-&gt;newVariable( varNam );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702835"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702940"></A>	var-&gt;monitorOn( pvTypeDOUBLE, 1, event );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702844"></A>	sys-&gt;pend( 10, TRUE );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702847"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702933"></A>	delete var;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702848"></A>	delete sys;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702849"></A>	return 0;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702850"></A>}</P>
+</DIV>
+<DIV>
+<H4 CLASS="UHEADING3">
+<A NAME="pgfId-702941"></A>The equivalent program using the C API</H4>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702948"></A>#include &lt;stdio.h&gt;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702949"></A>#include &lt;stdlib.h&gt;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702950"></A>#include &lt;string.h&gt;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702951"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702952"></A>#include &quot;pv.h&quot;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702953"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702955"></A>void event( void *var, pvType type, int count, pvValue *val,</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703011"></A>			 void *arg, pvStat stat) {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702957"></A>	printf( &quot;event: %s=%g&#92;n&quot;, pvVarGetName( var ),</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703028"></A>			 val-&gt;doubleVal[0] );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702958"></A>}</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702959"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702961"></A>int main( int argc, char *argv[] ) {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702963"></A>	const char *sysNam = ( argc &gt; 1 ) ? argv[1] : &quot;ca&quot;;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702964"></A>	const char *varNam = ( argc &gt; 2 ) ? argv[2] : &quot;demo:voltage&quot;;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702965"></A>	void *sys;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702966"></A>	void *var;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702968"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702970"></A>	pvSysCreate( sysNam, 0, &amp;sys );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702977"></A>	pvVarCreate( sys, varNam, NULL, NULL, 0, &amp;var );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702984"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703090"></A>	pvVarMonitorOn( var, pvTypeDOUBLE, 1, event, NULL, NULL );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702993"></A>	pvSysPend( sys, 10, TRUE );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702994"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702996"></A>	pvVarDestroy( var );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702997"></A>	pvSysDestroy( sys );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702998"></A>	return 0;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702999"></A>}</P>
+</DIV>
+</DIV>
+<DIV>
+<H2 CLASS="HEADING1">
+<A NAME="pgfId-703109"></A>The API in More Detail<DIV>
+<IMG SRC="Manual-9.gif">
+</DIV>
+</H2>
+<P CLASS="BODY">
+<A NAME="pgfId-703111"></A>We will look at the contents of <EM CLASS="Key-word">
+pv.h</EM>
+<A NAME="marker-703114"></A> (and <A NAME="marker-703115"></A><EM CLASS="Key-word">
+pvAlarm.h</EM>
+) in more detail and will specify the constraints that must be met by underlying message systems.</P>
+<DIV>
+<H3 CLASS="UHEADING2">
+<A NAME="pgfId-703327"></A>Type definitions</H3>
+<P CLASS="BODY">
+<A NAME="pgfId-703395"></A><EM CLASS="Key-word">
+pv.h</EM>
+ and <EM CLASS="Key-word">
+pvAlarm.h</EM>
+ define various types, described in the following sections.</P>
+<DIV>
+<H4 CLASS="UHEADING3">
+<A NAME="pgfId-703113"></A>Status</H4>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703215"></A>typedef enum {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703220"></A>    pvStatOK           = 0,</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703221"></A>    pvStatERROR        = -1,</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703222"></A>    pvStatDISCONN      = -2,</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703223"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703225"></A>    pvStatREAD         = 1,</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703226"></A>    pvStatWRITE        = 2,</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703256"></A>    .</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703244"></A>    pvStatREAD_ACCESS  = 20,</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703245"></A>    pvStatWRITE_ACCESS = 21</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703246"></A>} pvStat;</P>
+<P CLASS="BODY">
+<A NAME="pgfId-703247"></A>The negative codes correspond to the few CA status codes that were used in the sequencer. The positive codes correspond to EPICS STAT values.</P>
+</DIV>
+<DIV>
+<H4 CLASS="UHEADING3">
+<A NAME="pgfId-703214"></A>Severity</H4>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703298"></A>typedef enum {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703300"></A>    pvSevrOK      = 0,</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703301"></A>    pvSevrERROR   = -1,</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703302"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703304"></A>    pvSevrNONE    = 0,</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703305"></A>    pvSevrMINOR   = 1,</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703306"></A>    pvSevrMAJOR   = 2,</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703307"></A>    pvSevrINVALID = 3</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703308"></A>} pvSevr;</P>
+<P CLASS="BODY">
+<A NAME="pgfId-703294"></A>These allow easy mapping of EPICS severities.</P>
+</DIV>
+<DIV>
+<H4 CLASS="UHEADING3">
+<A NAME="pgfId-703293"></A>Data Types</H4>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703120"></A>typedef enum {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703121"></A>    pvTypeERROR       = -1,</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703122"></A>    pvTypeCHAR        = 0,</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703123"></A>    pvTypeSHORT       = 1,</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703124"></A>    pvTypeLONG        = 2,</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703125"></A>    pvTypeFLOAT       = 3,</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703126"></A>    pvTypeDOUBLE      = 4,</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703127"></A>    pvTypeSTRING      = 5,</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703128"></A>    pvTypeTIME_CHAR   = 6,</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703129"></A>    pvTypeTIME_SHORT  = 7,</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703130"></A>    pvTypeTIME_LONG   = 8,</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703131"></A>    pvTypeTIME_FLOAT  = 9,</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703132"></A>    pvTypeTIME_DOUBLE = 10,</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703133"></A>    pvTypeTIME_STRING = 11</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703134"></A>} pvType;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703161"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703148"></A>#define PV_SIMPLE(_type) ( (_type) &lt;= pvTypeSTRING )</P>
+<P CLASS="BODY">
+<A NAME="pgfId-703117"></A>Only the types required by the sequencer are supported, namely simple and &quot;time&quot; types. The &quot;error&quot; type is used to indicate an error in a routine that returns a <EM CLASS="Key-word">
+pvType</EM>
+ as its result.</P>
+</DIV>
+<DIV>
+<H4 CLASS="UHEADING3">
+<A NAME="pgfId-703137"></A>Data Values</H4>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703168"></A>typedef char   pvChar;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703169"></A>typedef short  pvShort;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703170"></A>typedef long   pvLong;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703171"></A>typedef float  pvFloat;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703172"></A>typedef double pvDouble;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703173"></A>typedef char   pvString[256]; /* use sizeof( pvString ) */</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703174"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703175"></A>#define PV_TIME_XXX(_type) &#92;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703176"></A>    typedef struct { &#92;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703177"></A>        pvStat    status; &#92;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703178"></A>        pvSevr    severity; &#92;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703179"></A>        TS_STAMP  stamp; &#92;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703180"></A>        pv##_type value[1]; &#92;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703181"></A>    } pvTime##_type</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703182"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703183"></A>PV_TIME_XXX( Char   );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703184"></A>PV_TIME_XXX( Short  );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703185"></A>PV_TIME_XXX( Long   );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703186"></A>PV_TIME_XXX( Float  );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703187"></A>PV_TIME_XXX( Double );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703188"></A>PV_TIME_XXX( String );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703189"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703190"></A>typedef union {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703191"></A>    pvChar       charVal[1];</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703192"></A>    pvShort      shortVal[1];</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703193"></A>    pvLong       longVal[1];</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703194"></A>    pvFloat      floatVal[1];</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703195"></A>    pvDouble     doubleVal[1];</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703196"></A>    pvString     stringVal[1];</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703197"></A>    pvTimeChar   timeCharVal;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703198"></A>    pvTimeShort  timeShortVal;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703199"></A>    pvTimeLong   timeLongVal;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703200"></A>    pvTimeFloat  timeFloatVal;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703201"></A>    pvTimeDouble timeDoubleVal;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703202"></A>    pvTimeString timeStringVal;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703203"></A>} pvValue;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703210"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703165"></A>#define PV_VALPTR(_type,_value) &#92;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703207"></A>	( ( PV_SIMPLE(_type) ? &#92;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704626"></A>		( void * ) ( _value ) : &#92;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703208"></A>		( void * ) ( &amp;_value-&gt;timeCharVal.value ) ) )</P>
+<P CLASS="BODY">
+<A NAME="pgfId-703209"></A><EM CLASS="Key-word">
+pvValue</EM>
+ is equivalent to <EM CLASS="Key-word">
+db_access_val</EM>
+ and, like it, is not self-describing (remember, the idea is that the <A NAME="marker-703213"></A>PV layer is a drop-in replacement for CA).</P>
+<P CLASS="BODY">
+<A NAME="pgfId-703509"></A>Obviously, the introduction of <EM CLASS="Key-word">
+pvValue</EM>
+ means that values must be converted between it and the message system's internal value representation. This is a performance hit but one that was deemed worthwhile given that there is currently no appropriate &quot;neutral&quot; (message system independent) value representation. Once the replacement for GDD is available, it will maybe be used in preference to <EM CLASS="Key-word">
+pvValue</EM>
+.</P>
+</DIV>
+<DIV>
+<H4 CLASS="UHEADING3">
+<A NAME="pgfId-703328"></A>Callbacks</H4>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703333"></A>typedef void (*pvConnFunc)( void *var, int connected );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703334"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703335"></A>typedef void (*pvEventFunc)( void *var, pvType type, int count,</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703336"></A>						pvValue *value, void *arg, pvStat status );</P>
+<P CLASS="BODY">
+<A NAME="pgfId-703330"></A>In both cases, the <EM CLASS="Key-word">
+var</EM>
+ argument is a pointer to the <EM CLASS="Key-word">
+pvVariable</EM>
+ that caused the event. It is passed as a <EM CLASS="Key-word">
+void*</EM>
+ so that the same function signature can be used for both C and C++. In C, it would be passed to one of the <EM CLASS="Key-word">
+pvVarXxx</EM>
+ routines; in C++ it would be cast to a <EM CLASS="Key-word">
+pvVariable*</EM>
+.</P>
+<P CLASS="BODY">
+<A NAME="pgfId-703368"></A><EM CLASS="Key-word">
+pvConnFunc</EM>
+ is used to notify the application that a control system variable has connected or disconnected</P>
+<UL>
+<LI CLASS="LISTBULLET1">
+<A NAME="pgfId-703381"></A><EM CLASS="Key-word">
+connected</EM>
+ is 0 for disconnect and 1 for connect</LI>
+</UL>
+<P CLASS="BODY">
+<A NAME="pgfId-703339"></A><EM CLASS="Key-word">
+pvEventFunc</EM>
+ is used to notify an application that a get or put has completed, or that a monitor has been delivered</P>
+<UL>
+<LI CLASS="LISTBULLET1">
+<A NAME="pgfId-703382"></A><EM CLASS="Key-word">
+type</EM>
+, <EM CLASS="Key-word">
+count</EM>
+ and <EM CLASS="Key-word">
+arg</EM>
+ come from the request</LI>
+<LI CLASS="LISTBULLET1">
+<A NAME="pgfId-703383"></A><EM CLASS="Key-word">
+value</EM>
+ is of type <EM CLASS="Key-word">
+type</EM>
+ and contains <EM CLASS="Key-word">
+count</EM>
+ elements</LI>
+<LI CLASS="LISTBULLET2">
+<A NAME="pgfId-703385"></A>it may be NULL on put completion (the application should check)</LI>
+<LI CLASS="LISTBULLET2">
+<A NAME="pgfId-703387"></A>it might also be NULL if <EM CLASS="Key-word">
+status</EM>
+ indicates failure (the application should check)</LI>
+<LI CLASS="LISTBULLET2">
+<A NAME="pgfId-703386"></A>it is filled with zeroes if the control system variable has fewer than <EM CLASS="Key-word">
+count</EM>
+ elements</LI>
+<LI CLASS="LISTBULLET1">
+<A NAME="pgfId-703384"></A><EM CLASS="Key-word">
+status</EM>
+ comes from the underlying message system</LI>
+<LI CLASS="LISTBULLET2">
+<A NAME="pgfId-703388"></A>it is converted to a <EM CLASS="Key-word">
+pvStat</EM>
+</LI>
+</UL>
+</DIV>
+</DIV>
+<DIV>
+<H3 CLASS="UHEADING2">
+<A NAME="pgfId-703391"></A>pvSystem Class</H3>
+<P CLASS="BODY">
+<A NAME="pgfId-703398"></A><EM CLASS="Key-word">
+pvSystem</EM>
+ is an abstract class that must be extended by specific message systems. An application typically contains a single instance, created by <EM CLASS="Key-word">
+newPvSystem</EM>
+<A NAME="marker-703416"></A> as described in <A HREF="Manual-7.html#23466" CLASS="XRef">See Overview</A>. There's nothing to stop an application having several instances, each corresponding to a different message system, but the sequencer doesn't do this. Also, there is no way to pend on events from a set of <EM CLASS="Key-word">
+pvSystem</EM>
+s.</P>
+<P CLASS="BODY">
+<A NAME="pgfId-703417"></A>Refer to <EM CLASS="Key-word">
+pv.h</EM>
+<A NAME="marker-703422"></A> for explicit detail. The following sections describe various important aspects of the class.</P>
+<DIV>
+<H4 CLASS="UHEADING3">
+<A NAME="pgfId-703423"></A>Variable Creation</H4>
+<P CLASS="BODY">
+<A NAME="pgfId-703428"></A>The <EM CLASS="Key-word">
+newVariable</EM>
+ method creates a new <EM CLASS="Key-word">
+pvVariable</EM>
+ corresponding to the same message system as the calling <EM CLASS="Key-word">
+pvSystem</EM>
+. It should be used in preference to the concrete <EM CLASS="Key-word">
+xxxVariable</EM>
+ constructors since it doesn't require knowledge of <EM CLASS="Key-word">
+xxx</EM>
+!</P>
+</DIV>
+<DIV>
+<H4 CLASS="UHEADING3">
+<A NAME="pgfId-703427"></A>Event Handling</H4>
+<P CLASS="BODY">
+<A NAME="pgfId-703425"></A>The <EM CLASS="Key-word">
+flush</EM>
+ and <EM CLASS="Key-word">
+pend</EM>
+ methods correspond to <EM CLASS="Key-word">
+ca_flush</EM>
+, <EM CLASS="Key-word">
+ca_pend_io</EM>
+ and <EM CLASS="Key-word">
+ca_pend_event</EM>
+ (the latter two are combined into a single <EM CLASS="Key-word">
+pend</EM>
+ method with an optional <EM CLASS="Key-word">
+wait</EM>
+ argument; <EM CLASS="Key-word">
+wait=FALSE</EM>
+ gives <EM CLASS="Key-word">
+ca_pend_io</EM>
+ behavior, <EM CLASS="Emphasis">
+i.e.</EM>
+ exit when pending activity is complete, and <EM CLASS="Key-word">
+wait=TRUE</EM>
+ gives <EM CLASS="Key-word">
+ca_pend_event</EM>
+ behavior, <EM CLASS="Emphasis">
+i.e.</EM>
+ wait until timer expires).</P>
+</DIV>
+<DIV>
+<H4 CLASS="UHEADING3">
+<A NAME="pgfId-703431"></A>Locking</H4>
+<P CLASS="BODY">
+<A NAME="pgfId-703433"></A>The <EM CLASS="Key-word">
+lock</EM>
+ and <EM CLASS="Key-word">
+unlock</EM>
+ methods take and give a (recursive) mutex that can be used to prevent more than one thread at a time from being within message system code. This is not necessary for thread-safe message systems such as CA.</P>
+</DIV>
+<DIV>
+<H4 CLASS="UHEADING3">
+<A NAME="pgfId-703440"></A>Debugging</H4>
+<P CLASS="BODY">
+<A NAME="pgfId-703442"></A>A <EM CLASS="Key-word">
+debug</EM>
+ flag is supported (it's an optional argument to the constructor and to the <EM CLASS="Key-word">
+newVariable</EM>
+ method) and is used to report method entry, arguments and other information. Debug flags are used consistently throughout the entire <A NAME="marker-703448"></A>PV layer.</P>
+</DIV>
+<DIV>
+<H4 CLASS="UHEADING3">
+<A NAME="pgfId-703444"></A>Error Reporting</H4>
+<P CLASS="BODY">
+<A NAME="pgfId-703446"></A>A message system-specific status, a severity (<EM CLASS="Key-word">
+pvSevr</EM>
+), a status (<EM CLASS="Key-word">
+pvStat</EM>
+), and an error message, are maintained in member variables. The concrete implementations should use the provided accessor functions to maintain up-to-date values for them. The <EM CLASS="Key-word">
+pvVariable</EM>
+ class supports the same interface.</P>
+</DIV>
+</DIV>
+<DIV>
+<H3 CLASS="UHEADING2">
+<A NAME="pgfId-703449"></A>pvVariable Class</H3>
+<P CLASS="BODY">
+<A NAME="pgfId-703451"></A><EM CLASS="Key-word">
+pvVariable</EM>
+ is an abstract class that must be extended by specific message systems. It corresponds to a control system variable accessed via its message system. Each <EM CLASS="Key-word">
+pvVariable</EM>
+ object is associated with a <EM CLASS="Key-word">
+pvSystem</EM>
+ object that manages system-wide issues like locking and event handling.</P>
+<P CLASS="BODY">
+<A NAME="pgfId-703458"></A>Refer to <EM CLASS="Key-word">
+pv.h</EM>
+<A NAME="marker-703457"></A> for explicit detail. The following sections describe various important aspects of the class.</P>
+<DIV>
+<H4 CLASS="UHEADING3">
+<A NAME="pgfId-703455"></A>Creation</H4>
+<P CLASS="BODY">
+<A NAME="pgfId-703463"></A>The constructor specifies the corresponding <EM CLASS="Key-word">
+pvSystem</EM>
+, the variable name (which is copied), an optional connection function, an optional private pointer, and an optional debug flag (0 means to inherit it from the <EM CLASS="Key-word">
+pvSystem</EM>
+).</P>
+<P CLASS="BODY">
+<A NAME="pgfId-703465"></A>The constructor should initiate connection to the underlying control system variable and should arrange to call the connection function (if supplied) on each connect or disconnect.</P>
+</DIV>
+<DIV>
+<H4 CLASS="UHEADING3">
+<A NAME="pgfId-703469"></A>Reading</H4>
+<P CLASS="BODY">
+<A NAME="pgfId-703471"></A>Like CDEV, the <A NAME="marker-703549"></A>PV API supports the following <EM CLASS="Key-word">
+get</EM>
+ methods:</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703475"></A>pvStat get( pvType type, int count, pvValue *value );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703476"></A>pvStat getNoBlock( pvType type, int count, pvValue *value );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703477"></A>pvStat getCallback( pvType type, int count, pvEventFunc func,</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703508"></A>					  void *arg = NULL );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703586"></A>&nbsp;</P>
+<UL>
+<LI CLASS="LISTBULLET1">
+<A NAME="pgfId-703473"></A><EM CLASS="Key-word">
+get</EM>
+ blocks on completion for a message system specific timeout (currently 5s for CA)</LI>
+<LI CLASS="LISTBULLET1">
+<A NAME="pgfId-703543"></A><EM CLASS="Key-word">
+getNoBlock</EM>
+ doesn't block: the value can be assumed to be valid only if a subsequent <EM CLASS="Key-word">
+pend</EM>
+ (with <EM CLASS="Key-word">
+wait=FALSE</EM>
+) returns without error (currently, the CA implementation of <EM CLASS="Key-word">
+getNoBlock</EM>
+ does in fact block; it should really use <EM CLASS="Key-word">
+ca_get_callback</EM>
+; note, however, that this is not an issue for the sequencer because it is not used).</LI>
+<LI CLASS="LISTBULLET1">
+<A NAME="pgfId-703544"></A><EM CLASS="Key-word">
+getCallback</EM>
+ calls the user-specified function on completion; there is no timeout</LI>
+</UL>
+</DIV>
+<DIV>
+<H4 CLASS="UHEADING3">
+<A NAME="pgfId-703545"></A>Writing</H4>
+<P CLASS="BODY">
+<A NAME="pgfId-703547"></A>Like CDEV, the <A NAME="marker-703551"></A>PV API supports the following put methods:</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703553"></A>pvStat put( pvType type, int count, pvValue *value );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703554"></A>pvStat putNoBlock( pvType type, int count, pvValue *value );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703555"></A>pvStat putCallback( pvType type, int count, pvValue *value,</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703556"></A>					  pvEventFunc func, void *arg = NULL );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703550"></A>&nbsp;</P>
+<UL>
+<LI CLASS="LISTBULLET1">
+<A NAME="pgfId-703587"></A><EM CLASS="Key-word">
+put</EM>
+ blocks on completion for a message system specific timeout (currently 5s for CA; note that CA does not call <EM CLASS="Key-word">
+ca_put_callback</EM>
+ for a blocking put)</LI>
+<LI CLASS="LISTBULLET1">
+<A NAME="pgfId-703588"></A><EM CLASS="Key-word">
+putNoBlock</EM>
+ doesn't block: successful completion can be inferred only if a subsequent <EM CLASS="Key-word">
+pend</EM>
+ (with <EM CLASS="Key-word">
+wait=FALSE</EM>
+) returns without error (note that CA does not call <EM CLASS="Key-word">
+ca_put_callback</EM>
+ for a non-blocking put)</LI>
+<LI CLASS="LISTBULLET1">
+<A NAME="pgfId-703589"></A><EM CLASS="Key-word">
+putCallback</EM>
+ calls the user-specified function on completion; there is no timeout (note that CA calls <EM CLASS="Key-word">
+ca_put_callback</EM>
+ for a put with callback)</LI>
+</UL>
+</DIV>
+<DIV>
+<H4 CLASS="UHEADING3">
+<A NAME="pgfId-703593"></A>Monitoring</H4>
+<P CLASS="BODY">
+<A NAME="pgfId-703595"></A>The <A NAME="marker-703598"></A>PV API supports the following monitor methods:</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703600"></A>pvStat monitorOn( pvType type, int count, pvEventFunc func,</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703629"></A>					void *arg = NULL, pvCallback **pCallback = NULL );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703603"></A>pvStat monitorOff( pvCallback *callback = NULL );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703597"></A>&nbsp;</P>
+<UL>
+<LI CLASS="LISTBULLET1">
+<A NAME="pgfId-703649"></A><EM CLASS="Key-word">
+monitorOn</EM>
+ enables monitors; when the underlying message system posts a monitor, the user-supplied function will be called (CA enables <EM CLASS="Key-word">
+value</EM>
+ and <EM CLASS="Key-word">
+alarm</EM>
+ monitors)</LI>
+<LI CLASS="LISTBULLET1">
+<A NAME="pgfId-703653"></A><EM CLASS="Key-word">
+monitorOff</EM>
+ disables monitors; it should be supplied with the callback value that was optionally returned by <EM CLASS="Key-word">
+monitorOn</EM>
+</LI>
+<LI CLASS="LISTBULLET1">
+<A NAME="pgfId-703654"></A>some message systems will permit several <EM CLASS="Key-word">
+monitorOn</EM>
+ calls for a single variable (CA does); this is optional (the sequencer only ever calls it once per variable)</LI>
+<LI CLASS="LISTBULLET1">
+<A NAME="pgfId-703657"></A>all message systems must permit several <EM CLASS="Key-word">
+pvVariable</EM>
+s to be associated with the same underlying control system variable and, when a monitor is posted, must guarantee to propagate it to all the associated <EM CLASS="Key-word">
+pvVariable</EM>
+s</LI>
+</UL>
+</DIV>
+<DIV>
+<H4 CLASS="UHEADING3">
+<A NAME="pgfId-703668"></A>Miscellaneous</H4>
+<P CLASS="BODY">
+<A NAME="pgfId-703670"></A><EM CLASS="Key-word">
+pvVariable</EM>
+ supports the same debugging and error reporting interfaces as <EM CLASS="Key-word">
+pvSystem</EM>
+.</P>
+</DIV>
+</DIV>
+</DIV>
+<DIV>
+<H2 CLASS="HEADING1">
+<A NAME="pgfId-703679"></A>Supporting a New Message System<DIV>
+<IMG SRC="Manual-9.gif">
+</DIV>
+</H2>
+<P CLASS="BODY">
+<A NAME="pgfId-703764"></A>CDEV is an obvious message system to support. This section should provide the necessary information to support it or another message system. It includes an example of a partly functional <EM CLASS="Key-word">
+file</EM>
+ message system.</P>
+<P CLASS="BODY">
+<A NAME="pgfId-704338"></A>Note that file names in this section are assumed to be relative to the top of the sequencer source tree.</P>
+<DIV>
+<H3 CLASS="UHEADING2">
+<A NAME="pgfId-703755"></A>Check-list</H3>
+<P CLASS="BODY">
+<A NAME="pgfId-704223"></A>This section gives a check-list. See <A HREF="Manual-7.html#93844" CLASS="XRef">See Example</A> for an example of each stage.</P>
+<DIV>
+<H4 CLASS="UHEADING3">
+<A NAME="pgfId-704242"></A>Create New Files</H4>
+<P CLASS="BODY">
+<A NAME="pgfId-704241"></A>For message system XXX, the following files should be created:</P>
+<UL>
+<LI CLASS="LISTBULLET1">
+<A NAME="pgfId-704234"></A><EM CLASS="Key-word">
+src/pv/pvXxx.h</EM>
+, definitions</LI>
+<LI CLASS="LISTBULLET1">
+<A NAME="pgfId-704239"></A><EM CLASS="Key-word">
+src/pv/pvXxx.cc</EM>
+, implementation</LI>
+</UL>
+</DIV>
+<DIV>
+<H4 CLASS="UHEADING3">
+<A NAME="pgfId-704240"></A>Edit src/pv/pvNew.cc</H4>
+<P CLASS="BODY">
+<A NAME="pgfId-704251"></A>Edit <EM CLASS="Key-word">
+src/pv/pvNew.cc</EM>
+ according to existing conventions. Assume that the <EM CLASS="Key-word">
+PVXXX</EM>
+ pre-processor macro is defined if and only if support for XXX is to be compiled in. See <A HREF="Manual-7.html#62364" CLASS="XRef">See src/pv/pvNew.cc</A> for an example.</P>
+</DIV>
+<DIV>
+<H4 CLASS="UHEADING3">
+<A NAME="pgfId-704250"></A>Edit configure/RELEASE</H4>
+<P CLASS="BODY">
+<A NAME="pgfId-704247"></A>By convention, the <EM CLASS="Key-word">
+configure/RELEASE</EM>
+ file defines the various <EM CLASS="Key-word">
+PVXXX</EM>
+ make macros. See <A HREF="Manual-7.html#99703" CLASS="XRef">See configure/RELEASE</A> for an example.</P>
+</DIV>
+<DIV>
+<H4 CLASS="UHEADING3">
+<A NAME="pgfId-704369"></A>Edit src/pv/Makefile</H4>
+<P CLASS="BODY">
+<A NAME="pgfId-704377"></A>By convention, XXX support should be compiled only if the <EM CLASS="Key-word">
+PVXXX</EM>
+ make macro is defined and set to <EM CLASS="Key-word">
+TRUE</EM>
+. See <A HREF="Manual-7.html#86433" CLASS="XRef">See pv/src/Makefile</A> for an example.</P>
+</DIV>
+<DIV>
+<H4 CLASS="UHEADING3">
+<A NAME="pgfId-704465"></A>Edit application Makefiles</H4>
+<P CLASS="BODY">
+<A NAME="pgfId-704474"></A>Edit application <EM CLASS="Key-word">
+Makefile</EM>
+s to search the <EM CLASS="Key-word">
+pvXxx</EM>
+ library and any other libraries that it references. It is, unfortunately, necessary, to link applications against all message systems. This is because <EM CLASS="Key-word">
+src/pv/pvNew.cc</EM>
+ references them all. This problem will disappear if and when <EM CLASS="Key-word">
+pvNew</EM>
+ is changed to load <EM CLASS="Key-word">
+pvXxx</EM>
+ libraries dynamically by name. See <A HREF="Manual-7.html#82910" CLASS="XRef">See test/pv/Makefile</A> for an example.</P>
+</DIV>
+</DIV>
+<DIV>
+<H3 CLASS="UHEADING2">
+<A NAME="pgfId-704222"></A><A NAME="93844"></A>Example</H3>
+<P CLASS="BODY">
+<A NAME="pgfId-703745"></A>As an example, we consider a notional <EM CLASS="Key-word">
+file</EM>
+ message system with the following attributes:</P>
+<UL>
+<LI CLASS="LISTBULLET1">
+<A NAME="pgfId-703720"></A>Commands are read from file <EM CLASS="Key-word">
+fileI</EM>
+; they are of the form &quot;<EM CLASS="Key-word">
+keyword value</EM>
+&quot;, <EM CLASS="Emphasis">
+e.g.</EM>
+ &quot;<EM CLASS="Key-word">
+fred 2</EM>
+&quot; sets variable <EM CLASS="Key-word">
+fred</EM>
+ to <EM CLASS="Key-word">
+2</EM>
+ (<EM CLASS="Key-word">
+</EM>
+</LI>
+<LI CLASS="LISTBULLET1">
+<A NAME="pgfId-703743"></A>Results are written to file <EM CLASS="Key-word">
+fileO</EM>
+; they are of the same form as the commands</LI>
+<LI CLASS="LISTBULLET1">
+<A NAME="pgfId-703744"></A>Everything is a string</LI>
+</UL>
+<P CLASS="BODY">
+<A NAME="pgfId-703930"></A>The files <EM CLASS="Key-word">
+pvFile.h</EM>
+ and <EM CLASS="Key-word">
+pvFile.cc</EM>
+ can be found in the <EM CLASS="Key-word">
+src/pv </EM>
+directory. They compile and run but do not implement full functionality (left as an exercise for the reader!).</P>
+<DIV>
+<H4 CLASS="UHEADING3">
+<A NAME="pgfId-703754"></A>src/pv/pvFile.h</H4>
+<P CLASS="BODY">
+<A NAME="pgfId-703929"></A>Only some sections of the file are shown.</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703838"></A>class fileSystem : public pvSystem {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703839"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703840"></A>public:</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703841"></A>	fileSystem( int debug = 0 );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703842"></A>	&#126;fileSystem();</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703843"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703846"></A>	virtual pvStat pend( double seconds = 0.0, int wait = FALSE );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703847"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703848"></A>	virtual pvVariable *newVariable( const char *name,</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703880"></A>		pvConnFunc func = NULL, void *priv = NULL, int debug = 0 );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703850"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703851"></A>private:</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703927"></A>	FILE *ifd_;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703928"></A>	FILE *ofd_;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703962"></A>	fd_set readfds_;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703853"></A>};</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703854"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703933"></A>class fileVariable : public pvVariable {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703935"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703936"></A>public:</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703937"></A>    fileVariable( fileSystem *system, const char *name, pvConnFunc</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703964"></A>					func = NULL, void *priv = NULL, int debug = 0 );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703939"></A>    &#126;fileVariable();</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703940"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703941"></A>    virtual pvStat get( pvType type, int count, pvValue *value );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703942"></A>    virtual pvStat getNoBlock( pvType type, int count,</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703985"></A>								  pvValue *value );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703943"></A>    virtual pvStat getCallback( pvType type, int count, pvEventFunc</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704003"></A>								   func, void *arg = NULL );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703945"></A>    virtual pvStat put( pvType type, int count, pvValue *value );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703946"></A>    virtual pvStat putNoBlock( pvType type, int count, pvValue</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704068"></A>								  *value );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703947"></A>    virtual pvStat putCallback( pvType type, int count, pvValue</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704007"></A>			*value, pvEventFunc func, void *arg = NULL );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703949"></A>    virtual pvStat monitorOn( pvType type, int count, pvEventFunc</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704047"></A>			func, void *arg = NULL, pvCallback **pCallback = NULL );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703952"></A>    virtual pvStat monitorOff( pvCallback *callback = NULL );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703953"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703954"></A>    virtual int getConnected() const { return TRUE; }</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703955"></A>    virtual pvType getType() const { return pvTypeSTRING; }</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703956"></A>    virtual int getCount() const { return 1; }</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703957"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703958"></A>private:</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703959"></A>    char *value_;       /* current value */</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-703960"></A>};</P>
+</DIV>
+<DIV>
+<H4 CLASS="UHEADING3">
+<A NAME="pgfId-703961"></A>src/pv/pvFile.cc</H4>
+<P CLASS="BODY">
+<A NAME="pgfId-704074"></A>Most of the file is omitted.</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704076"></A>fileSystem::fileSystem( int debug ) :</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704078"></A>	pvSystem( debug ),</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704079"></A>	ifd_( fopen( &quot;iFile&quot;, &quot;r&quot; ) ),</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704080"></A>	ofd_( fopen( &quot;oFile&quot;, &quot;a&quot; ) )</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704081"></A>{</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704082"></A>    if ( getDebug() &gt; 0 )</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704083"></A>        printf( &quot;%8p: fileSystem::fileSystem( %d )&#92;n&quot;, this, debug);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704084"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704086"></A>	if ( ifd_ == NULL || ofd_ == NULL ) {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704087"></A>		setError( -1, pvSevrERROR, pvStatERROR, &quot;failed to open &quot;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704122"></A>					&quot;iFile or oFile&quot; );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704089"></A>		return;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704090"></A>    }</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704091"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704092"></A>    // initialize fd_set for select()</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704093"></A>	FD_ZERO( &amp;readfds_ );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704094"></A>	FD_SET( fileno( ifd_ ), &amp;readfds_ );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704095"></A>}</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704096"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704097"></A>pvStat fileVariable::get( pvType type, int count, pvValue *value )</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704099"></A>{</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704100"></A>	if ( getDebug() &gt; 0 )</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704101"></A>		printf( &quot;%8p: fileVariable::get( %d, %d )&#92;n&quot;, this, type,</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704142"></A>				 count );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704102"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704104"></A>	printf( &quot;would read %s&#92;n&quot;, getName() );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704105"></A>	strcpy( value-&gt;stringVal[0], &quot;string&quot; );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704106"></A>	return pvStatOK;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704107"></A>}</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704108"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704109"></A>pvStat fileVariable::put( pvType type, int count, pvValue *value )</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704111"></A>{</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704112"></A>	if ( getDebug() &gt; 0 )</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704113"></A>		printf( &quot;%8p: fileVariable::put( %d, %d )&#92;n&quot;, this, type,</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704211"></A>				 count );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704114"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704116"></A>	printf( &quot;would write %s&#92;n&quot;, getName() );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704117"></A>	return pvStatOK;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704118"></A>}</P>
+</DIV>
+<DIV>
+<H4 CLASS="UHEADING3">
+<A NAME="pgfId-704221"></A><A NAME="62364"></A>src/pv/pvNew.cc</H4>
+<P CLASS="BODY">
+<A NAME="pgfId-704258"></A>Edit this to support the <EM CLASS="Key-word">
+file</EM>
+ message system. Some parts of the file are omitted.</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704260"></A>#include &quot;pv.h&quot;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704262"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704263"></A>#if defined( PVCA )</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704264"></A>#include &quot;pvCa.h&quot;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704265"></A>#endif</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704266"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704267"></A><EM CLASS="Bold">
+#if defined( PVFILE )</EM>
+</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704268"></A><EM CLASS="Bold">
+#include &quot;pvFile.h&quot;</EM>
+</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704269"></A><EM CLASS="Bold">
+#endif</EM>
+</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704270"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704282"></A>pvSystem *newPvSystem( const char *name, int debug ) {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704283"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704284"></A>#if defined( PVCA )</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704285"></A>	if ( strcmp( name, &quot;ca&quot; ) == 0 )</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704286"></A>		return new caSystem( debug );</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704287"></A>#endif</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704288"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704289"></A><EM CLASS="Bold">
+#if defined( PVFILE )</EM>
+</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704290"></A><EM CLASS="Bold">
+	if ( strcmp( name, &quot;file&quot; ) == 0 )</EM>
+</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704292"></A><EM CLASS="Bold">
+		return new fileSystem( debug );</EM>
+</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704293"></A><EM CLASS="Bold">
+#endif</EM>
+</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704294"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704300"></A>return NULL;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704301"></A>}</P>
+</DIV>
+<DIV>
+<H4 CLASS="UHEADING3">
+<A NAME="pgfId-704347"></A><A NAME="99703"></A>configure/RELEASE</H4>
+<P CLASS="BODY">
+<A NAME="pgfId-704349"></A>Edit this to support the <EM CLASS="Key-word">
+file</EM>
+ message system. Comment out these lines to disable use of message systems. Some parts of the file are omitted.</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704353"></A>PVCA = TRUE</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704354"></A><EM CLASS="Bold">
+PVFILE = TRUE</EM>
+</P>
+</DIV>
+<DIV>
+<H4 CLASS="UHEADING3">
+<A NAME="pgfId-704380"></A><A NAME="86433"></A>pv/src/Makefile</H4>
+<P CLASS="BODY">
+<A NAME="pgfId-704382"></A>Edit this to support the <EM CLASS="Key-word">
+file</EM>
+ message system. Some parts of the file are omitted.</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704384"></A>LIBRARY += pv</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704390"></A>pv_SRCS += pvNew.cc pv.cc</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704419"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704394"></A>ifeq &quot;$(PVCA)&quot; &quot;TRUE&quot;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704396"></A>USR_CPPFLAGS      += -DPVCA</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704398"></A>INC               += pvCa.h</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704400"></A>LIBRARY           += pvCa</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704401"></A>pv_SRCS_vxWorks   += pvCa.cc</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704402"></A>pvCa_SRCS_DEFAULT += pvCa.cc</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704404"></A>endif</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704405"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704408"></A><EM CLASS="Bold">
+ifeq &quot;$(PVFILE)&quot; &quot;TRUE&quot;</EM>
+</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704410"></A><EM CLASS="Bold">
+USR_CPPFLAGS += -DPVFILE</EM>
+</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704412"></A><EM CLASS="Bold">
+INC          += pvFile.h</EM>
+</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704414"></A><EM CLASS="Bold">
+LIBRARY      += pvFile</EM>
+</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704415"></A><EM CLASS="Bold">
+pvFile_SRCS  += pvFile.cc</EM>
+</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704417"></A><EM CLASS="Bold">
+endif</EM>
+</P>
+</DIV>
+<DIV>
+<H4 CLASS="UHEADING3">
+<A NAME="pgfId-704498"></A><A NAME="82910"></A>test/pv/Makefile</H4>
+<P CLASS="BODY">
+<A NAME="pgfId-704500"></A>This includes rules for building the test programs of <A HREF="Manual-7.html#33834" CLASS="XRef">See A tour of the API</A>. Only those rules are shown.</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704506"></A>TOP = ../..</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704532"></A>include $(TOP)/configure/CONFIG</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704533"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704534"></A>PROD = pvsimpleCC pvsimpleC</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704510"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704541"></A>PROD_LIBS += seq pv</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704511"></A>seq_DIR    = $(SUPPORT_LIB)</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704512"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704513"></A><EM CLASS="Bold">
+ifeq &quot;$(PVFILE)&quot; &quot;TRUE&quot;</EM>
+</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704514"></A><EM CLASS="Bold">
+PROD_LIBS += pvFile</EM>
+</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704515"></A><EM CLASS="Bold">
+endif</EM>
+</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704516"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704522"></A>ifeq &quot;$(PVCA)&quot; &quot;TRUE&quot;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704523"></A>PROD_LIBS += pvCa ca</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704524"></A>endif</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704525"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704526"></A>PROD_LIBS += Com</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704527"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-704528"></A>include $(TOP)/configure/RULES</P>
+</DIV>
+</DIV>
+</DIV>
+</BODY>
+</HTML>

@@ -1,0 +1,264 @@
+# dxpMED.db
+# Author:  Mark Rivers
+# Date:    January 9, 2005
+# Database for multi-element detector with DXP2X MCAs from XIA.
+
+record(bo,"$(P)EraseAll") {
+        field(VAL,"1")
+        field(OUT,"$(P)$(MCAALL).ERAS CA MS")
+        field(FLNK,"$(P)ReadAllOnce")
+}
+
+record(bo,"$(P)EraseStart") {
+        field(VAL,"1")
+        field(OUT,"$(P)$(MCAALL).ERST CA MS")
+        field(FLNK,"$(P)SetAcquireBusy")
+}
+
+record(bo,"$(P)StartAll") {
+        field(VAL,"1")
+        field(OUT,"$(P)$(MCAALL).STRT CA MS")
+        field(FLNK,"$(P)SetAcquireBusy")
+}
+
+# 
+# Set Acquiring to 1, so StatusAll begins processing
+grecord(bo,"$(P)SetAcquireBusy") {
+        field(VAL, "1")
+#        field(OUT, "$(P)ReadAllOnce.PROC PP MS")
+        field(FLNK,"$(P)SetAcquireBusy2")
+}
+
+grecord(bo,"$(P)SetAcquireBusy2") {
+        field(VAL,"1")
+        field(OUT,"$(P)AcquireBusy PP MS")
+        field(FLNK,"$(P)SetClientWait")
+}
+
+record(busy,"$(P)AcquireBusy") {
+}
+
+record(bo,"$(P)StopAll") {
+        field(VAL,"1")
+        field(OUT,"$(P)$(MCAALL).STOP CA MS")
+}
+
+record(ao,"$(P)PresetReal") {
+        field(PREC, "2")
+}
+
+record(ao,"$(P)PresetLive") {
+        field(PREC, "2")
+}
+
+record(bi,"$(P)Acquiring") {
+        field("INP", "$(P)$(MCAALL).ACQG CP MS")
+        field("ZNAM","Done")
+        field("ONAM","Acquiring")
+}
+
+record(ai,"$(P)ElapsedReal") {
+        field(INP,"$(P)$(MCAALL).ERTM CP MS")
+        field(PREC, "2")
+}
+
+record(ai,"$(P)ElapsedLive") {
+        field(INP,"$(P)$(MCAALL).ELTM CP MS")
+        field(PREC, "2")
+}
+
+record(ai,"$(P)DeadTime") {
+        field(PREC, "2")
+}
+
+grecord(ai,"$(P)StatusAll") {
+        field(SCAN,".5 second")
+        field(DISV,"0")
+        field(SDIS,"$(P)Acquiring NPP NMS")
+        field(FLNK, "$(P)StatusAllOnce PP MS")
+}
+
+grecord(bo,"$(P)StatusAllOnce") {
+        field(VAL, "1")
+        field(OUT, "$(P)DoStatusAll PP MS")
+}
+
+grecord(bo,"$(P)DoStatusAll") {
+        field(ZNAM, "Done")
+        field(ONAM, "Read")
+}
+
+grecord(ai,"$(P)ReadCallback") {
+        field(SCAN,"I/O Intr")
+        field(DTYP, "asynInt32")
+        field(INP, "$(INP)ACQUIRING")
+        field(FLNK, "$(P)ReadAllOnce PP MS")
+}
+
+record(ai,"$(P)ReadAll") {
+        field(SCAN,"1 second")
+        field(DISV,"0")
+        field(SDIS,"$(P)Acquiring NPP NMS")
+        field(FLNK, "$(P)ReadAllOnce PP MS")
+}
+
+grecord(bo,"$(P)ReadAllOnce") {
+        field(VAL, "1")
+        field(OUT, "$(P)DoReadAll PP MS")
+}
+
+grecord(bo,"$(P)DoReadAll") {
+        field(ZNAM, "Done")
+        field(ONAM, "Read")
+}
+
+record(bo,"$(P)ReadDXPs") {
+        field(SCAN,"Passive")
+        field(VAL, "1")
+        field(OUT, "$(P)DoReadDXPs PP MS")
+}
+
+grecord(bo,"$(P)DoReadDXPs") {
+        field(ZNAM, "Done")
+        field(ONAM, "Read")
+}
+
+record(bo,"$(P)ReadDXPBaselines") {
+        field(SCAN,"Passive")
+        field(VAL, "1")
+        field(OUT, "$(P)DoReadDXPBaselines PP MS")
+}
+
+grecord(bo,"$(P)DoReadDXPBaselines") {
+        field(ZNAM, "Done")
+        field(ONAM, "Read")
+}
+
+record(bo,"$(P)ReadDXPBaselineHistories") {
+        field(SCAN,"Passive")
+        field(VAL, "1")
+        field(OUT, "$(P)DoReadDXPBaselineHistories PP MS")
+}
+
+grecord(bo,"$(P)DoReadDXPBaselineHistories") {
+        field(ZNAM, "Done")
+        field(ONAM, "Read")
+}
+
+grecord(ai,"$(P)BaselineHistoryTimes") {
+        field(VAL,"1.0")
+        field(PREC,"1")
+}
+
+record(bo,"$(P)ReadDXPTraces") {
+        field(SCAN,"Passive")
+        field(VAL, "1")
+        field(OUT, "$(P)DoReadDXPTraces PP MS")
+}
+
+grecord(bo,"$(P)DoReadDXPTraces") {
+        field(ZNAM, "Done")
+        field(ONAM, "Read")
+}
+
+grecord(ai,"$(P)TraceWaits") {
+        field(VAL,"0.1")
+        field(PREC,"1")
+}
+
+record(bo,"$(P)CopyTRIG_PKTIM") {
+        field(ZNAM, "Done")
+        field(ONAM, "Copy")
+}
+
+record(bo,"$(P)CopyTRIG_GAPTIM") {
+        field(ZNAM, "Done")
+        field(ONAM, "Copy")
+}
+
+record(bo,"$(P)CopyFAST_TRIG") {
+        field(ZNAM, "Done")
+        field(ONAM, "Copy")
+}
+
+record(bo,"$(P)CopyPKTIM") {
+        field(ZNAM, "Done")
+        field(ONAM, "Copy")
+}
+
+record(bo,"$(P)CopyGAPTIM") {
+        field(ZNAM, "Done")
+        field(ONAM, "Copy")
+}
+
+record(bo,"$(P)CopySLOW_TRIG") {
+        field(ZNAM, "Done")
+        field(ONAM, "Copy")
+}
+
+record(bo,"$(P)CopyMAX_WIDTH") {
+        field(ZNAM, "Done")
+        field(ONAM, "Copy")
+}
+
+record(bo,"$(P)CopyBASE_CUT_PCT") {
+        field(ZNAM, "Done")
+        field(ONAM, "Copy")
+}
+
+record(bo,"$(P)CopyBASE_CUT_ENBL") {
+        field(ZNAM, "Done")
+        field(ONAM, "Copy")
+}
+
+record(bo,"$(P)CopyBASE_THRESH") {
+        field(ZNAM, "Done")
+        field(ONAM, "Copy")
+}
+
+record(bo,"$(P)CopyBASE_THRESH_ENBL") {
+        field(ZNAM, "Done")
+        field(ONAM, "Copy")
+}
+
+record(bo,"$(P)CopyPGAIN") {
+        field(ZNAM, "Done")
+        field(ONAM, "Copy")
+}
+
+record(bo,"$(P)CopyBASE_LEN") {
+        field(ZNAM, "Done")
+        field(ONAM, "Copy")
+}
+
+record(bo,"$(P)CopyEMAX") {
+        field(ZNAM, "Done")
+        field(ONAM, "Copy")
+}
+
+record(bo,"$(P)CopyADC_RULE") {
+        field(ZNAM, "Done")
+        field(ONAM, "Copy")
+}
+
+# These records are for waiting for IDL or other clients
+grecord(bo,"$(P)EnableClientWait") {
+        field(ZNAM,"Disable")
+        field(ONAM,"Enable")
+}
+
+grecord(bo,"$(P)SetClientWait") {
+        field(DISV,"0")
+        field(SDIS,"$(P)EnableClientWait NPP NMS")
+        field(OMSL,"closed_loop")
+        field(DOL,"1")
+        field(OUT,"$(P)ClientWait PP MS")
+}
+
+grecord(busy,"$(P)ClientWait") {
+}
+
+# These records are not used, but they must exist for the IDL EPICS_MED class
+grecord(ao,"$(P)Dwell") {}
+grecord(bo,"$(P)ChannelAdvance") {}
+grecord(ao,"$(P)Prescale") {}

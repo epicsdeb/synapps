@@ -1,0 +1,267 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>DXP ReleaseNotes</title>
+</head>
+<body>
+  <div style="text-align: center">
+  </div>
+  <h1 style="text-align: center">
+    dxp Release Notes</h1>
+  <p>
+    See <a href="dxpKnownProblems.html">known problems</a> for information on problems
+    each release.</p>
+  <h2 style="text-align: center">
+    Release 2-9 (2-Feb-2009)
+  </h2>
+  <ul>
+    <li>Fixed problems with DXP4C2X. It was not correctly downloading FiPPI files when
+      peaking time was changed.</li>
+    <li>Fixed problems with logging errors and warnings on vxWorks. Previously the output
+      from XIA routines was lost after the startup script completed, because vxWorks closes
+      and reopens stdout.</li>
+    <li>Fixed memory leaks in XIA's code on Saturn and DXP4C2X when reading baseline histogram.</li>
+    <li>Added support for parallel make</li>
+    <li>Added "busy" module for busy record, moved from sscan.</li>
+  </ul>
+  <h2 style="text-align: center">
+    Release 2-8-1 (20-May-2008)
+  </h2>
+  <ul>
+    <li>Add a few new files in iocBoot/iocDXP2X.</li>
+  </ul>
+  <h2 style="text-align: center">
+    Release 2-8 (6-Feb-2008)
+  </h2>
+  <ul>
+    <li>Updated code for DXP4C2X to work again. Based on X10P code from Handel 0.6.47.
+      This makes the DXP4C2X compatible with the Saturn and the xMAP.</li>
+    <li>Changes in Handel code for Saturn to be compatible with Handel version 0.6.47.
+      These are mostly minor. The most important changes are that the Saturn now supports
+      "maxwidth" and "baseline_threshold" as acquisition parameters, so these are now
+      specified in calibrated units (keV), rather than device units. The dxp record device
+      support (devDxp.c) has been changed to take advantage of this. This change makes
+      the Saturn compatible with the xMAP.</li>
+    <li>Updated documentation to explain how to use udev or hotplug to run the USB Saturn
+      on Linux without root privilege. Added USB_DEVFS_PATH environment variable to iocSaturn/st.cmd
+      to fix problem with libusb using /proc/bus/usb when it should be using /dev/bus/usb,
+      and thus not getting permissions right.</li>
+    <li>Fixed problem with EraseAll not displaying the newly erased spectra.</li>
+  </ul>
+  <h2 style="text-align: center">
+    Release 2-7 (4-Dec-2007)
+  </h2>
+  <ul>
+    <li>This is the first release that builds the xMAP support from source code, rather
+      than from a pre-built DLL from XIA. It uses Handel 0.6.47 from XIA with my modifications
+      to make it work on all supported architectures.</li>
+    <li>Added support for USB 1.0 and USB 2.0 interfaces on Saturn, in addition to existing
+      EPP support. These are supported on the WIN32, Cygwin, and Linux architectures.
+      The following software must be installed on the IOC computer before the USB support
+      will work.
+      <ul>
+        <li>WIN32 and Cygwin: For USB 1.0 Kepler must be installed to provide the required
+          USB driver. For USB 2.0 the PI-SPEC software package from SII must be installed,
+          because it has the required EZ-USB driver. I expect that this driver will be available
+          from XIA soon.</li>
+        <li>Linux. The latest version of the libusb package (0.1.12) must be installed. This
+          can be quickly installed, but requires root priviledge. The IOC application must
+          also currently be run as root, because the USB device is created dynamically and
+          cannot be given non-root access in advance. </li>
+      </ul>
+    </li>
+    <li>This version does NOT support the DXP4C2X because that support from XIA lags behind
+      the Saturn and xMAP in terms of what acquisition parameters it supports. The DXP4C2X
+      will be supported again in a future release.</li>
+    <li>Changed the default value of MAXWIDTH in the DXP record from 20 to 4, to be legal
+      on xMAP.</li>
+  </ul>
+  <h2 style="text-align: center">
+    Release 2-6 (18-Oct-2007)
+  </h2>
+  <ul>
+    <li>Removed architecture specific DBD files and Makefile rules, requires asyn R4-9.</li>
+    <li>Enhancements and additions to 4 element detector ADL files.</li>
+    <li>dxp4c2x_psl.c (CAMAC module). Added support for all of the same parameters that
+      the Saturn (x10p_psl.c) supports. With this enhancement the DXP2X now has the same
+      EPICS interface as the Saturn.</li>
+    <li>dxpMED.st. Increased number of detectors to 32, bug fixes thanks to Dave Madden
+      from SLS.</li>
+  </ul>
+  <h2 style="text-align: center">
+    Release 2-5 (20-Sept-2006)
+  </h2>
+  <ul>
+    <li>Upgraded xMAP DLLs and firmware to release 0.9.1 of xManager. This release from
+      XIA appears to fix all of the initialization problems and other bugs that I have
+      reported to them.</li>
+    <li>Fixed bug in devDxp.c that was causing crashes when reading SCA data on xMAP with
+      0.9.1 firmware and software.</li>
+    <li>Added mutex to interlock access to Handel library. This was needed because the
+      poller thread, asyn port and dxpRecord::init_record can all be calling Handel at
+      the same time.</li>
+    <li>This release uses R6-8 of the mcaRecord, which fixed a serious bug. Previously
+      the MCA record posted monitors for .ACQG=0 (acquire done) before it posted monitors
+      on the VAL field. This could cause clients to collect bad data.</li>
+    <li>Added MAXWIDTH and MAXWIDTH_RBV fields to the dxpRecord.</li>
+    <li>Changed the xMAP to use the energy livetime, rather than trigger livetime, for
+      the MCA record livetime.</li>
+    <li>Fixed the way in which the software determines what type of hardware (xMAP, Saturn,
+      DXP2X) it is running on. Previously it was reading the HDWRVAR low-level parameter,
+      and this was not a reliable test.</li>
+    <li>Moved iocsh commands from drvDxp.c to new file, epicsHandelUtils.c.</li>
+    <li>Changed order of downloading parameters in dxpRecord::init_record so they all
+      get applied the first time.</li>
+    <li>Added feature to dxpMED.st. It now copies the ROI LO and HI fields from the MCA
+      records to the corresponding SCA LO and HI fields in the DXP records.</li>
+    <li>Implemented the poller thread callbacks in the Saturn database. In R2-4 they were
+      only implemented on the xMAP.</li>
+    <li>Loaded EPICS sscan records and initialized saveData in the startup scripts in
+      iocSaturn and iocXMAP. Added menus for them to the top-level medm screens. This
+      is very useful for collecting data as quickly as possible using saveData in the
+      EPICS IOC.</li>
+    <li>Combined MCA ROIs and DXP SCAs onto a single medm screen for multi-element detectors.</li>
+    <li>Changed the prefix of the PVs in iocXMAP from dxpXMAP:med: to dxpXMAP:.</li>
+  </ul>
+  <h2 style="text-align: center">
+    Release 2-4 (17-May-2006)
+  </h2>
+  <ul>
+    <li>Added support for detector "groups" in the dxp and mca record drivers. This is
+      used to turn on and off acquisition on all detectors as efficiently as possible.
+      Modifed dxpMED.db and dxpMED.st to take advantage of this new capability.</li>
+    <li>Added support for the new xMAP PXI modules. This support runs on the cygwin-x86
+      architecture.</li>
+    <li>Added a poller thread to the driver. The poller thread rapidly polls to see if
+      acquisition is complete on all channels. When it is complete it issues callbacks
+      to records that have registered for them. This is used to greatly decrease the latency
+      of MCA records knowing when acquisition is complete. Previously they were limited
+      to 10Hz, or 50msec typically latency. The rate of the poller thread is configured
+      in the DXPConfig command. It is typically 100Hz, which does not place a significant
+      load on the system, but reduces the average latency to 5msec. This poller thread
+      is used in place of interrupts, which none of the XIA hardware types support.</li>
+    <li>Enhancements to dxpRecord:
+      <ul>
+        <li>Made baseline filter length (BASE_LEN) be a menu rather than a number.</li>
+        <li>Added readback for baseline filter length (BASE_LEN_RBV)</li>
+        <li>Added the baseline cut enable (BASE_CUT_ENBL) and readback (BASE_CUT_ENBL_RBV)
+          fields.</li>
+        <li>Implemented the pre-amp gain (PGAIN) and readback (PGAIN_RBV) fields.</li>
+        <li>Added time/point for the baseline history (BHIST_TIME). This is currently only
+          implemented on the xMAP.</li>
+        <li>Removed BASETHRADJ since xMAP does not support it, and it's available as low-level
+          parameter.</li>
+      </ul>
+    </li>
+    <li>Added code to support ADC trace and baseline history to dxpMED.st for multi-element
+      detectors.</li>
+    <li>Fixes and enhancements for 40MHz version of Saturn.</li>
+    <li>Added support for native Windows build, in addition to Cygwin.</li>
+    <li>This version does NOT support the DXP4C2X because that support from XIA lags behind
+      the Saturn and xMAP in terms of what acquisition parameters it supports. The DXP4C2X
+      will be supported in a future release.</li>
+    <li>List of things to be added/fixed in a future release:
+      <ul>
+        <li>Implement missing functions on DXP-2X so it will work again.</li>
+        <li>Get algorithm for baseline threshold in energy units, implement on Saturn and
+          DXP-2X.</li>
+        <li>Implement ROI mapping mode on Saturn and DXP-2X.</li>
+        <li>Implement MCA mapping mode on xMAP.</li>
+        <li>Implement fast SCA acquisition on all models.</li>
+        <li>Add DXP record fields for polarity, reset interval, and RC time constant.</li>
+      </ul>
+    </li>
+  </ul>
+  <h2 style="text-align: center">
+    Release 2-3 (11-August-2005)
+  </h2>
+  <ul>
+    <li>Added several readback fields to dxpRecord (BASETHRESH_RBV, etc.)</li>
+    <li>Use value of RUNTASKS from save/restore, so that auto baseline threshold adjust
+      and other bits are restored.</li>
+    <li>Fixed bugs in setting SCAs from MCA ROIs which were causing error messages.</li>
+    <li>Fixed init_record in dxpRecord so that BASETHRESH from save/restore is set correctly
+      if automatic baseline threshold adjust is disabled.</li>
+    <li>Fixed definition of bit 0 in RUNTASKS in dxp2x_rc.db and dxp2x_reset.db. This
+      bug was causing baseline histogramming to stop if any other bits were modified in
+      RUNTASKS.</li>
+    <li>Added 40MHz firmware files for the Saturn.</li>
+    <li>Fixed bug that was causing bit 0 of RUNTASKS to be reset, turning off baseline
+      histogramming whenever RUNTASKS was modified.</li>
+    <li>Added new ECAL field. ADC_RULE is now at energy=ECAL, not at energy=EMAX/2.</li>
+  </ul>
+  <h2 style="text-align: center">
+    Release 2-2 (29-Mar-2005)
+  </h2>
+  <ul>
+    <li>Added rpc library for standalone applications on cygwin, needed by saveData</li>
+  </ul>
+  <h2 style="text-align: center">
+    Release 2-1 (23-Mar-2005)
+  </h2>
+  <p>
+    Major re-write of the software. Previously the DXP device support for the MCA and
+    DXP records was using the Xerxes library from XIA. This is a low-level library,
+    and required that the EPICS software know what XIA model was being used (Saturn,
+    DXP2X, etc.) This releases uses the XIA Handel library, which is a higher-level
+    library. The EPICS software no longer needs to know what hardware it is talking
+    to, and no longer needs to implement the algorithms to convert high level concepts
+    (e.g. peaking time) to low-level device parameters.</p>
+  <p>
+    Added significant new features to the software, including the ability to acquire
+    and plot the baseline history and ADC trace data. This greatly improves the diagnostics
+    available to the user. The EPICS software now has most of the features of the XIA
+    Kepler and MESA software.</p>
+  <p>
+    Most high-level parameters are now in physical units (e.g. microseconds, keV) rather
+    than integer DXP device units.</p>
+  <p>
+    Added support for running the EPICS IOC on Windows to control the Saturn. This means
+    that a Saturn or Vortex detector can now be run by a Windows laptop, which is attractive
+    for portable applications.</p>
+  <p>
+    Improved Linux support by not requiring the user to have root priviledge to run
+    the IOC.</p>
+  <p>
+    Changed from using the EPICS MPF module to using the new ASYN module. This improves
+    debugging support.</p>
+  <p>
+    Improved multi-element detector support. There is now a single database for multi-element
+    detectors, and all of the logic to synchronize acquisition and copy parameters from
+    detector 1 to all detectors is done by a State Notation Language Program. This greatly
+    simplifies adding support for a new detector with a different number of elements,
+    since only the MEDM screens now need to be changed, not the databases.</p>
+  <p>
+    The commands required in the st.cmd startup file, and the files required to configure
+    the hardware have changed significantly. This is because Handel and Xerxes do things
+    quite differently. Users will need to look at the example iocBoot directories to
+    convert existing IOCs.</p>
+  <h2 style="text-align: center">
+    Release 1-2 (June 2004)
+  </h2>
+  <p>
+    Added 1element_dxp.db, 1element_dxp.adl, dxpTop.adl, single_dxp_top.adl.</p>
+  <p>
+    Dependencies now include calc, sscan, and autosave modules. No longer depend on
+    std module.</p>
+  <p>
+    Fixed clock on X10P (Saturn) model, was 400nsec, actually 800nsec</p>
+  <h2 style="text-align: center">
+    Release 1-1 (January 2004)
+  </h2>
+  <p>
+    This is the first release of the synApps dxp module.&nbsp; Prior to this the support
+    for the XIA DXP models was provided in the synApps CAMAC module.&nbsp; This version
+    runs only on EPICS 3.14.</p>
+  <ul>
+    <li>Moved software from camac to dxp synApps module</li>
+    <li>Added support for Saturn model</li>
+    <li>Added documentation directory</li>
+  </ul>
+  <address>
+    Suggestions and Comments to:
+    <br />
+    <a href="mailto:rivers@cars.uchicago.edu">Mark Rivers </a>: (rivers@cars.uchicago.edu)
+    <br />
+  </address>
+</body>
+</html>

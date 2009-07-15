@@ -1,0 +1,37 @@
+record(stringout,"$(P)$(E)$(T):name")
+{
+    field(DESC, "$(E) name")
+    field(SCAN, "Passive")
+    field(VAL,  "<<<PUT NAME HERE>>>")
+}
+record(longout,"$(P)$(E)$(T)")
+{
+    field(DESC, "$(T) Value")
+    field(SCAN, "Passive")
+    field(DTYP, "Soft Channel")
+    field(OUT,  "$(P)$(E)$(T):calc1.A PP NMS")
+}
+record(longout,"$(P)$(E)$(T):units")
+{
+    field(DESC, "$(T) Units")
+    field(SCAN, "Passive")
+    field(PINI, "YES")
+    field(VAL,  "50")
+    field(DTYP, "Soft Channel")
+    field(OUT,  "$(P)$(E)$(T):calc1.B NPP NMS")
+}
+record(calcout,"$(P)$(E)$(T):calc1")
+{
+    field(DESC, "Format calc1")
+    field(CALC, "A*B")
+    field(OUT,  "$(P)$(R)data PP NMS")
+    field(FLNK, "$(P)$(E)$(T):calc2")
+}
+record(longout,"$(P)$(E)$(T):calc2")
+{
+    field(DESC, "Format calc 2")
+    field(SCAN, "Passive")
+    field(DTYP, "Soft Channel")
+    field(VAL,  "$(N)")
+    field(OUT,  "$(P)$(R)cntl PP NMS")
+}

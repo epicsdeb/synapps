@@ -1,0 +1,76 @@
+#Allen Bradley Basic Support
+device(bi,AB_IO,devBiAb,"AB-Binary Input")
+device(bi,AB_IO,devBiAb16,"AB-16 bit BI")
+device(bi,AB_IO,devBiAb32,"AB-32 bit BI")
+device(bo,AB_IO,devBoAb,"AB-Binary Output")
+device(bo,AB_IO,devBoAb16,"AB-16 bit BO")
+device(bo,AB_IO,devBoAb32,"AB-32 bit BO")
+device(mbbi,AB_IO,devMbbiAb,"AB-Binary Input")
+device(mbbi,AB_IO,devMbbiAb16,"AB-16 bit BI")
+device(mbbi,AB_IO,devMbbiAb32,"AB-32 bit BI")
+device(mbbi,AB_IO,devMbbiAbAdapterStat,"AB-Adapter Status")
+device(mbbi,AB_IO,devMbbiAbCardStat,"AB-Card Status")
+device(mbbiDirect,AB_IO,devMbbiDirectAb,"AB-Binary Input")
+device(mbbiDirect,AB_IO,devMbbiDirectAb16,"AB-16 bit BI")
+device(mbbiDirect,AB_IO,devMbbiDirectAb32,"AB-32 bit BI")
+device(mbbo,AB_IO,devMbboAb,"AB-Binary Output")
+device(mbbo,AB_IO,devMbboAb16,"AB-16 bit BO")
+device(mbbo,AB_IO,devMbboAb32,"AB-32 bit BO")
+device(mbboDirect,AB_IO,devMbboDirectAb,"AB-Binary Output")
+device(mbboDirect,AB_IO,devMbboDirectAb16,"AB-16 bit BO")
+device(mbboDirect,AB_IO,devMbboDirectAb32,"AB-32 bit BO")
+
+driver(drvAb)
+
+#Allen Bradley 1746HSTP Stepper Motor Controller
+#device(steppermotor,AB_IO,devSmAB1746Hstp1,"Allen Bradley 1746-HTSP1")
+
+#Allen Bradley 1771 DCM
+include "abDcmRecord.dbd"
+device(ai,INST_IO,"devAiAbDcm","Ab Dcm")
+device(bi,INST_IO,"devBiAbDcm","Ab Dcm")
+device(longin,INST_IO,"devLiAbDcm","Ab Dcm")
+device(mbbi,INST_IO,"devMbbiAbDcm","Ab Dcm")
+device(ao,INST_IO,"devAoAbDcm","Ab Dcm")
+device(bo,INST_IO,"devBoAbDcm","Ab Dcm")
+device(longout,INST_IO,"devLoAbDcm","Ab Dcm")
+device(mbbo,INST_IO,"devMbboAbDcm","Ab Dcm")
+
+#General Purpose Device Interfaces
+device(ai,INST_IO,devInterfaceAI1,"InterfaceAI1")
+device(ao,INST_IO,devInterfaceAO1,"InterfaceAO1")
+
+#Allen Bradley 1771IX(E and HR) - also needs InterfaceAI1
+include "ab1771IXRecord.dbd"
+
+#Allen Bradley 1771IFE - also needs InterfaceAI1
+include "ab1771IFERecord.dbd"
+
+#Allen Bradley 1771N Series - also needs InterfaceAI1 and InterfaceAO1
+include "ab1771NRecord.dbd"
+
+#Allen Bradley 1791 Block I/O
+include "ab1791Record.dbd"
+device(ai,INST_IO,devAiAb1791,"Allen Bradley 1791")
+device(ao,INST_IO,devAoAb1791,"Allen Bradley 1791")
+
+
+#Allen Bradley SCL DCM
+device(ai,AB_IO,devAiAbSlcDcm,"AB-SLC500DCM")
+device(ai,AB_IO,devAiAbSlcDcmSigned,"AB-SLC500DCM-Signed")
+device(ao,AB_IO,devAoAbSlcDcm,"AB-SLC500DCM")
+device(longin,AB_IO,devLiAbSlcDcm,"AB-SLC500DCM")
+device(longout,AB_IO,devLoAbSlcDcm,"AB-SLC500DCM")
+
+#Allen Bradley Old Ai/Ao Suport
+device(ai,AB_IO,devAiAb1771Il,"AB-1771IL-Analog In")
+device(ai,AB_IO,devAiAb1771Ife,"AB-1771IFE")
+#IXE has new support - Please use it
+device(ai,AB_IO,devAiAb1771Ixe,"AB-1771IXE-Millivolt In")
+device(ai,AB_IO,devAiAb1771IfeSe,"AB-1771IFE-SE")
+device(ai,AB_IO,devAiAb1771IfeMa,"AB-1771IFE-4to20MA")
+device(ai,AB_IO,devAiAb1771Ife0to5V,"AB-1771IFE-0to5Volt")
+device(ai,AB_IO,devAiAb1771IrPlatinum,"AB-1771RTD-Platinum")
+device(ai,AB_IO,devAiAb1771IrCopper,"AB-1771RTD-Copper")
+device(ao,AB_IO,devAoAb1771Ofe,"AB-1771OFE")
+

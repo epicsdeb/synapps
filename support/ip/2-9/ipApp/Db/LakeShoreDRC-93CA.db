@@ -1,0 +1,704 @@
+grecord(longout,"$(P)$(Q)LocRemPut")
+{
+	field(DTYP,"asyn lo stringParm")
+	field(DISV,"0")
+	field(SDIS,"$(P)$(Q)LocRemNeed.VAL NPP NMS")
+	field(FLNK,"$(P)$(Q)LocRemR.PROC PP MS")
+	field(OUT,"@asyn($(PORT))FMT=M%1d")
+	field(DOL,"$(P)$(Q)LocalRemote.VAL NPP NMS")
+	field(OMSL,"closed_loop")
+	field(HOPR,"2")
+}
+grecord(longout,"$(P)$(Q)CtrlResPut")
+{
+	field(DTYP,"asyn lo stringParm")
+	field(DISV,"0")
+	field(SDIS,"$(P)$(Q)CtrlResNeed.VAL NPP NMS")
+	field(FLNK,"$(P)$(Q)CtrlResR.PROC PP MS")
+	field(OUT,"@asyn($(PORT))FMT=F3C%1d")
+	field(DOL,"$(P)$(Q)CtrlRes.VAL NPP NMS")
+	field(OMSL,"closed_loop")
+	field(HOPR,"2")
+}
+grecord(stringout,"$(P)$(Q)Cycle")
+{
+	field(FLNK,"$(P)$(Q)CycleQ.PROC PP MS")
+}
+grecord(stringout,"$(P)$(Q)CtrlUnitsPut")
+{
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Q)CtrlUnitsR.PROC PP MS")
+	field(VAL,"F0K")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Q)CtrlUnitsK")
+{
+	field(VAL,"F0K")
+	field(OUT,"$(P)$(Q)CtrlUnitsPut.VAL PP MS")
+}
+grecord(stringout,"$(P)$(Q)CtrlUnitsC")
+{
+	field(VAL,"F0C")
+	field(OUT,"$(P)$(Q)CtrlUnitsPut.VAL PP MS")
+}
+grecord(stringout,"$(P)$(Q)CtrlUnitsF")
+{
+	field(VAL,"F0F")
+	field(OUT,"$(P)$(Q)CtrlUnitsPut.VAL PP MS")
+}
+grecord(mbbo,"$(P)$(Q)CtrlUnits")
+{
+	field(DTYP,"Raw Soft Channel")
+	field(FLNK,"$(P)$(Q)CtrlUnitsQ.PROC PP MS")
+	field(NOBT,"2")
+	field(OUT,"$(P)$(Q)CtrlUnitsFO.SELN NPP NMS")
+	field(ZRVL,"0x1")
+	field(ONVL,"0x2")
+	field(TWVL,"0x3")
+	field(ZRST,"K")
+	field(ONST,"C")
+	field(TWST,"F")
+}
+grecord(fanout,"$(P)$(Q)CtrlUnitsFO")
+{
+	field(DISV,"0")
+	field(SDIS,"$(P)$(Q)CtrlUnitsNeed.VAL NPP NMS")
+	field(SELM,"Specified")
+	field(LNK1,"$(P)$(Q)CtrlUnitsK.PROC PP MS")
+	field(LNK2,"$(P)$(Q)CtrlUnitsC.PROC PP MS")
+	field(LNK3,"$(P)$(Q)CtrlUnitsF.PROC PP MS")
+}
+grecord(stringout,"$(P)$(Q)SamplUnitsPut")
+{
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Q)SamplUnitsR.PROC PP MS")
+	field(VAL,"F1K")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Q)SamplUnitsK")
+{
+	field(VAL,"F1K")
+	field(OUT,"$(P)$(Q)SamplUnitsPut.VAL PP MS")
+}
+grecord(stringout,"$(P)$(Q)SamplUnitsC")
+{
+	field(VAL,"F1C")
+	field(OUT,"$(P)$(Q)SamplUnitsPut.VAL PP MS")
+}
+grecord(stringout,"$(P)$(Q)SamplUnitsF")
+{
+	field(VAL,"F1F")
+	field(OUT,"$(P)$(Q)SamplUnitsPut.VAL PP MS")
+}
+grecord(mbbo,"$(P)$(Q)SamplUnits")
+{
+	field(DTYP,"Raw Soft Channel")
+	field(FLNK,"$(P)$(Q)SamplUnitsQ.PROC PP MS")
+	field(NOBT,"2")
+	field(OUT,"$(P)$(Q)SamplUnitsFO.SELN NPP NMS")
+	field(ZRVL,"0x1")
+	field(ONVL,"0x2")
+	field(TWVL,"0x3")
+	field(ZRST,"K")
+	field(ONST,"C")
+	field(TWST,"F")
+}
+grecord(fanout,"$(P)$(Q)SamplUnitsFO")
+{
+	field(DISV,"0")
+	field(SDIS,"$(P)$(Q)SamplUnitsNeed.VAL NPP NMS")
+	field(SELM,"Specified")
+	field(LNK1,"$(P)$(Q)SamplUnitsK.PROC PP MS")
+	field(LNK2,"$(P)$(Q)SamplUnitsC.PROC PP MS")
+	field(LNK3,"$(P)$(Q)SamplUnitsF.PROC PP MS")
+}
+grecord(mbbo,"$(P)$(Q)CtrlRes")
+{
+	field(DTYP,"Raw Soft Channel")
+	field(FLNK,"$(P)$(Q)CtrlResQ.PROC PP MS")
+	field(NOBT,"3")
+	field(ONVL,"0x1")
+	field(TWVL,"0x2")
+	field(THVL,"0x3")
+	field(FRVL,"0x4")
+	field(ZRST,"xxx.")
+	field(ONST,"xxx.x")
+	field(TWST,"xxx.xx")
+	field(THST," xx.xxx")
+	field(FRST,"  x.xxxx")
+}
+grecord(stringout,"$(P)$(Q)ReadCtrl")
+{
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Q)CtrlReading.PROC PP MS")
+	field(VAL,"WC")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Q)ReadSampl")
+{
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Q)SamplReading.PROC PP MS")
+	field(VAL,"WS")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Q)ReadSetPt")
+{
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Q)SetPtReading.PROC PP MS")
+	field(VAL,"WP")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(ao,"$(P)$(Q)SetPointPut")
+{
+	field(DTYP,"asyn ao stringParm")
+	field(DISV,"0")
+	field(SDIS,"$(P)$(Q)SetPointNeed.VAL NPP NMS")
+	field(FLNK,"$(P)$(Q)SetPointR.PROC PP MS")
+	field(OUT,"@asyn($(PORT))FMT=S%f")
+	field(DOL,"$(P)$(Q)SetPoint.VAL NPP NMS")
+	field(OMSL,"closed_loop")
+	field(PREC,"2")
+}
+grecord(longout,"$(P)$(Q)HeatRangePut")
+{
+	field(DTYP,"asyn lo stringParm")
+	field(DISV,"0")
+	field(SDIS,"$(P)$(Q)HRNeed.VAL NPP NMS")
+	field(FLNK,"$(P)$(Q)HRR.PROC PP MS")
+	field(OUT,"@asyn($(PORT))FMT=R%1d")
+	field(DOL,"$(P)$(Q)HeatRange.VAL NPP NMS")
+	field(OMSL,"closed_loop")
+	field(HOPR,"2")
+}
+grecord(mbbo,"$(P)$(Q)HeatRange")
+{
+	field(DTYP,"Raw Soft Channel")
+	field(FLNK,"$(P)$(Q)HRQ.PROC PP MS")
+	field(NOBT,"3")
+	field(ONVL,"0x1")
+	field(TWVL,"0x2")
+	field(THVL,"0x3")
+	field(FRVL,"0x4")
+	field(FVVL,"0x5")
+	field(ZRST,"Off")
+	field(ONST,"10 mA")
+	field(TWST,"33 mA")
+	field(THST,"100 mA")
+	field(FRST,"330 mA")
+	field(FVST,"1 A")
+}
+grecord(stringout,"$(P)$(Q)CtrlSensorPut")
+{
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Q)CtrlSensR.PROC PP MS")
+	field(VAL,"F0K")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Q)CtrlSensorA")
+{
+	field(VAL,"F2CA0")
+	field(OUT,"$(P)$(Q)CtrlSensorPut.VAL PP MS")
+}
+grecord(stringout,"$(P)$(Q)CtrlSensorB")
+{
+	field(VAL,"F2CB0")
+	field(OUT,"$(P)$(Q)CtrlSensorPut.VAL PP MS")
+}
+grecord(mbbo,"$(P)$(Q)CtrlSensor")
+{
+	field(DTYP,"Raw Soft Channel")
+	field(FLNK,"$(P)$(Q)CtrlSensQ.PROC PP MS")
+	field(NOBT,"2")
+	field(OUT,"$(P)$(Q)CtrlSensorFO.SELN NPP NMS")
+	field(ZRVL,"0x1")
+	field(ONVL,"0x2")
+	field(ZRST,"A")
+	field(ONST,"B")
+}
+grecord(fanout,"$(P)$(Q)CtrlSensorFO")
+{
+	field(DISV,"0")
+	field(SDIS,"$(P)$(Q)CtrlSensNeed.VAL NPP NMS")
+	field(SELM,"Specified")
+	field(LNK1,"$(P)$(Q)CtrlSensorA.PROC PP MS")
+	field(LNK2,"$(P)$(Q)CtrlSensorB.PROC PP MS")
+}
+grecord(mbbo,"$(P)$(Q)LocalRemote")
+{
+	field(DTYP,"Raw Soft Channel")
+	field(FLNK,"$(P)$(Q)LocRemQ.PROC PP MS")
+	field(NOBT,"2")
+	field(ONVL,"0x1")
+	field(TWVL,"0x2")
+	field(ZRST,"Local")
+	field(ONST,"Remote")
+	field(TWST,"Remote!")
+}
+grecord(ai,"$(P)$(Q)SetPtReading")
+{
+	field(DTYP,"asyn ai stringParm")
+	field(FLNK,"$(P)$(Q)ReadGain.PROC PP MS")
+	field(INP,"@asyn($(PORT))FMT=%lf")
+	field(PREC,"2")
+}
+grecord(stringout,"$(P)$(Q)ReadPower")
+{
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Q)PowerReading.PROC PP MS")
+	field(VAL,"W3")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(ai,"$(P)$(Q)PowerReading")
+{
+	field(DTYP,"asyn ai stringParm")
+	field(FLNK,"$(P)$(Q)ReadCUnits.PROC PP MS")
+	field(INP,"@asyn($(PORT))FMT=%lf,IX=14")
+	field(PREC,"2")
+}
+grecord(stringout,"$(P)$(Q)ReadGain")
+{
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Q)GainReading.PROC PP MS")
+	field(VAL,"W3")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(ai,"$(P)$(Q)GainReading")
+{
+	field(DTYP,"asyn ai stringParm")
+	field(FLNK,"$(P)$(Q)ReadRate.PROC PP MS")
+	field(INP,"@asyn($(PORT))FMT=%lf")
+	field(PREC,"1")
+}
+grecord(stringout,"$(P)$(Q)ReadRate")
+{
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Q)RateReading.PROC PP MS")
+	field(VAL,"W3")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(ai,"$(P)$(Q)RateReading")
+{
+	field(DTYP,"asyn ai stringParm")
+	field(FLNK,"$(P)$(Q)ReadReset.PROC PP MS")
+	field(INP,"@asyn($(PORT))FMT=%lf,IX=4")
+	field(PREC,"1")
+}
+grecord(stringout,"$(P)$(Q)ReadReset")
+{
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Q)ResetReading.PROC PP MS")
+	field(VAL,"W3")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(ai,"$(P)$(Q)ResetReading")
+{
+	field(DTYP,"asyn ai stringParm")
+	field(FLNK,"$(P)$(Q)ReadHRange.PROC PP MS")
+	field(INP,"@asyn($(PORT))FMT=%lf,IX=8")
+	field(PREC,"1")
+}
+grecord(stringout,"$(P)$(Q)ReadHRange")
+{
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Q)HRangeAI.PROC PP MS")
+	field(VAL,"W3")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(ai,"$(P)$(Q)HRangeAI")
+{
+	field(DTYP,"asyn ai stringParm")
+	field(FLNK,"$(P)$(Q)HRangeReading.PROC PP MS")
+	field(INP,"@asyn($(PORT))FMT=%lf,IX=12")
+	field(PREC,"2")
+}
+grecord(bo,"$(P)$(Q)DoAll")
+{
+	field(SDIS,"$(P)$(Q)Busy.VAL NPP NMS")
+	field(FLNK,"$(P)$(Q)Do1FO.PROC PP MS")
+	field(OMSL,"closed_loop")
+	field(DOL,"1")
+	field(OUT,"$(P)$(Q)Busy.VAL PP MS")
+}
+grecord(ai,"$(P)$(Q)CtrlReading")
+{
+	field(DTYP,"asyn ai stringParm")
+	field(FLNK,"$(P)$(Q)ReadSampl.PROC PP MS")
+	field(INP,"@asyn($(PORT))FMT=%lf")
+	field(PREC,"4")
+}
+grecord(ai,"$(P)$(Q)SamplReading")
+{
+	field(DTYP,"asyn ai stringParm")
+	field(FLNK,"$(P)$(Q)ReadSetPt.PROC PP MS")
+	field(INP,"@asyn($(PORT))FMT=%lf")
+	field(PREC,"4")
+}
+grecord(stringout,"$(P)$(Q)SamplSensorPut")
+{
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Q)SmplSensR.PROC PP MS")
+	field(VAL,"F2SA0")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Q)SamplSensorA")
+{
+	field(VAL,"F2SA0")
+	field(OUT,"$(P)$(Q)SamplSensorPut.VAL PP MS")
+}
+grecord(stringout,"$(P)$(Q)SamplSensorB")
+{
+	field(VAL,"F2SB0")
+	field(OUT,"$(P)$(Q)SamplSensorPut.VAL PP MS")
+}
+grecord(mbbo,"$(P)$(Q)SamplSensor")
+{
+	field(DTYP,"Raw Soft Channel")
+	field(FLNK,"$(P)$(Q)SmplSensQ.PROC PP MS")
+	field(NOBT,"2")
+	field(OUT,"$(P)$(Q)SamplSensorFO.SELN NPP NMS")
+	field(ZRVL,"0x1")
+	field(ONVL,"0x2")
+	field(ZRST,"A")
+	field(ONST,"B")
+}
+grecord(fanout,"$(P)$(Q)SamplSensorFO")
+{
+	field(DISV,"0")
+	field(SDIS,"$(P)$(Q)SmplSensNeed.VAL NPP NMS")
+	field(SELM,"Specified")
+	field(LNK1,"$(P)$(Q)SamplSensorA.PROC PP MS")
+	field(LNK2,"$(P)$(Q)SamplSensorB.PROC PP MS")
+}
+grecord(mbbi,"$(P)$(Q)HRangeReading")
+{
+	field(DTYP,"Raw Soft Channel")
+	field(FLNK,"$(P)$(Q)ReadPower.PROC PP MS")
+	field(NOBT,"3")
+	field(INP,"$(P)$(Q)HRangeAI.VAL NPP NMS")
+	field(ONVL,"0x1")
+	field(TWVL,"0x2")
+	field(THVL,"0x3")
+	field(FRVL,"0x4")
+	field(FVVL,"0x5")
+	field(ZRST,"Off")
+	field(ONST,"10 mA")
+	field(TWST,"33 mA")
+	field(THST,"100 mA")
+	field(FRST,"330 mA")
+	field(FVST,"1 A")
+}
+grecord(bi,"$(P)$(Q)Busy")
+grecord(bo,"$(P)$(Q)Done")
+{
+	field(OMSL,"closed_loop")
+	field(OUT,"$(P)$(Q)Busy.VAL PP MS")
+}
+grecord(bo,"$(P)$(Q)CycleQ")
+{
+	field(OMSL,"closed_loop")
+	field(DOL,"1")
+	field(OUT,"$(P)$(Q)CycleNeed.VAL PP MS")
+}
+grecord(bo,"$(P)$(Q)CycleNeed")
+grecord(stringout,"$(P)$(Q)CyclePut")
+{
+	field(DTYP,"asyn so stringParm")
+	field(DISV,"0")
+	field(SDIS,"$(P)$(Q)CycleNeed.VAL NPP NMS")
+	field(FLNK,"$(P)$(Q)CycleR.PROC PP MS")
+	field(DOL,"$(P)$(Q)Cycle.VAL NPP NMS")
+	field(OMSL,"closed_loop")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(bo,"$(P)$(Q)CycleR")
+{
+	field(OMSL,"closed_loop")
+	field(OUT,"$(P)$(Q)CycleNeed.VAL PP MS")
+}
+grecord(fanout,"$(P)$(Q)Do1FO")
+{
+	field(LNK1,"$(P)$(Q)CyclePut.PROC PP MS")
+	field(LNK2,"$(P)$(Q)LocRemPut.PROC PP MS")
+	field(LNK3,"$(P)$(Q)CtrlUnitsFO.PROC PP MS")
+	field(LNK4,"$(P)$(Q)SamplUnitsFO.PROC PP MS")
+	field(LNK5,"$(P)$(Q)CtrlSensorFO.PROC PP MS")
+	field(LNK6,"$(P)$(Q)Do2FO.PROC PP MS")
+}
+grecord(bo,"$(P)$(Q)LocRemQ")
+{
+	field(OMSL,"closed_loop")
+	field(DOL,"1")
+	field(OUT,"$(P)$(Q)LocRemNeed.VAL PP MS")
+}
+grecord(bo,"$(P)$(Q)LocRemNeed")
+grecord(bo,"$(P)$(Q)LocRemR")
+{
+	field(OMSL,"closed_loop")
+	field(OUT,"$(P)$(Q)LocRemNeed.VAL PP MS")
+}
+grecord(bo,"$(P)$(Q)CtrlUnitsQ")
+{
+	field(OMSL,"closed_loop")
+	field(DOL,"1")
+	field(OUT,"$(P)$(Q)CtrlUnitsNeed.VAL PP MS")
+}
+grecord(bo,"$(P)$(Q)CtrlUnitsNeed")
+grecord(bo,"$(P)$(Q)CtrlUnitsR")
+{
+	field(OMSL,"closed_loop")
+	field(OUT,"$(P)$(Q)CtrlUnitsNeed.VAL PP MS")
+}
+grecord(bo,"$(P)$(Q)SamplUnitsQ")
+{
+	field(OMSL,"closed_loop")
+	field(DOL,"1")
+	field(OUT,"$(P)$(Q)SamplUnitsNeed.VAL PP MS")
+}
+grecord(bo,"$(P)$(Q)SamplUnitsNeed")
+grecord(bo,"$(P)$(Q)SamplUnitsR")
+{
+	field(OMSL,"closed_loop")
+	field(OUT,"$(P)$(Q)SamplUnitsNeed.VAL PP MS")
+}
+grecord(bo,"$(P)$(Q)CtrlSensQ")
+{
+	field(OMSL,"closed_loop")
+	field(DOL,"1")
+	field(OUT,"$(P)$(Q)CtrlSensNeed.VAL PP MS")
+}
+grecord(bo,"$(P)$(Q)CtrlSensNeed")
+grecord(bo,"$(P)$(Q)CtrlSensR")
+{
+	field(OMSL,"closed_loop")
+	field(OUT,"$(P)$(Q)CtrlSensNeed.VAL PP MS")
+}
+grecord(fanout,"$(P)$(Q)Do2FO")
+{
+	field(LNK1,"$(P)$(Q)SamplSensorFO.PROC PP MS")
+	field(LNK2,"$(P)$(Q)CtrlResPut.PROC PP MS")
+	field(LNK3,"$(P)$(Q)SamplResPut.PROC PP MS")
+	field(LNK4,"$(P)$(Q)SetPointPut.PROC PP MS")
+	field(LNK5,"$(P)$(Q)GainPut.PROC PP MS")
+	field(LNK6,"$(P)$(Q)Do2FO_41.PROC PP MS")
+}
+grecord(bo,"$(P)$(Q)SmplSensQ")
+{
+	field(OMSL,"closed_loop")
+	field(DOL,"1")
+	field(OUT,"$(P)$(Q)SmplSensNeed.VAL PP MS")
+}
+grecord(bo,"$(P)$(Q)SmplSensNeed")
+grecord(bo,"$(P)$(Q)SmplSensR")
+{
+	field(OMSL,"closed_loop")
+	field(OUT,"$(P)$(Q)SmplSensNeed.VAL PP MS")
+}
+grecord(bo,"$(P)$(Q)CtrlResQ")
+{
+	field(OMSL,"closed_loop")
+	field(DOL,"1")
+	field(OUT,"$(P)$(Q)CtrlResNeed.VAL PP MS")
+}
+grecord(bo,"$(P)$(Q)CtrlResNeed")
+grecord(bo,"$(P)$(Q)CtrlResR")
+{
+	field(OMSL,"closed_loop")
+	field(OUT,"$(P)$(Q)CtrlResNeed.VAL PP MS")
+}
+grecord(longout,"$(P)$(Q)SamplResPut")
+{
+	field(DTYP,"asyn lo stringParm")
+	field(DISV,"0")
+	field(SDIS,"$(P)$(Q)SamplResNeed.VAL NPP NMS")
+	field(FLNK,"$(P)$(Q)SamplResR.PROC PP MS")
+	field(OUT,"@asyn($(PORT))FMT=F3S%1d")
+	field(DOL,"$(P)$(Q)SamplRes.VAL NPP NMS")
+	field(OMSL,"closed_loop")
+	field(HOPR,"2")
+}
+grecord(mbbo,"$(P)$(Q)SamplRes")
+{
+	field(DTYP,"Raw Soft Channel")
+	field(FLNK,"$(P)$(Q)SamplResQ.PROC PP MS")
+	field(NOBT,"3")
+	field(ONVL,"0x1")
+	field(TWVL,"0x2")
+	field(THVL,"0x3")
+	field(FRVL,"0x4")
+	field(ZRST,"xxx.")
+	field(ONST,"xxx.x")
+	field(TWST,"xxx.xx")
+	field(THST," xx.xxx")
+	field(FRST,"  x.xxxx")
+}
+grecord(bo,"$(P)$(Q)SamplResQ")
+{
+	field(OMSL,"closed_loop")
+	field(DOL,"1")
+	field(OUT,"$(P)$(Q)SamplResNeed.VAL PP MS")
+}
+grecord(bo,"$(P)$(Q)SamplResNeed")
+grecord(bo,"$(P)$(Q)SamplResR")
+{
+	field(OMSL,"closed_loop")
+	field(OUT,"$(P)$(Q)SamplResNeed.VAL PP MS")
+}
+grecord(ao,"$(P)$(Q)SetPoint")
+{
+	field(DESC,"S%f")
+	field(FLNK,"$(P)$(Q)SetPointQ.PROC PP MS")
+	field(PREC,"2")
+}
+grecord(bo,"$(P)$(Q)SetPointQ")
+{
+	field(OMSL,"closed_loop")
+	field(DOL,"1")
+	field(OUT,"$(P)$(Q)SetPointNeed.VAL PP MS")
+}
+grecord(bo,"$(P)$(Q)SetPointNeed")
+grecord(bo,"$(P)$(Q)SetPointR")
+{
+	field(OMSL,"closed_loop")
+	field(OUT,"$(P)$(Q)SetPointNeed.VAL PP MS")
+}
+grecord(ao,"$(P)$(Q)GainPut")
+{
+	field(DTYP,"asyn ao stringParm")
+	field(DISV,"0")
+	field(SDIS,"$(P)$(Q)GainNeed.VAL NPP NMS")
+	field(FLNK,"$(P)$(Q)GainR.PROC PP MS")
+	field(OUT,"@asyn($(PORT))P%f")
+	field(DOL,"$(P)$(Q)Gain.VAL NPP NMS")
+	field(OMSL,"closed_loop")
+	field(PREC,"2")
+	field(EGUF,"99")
+	field(DRVH,"99")
+	field(HOPR,"99")
+}
+grecord(ao,"$(P)$(Q)Gain")
+{
+	field(DESC,"S%f")
+	field(FLNK,"$(P)$(Q)GainQ.PROC PP MS")
+	field(PREC,"2")
+}
+grecord(bo,"$(P)$(Q)GainQ")
+{
+	field(OMSL,"closed_loop")
+	field(DOL,"1")
+	field(OUT,"$(P)$(Q)GainNeed.VAL PP MS")
+}
+grecord(bo,"$(P)$(Q)GainNeed")
+grecord(bo,"$(P)$(Q)GainR")
+{
+	field(OMSL,"closed_loop")
+	field(OUT,"$(P)$(Q)GainNeed.VAL PP MS")
+}
+grecord(ao,"$(P)$(Q)RatePut")
+{
+	field(DTYP,"asyn ao stringParm")
+	field(DISV,"0")
+	field(SDIS,"$(P)$(Q)RateNeed.VAL NPP NMS")
+	field(FLNK,"$(P)$(Q)RateR.PROC PP MS")
+	field(OUT,"@asyn($(PORT))D%f")
+	field(DOL,"$(P)$(Q)Rate.VAL NPP NMS")
+	field(OMSL,"closed_loop")
+	field(PREC,"2")
+	field(EGUF,"99")
+	field(DRVH,"99")
+	field(HOPR,"99")
+}
+grecord(ao,"$(P)$(Q)Rate")
+{
+	field(DESC,"S%f")
+	field(FLNK,"$(P)$(Q)RateQ.PROC PP MS")
+	field(PREC,"2")
+}
+grecord(bo,"$(P)$(Q)RateQ")
+{
+	field(OMSL,"closed_loop")
+	field(DOL,"1")
+	field(OUT,"$(P)$(Q)RateNeed.VAL PP MS")
+}
+grecord(bo,"$(P)$(Q)RateNeed")
+grecord(bo,"$(P)$(Q)RateR")
+{
+	field(OMSL,"closed_loop")
+	field(OUT,"$(P)$(Q)RateNeed.VAL PP MS")
+}
+grecord(fanout,"$(P)$(Q)Do2FO_41")
+{
+	field(LNK1,"$(P)$(Q)RatePut.PROC PP MS")
+	field(LNK2,"$(P)$(Q)ResetPut.PROC PP MS")
+	field(LNK3,"$(P)$(Q)HeatRangePut.PROC PP MS")
+	field(LNK4,"$(P)$(Q)ReadCtrl.PROC PP MS")
+}
+grecord(ao,"$(P)$(Q)ResetPut")
+{
+	field(DTYP,"asyn ao stringParm")
+	field(DISV,"0")
+	field(SDIS,"$(P)$(Q)ResetNeed.VAL NPP NMS")
+	field(FLNK,"$(P)$(Q)ResetR.PROC PP MS")
+	field(OUT,"@asyn($(PORT))FMT=I%f")
+	field(DOL,"$(P)$(Q)Reset.VAL NPP NMS")
+	field(OMSL,"closed_loop")
+	field(PREC,"2")
+	field(EGUF,"99")
+	field(DRVH,"99")
+	field(HOPR,"99")
+}
+grecord(ao,"$(P)$(Q)Reset")
+{
+	field(DESC,"S%f")
+	field(FLNK,"$(P)$(Q)ResetQ.PROC PP MS")
+	field(PREC,"2")
+}
+grecord(bo,"$(P)$(Q)ResetQ")
+{
+	field(OMSL,"closed_loop")
+	field(DOL,"1")
+	field(OUT,"$(P)$(Q)ResetNeed.VAL PP MS")
+}
+grecord(bo,"$(P)$(Q)ResetNeed")
+grecord(bo,"$(P)$(Q)ResetR")
+{
+	field(OMSL,"closed_loop")
+	field(OUT,"$(P)$(Q)ResetNeed.VAL PP MS")
+}
+grecord(bo,"$(P)$(Q)HRQ")
+{
+	field(OMSL,"closed_loop")
+	field(DOL,"1")
+	field(OUT,"$(P)$(Q)HRNeed.VAL PP MS")
+}
+grecord(bo,"$(P)$(Q)HRNeed")
+grecord(bo,"$(P)$(Q)HRR")
+{
+	field(OMSL,"closed_loop")
+	field(OUT,"$(P)$(Q)HRNeed.VAL PP MS")
+}
+grecord(stringout,"$(P)$(Q)ReadCUnits")
+{
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Q)CtrlUnitsRd.PROC PP MS")
+	field(VAL,"WP")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Q)ReadSUnits")
+{
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Q)SmplUnitsRd.PROC PP MS")
+	field(VAL,"WS")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringin,"$(P)$(Q)CtrlUnitsRd")
+{
+	field(DTYP,"asyn si stringParm")
+	field(FLNK,"$(P)$(Q)ReadSUnits.PROC PP MS")
+	field(INP,"@asyn($(PORT))IX=7")
+}
+grecord(stringin,"$(P)$(Q)SmplUnitsRd")
+{
+	field(DTYP,"asyn si stringParm")
+	field(FLNK,"$(P)$(Q)Done.PROC PP MS")
+	field(INP,"@asyn($(PORT))IX=7")
+}

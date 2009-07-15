@@ -1,0 +1,1352 @@
+<HTML>
+<HEAD>
+<TITLE>DXP - EPICS software for XIA Digital Signal Processing Systems</TITLE>
+</HEAD>
+<BODY>
+
+<CENTER>
+<H1>DXP - EPICS software for XIA Digital Signal Processing Systems</H1>
+
+<H2>Mark Rivers</H2>
+<H2>February 6, 2008</H2>
+</CENTER>
+
+<HR>
+<H2>Contents</H2>
+<UL>
+  <LI><A HREF="#Overview">Overview</A>
+  <LI><A HREF="#Installing EPICS for the Saturn">
+                Installing EPICS for the Saturn</A>
+  <UL>
+    <LI><A HREF="#Installing the Saturn on Windows">
+                  Installing the Saturn on Windows</A>
+    <LI><A HREF="#Installing the Saturn on Linux">
+                  Installing the Saturn on Linux</A>
+  </UL>
+  <LI><A HREF="#Running the Saturn">
+                Running the Saturn</A>
+  <UL>
+    <LI><A HREF="#Saturn startup script">
+                  Saturn startup script</A>
+    <LI><A HREF="#Saturn medm screens">
+                  Saturn medm screens</A>
+  </UL>
+  <LI><A HREF="#Installing EPICS for the xMAP">
+                Installing EPICS for the xMAP</A>
+  <LI><A HREF="#Running the xMAP">
+                Running the xMAP</A>
+  <UL>
+    <LI><A HREF="#xMAP startup script">
+                  xMAP startup script</A>
+    <LI><A HREF="#xMAP medm screens">
+                  xMAP medm screens</A>
+  </UL>
+  <LI><A HREF="#Installing the DXP2X">
+                Installing the DXP2X</A>
+  <LI><A HREF="#Software Architecture">
+                Software Architecture</A>
+  <LI><A HREF="#Performance">
+                Performance</A>
+</UL>
+
+<h2 align="center"><a name="Overview">
+                            Overview</a></h2>
+<P>
+The EPICS DXP module provides support for the 
+digital signal processor based multichannel analyzers from
+<a href="http://www.xia.com"target="_blank">X-ray Instrumentation Associates (XIA)</a>.
+
+<p>DXP currently supports the following hardware
+<ul>
+  <li>The xMAP, which is a 4-channel PXI card.  The PXI crate is typically
+      connected to a Windows PC with a PCI/PXI fiber-optic interface.</li>
+  <li>The Saturn, which is a standalone desktop unit that communicates over the PC
+      Enhanced Parallel Port (EPP) or USB port. It contains the equivalent 
+      electronics of the shaping amplifier, ADC and MCA of a
+      conventional pulse-height analysis system.  The Vortex detector from SII (formerley Radiant)
+      is an OEM version of the Saturn, and it also works with this software.</li>
+  <li>The DXP2X, which is a single-width CAMAC module.  Each module contains 2 or 4
+      channels with similar pulse-processing electronics to the Saturn.</li>
+</ul>
+
+<p>DXP currently supports this hardware under the following operating systems and
+   interfaces:
+<ul>
+  <li>The xMAP with the EPICS IOC running on Windows, using the National Instruments
+      PCI/PXI adapter.  The EPICS win32-x86 (Microsoft VC++) and cygwin-x86 (gcc) architectures
+      are supported.</li>
+  <li>The Saturn with the EPICS IOC running on Windows, using the EPP parallel port, 
+      USB 1.0, or USB 2.0 interfaces. The EPICS win32-x86 (Microsoft VC++) and cygwin-x86 (gcc) architectures
+      are supported</li>
+  <li>The Saturn with the EPICS IOC running on Linux, using the EPP parallel port, 
+      USB 1.0, or USB 2.0 interfaces.</li>
+  <li>The DXP2X with the EPICS IOC running on vxWorks, using the Kinetic Systems 
+      2917/3922 VME to CAMAC interface.  Other CAMAC interfaces that have software
+      support for the ESONE standard CAMAC library calls should also work, 
+      but have not been tested.</li>
+</ul>
+
+<p>The features of the EPICS software, compared with software available from XIA are:
+<ul>
+  <li>Control and data acquisition are available over the network, from any application or language
+      that supports the EPICS channel access protocol (based on TCP/IP). 
+      This means that EPICS clients written 
+      in languages like IDL, LabView, Visual Basic, etc. can control the DXP modules and read the data.
+      These applications can be running on any computer on the Internet, they do not need to run on the
+      computer that is attached to the XIA hardware. This client/server model is very 
+      desirable in complex data acquisition environments, such as synchrotron
+      beamlines, because it allows the DXP control and data acquisition to be integrated with other
+      hardware and software.  For example, a control software program can move a motor, command the DXP to
+      acquire data, and write the data to disk.</li>
+  <li>A single software package supports the xMAP, Saturn, and the DXP2X.</li>
+  <li>The Saturn can be run from Windows and Linux, while the XIA Kepler program only runs on Windows.</li>
+  <li>The DXP2X support uses the new XIA Handel library, while the XIA MESA package uses an old LabView
+      interface</li>
+</ul>
+
+<p>The software consists of the following components:
+<ul>
+  <li>An 
+      <a href="http://www.aps.anl.gov/epics/modules/soft/asyn/"target="_blank">asyn server</a>
+      that provides support for the
+      <a href="http://cars.uchicago.edu/software/epics/mcaRecord.html" target="_blank">EPICS MCA record</a>
+      via the asyn MCA device support. This permits each channel of the DXP to
+      be connected to an MCA record identically with other supported MCA hardware,
+      such as the Canberra AIM.  The MCA record is used to control data acquisition and to acquire 
+      spectra or regions of interest.</li>
+  <li>A
+      <a href="dxpRecord.html"target="_blank">EPICS DXP record</a>
+      that is used to set all of the many software
+      selectable parameters for the DXP, including peaking times, pileup rejection
+      criteria, etc.  The DXP record is also used to acquire diagnostic data, such as the baseline histogram
+      and ADC trace.</li>
+  <li>Databases for single-element and multi-element detector systems.</li>
+  <li>medm display screens for single-element and multi-element detector systems.</li>
+  <li>A State Notation Language program for synchronizing acquisition and DXP parameters
+      in multi-element detector systems.
+  <li>Example IOC boot directories for the Saturn on Windows and Linux, and for a 16 element detector
+      with the xMAP on Windows and the DXP2X on vxWorks.
+</ul>
+
+
+
+<h2 align="center"><a name="Installing EPICS for the Saturn">
+                            Installing EPICS for the Saturn</a></h2>
+<p>To install the EPICS DXP software with a Saturn on a Windows or Linux computer do the following:
+<ul>
+  <li>To use the parallel port (EPP) interface:
+  <ul>
+    <li>Configure the parallel port to be in EPP mode.  This requires entering the BIOS setup screen
+        on the computer before the operating system boots.  The menus will differ from one computer to
+        another, but it is necessary to set the parallel port to EPP mode.  Other modes will not work.</li>
+  </ul>
+  <li>Decide whether you want to build the EPICS DXP software from source code, or install the pre-built
+      binaries.  
+      
+      <p>Most users will just download the pre-built binaries.  The Windows binaries
+      should run on almost any version of Windows. Windows XP and Windows 2000 have been tested.</p>
+      
+      <p>The Linux binaries are built with Redhat 3.2.2-5 (WS) and gcc version 3.2.2.  These binaries
+      should run on many recent versions of Linux, but this has not been extensively tested.
+
+      <p>Building from the source code requires downloading 
+      <a href="http://www.aps.anl.gov/epics/base/index.php" target="_blank">EPICS base</a>
+      and all of the required 
+      <a href="http://www.aps.anl.gov/aod/bcda/synApps/index.php" target="_blank">synApps components</a>.
+      To build from source code on
+      Windows for the win32-x86 architecture requires Microsoft Visual Studio .NET 2003 or later, and the
+      perl and make packages from Cygwin.
+      To build from source code on
+      Windows for the cygwin32-x86 architecture requires the gcc, g++, perl and make packages from Cygwin.
+      It is beyond the scope of
+      this document to describe how to build the source code.  Consult other EPICS documentation
+      for this.      
+</ul>
+
+<h3 align="center"><a name="Installing the Saturn on Windows">
+                            Installing the Saturn on Windows</a></h3>
+<p>To use the EPICS DXP software with a Saturn on a Windows PC do the following:
+<ul>
+  <li>Install the 
+    <a href="http://www.driverlinx.com" target="_blank">Windows Port IO Driver</a>
+    from Scientific Software Tools.  This is a software driver
+    that lets Windows applications communicate with I/O ports, including the Enhanced Parallel Port.
+    Although this is only needed to communicate with the EPP port, the driver must be installed even
+    if USB only will be used, because the EPICS dxpApp application is linked with that DLL.</li>
+  <li>To use the USB 1.0 interface:
+  <ul>
+    <li>Install the 
+        <a href="http://www.xia.com/DXP_Saturn_Software.html"target="_blank">Kepler software</a>
+        from XIA.  This will install the required Windows driver for the USB 1.0
+        Saturn.</li>
+  </ul>
+  <li>To use the USB 2.0 interface:
+  <ul>
+    <li>Install the PI-SPEC software from 
+        <a href="http://www.siintusa.com/vortex.html"target="_blank">SII NanoTechnology USA</a>.
+        This software is supplied with their Vortex detectors.
+        This will install the required Windows EZ-USB driver for the USB 2.0
+        Saturn.  In the future this driver will probably also be available from XIA</li>
+  </ul>
+  <li>Chose whether to use the Cygwin or native Windows environment.  The main reason to use Cygwin
+      is to run the saveData utility, which will save EPICS scan data to disk.  This utility does not
+      currently run under the native Windows environment because it lacks the Sun RPC library.</li>
+   <li>If using Cygwin then install the basic 
+      <a href="http://www.cygwin.com" target="_blank">Cygwin package</a>.
+      Cygwin is a public domain package that provides Unix-like
+      programming libraries and commands on Windows.   
+      When using the Cygwin install program use all of the default settings, which will
+      install just the basic package into C:\Cywgin.</li>
+  <li>If you want to run the medm display program on the Windows PC, which is recommended in most cases,
+      you need to install 
+      <a href="http://www.hummingbird.com/products/nc/exceed/index.html?cks=y" target="_blank">Exceed</a>.
+      Exceed is a commercial X-Windows package from Hummingbird.  After
+      installing Exceed you need to install the 
+      <a href="http://www.aps.anl.gov/epics/download/distributions/index.php" target="_blank">
+              EPICS Win32 Extensions</a>,
+      which contain medm.  Note that medm may work with non-commercial versions of X windows servers for
+      Windows, but Exceed is the only package that is guaranteed to work.
+  <li>Download 
+      <a href="http://cars.uchicago.edu/software/pub/">the latest standalone release (e.g. dxpStandalone_XXX.tgz)</a>,
+      of the EPICS DXP software, containing Cygwin and native Windows binaries.</li>
+  <li>Unpack that distribution into a directory such as C:\EPICS or C:\Program Files\EPICS.  
+      The distribution file, dxpStandlone.tar.gz can be unpacked using WinZip, or with the gunzip and
+      tar utilities that come with Cygwin.  To use the Cygwin tools:
+      <pre>
+      $ cd /cygdrive/c/epics         # Or wherever you have chosen to put the EPICS software
+      $ tar xzvf dxpStandalone_2-7.tar    # Unpack the tar file.
+      </pre>
+  <li>Make sure that the .fdd and .ini files in iocBoot/iocSaturn/ have Unix-type line terminators.
+      This can be done by running the Cygwin bash shell and typing
+      <pre>
+      $ cd iocBoot/iocSaturn
+      $ dos2unix *.fdd *ini
+      </pre>
+      This is necessary because these files may have Windows line
+      terminators, depending on how they were unpacked from the distribution.</li>
+  <li>Make sure that the .bat files in iocBoot/iocSaturn/ have execute permission.
+      This can be done by running the Cygwin bash shell and typing
+      <pre>
+      $ cd iocBoot/iocSaturn
+      $ chmod +x *.bat
+      </pre>
+      This is necessary because these files may not have this permission, depending on how they 
+      were unpacked from the distribution.</li>
+  <li>Copy all of the medm .adl files into a single directory.  This is simpler than defining EPICS_DISPLAY_PATH
+      to point to all of the required directories.  For example, if you decide to put the .adl files in
+      C:\epics_adl, and if you unpacked the dxp tar file distribution into C:\epics, then type the following commands at the 
+      Cygwin bash shell prompt:
+      <pre>
+      $ mkdir /cygdrive/c/epics_adls
+      $ find /cygdrive/c/epics -name '*.adl' -exec cp -f -p -v {} /cygdrive/c/epics_adls \;
+      </pre>
+      Define the environment variable EPICS_DISPLAY_PATH to point to C:\epics_adls.  For the Windows shell use the
+      Windows&nbsp;Control&nbsp;Panel/System/Advanced/Environment&nbsp;Variables. For the Cygwin shell edit your .bashrc file.
+  <li>If you look at that batch file, you will see a line that temporarily sets the environment variable
+      PATH to C:\cygwin\bin.  You may want to add this directory permanently to your Windows path for
+      Windows shells.  Again,
+      use the Windows&nbsp;Control&nbsp;Panel/System/Advanced/Environment&nbsp;Variables.
+      Modify the definition according to where you have installed Cygwin. Note that the PATH will be
+      set to automatically include that directory when running the Cygwin bash shell.</li>
+  <li>If you installed pre-built binaries, rather than building from source, then 
+      edit the envPaths file in iocBoot/iocSaturn.  Change the paths to the locations of the directories
+      on your system.  Don't worry about the path for directories that don't exist, like SNCSEQ, EPICS_BASE, etc.
+</ul>
+
+<h3 align="center"><a name="Installing the Saturn on Linux">
+                            Installing the Saturn on Linux</a></h3>
+<p>To use the EPICS DXP software with a Saturn on a Linux computer do the following:
+<ul>
+  <li>To use the USB 1.0 or USB 2.0 interface:
+  <ul>
+    <li>Install the latest version (0.1.12 or later) of  
+        <a href="http://libusb.sourceforge.net"target="_blank">libusb from SourceForge</a>.
+        This software must be installed using the root account.  The version of libusb
+        that comes with most Linux systems is older, and often will not work, so install
+        this more recent version.</li>
+  </ul>
+  <li>Download 
+      <a href="http://cars.uchicago.edu/software/pub/dxpStandalone_2-7.tgz">dxpStandalone_2-7.tgz</a>,
+      which is the latest release of the EPICS DXP software, containing binaries for Linux.</li>
+  <li>Unpack that distribution into a directory such as /usr/local/epics.  
+      The distribution file, dxpStandalone_2-7.tgz can be unpacked using the Linux tar utility.
+  <li>Make sure that the .fdd and .ini files in iocBoot/iocSaturn/ have Unix-type line terminators.
+      This can be done by typing
+      <pre>
+      > cd iocBoot/iocSaturn
+      > dos2unix *.fdd *.ini
+      </pre>
+      This is necessary because these files may have Windows line
+      terminators, depending on how they were unpacked from the distribution.</li>
+  <li>Copy all of the medm .adl files into a single directory.  This is simpler than defining EPICS_DISPLAY_PATH
+      to point to all of the required directories.  For example, if you decide to put the .adl files in
+      /home/epics/epics_adls, and if you unpacked the dxp tar file distribution into /home/epics/epics, 
+      then type the following commands at the shell prompt:
+      <pre>
+      $ mkdir /home/epics/epics_adls
+      $ find /home/epics/epics -name '*.adl' -exec cp -f -p -v {} /home/epics/epics_adls \;
+      </pre>
+      Define the environment variable EPICS_DISPLAY_PATH to point to /home/epics/epics_adls.   
+      Do this by editing your .cshrc or .bashrc file.
+  <li> Access to the EPP I/O port on Linux requires root privilege.  
+       This can be done in any of following 3 ways:
+    <ol>
+      <li>Prefered method. The EPICS DXP software on Linux contains a program called startWithIopl3.
+          This program calls iopl(3) as root, and then reverts back to the non-root account 
+          to run dxpApp.  To use this method the application startWithIopl3 must be installed
+          as suid root.  Do this as follows:
+          <pre>
+          > cd bin/linux-x86
+          > su root
+          (password)
+          > chmod +s startWithIopl3
+          > exit
+          </pre>
+          The dxpApp application can then be run without root privilege as follows:
+          <pre>
+          > cd iocBoot/iocSaturn
+          > ../../bin/linux-x86/startWithIopl3 ../../bin/linux-x86/dxpApp st.cmd
+          </pre>
+          You can also copy startWithIopl3 to a directory like /usr/local/bin or ~/bin that is in
+          your PATH.  That way it can be run without having to specify the path.
+      </li>
+      <li>Not as good. Install the dxpApp application as suid root.  Do this as follows:
+          <pre>
+          > cd bin/linux-x86
+          > su root
+          (password)
+          > chmod +s /bin/linux-x86/dxpApp
+          > exit
+          </pre>
+          The dxpApp application can then be run without root priviledge as follows:
+          <pre>
+          > cd iocBoot/iocSaturn
+          > ../../bin/linux-x86/dxpApp st.cmd
+          </pre>
+      </li>
+      <li>Least desirable method.  Run dxpApp as root:
+          <pre>
+          > cd iocBoot/iocSaturn
+          > su root
+          (password)
+          > ../../bin/linux-x86/dxpApp st.cmd
+          </pre>
+      </li>
+    </ol>
+  <li> USB devices on Linux are automatically created with read-only permission for non-root users by default.  In order to
+       run the dxpApp application without root privilege it is necessary to change the device permissions.  
+       Because these devices are created dynamically when the Saturn is connected, this cannot just be done once statically.
+       Rather it requires using the "hotplug" or "udev" facilities on Linux to have the device permissions set correctly each time
+       the Saturn connects.  More recent Linux kernels use the "udev" facility, older kernels use the "hotplug" facility.
+       I do not know exactly which kernel version the switch to udev was done, but I do know from my systems that 2.6.9 uses
+       hotplug while 2.6.22 uses udev.  If the directory /etc/hotplug exists then the system is presumably using hotplug.
+       In that case the directory /dev/bus/usb will probably not exist, only /proc/bus/usb will exist.
+       <P>
+       Here is a recipe for older systems using hotplug.
+       <ol>
+        <li>Add the following 3 lines to the file /etc/hotplug/usb.usermap  
+        <pre>
+          # XIA Saturn
+          usbsaturn            0x0003      0x10e9   0x0700    0x0000       0x0000      0x00         0x00            0x00            0x00            0x00               0x00               0x00000000
+          usbsaturn            0x0003      0x10e9   0x0701    0x0000       0x0000      0x00         0x00            0x00            0x00            0x00               0x00               0x00000000
+        </pre>
+        These lines instruct the hotplug facility to run the script /etc/hotplug/usb/usbsaturn
+        whenever the Saturn is added to the system.  
+        10e9 is the vendor ID for the Saturn, and 0700 and 0701 are the product IDs for the USB 1.1 and USB 2.0
+        versions of the Saturn.
+        <li> Create the file /etc/hotplug/usb/usbsaturn containing the following lines:
+        <pre>
+          #!/bin/bash
+
+          if [ "${ACTION}" = "add" ] && [ -f "${DEVICE}" ]
+          then
+                  chmod 666 "${DEVICE}"
+          fi
+       </pre>
+       </ol>
+       This script tells hotplug to set the permissions on the Saturn USB device to 666 (owner, group, and world read/write):
+       <pre>
+         [root@vincent usb]# ls -lt /proc/bus/usb/001/021
+         -rw-rw-rw-  1 root root 134 Jan  8 12:20 /proc/bus/usb/001/021
+       </pre>
+       <P>
+       Here is a recipe for newer systems using udev.
+       <ol>
+         <li>Create a file in /etc/udev/rules.d called, for example, "80-saturn.rules".  
+            Put the following 2 lines in this file.
+         <pre>
+           SUBSYSTEM=="usb_device",ACTION=="add",SYSFS{idVendor}=="10e9",SYSFS{idProduct}=="0700",MODE="0666"
+           SUBSYSTEM=="usb_device",ACTION=="add",SYSFS{idVendor}=="10e9",SYSFS{idProduct}=="0701",MODE="0666"
+         </pre>
+         These rules instruct the udev facility to set the permissions on the USB device to 666 (owner, group and world read/write)
+         for the Saturn whenever it is added to the system.  
+         10e9 is the vendor ID for the Saturn, and 0700 and 0701 are the product IDs for the USB 1.1 and USB 2.0
+         versions of the Saturn.  Note that the 10e9 ID is case sensitive!
+         <li> Force the udevd daemon to reload its rules:
+         <pre>
+           $ /sbin/udevcontrol reload_rules
+         </pre>
+       </ol>
+       These changes for udev should cause the Saturn USB device to have the correct permissions:
+       <pre>
+         baja:/etc/udev/rules.d>ls -lt /dev/bus/usb/005/021
+         crw-rw-rw- 1 root root 189, 532 2008-01-07 16:08 /dev/bus/usb/005/021
+       </pre>
+      However, on some Linux versions libusb uses /proc/bus/usb by default, rather than /dev/bus/usb, so
+      the permissions set by udev will not have the desired affect.  This can be fixed by defining the
+      environment variable USB_DEVFS_PATH to be /dev/bus/usb.  In fact I now add the following command
+      to the EPICS IOC startup script (st.cmd) on Linux when using USB, just before the xiaInit command:
+      <pre>
+        # On Linux execute the following command so that libusb uses /dev/bus/usb
+        # as the file system for the USB device.  
+        # On some Linux systems it uses /proc/bus/usb instead, but udev
+        # sets the permissions on /dev, not /proc.
+        epicsEnvSet USB_DEVFS_PATH /dev/bus/usb
+      </pre>
+      This could obviously be done in the shell startup script instead if desired.
+
+  <li>Make sure that the script files in iocBoot/iocSaturn/ have execute permission.
+      This can be done by running the Cygwin bash shell and typing
+      <pre>
+      $ cd iocBoot/iocSaturn
+      $ chmod +x START_IOC*
+      </pre>
+      This is necessary because these files may not have this permission, depending on how they 
+      were unpacked from the distribution.</li>
+  <li>If you installed pre-built binaries, rather than building from source, then 
+      edit the envPaths file in iocBoot/iocSaturn.  Change the paths to the locations of the directories
+      on your system.  Don't worry about the path for directories that don't exist, like SNCSEQ, EPICS_BASE, etc.
+</ul>
+
+
+<h2 align="center"><a name="Running the Saturn">
+                            Running the Saturn</a></h2>
+
+<p>There are several things that should be done to run Saturn system under the EPICS software.
+<ul>
+  <li>Edit iocBoot/iocSaturn/saturn.ini.  Uncomment to appropriate lines to select correct 
+      the firmware for the Saturn speed (20MHz or 40MHz) and pre-amp type (reset or RC).  Uncomment
+      the correct lines for the interface you are using (EPP, USB 1.0 or USB 2.0).
+  <li>Edit iocBoot/iocSaturn/st.cmd to uncomment the correct dbLoadRecords command
+      for your pre-amp type (reset or RC).
+  <li>Make sure that the switch inside the Saturn is set for the correct pre-amp type.
+      The switch is labeled "RAMP" for reset pre-amps and "OFFSET" for RC pre-amps.</li>
+  <li>Connect the parallel port or USB cable from the Saturn to the PC, and turn on
+      the Saturn.
+  <li>Under Windows, start the EPICS IOC and medm by running the batch file 
+      iocBoot/iocSaturn/START_IOC.bat.  This 
+      can be done by double clicking on the icon for this file.  You should see the EPICS IOC commands
+      in a Windows command shell, and you should hear clicking sounds from the Saturn.  If everything
+      works correctly, you can then begin to collect and display spectra.</li>
+  <li>Under Linux start the EPICS IOC and medm by running the script iocBoot/iocSaturn/START_IOC.  This 
+      can be done by typing:
+      <pre>
+      > cd iocBoot/iocSaturn
+      > ./START_IOC
+      </pre>
+      You may need to edit the START_IOC script depending on how you chose to solve the root priviledge
+      problem, and whether startWithIopl3 is in your path.  You should see the EPICS IOC commands, 
+      and you should hear clicking sounds from the Saturn.  If everything
+      works correctly, you can then begin to collect and display spectra.
+</ul>
+<p>After verifying that you can control the Saturn from medm there are some things you should do to
+customize your installation.  First, you should edit saturn.ini to set the polarity, 
+the pre-amp gain, and the time after reset (for reset pre-amps) or the 
+RC time constant (for RC pre-amps). Consult the
+<a href="http://www.xia.com/Manuals/Kepler_Saturn_Manual_4.0.1.pdf" target="_blank">Saturn User's Manual</a>
+for information on how to determine and set these parameters.  
+<p>The saturn.ini file will contain lines like the following:
+<ul>
+  <pre>
+  type_value = 10.
+  channel0_gain = 1.7
+  channel0_polarity = +
+  </pre>
+  <li>The type_value is the transient settling time after a reset in microseconds for reset pre-amps.  
+      It is the RC time constant in microseconds for RC pre-amps.  
+      10 microseconds is a reasonable value for both of these to start with.
+  <li>The gain is specified in mV/keV, and is used so that the energy units in the DXP software
+      are correct. Most pre-amps are in the 1-4 mV/keV range.  The best way to set this value is to
+      set the EMAX parameter (energy of last channel) in EPICS, and see how well it agrees with reality
+      when you calibrate the spectrum with a known source.  Then iteratively edit the saturn.ini file and restart
+      EPICS until the actual EMAX matches the requested one.  Getting it to within a few
+      percent is fine, since you will do accurate calibration of the EPICS MCA spectra when you collect
+      data. 
+  <li>The polarity can be "+" or "-".  A positive polarity means that an x-ray pulse produces a voltage
+      step with a rising edge.
+</ul>
+<p>The example IOC directory, iocSaturn, creates EPICS process variables with names like 
+dxpSaturn:dxp1.PKTIM, where dxpSaturn is the "prefix" for the process variable names, dxp1
+is the DXP record name, and PKTIM is the field name.  This is fine
+for installations where there will be at most one Saturn on the subnet.  However, in many cases there
+will be the possibility of more than one Saturn running EPICS on the same subnet.  If this is the
+case then it is essential that each one use a different prefix, because EPICS process variable names
+must be unique on a subnet.  Here is how to give your Saturn a unique name, and still be able to upgrade
+the EPICS software easily.  It is recommended that you follow these instructions even if you don't have
+name conflicts on your IOC, so that files you edit are in a directory that will not be overwritten when you upgrade
+the EPICS software.
+<ul>
+  <li>Make a copy of the iocSaturn directory.  Let's assume you will make your prefix be mySaturn:, so a
+      good name for the directory would be iocmySaturn/.
+  <li>Edit all files in that directory (including st.cmd, auto_settings.req, and START_IOC*), changing all occurances of 
+      dxpSaturn: to mySaturn:.
+  <li>If you have created any higher-level medm screens that load the medm screens in this package, you
+      will need to edit them to pass the new prefix, mySaturn:
+  <li>The next time you unpack a new version of the EPICS DXP software it will overwrite the iocSaturn 
+      directory.  However, if you have made your own new directory, mySaturn/, that will not be
+      modified.
+</ul>
+<p>The EPICS DXP application uses the EPICS save/restore facility.  This means that all of the important
+parameters that you might change when running the Saturn are saved in files in the subdirectory called
+autosave/ under your IOC directory.  These parameters include the peaking time, the update rates for
+displays and nearly 200 other parameters. The next time you start EPICS it will restore these values
+automatically from the file called autosave/auto_settings.sav.  It is a good idea to make copies of
+this file from time to time so that you can get back to old settings if the file is lost or corrupted.
+
+
+<h3 align="center"><a name="Saturn startup script">
+                            Saturn startup script</a></h3>
+
+The following is a typical startup script for the Saturn.
+
+<pre>
+#########################################
+< envPaths
+
+# Tell EPICS all about the record types, device-support modules, drivers,
+# etc. in this build from dxpApp
+dbLoadDatabase("../../dbd/dxp.dbd")
+dxp_registerRecordDeviceDriver(pdbbase)
+
+# On Linux execute the following command so that libusb uses /dev/bus/usb
+# as the file system for the USB device.  
+# On some Linux systems it uses /proc/bus/usb instead, but udev
+# sets the permissions on /dev, not /proc.
+epicsEnvSet USB_DEVFS_PATH /dev/bus/usb
+
+# Initialize the XIA software
+# Set logging level (1=ERROR, 2=WARNING, 3=XXX, 4=DEBUG)
+xiaSetLogLevel(2)
+# Edit saturn.ini to match your Saturn speed (20 or 40 MHz), 
+# pre-amp type (reset or RC), and interface type (EPP, USB 1.0, USB 2.0)
+xiaInit("saturn.ini")
+xiaStartSystem
+
+# DXPConfig(serverName, ndetectors, ngroups, pollFrequency)
+DXPConfig("DXP1",  1, 1, 100)
+
+
+# DXP record
+# Execute the following line if you have a Vortex detector or 
+# another detector with a reset pre-amplifier
+dbLoadRecords("../../dxpApp/Db/dxp2x_reset.db","P=dxpSaturn:, R=dxp1, INP=@asyn(DXP1 0)")
+# Execute the following line if you have a Ketek detector or 
+# another detector with an RC pre-amplifier
+#dbLoadRecords("../../dxpApp/Db/dxp2x_rc.db","P=dxpSaturn:, R=dxp1, INP=@asyn(DXP1 0)")
+
+# MCA record
+dbLoadRecords("$(MCA)/mcaApp/Db/mca.db", "P=dxpSaturn:, M=mca1, DTYP=asynMCA,INP=@asyn(DXP1 0),NCHAN=2048")
+dbLoadRecords("../../dxpApp/Db/mcaCallback.db", "P=dxpSaturn:, M=mca1,INP=@asyn(DXP1 0)")
+
+# Template to copy MCA ROIs to DXP SCAs
+dbLoadTemplate("roi_to_sca.substitutions")
+
+# Setup for save_restore
+< ../save_restore.cmd
+save_restoreSet_status_prefix("dxpSaturn:")
+dbLoadRecords("$(AUTOSAVE)/asApp/Db/save_restoreStatus.db", "P=dxpSaturn:")
+set_pass0_restoreFile("auto_settings.sav")
+set_pass1_restoreFile("auto_settings.sav")
+
+### Scan-support software
+# crate-resident scan.  This executes 1D, 2D, 3D, and 4D scans, and caches
+# 1D data, but it doesn't store anything to disk.  (See 'saveData' below for that.)
+dbLoadRecords("$(SSCAN)/sscanApp/Db/scan.db","P=dxpSaturn:,MAXPTS1=2000,MAXPTS2=1000,MAXPTS3=10,MAXPTS4=10,MAXPTSH=2048")
+
+# Debugging flags
+#xiaSetLogLevel(4)
+#asynSetTraceMask DXP1 0 255
+#var mcaRecordDebug 10
+#var dxpRecordDebug 10
+
+iocInit
+
+### Start up the autosave task and tell it what to do.
+
+# Save settings every thirty seconds
+create_monitor_set("auto_settings.req", 30, P=dxpSaturn:)
+
+### Start the saveData task.
+saveData_Init("saveData.req", "P=dxpSaturn:")
+#########################################
+</pre>
+
+Here are some comments on the commands in this file.
+<pre>
+#########################################
+< envPaths
+#########################################
+</pre>
+
+This command loads the envPaths file that defines the paths to other EPICS modules.  You will need to edit this file
+if you installed the pre-built binaries rather than building from source code.
+
+<pre>
+#########################################
+dbLoadDatabase("../../dbd/dxp.dbd")
+dxp_registerRecordDeviceDriver(pdbbase)
+#########################################
+</pre>
+
+These commands load the EPICS database definition files.
+
+<pre>
+# On Linux execute the following command so that libusb uses /dev/bus/usb
+# as the file system for the USB device.  
+# On some Linux systems it uses /proc/bus/usb instead, but udev
+# sets the permissions on /dev, not /proc.
+epicsEnvSet USB_DEVFS_PATH /dev/bus/usb
+</pre>
+
+This command forces libusb to use the /dev/bus/usb filesystem, rather than
+/proc/bus/usb, which some kernels use by default.  This is needed because udev
+sets permissions on /dev/bus/usb, not /proc/bus/usb.
+
+<pre>
+#########################################
+# Initialize the XIA software
+# Set logging level (1=ERROR, 2=WARNING, 3=XXX, 4=DEBUG)
+xiaSetLogLevel(2)
+# Edit saturn.ini to match your Saturn speed (20 or 40 MHz), 
+# pre-amp type (reset or RC), and interface type (EPP, USB 1.0, USB 2.0)
+xiaInit("saturn.ini")
+xiaStartSystem
+#########################################
+</pre>
+
+These commands set the logging (debugging) level for the XIA Handel software.  It initializes the XIA software
+with the appropriate .ini file, and then starts the XIA software.  You will hear clicking in the Saturn box
+when the xiaStartSystem command is executing.
+
+<pre>
+#########################################
+# DXPConfig(serverName, ndetectors, ngroups, pollFrequency)
+DXPConfig("DXP1",  1, 1, 100)
+#########################################
+</pre>
+
+This command starts the EPICS "asyn" server called DXP1.  It defines the number of detectors in the system,
+and the number of detector groups.  We use 1 detector group (containing all of the detectors) to efficiently
+do operations that should be done on all detectors simultaneously.  The pollFrequency determines the rate
+at which the poller thread will check for acquisition complete.  100 Hz is typical, it does not put a significant
+load on the system, but reduces the average latency in determining when the run is complete to 5ms.
+
+<pre>
+#########################################
+# DXP record
+# Execute the following line if you have a Vortex detector or
+# another detector with a reset pre-amplifier
+dbLoadRecords("../../dxpApp/Db/dxp2x_reset.db","P=dxpSaturn:, R=dxp1, INP=@asyn(DXP1 0)")
+# Execute the following line if you have a Ketek detector or
+# another detector with an RC pre-amplifier
+#dbLoadRecords("../../dxpApp/Db/dxp2x_rc.db","P=dxpSaturn:, R=dxp1, INP=@asyn(DXP1 0)")
+
+# MCA record
+dbLoadRecords("$(MCA)/mcaApp/Db/mca.db", "P=dxpSaturn:, M=mca1, DTYP=asynMCA,INP=@asyn(DXP1 0),NCHAN=2048")
+dbLoadRecords("../../dxpApp/Db/mcaCallback.db", "P=dxpSaturn:, M=mca1,INP=@asyn(DXP1 0)")
+
+# Template to copy MCA ROIs to DXP SCAs
+dbLoadTemplate("roi_to_sca.substitutions")
+#########################################
+</pre>
+
+These commands load the EPICS databases for the MCA and DXP records.  The names of the PV, the number of MCA channels,
+and the type of detector pre-amp are all chosen in these commands. The mcaCallback.db file is used with
+the poller to cause the MCA records to read data when acquisition completes.
+
+<pre>
+#########################################
+# Setup for save_restore
+< ../save_restore.cmd
+save_restoreSet_status_prefix("dxpSaturn:")
+dbLoadRecords("$(AUTOSAVE)/asApp/Db/save_restoreStatus.db", "P=dxpSaturn:")
+set_pass0_restoreFile("auto_settings.sav")
+set_pass1_restoreFile("auto_settings.sav")
+
+### Scan-support software
+# crate-resident scan.  This executes 1D, 2D, 3D, and 4D scans, and caches
+# 1D data, but it doesn't store anything to disk.  (See 'saveData' below for that.)
+dbLoadRecords("$(SSCAN)/sscanApp/Db/scan.db","P=dxpSaturn:,MAXPTS1=2000,MAXPTS2=1000,MAXPTS3=10,MAXPTS4=10,MAXPTSH=2048")
+#########################################
+</pre>
+
+These commands initialize the save/restore system that remembers changes in parameter settings when the IOC is rebooted.
+They load the databases for general purpose scanning to be done in the IOC.  The maximum number of points in each nested
+scan is defined here, as is the maximum number of channels of MCA data that can be stored in the scanH record.
+
+<pre>
+#########################################
+# Debugging flags
+#xiaSetLogLevel(4)
+#asynSetTraceMask DXP1 0 255
+#var mcaRecordDebug 10
+#var dxpRecordDebug 10
+#########################################
+</pre>
+
+These commands set the debugging level of the EPICS software.  asynSetTraceMask controls the debugging 
+in drvDXP and devDXP.  This uses the asynTrace facility, with different bits turning on different types of
+output. 1 turns on only error reporting, 255 turns on all messages.  mcaRecordDebug and dxpRecordDebug turn
+on messages from the mcaRecord and dxpRecord respectively.  0 turns off messages, 10 turns on all messages.
+
+<pre>
+#########################################
+iocInit
+
+### Start up the autosave task and tell it what to do.
+
+# Save settings every thirty seconds
+create_monitor_set("auto_settings.req", 30, P=dxpSaturn:)
+
+### Start the saveData task.
+saveData_Init("saveData.req", "P=dxpSaturn:")
+#########################################
+</pre>
+
+These commands start the EPICS software (iocInit), and start the save/restore software saving parameters every 30 seconds, 
+and start the task that saves data from the scan records.  Edit the file saveData.req to change what additional EPICS
+PVs are saved with every scan.  You might want to include the MCA record energy calibration fields, etc.
+
+<p>
+Note that there is a different startup scripts, st_med.st, and a corresonding .adl file, 1element_dxp.adl.  This startup
+script and medm display is almost identical to the st.cmd and single_element_dxp.adl medm display.  The difference is
+that it uses PVs to control acquisition that are compatible with the multi-element databases used by the DXP2X and xMAP.
+Client software that is configured to work with the multi-element detectors will work with the Saturn if this startup
+script is used.
+
+<p></p>
+<hr>
+<h2 align="center"><a name="Saturn medm screens">
+                            Saturn medm screens</a></h2>
+
+<p>The following are screen shots of the medm screens provided for the Saturn.  
+
+<p></p>
+<hr>
+<h3 align="center">single_dxp_top.adl</h3>
+<p>Main control screen for Saturn.</p>
+<p align="center"><img border="0" src="single_dxp_top.png"</p>
+
+<p></p>
+<hr>
+<h3 align="center">dxp.adl</h3>
+<p>Complete screen for low-level DXP parameters and control.</p>
+<p align="center"><img border="0" src="dxp.png"</p>
+
+<p></p>
+<hr>
+<h3 align="center">dxp_sca.adl</h3>
+<p>Screen for SCA display and control.</p>
+<p align="center"><img border="0" src="dxp_sca.png"</p>
+
+<p></p>
+<hr>
+<h3 align="center">mca.adl</h3>
+<p>Screen to display the spectral data and control acquisition.
+<p align="center"><img border="0" src="mca.png"</p>
+
+<p></p>
+<hr>
+<h3 align="center">dxp_baseline.adl</h3>
+<p>Screen to display the baseline histogram and control its update rate.</p>
+<p align="center"><img border="0" src="dxp_baseline.png"</p>
+
+<p></p>
+<hr>
+<h3 align="center">dxp_baseline_history.adl</h3>
+<p>Screen to display the baseline history and control its update rate.</p>
+<p align="center"><img border="0" src="dxp_baseline_history.png"</p>
+
+<p></p>
+<hr>
+<h3 align="center">dxp_trace.adl</h3>
+<p>Screen to display the ADC trace, and control the time per point and update rate.</p>
+<p align="center"><img border="0" src="dxp_trace.png"</p>
+
+
+<hr>
+<h2 align="center"><a name="Installing EPICS for the xMAP">
+                            Installing EPICS for the xMAP</a></h2>
+<p>To install the EPICS DXP software with an xMAP system on a Windows computer do the following:
+<ul>
+  <li>Follow the instructions for installing the Saturn on Windows.  The Windows Port I/O driver
+      needs to be installed, even though the xMAP does not use the EPP port, because the dxpApp application
+      is linked with that DLL. Also, where the directions say iocBoot/iocSaturn
+      use iocBoot/iocXMAP instead.
+  <li>Install the PCI/PXI converter from National Instruments.
+  <li>Install the National Instruments driver software.
+  <li>Install the latest version of the xManager software from XIA.  The EPICS software distribution includes the
+      xManager DLLs that are required for the EPICS software.  However, xManager installs a Windows driver that
+      is not included with the EPICS software.  It can also be useful to have xManager available on the computer
+      to compare with the EPICS software.
+  <li>In configuring xManager you will have created a .ini file describing the PCI slots for each xMAP, etc.  You
+      can copy that file to the iocXMAP directory or edit one of the .ini files there that most closely matches
+      your system configuration (xmap4.ini, xmap8.ini, etc.).
+</ul>
+
+The example IOC directory, iocXMAP, creates EPICS process variables with names like
+dxpXMAP:dxp1.PKTIM, where dxpXMAP: is the "prefix" for the process variable names, dxp1
+is the DXP record name, and PKTIM is the field name.  This is OK
+for installations where there will be at most one xMAP system on the subnet.  However, in many cases there
+will be the possibility of more than one xMAP running EPICS on the same subnet.  If this is the
+case then it is essential that each one use a different prefix, because EPICS process variable names
+must be unique on a subnet.  Here is how to give your xMAP system a unique name, and still be able to upgrade
+the EPICS software easily.  It is recommended that you follow these instructions even if you don't have
+name conflicts on your IOC, so that files you edit are in a directory that will not be overwritten when you upgrade
+the EPICS software.
+<ul>
+  <li>Make a copy of the iocXMAP directory.  Let's assume you will make your prefix be myXMAP:, so a
+      good name for the directory would be iocmyXMAP/.
+  <li>Edit all files in that directory (including *.cmd, auto_settings*.req, *.template, and START_IOC*),
+      changing all occurances of dxpXMAP: to myXMAP:.
+  <li>If you have created any higher-level medm screens that load the medm screens in this package, you
+      will need to edit them to pass the new prefix, myXMAP:
+  <li>The next time you unpack a new version of the EPICS DXP software it will overwrite the iocXMAP
+      directory.  However, if you have made your own new directory, myXMAP/, that will not be
+      modified.
+</ul>
+
+
+
+<h2 align="center"><a name="Running the xMAP">
+                            Running the xMAP</a></h2>
+
+<p>There are several things that should be done to run xMAP system under the EPICS software.
+<ul>
+ <li>There are startup scripts and template files for systems with 4, 8, 12, or 16 channels (1, 2, 3, or 4 xMAP modules).
+     If you have a different number of channels you will need to create new files.
+ <li>You can manually start the software by doing the following in the Cygwin bash shell:
+     <pre>
+        cd iocBoot/iocXMAP  # Or the new directory you created
+        ../../bin/cygin-x86/dxpApp.exe 16element.cmd  # Or 4element.cmd, etc.
+     </pre>
+ <li>You can also start the EPICS IOC and medm by running the batch file
+      iocBoot/iocXMAP/START_IOC.bat.  This
+      can be done by double clicking on the icon for this file.  You should see the EPICS IOC commands
+      in a Windows command shell, and you should hear clicking sounds from the xMAPS.  If everything
+      works correctly, you can then begin to collect and display spectra.</li>
+ <li>You can do scans and save complete spectra with the EPICS sscan and saveData facilities.
+</ul>
+
+<h3 align="center"><a name="xMAP startup script">
+                            xMAP startup script</a></h3>
+
+The following is a typical startup script for the xMAP.
+<pre>
+#########################################
+< envPaths
+
+# Tell EPICS all about the record types, device-support modules, drivers,
+# etc. in this build from dxpApp
+dbLoadDatabase("$(DXP)/dbd/dxp.dbd")
+dxp_registerRecordDeviceDriver(pdbbase)
+
+# Setup for save_restore
+< ../save_restore.cmd
+save_restoreSet_status_prefix("dxpXMAP:")
+dbLoadRecords("$(AUTOSAVE)/asApp/Db/save_restoreStatus.db", "P=dxpXMAP:")
+set_pass0_restoreFile("auto_settings16.sav")
+set_pass1_restoreFile("auto_settings16.sav")
+
+# Set logging level (1=ERROR, 2=WARNING, 3=INFO, 4=DEBUG)
+xiaSetLogLevel(2)
+xiaInit("xmap16.ini")
+xiaStartSystem
+
+# DXPConfig(serverName, ndetectors, ngroups, pollFrequency)
+DXPConfig("DXP1",  16, 1, 100)
+
+dbLoadTemplate("16element.template")
+
+#xiaSetLogLevel(4)
+#asynSetTraceMask DXP1 0 255
+#asynSetTraceIOMask DXP1 0 2
+#var dxpRecordDebug 10
+
+### Scan-support software
+# crate-resident scan.  This executes 1D, 2D, 3D, and 4D scans, and caches
+# 1D data, but it doesn't store anything to disk.  (See 'saveData' below for that.)
+dbLoadRecords("$(SSCAN)/sscanApp/Db/scan.db","P=dxpXMAP:,MAXPTS1=2000,MAXPTS2=1000,MAXPTS3=10,MAXPTS4=10,MAXPTSH=2048")
+
+iocInit
+
+seq dxpMED, "P=dxpXMAP:, DXP=dxp, MCA=mca, N_DETECTORS=16"
+
+### Start up the autosave task and tell it what to do.
+# Save settings every thirty seconds
+create_monitor_set("auto_settings16.req", 30, "P=dxpXMAP:")
+
+### Start the saveData task.
+saveData_Init("saveData.req", "P=dxpXMAP:")
+</pre>
+
+Here are some comments on the commands in this file.
+<pre>
+< envPaths
+#########################################
+</pre>
+
+This command loads the envPaths file that defines the paths to other EPICS modules.  You will need to edit this file
+if you installed the pre-built binaries rather than building from source code.
+
+<pre>
+#########################################
+# Tell EPICS all about the record types, device-support modules, drivers,
+# etc. in this build from dxpApp
+dbLoadDatabase("$(DXP)/dbd/dxp.dbd")
+dxp_registerRecordDeviceDriver(pdbbase)
+#########################################
+</pre>
+
+These commands load the EPICS database definition files.
+
+<pre>
+#########################################
+# Setup for save_restore
+< ../save_restore.cmd
+save_restoreSet_status_prefix("dxpXMAP:")
+dbLoadRecords("$(AUTOSAVE)/asApp/Db/save_restoreStatus.db", "P=dxpXMAP:")
+set_pass0_restoreFile("auto_settings16.sav")
+set_pass1_restoreFile("auto_settings16.sav")
+#########################################
+</pre>
+
+These commands initialize the save/restore system that remembers changes in parameter settings when the IOC is rebooted.
+
+<pre>
+#########################################
+# Set logging level (1=ERROR, 2=WARNING, 3=INFO, 4=DEBUG)
+xiaSetLogLevel(2)
+xiaInit("xmap16.ini")
+xiaStartSystem
+#########################################
+</pre>
+
+These commands set the logging (debugging) level for the XIA Handel software.  It initializes the XIA software
+with the appropriate .ini file, and then starts the XIA software.  You will hear clicking in the xMAP modules
+when the xiaStartSystem command is executing.  The xamp16.ini file is the same type of file that xManager requires.
+If you have xManager running on your system you can just copy that .ini file to your IOC directory for EPICS.
+This file must be edited from the one that is distributed with the EPICS software to define the PCI bus slots
+in your PXI crate.
+
+<pre>
+#########################################
+# DXPConfig(serverName, ndetectors, ngroups, pollFrequency)
+DXPConfig("DXP1",  16, 1, 100)
+#########################################
+</pre>
+
+This command starts the EPICS "asyn" server called DXP1.  It defines the number of detectors in the system,
+and the number of detector groups.  We use 1 detector group (containing all of the detectors) to efficiently
+do operations that should be done on all detectors simultaneously.  The pollFrequency determines the rate
+at which the poller thread will check for acquisition complete.  100 Hz is typical, it does not put a significant
+load on the system, but reduces the average latency in determining when the run is complete to 5ms.
+
+<pre>
+#########################################
+dbLoadTemplate("16element.template")
+#########################################
+</pre>
+
+This command loads the template file that in turns loads the databases for the MCA and DXP records.  
+The content of the template file is discussed below.
+
+<pre>
+#########################################
+# Debugging flags
+#xiaSetLogLevel(4)
+#asynSetTraceMask DXP1 0 255
+#asynSetTraceIOMask DXP1 0 2
+#var dxpRecordDebug 10
+#########################################
+</pre>
+
+These commands set the debugging level of the EPICS software.  asynSetTraceMask controls the debugging 
+in drvDXP and devDXP.  This uses the asynTrace facility, with different bits turning on different types of
+output. 1 turns on only error reporting, 255 turns on all messages.  mcaRecordDebug and dxpRecordDebug turn
+on messages from the mcaRecord and dxpRecord respectively.  0 turns off messages, 10 turns on all messages.
+
+<pre>
+#########################################
+### Scan-support software
+# crate-resident scan.  This executes 1D, 2D, 3D, and 4D scans, and caches
+# 1D data, but it doesn't store anything to disk.  (See 'saveData' below for that.)
+dbLoadRecords("$(SSCAN)/sscanApp/Db/scan.db","P=dxpXMAP:,MAXPTS1=2000,MAXPTS2=1000,MAXPTS3=10,MAXPTS4=10,MAXPTSH=2048")
+#########################################
+</pre>
+
+These commands load the databases for general purpose scanning to be done in the IOC.  The maximum number of points in each nested
+scan is defined here, as is the maximum number of channels of MCA data that can be stored in the scanH record.
+
+
+<pre>
+#########################################
+iocInit
+
+seq dxpMED, "P=dxpXMAP:, DXP=dxp, MCA=mca, N_DETECTORS=16"
+
+### Start up the autosave task and tell it what to do.
+# Save settings every thirty seconds
+create_monitor_set("auto_settings16.req", 30, "P=dxpXMAP:")
+
+### Start the saveData task.
+saveData_Init("saveData.req", "P=dxpXMAP:")
+#########################################
+</pre>
+
+The iocInit start the EPICS software. The seq command starts the dxpMED State-Notation-Language program that implements
+the "Copy 1 To All" feature for the DXP records.  It also copies MCA ROIs to DXP SCAs, and computes combined elapsed and live
+times, etc. The last two commands start the save/restore task and start the task that saves data from the scan records.  
+Edit the file saveData.req to change what additional EPICS
+PVs are saved with every scan.  You might want to include the MCA record energy calibration fields, etc.
+
+<p>
+The 16element.template file looks like this:
+<pre>
+#########################################
+file "$(DXP)/dxpApp/Db/dxpMED.db"
+{
+pattern
+{P,           MCAALL,    INP          } 
+{dxpXMAP: mcaAll, "@asyn(DXP1,-1)"}
+}
+
+file "$(MCA)/mcaApp/Db/simple_mca.db"
+{
+pattern
+{P,           M,       DTYP,         INP           PREC,  CHANS}
+{dxpXMAP:   mca1  "asynMCA",   "@asyn(DXP1,0)",   2,     2048}
+{dxpXMAP:   mca2  "asynMCA",   "@asyn(DXP1,1)",   2,     2048}
+{dxpXMAP:   mca3  "asynMCA",   "@asyn(DXP1,2)",   2,     2048}
+{dxpXMAP:   mca4  "asynMCA",   "@asyn(DXP1,3)",   2,     2048}
+{dxpXMAP:   mca5  "asynMCA",   "@asyn(DXP1,4)",   2,     2048}
+{dxpXMAP:   mca6  "asynMCA",   "@asyn(DXP1,5)",   2,     2048}
+{dxpXMAP:   mca7  "asynMCA",   "@asyn(DXP1,6)",   2,     2048}
+{dxpXMAP:   mca8  "asynMCA",   "@asyn(DXP1,7)",   2,     2048}
+{dxpXMAP:   mca9  "asynMCA",   "@asyn(DXP1,8)",   2,     2048}
+{dxpXMAP:   mca10 "asynMCA",   "@asyn(DXP1,9)",   2,     2048}
+{dxpXMAP:   mca11 "asynMCA",   "@asyn(DXP1,10)",  2,     2048}
+{dxpXMAP:   mca12 "asynMCA",   "@asyn(DXP1,11)",  2,     2048}
+{dxpXMAP:   mca13 "asynMCA",   "@asyn(DXP1,12)",  2,     2048}
+{dxpXMAP:   mca14 "asynMCA",   "@asyn(DXP1,13)",  2,     2048}
+{dxpXMAP:   mca15 "asynMCA",   "@asyn(DXP1,14)",  2,     2048}
+{dxpXMAP:   mca16 "asynMCA",   "@asyn(DXP1,15)",  2,     2048}
+{dxpXMAP:  mcaAll "asynMCA",   "@asyn(DXP1,-1)",  2,     2048}
+}
+
+# DXP records
+file "$(DXP)/dxpApp/Db/xmap_reset.db"
+{
+pattern
+{P,           R,        INP       }
+{dxpXMAP:   dxp1   "@asyn(DXP1,0)"}
+{dxpXMAP:   dxp2   "@asyn(DXP1,1)"}
+{dxpXMAP:   dxp3   "@asyn(DXP1,2)"}
+{dxpXMAP:   dxp4   "@asyn(DXP1,3)"}
+{dxpXMAP:   dxp5   "@asyn(DXP1,4)"}
+{dxpXMAP:   dxp6   "@asyn(DXP1,5)"}
+{dxpXMAP:   dxp7   "@asyn(DXP1,6)"}
+{dxpXMAP:   dxp8   "@asyn(DXP1,7)"}
+{dxpXMAP:   dxp9   "@asyn(DXP1,8)"}
+{dxpXMAP:   dxp10  "@asyn(DXP1,9)"}
+{dxpXMAP:   dxp11  "@asyn(DXP1,10)"}
+{dxpXMAP:   dxp12  "@asyn(DXP1,11)"}
+{dxpXMAP:   dxp13  "@asyn(DXP1,12)"}
+{dxpXMAP:   dxp14  "@asyn(DXP1,13)"}
+{dxpXMAP:   dxp15  "@asyn(DXP1,14)"}
+{dxpXMAP:   dxp16  "@asyn(DXP1,15)"}
+#{dxpXMAP:  dxpAll  "@asyn(DXP1,-1)"}
+}
+#########################################
+</pre>
+
+This file defines the mca and DXP records that get loaded.  It defines the maximum number of channels in the MCA
+records.  It also loads the multi-element DXP database (dxpMED.db).  This database is used with the dxpMED.st SNL
+program to do collective actions on multiple DXP or MCA records.
+
+<p>
+Note that there are supplied startup scripts, template files and auto_settings.req files
+for 4, 8, 12, and 16 channel xMAP systems.  If you have a different number
+of channels you need to create your own files using these as examples.  There are currently
+only medm screens for a 16-element detector system.  You will need to copy and edit these for
+different numbers of detectors.  For fewer detectors than 16 you can simply use the 16element
+files temporarily and ignore the ugly white fields for non-existant records!
+
+<p></p>
+<hr>
+<h2 align="center"><a name="xMAP medm screens">
+                            xMAP medm screens</a></h2>
+
+<p>The following are screen shots of the medm screens provided for the xMAP.  
+
+<p></p>
+<hr>
+<h3 align="center">16element_dxp.adl</h3>
+<p>Main control screen for 16element xMAP system.</p>
+<p align="center"><img border="0" src="16element_dxp.png"</p>
+
+<p></p>
+<hr>
+<h3 align="center">16element_dxp_a;;.adl</h3>
+<p>Complete screen for low-level DXP parameters and control.</p>
+<p align="center"><img border="0" src="16element_dxp_all.png"</p>
+
+<p></p>
+<hr>
+<h3 align="center">16element_dxp_statistics.adl</h3>
+<p>Screen to display trigger counts and events in run, plus ICR and OCR.</p>
+<p align="center"><img border="0" src="16element_dxp_statistics.png"</p>
+
+<p></p>
+<hr>
+<h3 align="center">16element_ROI_SCA.adl</h3>
+<p>Screen to display ROI and SCA counts for a single ROI/SCA on each detector.</p>
+<p align="center"><img border="0" src="16element_ROI_SCA.png"</p>
+
+<p></p>
+<hr>
+<h3 align="center">16element_cal.adl</h3>
+<p>Screen to display energy calibration parameters for each detector.</p>
+<p align="center"><img border="0" src="16element_cal.png"</p>
+
+<p></p>
+<hr>
+<h3 align="center">16element_time.adl</h3>
+<p>Screen to display preset and elapsed times for each detector.</p>
+<p align="center"><img border="0" src="16element_time.png"</p>
+
+<p></p>
+<hr>
+<h3 align="center">16element_plots.adl</h3>
+<p>Screen to display the spectral data for each detector.
+<p align="center"><img border="0" src="16element_plots.png"</p>
+
+<p></p>
+<hr>
+<h3 align="center">16element_baseline.adl</h3>
+<p>Screen to display the baseline histograms and control the update rate.</p>
+<p align="center"><img border="0" src="16element_baseline.png"</p>
+
+<p></p>
+<hr>
+<h3 align="center">16element_history.adl</h3>
+<p>Screen to display the baseline histories and control the update rate.</p>
+<p align="center"><img border="0" src="16element_history.png"</p>
+
+<p></p>
+<hr>
+<h3 align="center">16element_trace.adl</h3>
+<p>Screen to display the ADC traces, and control the time per point and update rate.</p>
+<p align="center"><img border="0" src="16element_trace.png"</p>
+
+
+
+
+<hr>
+<h2 align="center"><a name="Installing the DXP2X">
+                            Installing the DXP2X</a></h2>
+<p> </p>
+The DXP4C2X CAMAC module is supported under vxWorks.  It works with the Kinetic Systems
+3922/2922 VME to CAMAC adapter.
+<p>
+The example IOC directory, iocDXP2X, creates EPICS process variables with names like
+dxp2X:dxp1.PKTIM, where dxp2X: is the "prefix" for the process variable names, dxp1
+is the DXP record name, and PKTIM is the field name.  This is OK
+for installations where there will be at most one DXP2X system on the subnet.  However, in many cases there
+will be the possibility of more than one DXP2X running EPICS on the same subnet.  If this is the
+case then it is essential that each one use a different prefix, because EPICS process variable names
+must be unique on a subnet.  Here is how to give your DXP2X system a unique name, and still be able to upgrade
+the EPICS software easily.  It is recommended that you follow these instructions even if you don't have
+name conflicts on your IOC, so that files you edit are in a directory that will not be overwritten when you upgrade
+the EPICS software.
+<ul>
+  <li>Make a copy of the iocDXP2X directory.  Let's assume you will make your prefix be myDXP2X:, so a
+      good name for the directory would be iocmyDXP2X/.
+  <li>Edit all files in that directory (including *.cmd, auto_settings*.req, *.template, and START_IOC*),
+      changing all occurances of dxp2X: to myDXP2X:.
+  <li>If you have created any higher-level medm screens that load the medm screens in this package, you
+      will need to edit them to pass the new prefix, myDXP2X:
+  <li>The next time you unpack a new version of the EPICS DXP software it will overwrite the iocDXP2X
+      directory.  However, if you have made your own new directory, myDXP2X/, that will not be
+      modified.
+  <li>There are example startup scripts (e.g. 4element.cmd), Handel initialization files (e.g. 4element_reset.ini),
+      database templates (e.g. 4element.template), 
+      and autosave request files (e.g. auto_settings4.req) for 4, 8, 12 and 16 element systems.  The .ini file
+      will almost certainly need to be edited to match your detector and CAMAC configuration.
+</ul>
+
+<p></p>
+
+
+<hr>
+<h2 align="center"><a name="Software Architecture">
+                            Software Architecture</a></h2>
+<p> </p>
+<p>The overall architecture of the EPICS DXP software is shown in the diagram below.  
+At the top level are EPICS Channel Access client applications, such as the IDL MCA Display program,
+the IDL Multi-Element Detector (MED) Display program, medm, spec, and others. 
+<p>
+At the next level is
+the dxpMED State Notation Language program, which is used to synchronize acquisition and settings 
+for multi-element detectors.  This program also uses EPICS Channel Access, but it typically runs
+in the same EPICS IOC that is controlling the XIA hardware.  
+<p>
+Next are the DXP and MCA
+records, which communicate with device support.  In the case of the MCA record, this device support
+is devMcaAsyn, which is itself device-independent, and talks to drvDxp.  The device support for
+the dxpRecord is specific to the XIA hardware.  drvDxp and devDxp both communicate with 
+the XIA Handel library, which calls the XIA Xerxes library.  Xerxes calls the machine dependent 
+libraries, md_epics and md_win95, which call the operating system specific hardware 
+libraries to perform the actual low-level I/O.
+<p>
+The poller thread rapidly polls the acquisition status (acquiring or done)
+while acquisition is in progress.  This thread issues callbacks when acquisition
+is complete to records that have registered with it.   
+It is used to minimize latencies, so that the MCA records will be processed when acquisition completes
+without the MCA records themselves having to process rapidly.  The poll rate is set in the DXPConfig() command in
+the startup script.  It is typically set to 100Hz, which does not significantly load the system, but provides a 5msec 
+average latency in determining when acquisition is complete. 
+</p>
+<p align="center"><img border="0" src="dxpFlowchart.png"</p>
+
+
+<hr>
+<h2 align="center"><a name="Performance">
+                            Performance</a></h2>
+
+Tests were done with R2-7 of the dxp module to measure the performance of the Saturn and xMAP systems in 
+rapidly collecting complete spectra in a scan.  
+The tests were done with the following conditions:
+<ul>
+  <li> Cygwin architecture on Windows.  This is currently required for the saveData software.
+  <li> 2048 channel spectra
+  <li>0.01 second acquisition time, in order to attain real data but with minimal overhead.
+  <li>EPICS scan records.  
+  <ul>
+    <li>The inner scan was the scanH record, which had its detector trigger configured to .mca.ERST (Saturn)
+        or EraseStart (xMAP) in the mca/dxp
+        database.  Its detectors were configured to collect spectra from the MCA records. The Saturn collected 1 MCA
+        spectrum at each scan point, the xMAP collected 4, 8, 12 or 16 spectra at each scan point.
+    <li>The outer scan was the scan1 record.  It had no positioner drive PV to minimize overhead.  
+        The detector trigger was scanH.EXSC.
+        Its detectors were ElapsedReal, ElapsedLive, and the first ROI, mca1.R0.
+  </ul>
+  <li>The scan fields of the MCA status, MCA read, and DXP read records were Passive to minimize overhead.  
+      The poller thread was running at 100 Hz, and caused the MCA records to be processed when acquisition was
+      complete.
+  <li>saveData was used to save the scan data to a local hard disk, not across the network.
+  <li>1000 scan points were collected.  There were no positioner or detector delays in the scan records.
+  <li>The scan records were running on the same IOC as the DXP software.
+  <li>The system configuration is shown in the screen shot below.
+</ul>
+
+<p>
+Note that these measurements were made using the simple unbuffered mode on the xMAP.  The xMAP has 4MB of onboard memory
+per channel, and the release 0.9.1 firmware allows one to use this memory to buffer many spectra, in response to a
+software or hardware trigger signal.  This can be used to rapidly acquire many spectra, and then read them out quickly
+at the end.  The EPICS software does not yet support this feature, but will in a future release.
+</p>
+
+<hr>
+<center>
+<h3>Performance Measurements</h3>
+<p></p>
+<table summary="Performance Measurements" border="1">
+<tbody>
+  <tr align="center">
+    <th>XIA system</td>
+    <th>Number of detectors</td>
+    <th>Seconds/1000 scan points</td>
+    <th>Scan points/second</td>
+    <th>Total spectra/second</td>
+    <th>Data rate (MB/second)</td>
+  </tr>
+
+  <tr valign=top>
+    <td>Saturn (EPP)</td>
+    <td>1</td>
+    <td>30.1</td>
+    <td>33.2</td>
+    <td>33.2</a></td>
+    <td>0.27</a></td>
+  </tr>
+
+  <tr valign=top>
+    <td>Saturn (USB 1.0)</td>
+    <td>1</td>
+    <td>80.5</td>
+    <td>12.4</td>
+    <td>12.4</a></td>
+    <td>0.10</a></td>
+  </tr>
+
+  <tr valign=top>
+    <td>Saturn (USB 2.0)</td>
+    <td>1</td>
+    <td>23.5</td>
+    <td>42.6</td>
+    <td>42.6</a></td>
+    <td>0.35</a></td>
+  </tr>
+
+  <tr valign=top>
+    <td>xMAP</td>
+    <td>4 (1 xMAP)</td>
+    <td>45.7</td>
+    <td>21.9</td>
+    <td>87.5</a></td>
+    <td>0.72</a></td>
+  </tr>
+
+  <tr valign=top>
+    <td>xMAP</td>
+    <td>8 (2 xMAPs)</td>
+    <td>50.8</td>
+    <td>19.7</td>
+    <td>157.5</a></td>
+    <td>1.29</a></td>
+  </tr>
+
+  <tr valign=top>
+    <td>xMAP</td>
+    <td>12 (3 xMAPs)</td>
+    <td>61.7</td>
+    <td>16.2</td>
+    <td>194.5</a></td>
+    <td>1.59</a></td>
+  </tr>
+
+  <tr valign=top>
+    <td>xMAP</td>
+    <td>16 (4 xMAPs)</td>
+    <td>78.1</td>
+    <td>12.8</td>
+    <td>204.9</a></td>
+    <td>1.68</a></td>
+  </tr>
+</table>
+</center>
+
+<p align="center"><img border="0" src="16channel_scan.png"</p>
+<p> </p>
+
+
+<P>
+<HR>
+<ADDRESS>
+Suggestions and comments to: 
+<A HREF="mailto:rivers@cars.uchicago.edu">
+Mark Rivers </A> : (rivers@cars.uchicago.edu)
+<BR>
+</BODY>
+</HTML>

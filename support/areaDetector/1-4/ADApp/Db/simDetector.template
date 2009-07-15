@@ -1,0 +1,51 @@
+# Database for the records specific to the simulated detector driver
+# Mark Rivers
+# March 23, 2008
+
+record(ao, "$(P)$(R)GainX")
+{
+   field(PINI, "1")
+   field(DTYP, "asynFloat64")
+   field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))SIM_GAINX")
+   field(PREC, "2")
+}
+
+record(ai, "$(P)$(R)GainX_RBV")
+{
+   field(PINI, "1")
+   field(DTYP, "asynFloat64")
+   field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))SIM_GAINX")
+   field(PREC, "2")
+   field(SCAN, "I/O Intr")
+}
+
+record(ao, "$(P)$(R)GainY")
+{
+   field(PINI, "1")
+   field(DTYP, "asynFloat64")
+   field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))SIM_GAINY")
+   field(PREC, "2")
+}
+
+record(ai, "$(P)$(R)GainY_RBV")
+{
+   field(PINI, "1")
+   field(DTYP, "asynFloat64")
+   field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))SIM_GAINY")
+   field(PREC, "2")
+   field(SCAN, "I/O Intr")
+}
+
+record(longout, "$(P)$(R)Reset")
+{
+   field(DTYP, "asynInt32")
+   field(OUT,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))RESET_IMAGE")
+}
+
+record(longin, "$(P)$(R)Reset_RBV")
+{
+   field(PINI, "1")
+   field(DTYP, "asynInt32")
+   field(INP,  "@asyn($(PORT),$(ADDR),$(TIMEOUT))RESET_IMAGE")
+   field(SCAN, "I/O Intr")
+}

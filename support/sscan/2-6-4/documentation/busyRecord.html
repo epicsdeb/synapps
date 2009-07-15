@@ -1,0 +1,51 @@
+<HTML> <HEAD>
+<TITLE>Busy Record</TITLE>
+</HEAD>
+<BODY>
+
+<H1> The Busy Record </h1>
+The purpose of the BUSY record is to give the database developer a way to signal the
+completion of an operation via EPICS' putNotify/ca_put_callback mechanism.  This
+mechanism is described in the EPICS Application Developer's Guide; for purposes here,
+it is essentially an execution trace.  When ca_put_callback() causes a record to
+process (i.e., to execute) EPICS takes note of that processing, and any other record
+processing that results directly from it.  "Directly" means that the processing is
+caused by either a forward link, or a database link with the attribute 'PP'.  Only
+this kind of processing is traceable by EPICS.  When all traced processing completes,
+EPICS sends a callback to the source of the original ca_put_callback() command.
+
+<P>If all of the processing that results from a ca_put_callback() is traceable by EPICS,
+the callback from EPICS is all you need to indicate completion.  But if you want to
+include some processing that <em>isn't</em> traceable by EPICS, the BUSY record is
+a convenient way to fold it in.  If you arrange for a BUSY record to be processed
+as a traceable result of the ca_put_callback(), and cause its VAL field to have the
+value "Busy" (1), the BUSY record will pretend to be doing something (i.e., it will
+not execute its forward link) as long as its VAL field remains "Busy".  When VAL
+is set to "Done", and the record is processed, it will execute its forward link,
+notifying EPICS that it is finished, and EPICS will send the callback.
+
+The write that sets a BUSY record to "Busy" (1) must be done by either a
+ca_put_callback(), or a PP link.  The write that resets the record to "Done" (0)
+must be done by either a ca_put() or a CA link.
+
+<P>The busy record has the standard fields (dbCommon.db) for specifying under what
+circumstances the record will be processed, etc.  These fields are listed in the
+EPICS Record Reference Manual.  The BUSY record has four additional fields:
+
+<dl>
+<dt>VAL<dd>The record's value, which can be either "Busy" (1), or "Done" (0).  While VAL
+is "Busy", the record will not call recGblFwdLink().  If VAL is "Done", the record will
+call recGblFwdLink() as the last step in processing.  When VAL is written to by a
+channel-access put, the record will process.
+<dt>LVAL<dd>The previous value of VAL.  (private)
+<dt>OMSL<dd><b>O</b>utput<b>M</b>ode<b>S</b>e<b>L</b>ect -- This field can take one of two values: "supervisory",
+which means that VAL accepts whatever value is given to it; and "closed_loop", which
+means that the value retrieved from the PV named by the DOL field is placed into VAL
+whenever the record processes, and anything that might have been written to VAL is
+ignored.
+<dt>DOL<dd><b>D</b>esired<b>O</b>utput<b>L</b>ocation -- names a PV whose value will be placed into VAL when
+the record processes.  DOL may be specified as a number, instead of a PV name.  In
+this case, VAL is initialized to that number at boot time, and DOL has no further use.
+</dl>
+
+</BODY>

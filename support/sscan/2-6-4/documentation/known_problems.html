@@ -1,0 +1,55 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="content-type" content=
+"text/html; charset=us-ascii">
+<title>sscan_known_problems</title>
+<meta name="author" content="Tim Mooney">
+</head>
+<body>
+<img src="http://www.aps.anl.gov/aod/bcda/icons/logo101.gif" alt=
+"EPICS" hspace="5" height="101" width="101" align="right">
+
+
+<h1>sscan 2-5-5</h1>
+<ul>
+<li>saveData was writing scan dimensions to the wrong offset in the data file
+header, under some circumstances, corrupting the header so that some readers
+could not understand the file.
+</li>
+<li>Prefix length was inconsistently enforced, with the result that the maximum
+number of characters (exclusing the trailing null) was actually eight, instead
+of nine.  </li>
+</ul>
+
+<h1>sscan 2-5-4</h1>
+<ul>
+<li>scanSee (a display program not included in the sscan module) gets confused
+because saveData's messages to users have been reformatted.  </li>
+<li>the sscan record does not behave correctly if autosave restores an
+illegal value for NPTS.</li>
+</ul>
+
+<h1>sscan 2-5-3</h1>
+<ul>
+<li>Scans hang if the data-file fails.  </li>
+</ul>
+
+<h1>sscan 2-5-2</h1>
+<ul>
+<li>Scans can hang because of a race condition in doPuts() and a
+call to recDynLinkPutCallback() that failed for a reason other
+than notifyInProgress.  </li>
+</ul>
+
+<h1>sscan 2-4</h1>
+<ul>
+<li>The before-scan link (.BSPV, .BSCD) is broken.</li>
+<li>If a PV link is changed while the previous value is still
+connecting, the software will hang.
+</ul>
+
+
+
+</body>
+</html>

@@ -1,0 +1,26 @@
+record(longout,"$(P)$(R)cntl")
+{
+    field(DTYP,"asynUInt32Digital")
+    field(OUT,"@asynMask($(PORT) 0 0xFFFFFFFF)")
+}
+record(longout,"$(P)$(R)data")
+{
+    field(DTYP,"asynUInt32Digital")
+    field(OUT,"@asynMask($(PORT) 1 0xFFFFFFFF)")
+}
+record(mbbo,"$(P)$(R)cntlfmt")
+{
+    field(DESC, "Cntl Format")
+    field(SCAN, "Passive")
+    field(ZRST, "Hex")
+    field(ONST, "Dec")
+    field(DTYP, "Soft Channel")
+}
+record(mbbo,"$(P)$(R)datafmt")
+{
+    field(DESC, "Data Format")
+    field(SCAN, "Passive")
+    field(ZRST, "Hex")
+    field(ONST, "Dec")
+    field(DTYP, "Soft Channel")
+}

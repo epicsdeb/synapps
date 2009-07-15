@@ -1,0 +1,11 @@
+#!/usr/local/bin/tcsh
+# Startup script for EPICS brick (shell application)
+#
+
+# Define relative environment variants
+setenv DSP1 ebrickApp/op/adl
+setenv DSP2 ../../all_adl
+setenv EPICS_DISPLAY_PATH $DSP1':'$DSP2
+
+# Launch MEDM screen
+medm -x -noMsg -macro "P=ebrick:" ebrick.adl&

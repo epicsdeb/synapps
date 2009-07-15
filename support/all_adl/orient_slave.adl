@@ -1,0 +1,697 @@
+
+file {
+	name="/APSshare/epics/synApps_cvs/support/optics/opticsApp/op/adl/orient_slave.adl"
+	version=030004
+}
+display {
+	object {
+		x=82
+		y=81
+		width=260
+		height=245
+	}
+	clr=14
+	bclr=2
+	cmap=""
+	gridSpacing=5
+	gridOn=0
+	snapToGrid=0
+}
+"color map" {
+	ncolors=65
+	colors {
+		ffffff,
+		ececec,
+		dadada,
+		c8c8c8,
+		bbbbbb,
+		aeaeae,
+		9e9e9e,
+		919191,
+		858585,
+		787878,
+		696969,
+		5a5a5a,
+		464646,
+		2d2d2d,
+		000000,
+		00d800,
+		1ebb00,
+		339900,
+		2d7f00,
+		216c00,
+		fd0000,
+		de1309,
+		be190b,
+		a01207,
+		820400,
+		5893ff,
+		597ee1,
+		4b6ec7,
+		3a5eab,
+		27548d,
+		fbf34a,
+		f9da3c,
+		eeb62b,
+		e19015,
+		cd6100,
+		ffb0ff,
+		d67fe2,
+		ae4ebc,
+		8b1a96,
+		610a75,
+		a4aaff,
+		8793e2,
+		6a73c1,
+		4d52a4,
+		343386,
+		c7bb6d,
+		b79d5c,
+		a47e3c,
+		7d5627,
+		58340f,
+		99ffff,
+		73dfff,
+		4ea5f9,
+		2a63e4,
+		0a00b8,
+		ebf1b5,
+		d4db9d,
+		bbc187,
+		a6a462,
+		8b8239,
+		73ff6b,
+		52da3b,
+		3cb420,
+		289315,
+		1a7309,
+	}
+}
+rectangle {
+	object {
+		x=0
+		y=0
+		width=250
+		height=20
+	}
+	"basic attribute" {
+		clr=0
+		width=3
+	}
+}
+rectangle {
+	object {
+		x=0
+		y=20
+		width=250
+		height=3
+	}
+	"basic attribute" {
+		clr=54
+		width=3
+	}
+}
+text {
+	object {
+		x=0
+		y=0
+		width=250
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="$(P)orient$(O)"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=132
+		y=64
+		width=115
+		height=10
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="CONSTRAINT:"
+	align="horiz. centered"
+}
+menu {
+	object {
+		x=132
+		y=75
+		width=115
+		height=20
+	}
+	control {
+		chan="$(P)orient$(O):Mode"
+		clr=14
+		bclr=51
+	}
+}
+"text entry" {
+	object {
+		x=164
+		y=99
+		width=80
+		height=20
+	}
+	control {
+		chan="$(P)orient$(O):TTH"
+		clr=14
+		bclr=51
+	}
+	limits {
+	}
+}
+"text entry" {
+	object {
+		x=164
+		y=122
+		width=80
+		height=20
+	}
+	control {
+		chan="$(P)orient$(O):TH"
+		clr=14
+		bclr=51
+	}
+	limits {
+	}
+}
+"text entry" {
+	object {
+		x=164
+		y=145
+		width=80
+		height=20
+	}
+	control {
+		chan="$(P)orient$(O):CHI"
+		clr=14
+		bclr=51
+	}
+	limits {
+	}
+}
+"text entry" {
+	object {
+		x=164
+		y=168
+		width=80
+		height=20
+	}
+	control {
+		chan="$(P)orient$(O):PHI"
+		clr=14
+		bclr=51
+	}
+	limits {
+	}
+}
+rectangle {
+	object {
+		x=161
+		y=97
+		width=85
+		height=24
+	}
+	"basic attribute" {
+		clr=16
+		fill="outline"
+		width=2
+	}
+	"dynamic attribute" {
+		vis="if not zero"
+		chan="$(P)orient$(O):TTH_busy"
+	}
+}
+text {
+	object {
+		x=131
+		y=100
+		width=30
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="TTH"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=131
+		y=123
+		width=30
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="TH"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=131
+		y=146
+		width=30
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="CHI"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=131
+		y=169
+		width=30
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="PHI"
+	align="horiz. centered"
+}
+rectangle {
+	object {
+		x=161
+		y=121
+		width=85
+		height=24
+	}
+	"basic attribute" {
+		clr=16
+		fill="outline"
+		width=2
+	}
+	"dynamic attribute" {
+		vis="if not zero"
+		chan="$(P)orient$(O):TH_busy"
+	}
+}
+rectangle {
+	object {
+		x=161
+		y=143
+		width=85
+		height=24
+	}
+	"basic attribute" {
+		clr=16
+		fill="outline"
+		width=2
+	}
+	"dynamic attribute" {
+		vis="if not zero"
+		chan="$(P)orient$(O):CHI_busy"
+	}
+}
+rectangle {
+	object {
+		x=161
+		y=166
+		width=85
+		height=24
+	}
+	"basic attribute" {
+		clr=16
+		fill="outline"
+		width=2
+	}
+	"dynamic attribute" {
+		vis="if not zero"
+		chan="$(P)orient$(O):PHI_busy"
+	}
+}
+"text update" {
+	object {
+		x=26
+		y=46
+		width=80
+		height=14
+	}
+	monitor {
+		chan="$(P)orient$(O):H_RBV"
+		clr=54
+		bclr=2
+	}
+	align="horiz. centered"
+	limits {
+	}
+}
+text {
+	object {
+		x=10
+		y=180
+		width=10
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="L"
+}
+"text entry" {
+	object {
+		x=25
+		y=179
+		width=80
+		height=20
+	}
+	control {
+		chan="$(P)orient$(O):L"
+		clr=14
+		bclr=51
+	}
+	limits {
+	}
+}
+rectangle {
+	object {
+		x=23
+		y=177
+		width=84
+		height=24
+	}
+	"basic attribute" {
+		clr=16
+		fill="outline"
+		width=2
+	}
+	"dynamic attribute" {
+		vis="if not zero"
+		chan="$(P)orient$(O):L_busy"
+	}
+}
+"text update" {
+	object {
+		x=26
+		y=163
+		width=80
+		height=14
+	}
+	monitor {
+		chan="$(P)orient$(O):L_RBV"
+		clr=54
+		bclr=2
+	}
+	align="horiz. centered"
+	limits {
+	}
+}
+composite {
+	object {
+		x=10
+		y=117
+		width=97
+		height=24
+	}
+	"composite name"=""
+	children {
+		text {
+			object {
+				x=10
+				y=120
+				width=10
+				height=20
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="K"
+		}
+		"text entry" {
+			object {
+				x=25
+				y=119
+				width=80
+				height=20
+			}
+			control {
+				chan="$(P)orient$(O):K"
+				clr=14
+				bclr=51
+			}
+			limits {
+			}
+		}
+		rectangle {
+			object {
+				x=23
+				y=117
+				width=84
+				height=24
+			}
+			"basic attribute" {
+				clr=16
+				fill="outline"
+				width=2
+			}
+			"dynamic attribute" {
+				vis="if not zero"
+				chan="$(P)orient$(O):K_busy"
+			}
+		}
+	}
+}
+"text update" {
+	object {
+		x=26
+		y=103
+		width=80
+		height=14
+	}
+	monitor {
+		chan="$(P)orient$(O):K_RBV"
+		clr=54
+		bclr=2
+	}
+	align="horiz. centered"
+	limits {
+	}
+}
+"text entry" {
+	object {
+		x=25
+		y=61
+		width=80
+		height=20
+	}
+	control {
+		chan="$(P)orient$(O):H"
+		clr=14
+		bclr=51
+	}
+	limits {
+	}
+}
+text {
+	object {
+		x=10
+		y=62
+		width=10
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="H"
+}
+rectangle {
+	object {
+		x=23
+		y=59
+		width=84
+		height=24
+	}
+	"basic attribute" {
+		clr=16
+		fill="outline"
+		width=2
+	}
+	"dynamic attribute" {
+		vis="if not zero"
+		chan="$(P)orient$(O):H_busy"
+	}
+}
+"related display" {
+	object {
+		x=220
+		y=223
+		width=40
+		height=20
+	}
+	display[2] {
+		label="Everything"
+		name="orient_slave_full.adl"
+		args="P=$(P),O=$(O)"
+		policy="replace display"
+	}
+	clr=0
+	bclr=17
+	label="-More"
+}
+"message button" {
+	object {
+		x=85
+		y=81
+		width=20
+		height=20
+	}
+	control {
+		chan="$(P)orient$(O):H_tweak.A"
+		clr=14
+		bclr=51
+	}
+	label="+"
+	press_msg="1"
+}
+"message button" {
+	object {
+		x=25
+		y=81
+		width=20
+		height=20
+	}
+	control {
+		chan="$(P)orient$(O):H_tweak.B"
+		clr=14
+		bclr=51
+	}
+	label="-"
+	press_msg="1"
+}
+"text entry" {
+	object {
+		x=45
+		y=83
+		width=40
+		height=18
+	}
+	control {
+		chan="$(P)orient$(O):H_tweak.C"
+		clr=14
+		bclr=51
+	}
+	limits {
+	}
+}
+composite {
+	object {
+		x=25
+		y=199
+		width=80
+		height=20
+	}
+	"composite name"=""
+	children {
+		"message button" {
+			object {
+				x=85
+				y=199
+				width=20
+				height=20
+			}
+			control {
+				chan="$(P)orient$(O):L_tweak.A"
+				clr=14
+				bclr=51
+			}
+			label="+"
+			press_msg="1"
+		}
+		"message button" {
+			object {
+				x=25
+				y=199
+				width=20
+				height=20
+			}
+			control {
+				chan="$(P)orient$(O):L_tweak.B"
+				clr=14
+				bclr=51
+			}
+			label="-"
+			press_msg="1"
+		}
+		"text entry" {
+			object {
+				x=45
+				y=201
+				width=40
+				height=18
+			}
+			control {
+				chan="$(P)orient$(O):L_tweak.C"
+				clr=14
+				bclr=51
+			}
+			limits {
+			}
+		}
+	}
+}
+composite {
+	object {
+		x=25
+		y=139
+		width=80
+		height=20
+	}
+	"composite name"=""
+	children {
+		"message button" {
+			object {
+				x=85
+				y=139
+				width=20
+				height=20
+			}
+			control {
+				chan="$(P)orient$(O):K_tweak.A"
+				clr=14
+				bclr=51
+			}
+			label="+"
+			press_msg="1"
+		}
+		"message button" {
+			object {
+				x=25
+				y=139
+				width=20
+				height=20
+			}
+			control {
+				chan="$(P)orient$(O):K_tweak.B"
+				clr=14
+				bclr=51
+			}
+			label="-"
+			press_msg="1"
+		}
+		"text entry" {
+			object {
+				x=45
+				y=141
+				width=40
+				height=18
+			}
+			control {
+				chan="$(P)orient$(O):K_tweak.C"
+				clr=14
+				bclr=51
+			}
+			limits {
+			}
+		}
+	}
+}

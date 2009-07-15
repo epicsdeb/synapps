@@ -1,0 +1,1722 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+    "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <title>EPICS: AllenBradley Driver and Device Support</title>
+</head>
+
+<body>
+<h1>EPICS: Allen Bradley<br>
+Driver and Device Support<br>
+Release 2-1</h1>
+<address>
+  Marty Kraimer
+</address>
+<address>
+  Argonne National Laboratory - Advanced Photon Source
+</address>
+<address>
+  Bob Dalesio
+</address>
+<address>
+  Los Alamos National Laboratory - Accelerator Technology
+</address>
+<address>
+  Ric Claus SLAC (Stepper Motor Support)
+</address>
+<address>
+  Stephanie Allison SLAC (SLC 500 Support)
+</address>
+<address>
+  Updated: January 2004
+</address>
+<br>
+
+
+<h2>License Agreement</h2>
+
+<p>MPF is available via the open source license described at the end of this
+document.</p>
+<hr>
+
+<h2>Table of Contents</h2>
+<ul>
+  <a href="#Overview">Overview</a> <br>
+  <b><a href="#Application Installation">Application Installation</a></b> <br>
+  <b><a href="#Scanner Configuration">Scanner Configuration</a></b> <br>
+  <b><a href="#Hardware Addressing">Hardware Addressing</a></b> <br>
+  <b><a href="#Device Support Overview">Device Support Overview</a></b> <br>
+  <a href="#Binary Device Support">Binary Device Support</a> <br>
+  <a href="#Adapter and Card Status">Adapter and Card Status</a> <br>
+  <a href="#Old Style Analog Input/Output">Old Style Analog Input/Output</a>
+  <br>
+  <a href="#Stepper Motor Support">Stepper Motor Support</a> <br>
+  <a href="#1791 Series Support">1791 Series Support</a> <br>
+  <a href="#1771-DCM Direct Communication Module">1771-DCM Direct
+  Communication Module</a> <br>
+  <a href="#1771-N Series Analog Modules">1771-N Series Analog Modules</a>
+  <br>
+  <a href="#1771-IX (E and HR)">1771-IX (E and HR)</a> <br>
+  <a href="#1771-IFE">1771-IFE</a> <br>
+  <a href="#SLC 500 DCM">SLC 500 DCM</a> <br>
+  <a href="#drvAb: The Allen Bradley Driver">drvAb: The Allen Bradley
+  Driver</a></ul>
+
+<h2><a name="Overview"></a>Overview</h2>
+
+<p>The 2.x releases of allenBradley can be used only with the 3.14 releases
+of EPICS base. Although 3.14 is platform independent the allenBradley support
+works only on vxWorks/VME.</p>
+
+<p>EPICS provides support for the Allen Bradley VMEbus I/O Scanner. Models
+6008-SV, 6008-SV1R, and 6008-SV2R can be used. The differences are:</p>
+<ul>
+  <li>The "blue hose" connectors on the SV1R and SV2R have the blue and
+    silver wires reversed from the 6008-SV. The SV1R and SV2R follow the
+    allen bradley standard.</li>
+  <li>Rack configuration must be specified for the SV1R and SV2R. This is
+    done with the abConfigAuto and/or abConfigScanListAscii commands:</li>
+  <li>The setRackSize argument for abConfigScanListAscii command, must be 0
+    for the 6008-SV and 1 for the 6008-SV1R or 6008-SV2R</li>
+</ul>
+EPICS support consists of a driver (drvAb), device support for standard
+record types, and record support for many Allen Bradley I/O modules.
+
+<p>The driver provides the following features:</p>
+<ul>
+  <li>Support for 8, 16, and 32 bit digital I/O modules. Inputs can be
+    scanned such that the caller is notified whenever one or more bits of an
+    input or output card change.</li>
+  <li>Arbitrary Block Transfers (Input and Output) with the caller being
+    notified when the block transfer completes or times out.</li>
+  <li>Software scanning of analog output and input modules.</li>
+</ul>
+Device support is provided for the following record types
+<dl>
+  <dl>
+      <dd>ai</dd>
+      <dd>ao</dd>
+      <dd>bi</dd>
+      <dd>bo</dd>
+      <dd>mbbi</dd>
+      <dd>mbbo</dd>
+      <dd>mbbiDirect</dd>
+      <dd>mbboDirect</dd>
+  </dl>
+</dl>
+For block transfer modules all new support is being developed via device
+record types together with device support for standard record types.
+Ultimately all old support for ai/ao device support should be replaced by
+device record types. Support for the 1771-IL, 1771-IR, and the 1771-OFE
+modules have not been replaced, i.e. only the old support is available.
+
+<p>The reader should also consult the manuals</p>
+
+<p>EPICS: Allen Bradley - Hardware Reference Manual, Greg Nawrocki,</p>
+
+<p>Allen Bradley manuals:</p>
+<ul>
+  <li>VMEbus Scanner Remote I/O Scanner (Cat No 6008-SV1R, 6008-SV2R)</li>
+  <li>I/O concepts</li>
+  <li>Each I/O module has it's own documentation.</li>
+</ul>
+
+<h2><a name="Application Installation"></a>Application Installation</h2>
+After the allen bradley support has been built, it is ready for use by
+individual applications. The following are recommended procedures for using
+it for a specific application.
+
+<p>In &lt;top&gt;/config edit the file RELEASE.</p>
+
+<p>Add the line:</p>
+<pre>    ALLEN_BRADLEY=&lt;allenBradleyTop&gt;</pre>
+
+<p>In the src directory where record/device/driver support is built.</p>
+<ul>
+  <li>Add the following to Makefile
+    <pre>&lt;prod&gt;_LIBS += allenBradley</pre>
+  </li>
+  <li>Copy allenBradley.dbd from &lt;allenBradleyTop&gt;/dbd to the local
+    directory</li>
+  <li>Edit it so that only the desired support is included. You can either
+    delete unwanted lines or place the character # in column 1 to make the
+    line a comment.</li>
+  <li>In the &lt;app&gt;Include.dbd file add (AFTER the include for base.dbd)
+    the line
+    <pre>include "allenBradley.dbd"</pre>
+  </li>
+</ul>
+
+<p>Now just execute make at the top of the application tree.</p>
+
+<h2><a name="Scanner Configuration"></a>Scanner Configuration</h2>
+The default VME configuration parameters are compatible with the previous
+version of abDrv. Each of the configuration routines can be executed from the
+vxWorks shell. The new scanners (SV1R and SV2R) require that abConfigAuto
+and/or abConfigScanListAscii be executed after the allen bradley driver is
+loaded and before iocInit is executed.
+
+<p>This section describes a number of configuration commands. They may be
+given in any order except:</p>
+<ul>
+  <li>If the abConfigNlinks command is given it must be the first allen
+    bradley configuration command</li>
+  <li>All commands must be given before iocInit</li>
+</ul>
+Each 6008-SV and 6008-SV1R supports one link and the 6008-SV2R supports two
+links.
+
+<h4>abConfigNlinks</h4>
+Format:
+<pre>abConfigNlinks(number)</pre>
+The maximum number of VME scanner modules in a VME crate. Each 6008-SV2R
+counts as two links. The default is two links. If this command is given it
+must be the first scanner configuration command.
+
+<h4>abConfigAuto</h4>
+Format:
+<pre>abConfigAuto(link)
+
+where:
+
+link link number</pre>
+If this command is given the allen bradley scanner will automatically
+determine the rack configuration. All racks must be turned on in order for
+this to work.
+
+<p>SUGGESTION<b>: </b>When you have a new configuration use the abConfigAuto
+command until you are sure the associated abConfigScanListAscii file is
+defined correctly. Once it is defined correctly do <u>not </u>use the
+abConfigAuto command because it has extra overhead and also requires that
+every allenBradley chassis is powered up.</p>
+
+<h4>abConfigScanListAscii</h4>
+NOTE: If the abConfigAuto and abConfigScanListAscii are both given for the
+same link then only the logical addressing information in the
+abConfigScanListAscii file has any effect.
+
+<p>Format:</p>
+<pre>abConfigScanListAscii(link,"filename",setRackSize)</pre>
+
+<table border="1" NOSAVE>
+  <tbody>
+    <tr NOSAVE>
+      <td NOSAVE>link</td>
+      <td>link number starting with 0</td>
+    </tr>
+    <tr>
+      <td>filename</td>
+      <td>File name containing information described next.</td>
+    </tr>
+    <tr>
+      <td>setRackSize</td>
+      <td>0 for 6008-SV and 1 for 6008-SV1R or 6008-SV2R</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Filename is a file that defines the adapter (rack) configuration for the
+specified link. It contains a line for each rack. In addition comment lines
+(any line beginning with the character #) are allowed. The definition for
+each rack is:</p>
+<pre>rack,group,size,logicalAddressing</pre>
+
+<table border="1" NOSAVE>
+  <tbody>
+    <tr NOSAVE>
+      <td NOSAVE>rack</td>
+      <td>The rack number. The first rack is rack 0.</td>
+    </tr>
+    <tr>
+      <td>group</td>
+      <td>Starting group within the rack.</td>
+    </tr>
+    <tr>
+      <td>size</td>
+      <td>Rack size. This must be one of the values 1/4, 1/2, 3/4, Full</td>
+    </tr>
+    <tr NOSAVE>
+      <td NOSAVE>logicalAddressing</td>
+      <td>Must be 2,1,1/2 for 2slot, 1 slot, or 1/2 slot logical addressing.
+        This MUST agree with how a physical rack is configured. There is no
+        way for the driver to determine if an error has been made.</td>
+    </tr>
+  </tbody>
+</table>
+<br>
+
+
+<p>An example definition is:</p>
+<pre>#Allen Bradley Scan List
+0 0 Full 2
+1 0 3/4 2
+2 0 3/4 2
+3 0 3/4 2</pre>
+If you do not know your configuration use the abConfigAuto command and then
+after iocInit finishes execute the command:
+<pre>dbior "drvAb",4</pre>
+The link status as reported by the scanner is described in this document.
+From this you can determine the configuration. <br>
+
+
+<h4>abConfigVme</h4>
+Format:
+<pre>abConfigVme(link,base,vector,level)</pre>
+
+<table border="1" NOSAVE>
+  <tbody>
+    <tr>
+      <td>link</td>
+      <td>As before</td>
+    </tr>
+    <tr NOSAVE>
+      <td NOSAVE>base</td>
+      <td>VME base address. Only 24 bit addressing is supported.</td>
+    </tr>
+    <tr>
+      <td>vector</td>
+      <td>Interrupt vector number</td>
+    </tr>
+    <tr>
+      <td>level</td>
+      <td>Interrupt level</td>
+    </tr>
+  </tbody>
+</table>
+<br>
+
+
+<p>If this routine is not called then the default base and interrupt vector
+for the first link are  0xc00000 and 0x60. For links other than 0, the base
+address is relative to that for link (each scanner uses 0x1000 bytes). The
+interrupt vectors are also consecutive.</p>
+
+<p>For the 6008-SV1R and 6008-SV2R the base address of 0xc00000 corresponds
+to SW1 = 00000000 and SW2=11000000. Also SW3=00011000.</p>
+
+<p>The default interrupt level is 5.</p>
+
+<h4>abConfigBaud</h4>
+Format:
+<pre>abConfigBaud(link,rate)</pre>
+A rate value of (0,1) specifies (57.6,115.2) kbps. The default is 0. All
+physical adapters must be jumpered to the same baud rate. Note that the 230.4
+kbps rate of 6008-SV1R and 6008-SV2R is not supported because the 6008-SV
+compatibility mode is being used.
+
+<h2><a name="Hardware Addressing"></a>Hardware Addressing</h2>
+Module addressing is described in chapter 3 of the 6008-SVxR manual and also
+in the Allen Bradley I/O Concepts manual. This section summarizes this
+information and explains how EPICS terminology relates to Allen Bradley's.
+
+<p>Each Allen Bradley chassis can be configured, via hardware switches on the
+chassis, for 2 slot, 1 slot, or 1/2 slot addressing. EPICS supports all three
+types of addressing. Greg Nawrocki's Allen Bradley Document describes how to
+configure the hardware for 2 slot addressing. If you want to use 1 slot or
+1/2 slot addressing his document is still valid except for the following
+qualifications:</p>
+<ol>
+  <li>The I/O chassis backplane switches must be configured for the
+    addressing mode desired.</li>
+  <li>If 1 slot addressing is chosen then any chassis with more than 8 slots
+    appears as multiple racks.</li>
+  <li>If 1/2 slot addressing is chosen then any chassis with more than 4
+    slots appears as multiple racks.</li>
+</ol>
+
+<h3>Terminology</h3>
+The terminology and rules connected with addressing Allen Bradley modules is
+rather confusing. To make matters worse EPICS, in some cases, uses different
+terms than Allen Bradley. The following is intended to help clarify matters.
+
+<p>Some definitions:</p>
+<ul>
+  <li>Scanner Module - An Allen Bradley VME I/O Scanner module. Each IOC
+    crate can contain an arbitrary number of scanner modules. Each scanner
+    module is linked, via "blue hose" to a set of Allen Bradley Chassis.</li>
+  <li>Chassis - A physical chassis that can hold Allen Bradley modules and
+    power supplies. Chassis come in different sizes such as 8 slot, 12 slot,
+    and 16 slot. Each slot can hold one module.</li>
+  <li>Module - A physical module that is placed in a slot. Typical module
+    types include Digital I/O, Analog I/O, etc.</li>
+  <li>Adapter - A remote I/O adapter module, which is placed in the left most
+    slot of a chassis, is the interface between a scanner and remote I/O
+    modules. The blue hose connects each adapter with it's associated
+  scanner.</li>
+  <li>Rack- The way of addressing a particular adapter or other device
+    attacked to the "blue hose". It is a number starting with 0. Depending on
+    logical addressing mode a physical chassis appears as one or more racks.
+    Other devices, e.g. a dcm are also assigned a rack number and several
+    such devices can be configured as a single rack.</li>
+</ul>
+The number of I/O modules addressed as a single rack depends on the
+addressing mode. For (2 slot, 1 slot, 1/2 slot) addressing a single rack can
+address (16, 8, 4) I/O modules. Note that for 1 slot and 1/2 slot addressing
+a single chassis may appear as more than one rack. For example if a 12 slot
+chassis is configured for 1 slot addressing then it is addressed as two racks
+even though it has only one adapter.
+
+<h3>INP/OUT definitions</h3>
+The following items are specified when configuring the link field for a
+database record linked to an Allen Bradley module:
+<ul>
+  <li>link - Chooses a particular Scanner.</li>
+  <li>rack - Chooses a rack.</li>
+  <li>adapter - EXACTLY the same as rack.</li>
+  <li>slot - Chooses a module within a rack.</li>
+  <li>card - EXACTLY the same as slot.</li>
+  <li>signal - Module dependent
+    <ul>
+      <li>Binary - The signal is always specified as 0,1,...n-1, where n is
+        the number of bits the card contains</li>
+      <li>Analog - The channel. Allen bradley numbers channels starting with
+        1. Signals starts with 0. Thus signal 0 is channel 1.</li>
+    </ul>
+  </li>
+  <li>plc_flag - No longer used, i.e. obsolete.</li>
+  <li>parm - Only used for special purposes.</li>
+</ul>
+NOTE: link, rack, slot, and signal all start from 0.
+
+<p>The binary and old analog support uses the AB_IO link type which has the
+format</p>
+
+<blockquote>
+  <pre>#Llink Aadapter Ccard Ssignal @parm</pre>
+</blockquote>
+That is it uses link, adapter, card, signal. The new record types, such as
+abDcm, contain fields link, rack, slot. The reason for switch from (adapter,
+card) to (rack, slot) is that (rack,slot) more closely match the Allen
+Bradley documentation.
+
+<h3>2 slot addressing</h3>
+Each pair of slots is called an I/O group. There are restrictions on which
+I/O modules can share the same group.
+<ul>
+  <li>Block transfer modules, for example analog modules, must not be paired
+    with binary modules. NOTE: Sometimes everything works if an 8 bit module
+    is paired with a block transfer device. Don't do it. It is not
+  guaranteed.</li>
+  <li>16 bit input modules must be placed in even slots, 16 bit output
+    modules must be placed in odd slots</li>
+  <li>If a 16 bit module is present then its partner must be opposite type,
+    e.g. an 8 bit input module can not be paired with a 16 bit input
+  module.</li>
+  <li>32 bit modules are not supported</li>
+</ul>
+EPICS addresses each module via the slot number.
+
+<h3>1 slot addressing</h3>
+Unless 32 bit binary modules are present there are no restrictions on module
+placement. For 32 bit modules the following restrictions apply:
+<ul>
+  <li>Block transfer devices can not be paired with 32 bit binary
+  modules.</li>
+  <li>32 bit input modules must be placed in even slots. 32 bit output
+    modules must be placed in odd slots.</li>
+  <li>If a 32 bit (input,output) module is present then its partner must be
+    an (output,input) binary module.</li>
+</ul>
+EPICS addresses each I/O module via the slot number.Each 8 modules is
+addressed as a rack. For example if a chassis has 12 slots and it's physical
+adapter has been configured to start with rack 3 then the first 8 modules are
+addressed as rack=3 and slot = 0,1,2,3,4,5,6,7 and the last four modules are
+addressed as rack=4 and slot = 0,1,2,3.
+
+<h3>1/2 slot addressing</h3>
+For 1/2 slot addressing there are no restrictions on where cards may be placed
+
+<p>EPICS addresses each I/O module via the slot number. Each 4 modules is
+addressed as a rack. For example if a chassis has 12 slots and it's physical
+adapter has been configured to start with rack 3 then the first 4 modules are
+addressed as rack=3 and slot = 0,1,2,3 the second 4 modules as rack=4 and
+slot= 0,1,2,3 and the last four modules are addressed as rack=5 and slot =
+0,1,2,3.</p>
+
+<h2><a name="Device Support Overview"></a>Device Support Overview</h2>
+Allen Bradley devices can be divided into two classes:
+<ol>
+  <li>Digital devices that are addressed via the I/O image table</li>
+  <li>Block Transfer Devices, e.g. Analog I/O, stepper motor, etc</li>
+</ol>
+Digital devices can be accessed via the Binary Device Support described in
+the next section.
+
+<p>Until Allen Bradley support was unbundled from base the only block
+transfer devices supported were 1771IFE, 1771IL, 1771IXE, 1771IR, and
+1771OFE. These were supported via device support attached to appropriate
+record types. This support did not allow complete configuration of the
+devices. This support is now called Old Analog Support.</p>
+
+<p>The new method of supporting block transfer devices is to provide a record
+support module for each different device. This type of record is refered to
+as a device record. Module configuration is done via configuration fields.
+Device support is also provided to allow appropriate record types to link to
+the device record.</p>
+
+<p>As each device record (or the old style device support) is initialized the
+first step is to register the card. The registration call includes the module
+type (analog input, analog output, binary input, binary output, arbitrary
+block transfer) and well as a module type name. The first call for a
+particular link, adapter, card determines the card type. Other calls for the
+same card are checked for compatibility. The following rules are enforced:</p>
+<ul>
+  <li>If the card type is block transfer then any other calls for the same
+    card must specify block transfer and exactly the same type name.</li>
+  <li>If the card is an analog input or output then any other calls for that
+    card must exactly match in module type and name.</li>
+  <li>If the card type is binary then an additional call is made to specify
+    the number of bits. Subsequent calls cause an error if the number of bits
+    does not match. Even in this case a warning message is issued but
+    initialization is allowed to proceed. The reason for no further checks is
+    compatibility with the previous EPICS Allen Bradley support and for
+    support for devices like the Allen Bradley rediPanel.</li>
+</ul>
+
+<h3><a name="Binary Device Support"></a>Binary Device Support</h3>
+Support is provided for 8, 16, and 32 bit input and output digital modules.
+Device support is provided for the bi, bo, mbbi, mbbo, mbbiDirect, and
+mbboDirect records.
+
+<p>I/O Interrupt processing is supported for Binary Inputs. Every 1/10 of a
+second the driver checks for changes in the input image table. If a word
+changes the device support is notified and requests I/O interrupt processing
+for the corresponding card. Note that all records attached to the card and
+with SCAN=I/O Intr will be processed, i.e. no attempt is made to look at
+individual bits.</p>
+
+<p>When the device support finds that it has just registered a new card, it
+waits for the driver to have a chance to obtain the current values from the
+card. These are used to initialize the record, i.e. it restores values when
+the ioc is rebooted.</p>
+
+<p>The binary device support also works for special Allen Bradley digital
+devices. It has been tested on the Allen Bradley rediPanel and also on the
+1791 Series digital I/O (discused below).</p>
+
+<p>The Allen Bradley rediPanel looks like a single logical adapter that
+contains one 16 bit digital input card and one 16 bit digital output card
+each addressed as card 0.</p>
+
+<h3><a name="Adapter and Card Status"></a>Adapter and Card Status</h3>
+Two mbbi device support modules (devMbbiAbAdapterStat and devMbbiAbCardStat)
+allow monitoring of adapter or card status. A record instance can be created
+for each adapter or card that needs monitoring. Device support, at record
+initialization time, fills in the mask, string, and alarm severity fields of
+the record. Thus the user need only program the SCAN, DTYP, and INP fields.
+Each time the record processes it calls the driver to find the current
+status. The record is placed into major alarm for any status other than
+success.
+
+<p>At the present time I/O Intr scanning is not supported by these device
+support modules, i.e. the record should be set to periodic scanning.</p>
+
+<h3><a name="Old Style Analog Input/Output"></a>Old Style Analog
+Input/Output</h3>
+Several Analog Input modules are supported. For all types device support asks
+the driver to scan them periodically. The driver attempts to scan at the rate
+desired but because of time-outs and other problems the rate can not be
+guaranteed. For all analog inputs, I/O interrupt processing is supported.
+Whenever the driver obtains a new set of values from an analog input module
+it notifies the associated device support. Device support checks each channel
+for a change in value and asks that records attached to that channel be I/O
+interrupt processed. The records must have SCAN = I/O Intr for this to work.
+
+<p>Old analog support does not provide the ability to configure individual
+signals of analog modules. Thus all channels on a card are configured
+identically. The configurations options for a card are determined by the
+first record that is attached to the card during ioc initialization.</p>
+
+<h3>1771 IFE</h3>
+<b>NOTE:</b>New support via a special hardware record is now available and
+described below (See 1771-IFE) Thus the support described in this section is
+now obsolete and should NOT be used for new applications.
+
+<p>The basic scan rate is every 1/10 second.</p>
+
+<p>Several configurations are allowed. The choices are provided via a
+combination of jumper settings on the module and software configuration, The
+software configurations supported are:</p>
+<ul>
+  <li>AB-1771IFE
+    <ul>
+      <li>-10 to 10 volts differential (8 channels)</li>
+    </ul>
+  </li>
+  <li>AB-1771IFE-SE
+    <ul>
+      <li>0 to 10 volts single ended (16 channels)</li>
+    </ul>
+  </li>
+  <li>AB-1771IFE-4to20MA
+    <ul>
+      <li>1 to 5 volts differential(8 channels)</li>
+      <li>4 to 20 milliAmps differential(8 channels)</li>
+    </ul>
+  </li>
+  <dl>
+      <dd>Jumper settings determine the mode.</dd>
+  </dl>
+  <li>AB-1771IFE-0to5Volt
+    <ul>
+      <li>0 to 5 volts differential(8 channels)</li>
+      <li>0 to 20 milliAmps differential(8 channels)</li>
+    </ul>
+  </li>
+  <dl>
+      <dd>Jumper settings determine the mode.</dd>
+  </dl>
+</ul>
+
+<h3>1771 IL</h3>
+The basic scan rate is every 4/10 second.
+
+<p>The only configuration allowed is -10 to +10 volts differential;.</p>
+
+<h3>1771 IXE</h3>
+<b>NOTE:</b>New support via a special hardware record is now available and
+described below (See 1771-IX (E and HR). Thus the support described in this
+section is now obsolete and should NOT be used for new applications.
+
+<p>The basic scan rate is every .5 seconds</p>
+
+<p>The configuration options provide for millivolt input (+- 100 millivolt),
+and for type K, J, E, T, R, and S thermocouples. For thermocouple inputs
+conversion to degC and degF can be chosen.</p>
+
+<p>The IXE module is chosen by specifying DTYP as "AB-1771IXE-Millivolt In".
+The configuration option is chosen via the field "LINR", i.e. the conversion
+type. If the conversion type is "NO_CONVERSION" or "LINEAR" then millivolt
+conversion is selected. If any of the types typeKdegF to typeSdegC is chosen
+then the IXE module is configured accordingly. If one of the thermocouple
+types is chosen device support sets the value of LINR to no conversion so
+that record support does not attempt any conversions.</p>
+
+<p>NOTE: This method should NOT have been used to choose configuration
+options. Users are strongly encouraged to use the new 1771-IX(E and HR)
+support describes below.</p>
+
+<h3>1771 IR</h3>
+The basic scan rate is every 1/2 second.
+
+<p>The module can be configured, via the field DTYP, for Platinum or for
+Copper.</p>
+<ul>
+  <li>AB-1771RTD-Platinum</li>
+  <li>AB-1771RTD-Copper</li>
+</ul>
+The PARM portion on the INP field allows configuration of units as follows:
+<ul>
+  <li>blank - Units are degF</li>
+  <li>C - Units are degC</li>
+  <li>O - Units are in Ohms</li>
+</ul>
+The units configuration option is used to configure the board and also to set
+the EGU field of the record.
+
+<p>The field LINR is set to NO_CONVERSION so that record support does not
+attempt any conversions.</p>
+
+<h3>1771 OFE</h3>
+The configuration options are all selected via hardware jumpers.
+
+<p>When the device support finds that it has just registered a new card, it
+waits for the driver to have a chance to obtain the current values from the
+OFE. These are used to initialize the record, i.e. it restores values when
+the ioc is rebooted. The software always uses the default software
+configuration.</p>
+
+<p>Whenever device support is called to write a new value it asks the EPICS
+driver to write the new value. It is the scan task of the driver that does
+the actual transfer. the transfer will be requested during the next scan,
+which happens at 1/10 second intervals.</p>
+
+<p>New block transfer writes to the OFE are requested every 10 seconds even
+if no new values are requested by record support.</p>
+
+<h2><a name="Stepper Motor Support"></a>Stepper Motor Support (Ric Claus
+SLAC)</h2>
+These release notes describe changes made to stepper motor related code that
+was supplied with EPICS Version R3.12.2 SLAC Date: 1996/01/28 01:38:17.
+Additionally, support is described for the Allen Bradley 1746-HSTP1 stepper
+motor controller module.
+
+<p>The basic modification was to move the implementation of the
+initialization algorithm (supplied through the IALG field in a stepper motor
+record) from the record support code (recSteppermotor.c) to the device or
+driver support code. This allows the specific device to determine how to move
+the stepper motor to the positive or negative limit. Both of the stepper
+motor drivers standardly supplied with EPICS (drvCompuSm.c and drvOms.c) were
+modified to accommodate this change. Other nonstandard stepper motor support
+codes will need modification to handle the new SM_FIND_LIMIT (defined in
+steppermotor.h) command (see the CompuMotor or OMS codes for examples).</p>
+
+<p>In addition, two new algorithms have been added to the list of
+initialization algorithm choices. These are "Move to Positive Home" and "Move
+to Negative Home", which are implemented through the new SM_FIND_HOME
+command. These were added in accommodation of the new device support for the
+Allen Bradley 1746-HSTP1 stepper motor controller (devSmAB1746HSTP1.c), which
+allows the use of a home limit switch in addition to the standard end point
+limit switches. Nonstandard device and driver support for stepper motor
+controllers which do not have this capability should be modified to ignore or
+complain when they receive the SM_FIND_HOME command (cf, drvCompuSm.c or
+drvOms.c).</p>
+
+<p>The new device support code for the Allen Bradley 1746-HSTP1 stepper motor
+controller requires the EPICS standard issue Allen Bradley driver
+(drvAb.c).</p>
+
+<p>From the comments at the top of devSmAB1746HSTP1.c [perhaps good for
+inclusion into the "EPICS: AllenBradley Driver and Device Support"
+manual?]:</p>
+
+<p>Device support for the 1746-HSTP1 module was written assuming that there
+are no wiring errors. Consequently, if your apparatus does not agree
+throughout itself which direction is clockwise (+) and which direction is
+counterclockwise (-), unexpected things may happen.</p>
+
+<p>The 1746-HSTP1 device support code was written from the perspective of the
+Allen Bradley 1746-HSTP1 module. Clockwise (+) is therefore defined to be the
+direction in which the stepper motor axis turns when it is viewed from the
+shaft end of the motor, as per page 4-18 of the 1746-HSTP1 User's Manual (AB
+Pub No. 1746-999-121, March 1995).</p>
+
+<p>The 1746-HSTP1 devices have no hardware configuration switches or jumpers
+to be concerned with. However, "HSTP1 CONFIG OUTPUT WORDs" (Pages 4-4 and A-1
+of the User's Manual) must be passed to the device support layer in the parm
+section of the stepper motor record .OUT field. The string is parsed with the
+format string "%hi%hi%i" and is allowed to be a maximum of AB_PARAM_SZ
+(currently #defined to be 26 in include/link.h) characters long. Use only
+whitespace to separate the values. The three values that must be supplied
+are:</p>
+<pre>    Hstp1CfgCsr[0] - Configuration word
+    Hstp1CfgCsr[1] - Active level word
+    Hstp1StartSpd  - Starting speed word (1 - 250000 pulses/sec)</pre>
+An example param string is:
+<pre>    0x8413 0x0010 500</pre>
+
+<p>Page 4-4 of the User's Manual states that valid configurations require the
+home limit switch input and one or both of the end (CW or CCW) limit switch
+inputs to be enabled, even if the associated switch is not present.</p>
+
+<p>Due to the way in which the HSTP1 handles limit switch conditions, it is
+best to avoid them. If a limit switch has been activated, one can either
+issue a Find Home command to the HSTP1 to make it hunt for the home switch,
+or issue single step (Jog) commands to bump the jig off the switch. The
+jogging procedure is very slow since it requires a reading the HSTP1
+registers to get the current state of the limit switches, a clearing of the
+HSTP1 command register to make the appropriate jog bit sensitive to
+transition and a setting of the appropriate jog bit in the command register.
+A 25 MHz NI VXIcpu-030 operating with an AB 6008-SV1R scanning module can
+thus achieve a jog rate of about 3 Hz. If a position request causes the jig
+to run into one of the switches, the only motion requests that are accepted
+by this code are those that move the jig in the direction of getting off of
+the switch, again, presuming no wiring errors.</p>
+
+<p>One of the rules of writing EPICS device support code is that the process
+routine must complete as fast as possible since any delays in it cause other
+records to be held up. For this reason all commands to this device support
+layer issued by the record support process routine are queued onto a message
+queue. The reason it is done this way rather than processing the commands
+directly is that there are sometimes delays in getting access to the hard-
+ware, either the VME scanner, or the controller itself. Because it is easy to
+set up a situation in which EPICS sends commands to this code faster than
+they can be processed, one must handle the case where the queue fills up.
+When the queue is full, we break the rules and wait for up to
+HSTP1_K_EPICSQDLY seconds for previously entered commands to be taken off the
+queue in an attempt to throttle EPICS. If the timeout expires, bad status is
+returned to indicate that the command could not be handled at the time.
+Typically, the queue is configured to be deep enough that this situation
+never arises.</p>
+
+<p>In order to reduce the chance of a knobbed .VAL field from overflowing the
+command queue, the motor is declared to be moving as soon as a motion request
+is recognized, even though it is not necessarily moving yet. This prevents
+the record support layer from sending out corrections until the motor arrives
+at the requested spot. However, there is a problem because if the position
+request is changed while the motor is still moving, it will be ignored by the
+record support. To prevent this, supply a non-zero retry count and an
+appropriate deadband when setting up your database. Additionally, always put
+knobs and sliders in "release" mode rather than in "motion" mode.</p>
+
+<p>The basic scan rate when there are active stepper motors is 1/3 second.
+When there are no active stepper motors, this code sleeps. Consequently, any
+manual motion of the stepper motor axes is not accounted for.</p>
+
+<p>This code can, in principle, handle an arbitrary number of 1746-HSTP1
+stepper motor controller modules. However, limitations are provided by
+memory, semaphore, and message queue resources, and bus and "blue hose"
+bandwidths. Note that this code spawns only two tasks, both of which are
+terminated with corresponding resources freed if no stepper motor records are
+found in the system.</p>
+
+<h2><a name="1791 Series Support"></a>1791 Series Support</h2>
+
+<h3>1791 Analog Block I/O</h3>
+Allen Bradley 1791 Block I/O consists of small, self-contained remote I/O
+devices. Each device contains 4 analog input channels and 2 outputs. Each
+1791 can be configured as a full rack or up to four 1791 modules can be
+configured as a single rack(not tested).
+
+<p>EPICS support consists of a device record ab1791Record and device support
+for the ai and ao record.</p>
+
+<p>In addition to dbCommon, ab1791Record contains the following fields:</p>
+<dl>
+  <dt>VAL</dt>
+    <dd>Not used.</dd>
+  <dt>TYPE</dt>
+    <dd>Menu field specifying Voltage or Current</dd>
+  <dt>RANG</dt>
+    <dd>Menu field specifying range.</dd>
+  <dt>FILT</dt>
+    <dd>Menu field specifying filter option</dd>
+  <dt>LKST</dt>
+    <dd>Character string giving status. NOTE: The VAL field should have been
+      used for this purpose.</dd>
+  <dt>LOCA</dt>
+    <dd>Loss Of Communication Acknowledgement. If yes then a scanIoRequest
+      will be issued for each INPi. Thus any records attached to the record
+      and declared I/O Intr scanned will be processed.</dd>
+  <dt>LINK</dt>
+  <dt>RACK</dt>
+  <dt>SLOT</dt>
+    <dd>The allen bradley scanner, rack, and slot.</dd>
+  <dt>NFAI</dt>
+    <dd>Number of failures.</dd>
+  <dt>INPi (i=0,...,3)</dt>
+    <dd>Raw value of channel 0</dd>
+  <dt>OUTi (i=0,1)</dt>
+    <dd>Raw value of channel 0</dd>
+</dl>
+These fields provide for configuration and also run time statis and
+statistics.
+
+<p>The process routine processes according to field SCAN. It keeps internal
+state that determines what is done each time it processes, i.e. initialize,
+write, read. It make block transfer requests to the driver. It follows the
+asynchronous record processing model, with the completion phase being
+triggered when a block transfer request completes. It honors I/O interrupt
+scanning for attached device support.</p>
+
+<p>It provides device support for ai and ao record. Device support links to a
+particular ab1791Record via the INP or OUT field. The bus type is specified
+as INST_IO, which specifies only a parm for the link. Parm is set equal to
+the &lt;record_name&gt;.&lt;field_name&gt; of the input or output channel
+desired.</p>
+
+<h3>1791 Digital Block I/O</h3>
+The standard binary device support can be used. If you use 32 bit binary I/O
+all bits can be addressed as one card.
+
+<h2><a name="1771-DCM Direct Communication Module"></a>1771-DCM Direct
+Communication Module</h2>
+
+<p>The support started as support for the 1771-DCM module but now
+supports:</p>
+<ul>
+  <li>The 1771-DCM.</li>
+  <li>A PLC5 adapter port that emulates a DCM.</li>
+  <li>Multiple PLC5 adapter ports.</li>
+</ul>
+
+<p></p>
+
+<h3>Communication with a 1771-DCM</h3>
+The abDcm support is designed to monitor messages received from personnel
+and/or equipment protection systems. Because the other system is a safety
+system, the design minimizes interaction between the two systems. The
+protection system is likely to be a Program Logic Controller (PLC).
+
+<p>In addition control messages can be sent from an IOC to the PLC via the
+DCM.</p>
+
+<p>The following is expected of the PLC. The PLC must contain one or more AB
+1771-DCM modules. Communication via each DCM is modeled as follows:</p>
+<ul>
+  <li>The dcm resides in the PLC.</li>
+  <li>The PLC continuously sends a set of messages. A message is just 64
+    short words. Word TOFF is the message number. Thus the PLC does the
+    following:
+    <pre>    1) Send message with message(toff) = 0
+    2) Send message with message(toff) = 1
+       ...
+    n) Send message with message(toff) = n-1
+    go to step 1)</pre>
+  </li>
+  <li>The dcm is strapped so that the PLC can not send a message until the
+    IOC has read the previous message. The number of messages must be between
+    1 and 10.</li>
+  <li>The PLC must assume that the EPICS system may be down and thus is not
+    currently reading.</li>
+  <li>The PLC developer and the EPICS developer must agree on the what the
+    messages mean. Normally message words are just words transfered from the
+    PLC's I/O Image tables.</li>
+  <li>Word 0 of each message is used by the dcm for status. Thus TOFF must be
+    &gt;0.</li>
+</ul>
+
+<p>If output to the PLC is desired, The PLC system must also read dcm mesages
+sent from the ioc. The messages have the format:</p[></p>
+<pre>    word 0 - dcm status word
+    word 1 - Tag number, i.e. message tag.</pre>
+All other DCM words are data words. For data see output device support given
+below. The PLC developer and the EPICS developer must agree on the what the
+tag values mean.
+
+<p>The following are the DCM switch settings used in a system at APS.</p>
+<pre>Bank Switch Setting
+0    1      OFF       115.2 baud (scanner must be configured)
+0    2      OFF       Not Used
+0    3      OFF       Last Rack
+0    4      ON        Block Transfer (DONT CHANGE THIS)
+0    5      OFF       Not Used
+0    6      OFF       Protected Data (DONT CHANGE THIS)
+0    7-8    OFF       Rack Size
+
+1    1-6              (Determines adapter(rack) number
+1    7-8    ON ON     First Module Group Number</pre>
+
+<h3>Communication with a PLC adapter port</h3>
+
+<p>This is almost like communication with a 1771-DCM module. The
+configuration information given in the previous section does not apply.
+Instead let your local PLC5 expert configure the PLC.</p>
+
+<h3>Communication with Multiple PLC adapter ports</h3>
+This is also similar to communication with a DCM except that.
+<ul>
+  <li>Each table appears to come from a different slot.</li>
+  <li>toff is not used</li>
+</ul>
+
+<p>This if multiple tables are used, the first appears to come from SLOT, the
+second from SLOT+1, etc.</p>
+
+<h3>EPICS Record and Device support</h3>
+
+<p>EPICS support consists of a device record abDcmRecord and device support
+for the ai, bi, li, and mbbi records.</p>
+
+<p>For each physical DCM, the application will create an abDcmRecord
+instance. Thus the rest of this note explains things from the point of view
+of a single dcm (or PLC adapter).</p>
+
+<p>Each time the abDcmRecord is processed (by normal scan mechanisms such as
+periodically), it reads one set of messages. The dcm record has fields T0,
+T1, ... T9. Each is an array of 64 shorts. Each holds one of the messages of
+the set. Note that when it starts it does not look for message 0 first.
+Instead it just takes the messages as they come until n messages are
+received.</p>
+
+<p>The complete set of fields (not including dbCommon) of abDcm are as
+follows:</p>
+<dl>
+  <dt>VAL</dt>
+    <dd>This is a character string field that gives the status of the link to
+      the dcm. It can be used by Channel Access Clients to monitor the link
+      status.</dd>
+  <dt>DCMT</dt>
+    <dd>DCM type. The choices are: "1771-DCM", "PLC adapter port", or
+      "PLCMultiSlot".</dd>
+  <dt>Ti</dt>
+    <dd>(i=0,...9) Field containing message i. Each field is array of 64
+      shorts.</dd>
+  <dt>NT</dt>
+    <dd>Number of tables, i.e. messages, to use.</dd>
+  <dt>TOFF</dt>
+    <dd>The offset in each table that contains the table number. Not used the
+      DCMT is PLCMultiSlot.</dd>
+  <dt>DLY</dt>
+    <dd>Delay in seconds between sending block transfer requests. This is
+      provided in case the PLC is not executing BT writes quickly enough.
+      Suggestion: Start with this field set to 0. If LKST reports extra
+      messages then specify this field. The actual delay will be in clock
+      ticks. If DLY&gt;0 then at least one clock tick will be forced.
+      Fractions of a second are permitted.</dd>
+  <dt>LOCA</dt>
+    <dd>Loss Of Communication Acknowledgement. If yes then a scanIoRequest
+      will be issued for all DCM words. Thus any records attached to dcm
+      record and declared I/O Intr scanned will be processed. Note that this
+      will cause alarm storms.</dd>
+  <dt>LINK,RACK,SLOT</dt>
+    <dd>These fields identify the location of the dcm module. LINK is the
+      allen bradley scanner number, RACK the rack (EPICS calls this adapter).
+      SLOT is the location within the rack. See the EPICS Allen Bradley
+      documentation for details. If DCMT is PLCMultiSlot, then tables are
+      read from SLOT, SLOT+1,...,SLOT_NT-1. Output is always sent to
+    SLOT.</dd>
+  <dt>MCW</dt>
+    <dd>Maximum consecutive writes before switching to read. This prevents
+      write storms from stopping input.</dd>
+</dl>
+
+<p>Device support is available for ai, bi, mbbi, li records. In each case the
+application developer configures the record by specifying the appropriate
+value for DTYP "abDcm", and then giving a value to INP The value specified is
+either in the form</p>
+<pre>    dcmrec.Ti[word]
+or
+    dcmrec.Ti[word,bit]</pre>
+
+<p>The first form is for ai and li. The second form is for bi and mbbi. The
+meaning is as follows:</p>
+<dl>
+  <dt>dcmrec</dt>
+    <dd>The name of the dcm record containing the data of interest.</dd>
+  <dt>Ti</dt>
+    <dd>The table containing the data for message i.</dd>
+  <dt>word</dt>
+    <dd>The word containing the data (4 to 63)</dd>
+  <dt>bit</dt>
+    <dd>The bit within the word (0 to 15 starting from low order bit)</dd>
+</dl>
+
+<p>For bi,mbbi, and li a word is 16 bits. For ai two 16 bit words containing
+an IEEE floating point value are read, and ai records MUST reference even
+words.</p>
+
+<p>All dcm device support provides I/O Intr scanning. In fact this is the
+prefered mode of scanning.</p>
+
+<p>The remainder of this message describes output capability.</p>
+
+<p>Device support for the record types is provided:</p>
+<ul>
+  <li>ao</li>
+  <li>bo</li>
+  <li>longout</li>
+  <li>mbbo</li>
+</ul>
+The link fields of the output records are of the form:
+<pre>dcmrec[tag]</pre>
+Where tag is the value agreed upon with the PLC programmer.
+
+<p>The data values are:</p>
+<ul>
+  <li>ao - IEE float</li>
+  <li>bo, mbbo - unsigned short</li>
+  <li>longout - short</li>
+</ul>
+A vxWorks shell command exists to dump the data tables.
+<pre>int dcmpt(char *name,int first,int last)</pre>
+for example
+<pre>dcmpt("dcmrec.T0",0,10)</pre>
+
+<h2><a name="1771-N Series Analog Modules"></a>1771-N Series Analog
+Modules</h2>
+NOTE: The NSeries is actually a set of 21 different devices. Although the
+support has been written to support all types only the 1771NT1 and 1771-NOV
+have been tested.
+
+<p>EPICS support consists of a device record ab1771NRecord and device support
+for the ai and bo records.</p>
+
+<p>The ab1771NRecord can be scanned at up to a 10 Hz rate. Each time it is
+processed it reads the associated 1771-N module. It provides I/O interrupt
+support for ai records. When associated ao records are processed, the
+ab1771NRecord is notified of the change and when the next process occurs, the
+1771-N module is updated.</p>
+
+<p>ab1771NRecord has the following fields:</p>
+<dl>
+  <dt>VAL</dt>
+    <dd>A string field showing status of the ab1771N module.</dd>
+  <dt>CMD</dt>
+    <dd>A command field. It currently has the values "None" and "Initialize".
+      When the Initialize command is issued, the module is reinitialized.
+      Several configuration fields can be dynamically changed. Until the
+      Initialize command is given, however, the new values have no effect.
+      The command field allows the user to change several configuration
+      fields before the module is reinitialized. The following configuration
+      fields can be changed after iocInit: CJAE, FILi, RALi, OHMi.</dd>
+  <dt>LOCA</dt>
+    <dd>Loss Of Communication Acknowledgement. If yes then a scanIoRequest
+      will be issued for all inputs. Thus any records attached to the record
+      and declared I/O Intr scanned will be processed.</dd>
+  <dt>LINK</dt>
+  <dt>RACK</dt>
+  <dt>SLOT</dt>
+    <dd>The allen bradley scanner, rack, and slot containing the 1771-N
+      module.</dd>
+  <dt>OUTM</dt>
+  <dt>INPM</dt>
+    <dd>These are array fields that hold the raw output and input messages
+      sent to the 1771-N module.</dd>
+  <dt>IAI1</dt>
+  <dt>IAO1</dt>
+    <dd>Fields that hold the address on the interfaces for device
+    support.</dd>
+  <dt>MTYP</dt>
+    <dd>A menu field which specifies the module type.</dd>
+  <dt>SCAL</dt>
+    <dd>A menu field which specifies the temperature scale. The choices are
+      degF, degC, and Ohms (for RTD devices).</dd>
+  <dt>CJAE</dt>
+    <dd>Should the Cold Junction Alarm feature be enabled</dd>
+  <dt>CJS</dt>
+    <dd>Cold Junction Status</dd>
+  <dt>CJT</dt>
+    <dd>Cold Junction temperature.</dd>
+  <br>
+
+
+  <p>Each channel has the following fields (i =1,...8).</p>
+  <dl>
+    <dt>TYPi</dt>
+      <dd>The channel type. Record support checks that the type chosen is
+        valid for the module type. An error message is issued if a mismatch
+        occurs.</dd>
+    <dt>FILi</dt>
+      <dd>Filter time constant.</dd>
+    <dt>RALi</dt>
+      <dd>Channel rate alarm.</dd>
+    <dt>OHMi</dt>
+      <dd>If TYPi is RTD Copper this is the 10 ohm offset.</dd>
+    <dt>STAi</dt>
+      <dd>Status for channel.</dd>
+    <dt>RAWi</dt>
+      <dd>Raw value for channel.</dd>
+  </dl>
+
+  <h3>Print I/O messages</h3>
+  The following routine prints the last input and output messages:
+  <dl>
+    <pre>ab1771Npm("record name")</pre>
+  </dl>
+</dl>
+
+<h3>Device Support</h3>
+
+<p>Device support consists of two general purpose device support modules:</p>
+<pre>device(ai,INST_IO,devInterfaceAI1,"InterfaceAI1")
+device(ao,INST_IO,devInterfaceAO1,"InterfaceAO1")</pre>
+
+<p>The INP (OUT is similar) field of an ai record has the form:</p>
+<pre>    field(INP,"record_name[signal]")</pre>
+where
+<pre>    record_name - The name of the 1771N record instance</pre>
+<pre>    signal - signal number. signals are numbered 0,...7.</pre>
+
+<p>Thus signal 0 means to channel 1, etc.</p>
+
+<h2><a name="1771-IX (E and HR)"></a>1771-IX (E and HR)</h2>
+
+<p>This is support for the 1771-IXE and 1771-IXHR modules. Each supports
+millivolt and Tc inputs. Support consists of a device record ab1771IXRecord
+and device support for the ai record.</p>
+
+<p>The ab1771IXRecord can be scanned at up to a 5 Hz rate for an IXHR module
+and 2 Hz for an IXE module. Each time it is processed it reads the associated
+module. It provides I/O interrupt support for ai records.</p>
+
+<p>The ab1771IXRecord has the following fields.</p>
+<dl>
+  <dt>VAL</dt>
+    <dd>A string field showing status of the module.</dd>
+  <dt>CMD</dt>
+    <dd>A command field. It currently has the values "None" and "Initialize".
+      When the Initialize command is issued, the module is reinitialized.</dd>
+  <dt>LOCA</dt>
+    <dd>Loss Of Communication Acknowledgement. If yes then a scanIoRequest
+      will be issued for all inputs. Thus any records attached to the record
+      and declared I/O Intr scanned will be processed.</dd>
+  <dt>LINK</dt>
+  <dt>RACK</dt>
+  <dt>SLOT</dt>
+    <dd>The allen bradley scanner, rack, and slot containing the module.</dd>
+  <dt>OUTM</dt>
+  <dt>INPM</dt>
+    <dd>These are array fields that hold the raw output and input messages
+      sent to the module.</dd>
+  <dt>IAI1</dt>
+    <dd>Field that hold the address on the interfaces for device support.</dd>
+  <dt>MTYP</dt>
+    <dd>A menu field which specifies the module type. It specifies either an
+      IXE or anIXHR module.</dd>
+  <dt>TYPA</dt>
+    <dd>Type for channels 1-4.</dd>
+  <dt>TYPB</dt>
+    <dd>Type for channels 5-8.</dd>
+  <dt>SCAL</dt>
+    <dd>A menu field which specifies the temperature scale. The choices are
+      degF or degC.</dd>
+  <dt>STIM</dt>
+    <dd>Sample Time. See Allen Bradley Documentation for details</dd>
+  <dt>ZOOM (IXHR only)</dt>
+    <dd>Should zoom be enabled</dd>
+  <dt>ZCA</dt>
+    <dd>Zoom center for channels 1-4</dd>
+  <dt>ZCB</dt>
+    <dd>Zoom center for channels 5-8</dd>
+  <dt>FILA (IXHR only)</dt>
+    <dd>Filter value channels 1-4</dd>
+  <dt>FILB (IXHR only)</dt>
+    <dd>Filter value channels 5-8</dd>
+  <dt>CJT</dt>
+    <dd>Cold Junction temperature.</dd>
+</dl>
+Each channel has the following fields (i =1,...8).
+<dl>
+  <dt>STAi</dt>
+    <dd>Status for channel.</dd>
+  <dt>RAWi</dt>
+    <dd>Raw value for channel.</dd>
+
+  <h3>Print I/O messages</h3>
+  The following routine prints the last input and output messages:
+  <dl>
+    ab1771IXpm("record name")</dl>
+</dl>
+
+<h3>Device Support</h3>
+Device support is the same as the ai device support for the 17771-N series
+described in the previously.
+
+<h2><a name="1771-IFE"></a>1771-IFE</h2>
+This is support for the 1771-IFE. Support consists of a device record
+ab1771IFERecord and device support for the ai record.
+
+<p>The ab1771IFEecord can be scanned at up to a 10 Hz rate. Each time it is
+processed it reads the associated module. It provides I/O interrupt support
+for ai records.</p>
+
+<p>The ab1771IFERecord has the following fields.</p>
+<dl>
+  <dt>VAL</dt>
+    <dd>A string field showing status of the module.</dd>
+  <dt>CMD</dt>
+    <dd>A command field. It currently has the values "None" and "Initialize".
+      When the Initialize command is issued, the module is reinitialized.</dd>
+  <dt>LOCA</dt>
+    <dd>Loss Of Communication Acknowledgement. If yes then a scanIoRequest
+      will be issued for all inputs. Thus any records attached to the record
+      and declared I/O Intr scanned will be processed.</dd>
+  <dt>LINK</dt>
+  <dt>RACK</dt>
+  <dt>SLOT</dt>
+    <dd>The allen bradley scanner, rack, and slot containing the module.</dd>
+  <dt>OUTM</dt>
+  <dt>INPM</dt>
+    <dd>These are array fields that hold the raw output and input messages
+      sent to the module.</dd>
+  <dt>IAI1</dt>
+    <dd>Field that hold the address on the interfaces for device support.</dd>
+  <dt>SEDI</dt>
+    <dd>A menu field to choose between single an double ended.</dd>
+  <dt>FILT</dt>
+    <dd>The filter time constant. The value is an integer between 0 and 99,
+      which represents 0 to .99 seconds.</dd>
+  <dt>STIM</dt>
+    <dd>Real Time Sample Mode (0 to 0x1f). See the Allen Bradley 1771-IFE
+      manual for the meaning on this field.</dd>
+  <dt>Ri</dt>
+    <dd>Range for signal i. I is 0 to 7 if SEDI is double ended and 0 to 15
+      if SEDI is single ended.</dd>
+
+  <h3>Print I/O messages</h3>
+
+  <p>The following routine prints the last input and output messages:</p>
+  <pre>    ab1771IFEpm("record name")</pre>
+</dl>
+
+<h3>Device Support</h3>
+
+<p>Device support is the same as the ai device support for the 17771-N series
+described previously.</p>
+
+<h2><a name="SLC 500 DCM"></a>SLC 500 DCM</h2>
+
+<p>Support consists of device support (module devABSLCDCM.c) for the
+following:</p>
+<pre>    device(ai,AB_IO,devAiAbSlcDcm,"AB-SLC500DCM")
+    device(ai,AB_IO,devAiAbSlcDcmSigned,"AB-SLC500DCM-Signed")
+    device(ao,AB_IO,devAoAbSlcDcm,"AB-SLC500DCM")
+    device(longin,AB_IO,devLiAbSlcDcm,"AB-SLC500DCM")
+    device(longout,AB_IO,devLoAbSlcDcm,"AB-SLC500DCM")</pre>
+
+<p>Device support is provided for the Allen Bradley SLC 500 DCM. This DCM has
+a table of 8 16-bit words (slots) where the first word is reserved for
+status. The next 7 words are used for either reading or writing or both (the
+read and write areas are kept separate). The device support uses the same
+INP/OUT definition as other Allen Bradley modules where the card is the word
+in the table multiplied by 2 (card 0 to 14 for word 0 to 7).</p>
+
+<p>Binary and multibit binary device support is the same as the general 16
+bit binary support (AB-16 bit BI and BO). For diagnostic purposes, it is good
+practice to have a multibit input record defined for the DCM status word
+(Success = 0x0000, mode error = 0x0300, and invalid data = 0x0500 and
+0x0700).</p>
+
+<p>Longin and analog device support is also provided (AB-SLC500DCM). The
+underlying logic is very similar to the binary device support with extra
+processing added depending on the specific record type. Linear conversion is
+available for analog records. Analog output linear conversion assumes only
+positive values and the raw value (RVAL) will range from 0 and 0x7FFF,
+corresponding to low and high engineering units (EGUL and EGUF). Two
+different types of device support is provided for analog inputs (AB-SLC500DCM
+and AB-SLC500DCM-Signed). Signed analog input device support is meant to be
+used by records with EGUL set to -EGUF that need linear conversion.</p>
+
+<p>The general adapter and card status device support may be used for
+monitoring the SLC 500 DCM (AB-Adapter Status and AB-Card Status). One
+adapter status may be defined for the DCM and one card status mbbi record may
+be defined for each word in the table.</p>
+
+<h2><a name="drvAb: The Allen Bradley Driver"></a>drvAb: The Allen Bradley
+Driver</h2>
+
+<p>EPICS provides a driver, drvAb, for the Allen Bradley VME I/O scanner.
+This driver provides support for software that interfaces to specific types
+of I/O modules, e.g. device support. In addition it provides support for
+configuring the scanner itself and also to reset the scanner.</p>
+
+<p>This section first discusses initialization, then the I/O report, and
+finally the software interface to the driver.</p>
+
+<h3>Initialization</h3>
+
+<p>The driver has a normal EPICS driver entry table. When the initialization
+call is made the first thing the driver does is to see if the scanner is
+already initialized. If it is the driver does not reinitialize the scanner.
+This will be true whenever the scanner is running and a non-powerup reboot
+occurs.</p>
+
+<p><b>NOTE: Chassis switch #1</b></p>
+
+<blockquote>
+  <p>If this switch is off then the output image table is set to all zeros
+  whenever the scanner is initialized or a hard reboot is performed. Thus is
+  the switch is off then only a ctl/x reboot preserves the output image
+  table. Note that a ab_reset reinitializes the scanner.</p>
+
+  <p>If this switch is on then only a VME power cycle will cause the output
+  image table to be reset. Thus a hard reboot or ab_reset can be issued
+  without causing the output image table to be set to zeros.</p>
+</blockquote>
+
+<p>Binary output and analog output device support both attempt to initialize
+their associated records with values obtained from the I/O modules.</p>
+
+<h3>I/O Report</h3>
+
+<p>The following is an example report issued via the vxWorks command:</p>
+<pre>dbior "drvAb",3
+Driver: drvAb
+AB-6008SV link: 0 osw 00ec vme: 0xf0c00000</pre>
+OSW is the current operating status word. Consult the AB manual for details.
+VME is the base VME address for this scanner. AB-6008SV link: 0 osw 00ac vme:
+0xf0c00000 6008SV2R Scanner&nbsp; Series A Revision B Copyright (c)
+1995,96&nbsp; Allen-Bradley Company 
+
+<p>The above message identifies the current version of the Allen Bradley
+Scanner. This message only appears after a power up reboot, i.e. it will not
+appear for a ctl/x reboot.</p>
+<pre>        Mailbox lock timeouts 0
+             Command timeouts 6
+              Command Failure 0
+        Interrupts per second 79
+   Block Transfers per second 39</pre>
+<ul>
+  <li>Mailbox lock time-outs - This is the number of times a time-out
+    occurred while trying to obtain the mailbox lock. This should ALWAYS be
+  0.</li>
+  <li>Command Time-outs - In theory this should always be zero. However there
+    seems to be a problem that causes the scanner to miss command requests.
+    This is true on the scanner version shown above.</li>
+  <li>Interrupts per second and Block Transfers per second. These statistics
+    are recomputed every 10 seconds.</li>
+</ul>
+<pre>    Adapter Status Words
+    1f20 0000 0000 0000 1e20 0000 0000 0000
+    1e20 0000 0000 0000 1e20 0000 0000 0000
+    1c00 0000 0000 0000 0000 0000 0000 0000
+    0000 0000 0000 0000 0000 0000 0000 0000
+    scan list
+    00 04 08 0c 10</pre>
+The above, which is only displayed if the print level is &gt; 2, displays the
+information returned by the scanner for the last link status command. See the
+Allen Bradley Scanner manual for details. It is essential that you learn how
+to interpet this report. For example the first word (1f20) states that the
+first rack is:
+<ul>
+  <li>in scan list</li>
+  <li>the adapter is attached</li>
+  <li>the rack is a full rack</li>
+  <li>the rack is on-line.</li>
+</ul>
+<pre>    Adapter 0 ONLINE 2 slot addressing
+      CARD 0: BIBO  8_Bit Scanning in 0x0 out 0x0
+      CARD 1: BIBO  8_Bit Scanning in 0x0 out 0x0
+    Adapter 1 ONLINE
+      CARD 0: AI  Scanning IFEDIFF initialized 1 times
+      Write
+      ffff ffff 0700 ffff 0000 0000 4095 0000 4095 0000&nbsp;
+      4095 0000 4095 0000 4095 0000 4095 0000 4095 0000&nbsp;
+      4095 0000 4095 0000 4095 0000 4095 0000 4095 0000&nbsp;
+      4095 0000 4095 0000 4095 0000 4095&nbsp;
+      Read
+      0000 0000 0000 0000 064f 064e 04c4 04c4 0d0c 0d0d 
+      0e08 0e08 
+      CARD 1: AO  Scanning OFE initialized 1 times
+      Write
+      0650 04c5 0d0d 0e08 8000 
+      Read
+      0bcd 08b3 0698 086b 0040 
+      CARD 2: BI  8_Bit Scanning 0x81
+      CARD 3: BO 16_Bit Scanning 0x81
+      CARD 4: BI 16_Bit Scanning 0x8001
+      CARD 5: BO 16_Bit Scanning 0x8001
+      CARD 6: BI  8_Bit Scanning 0x0
+      CARD 7: BO  8_Bit Scanning 0x0
+      CARD 8: BI 16_Bit Scanning 0x0
+      CARD 9: BO 16_Bit Scanning 0x0
+      (Many more lines left out)
+</pre>
+
+<p>For each adapter the following information is displayed:</p>
+<ul>
+  <li>Adapter number, on-line status, and addressing mode. This information
+    is present for any adapter that has at least one card registered.</li>
+  <li>Card information, for each registered card, which consists of the
+    following:
+    <ul>
+      <li>Card number, type, scanning status, card name,</li>
+      <li>For Binary cards the current value</li>
+      <li>For Analog cards
+        <ul>
+          <li>How many times initialized.</li>
+          <li>If analog input
+            <ul>
+              <li>If level &gt;=1 the last read message</li>
+              <li>If level &gt;=2 the initialization message</li>
+            </ul>
+          </li>
+          <li>If analog output
+            <ul>
+              <li>If level&gt;=1 the last write message</li>
+              <li>If level &gt;=2 the message obtained at initialization.</li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>
+
+<h3>Include File</h3>
+The following include file defines the interface to the driver
+<pre>/* drvAb.h */
+/* interface types */
+typedef enum {
+    typeNotAssigned,typeBi,typeBo,typeBiBo,typeAi,typeAo,typeBt
+} cardType;
+
+/* status values*/
+typedef enum{
+    abSuccess,abNewCard,abCardConflict,abNoCard,abNotInitialized,
+    abBtqueued,abBusy,abTimeout,abAdapterDown,abFailure
+} abStatus;
+
+extern char **abStatusMessage;
+typedef enum{
+    abBitNotdefined,abBit8,abBit16,abBit32
+} abNumBits;
+
+extern char **abNumBitsMessage;</pre>
+<ul>
+  <li>cardType - specifies the card types recognized by the driver.</li>
+  <li>abStatus - The status associated with a card.</li>
+  <li>abStatusMessage - A message associated with a status.</li>
+  <li>abNumBits - Number of bits for a binary module.</li>
+  <li>abNumBitsMessage - A message for each binary type.</li>
+</ul>
+<pre>/*entry table for dev to drv routines*/
+typedef struct {
+    abStatus (*registerCard)
+        (unsigned short link,unsigned short adapter, unsigned short card,
+        cardType type, const char *card_name,
+        void (*callback)(void *drvPvt),
+        void  **drvPvt);
+    void (*getLocation)
+        (void *drvPvt,
+        unsigned short *link, unsigned short *adapter,unsigned short *card);
+    abStatus (*setNbits)(void *drvPvt, abNumBits nbits);
+    void (*setUserPvt)(void *drvPvt, void *userPvt);
+    void *(*getUserPvt)(void *drvPvt);
+    abStatus (*getStatus)(void *drvPvt);
+    abStatus(*startScan)
+        (void *drvPvt, unsigned short update_rate,
+        unsigned short *pwrite_msg, unsigned short write_msg_len,
+        unsigned short *pread_msg, unsigned short read_msg_len);
+    abStatus(*updateAo)(void *drvPvt);
+    abStatus(*updateBo) (void *drvPvt,unsigned long value,unsigned long mask);
+    abStatus(*readBo) (void *drvPvt,unsigned long *value,unsigned long mask);
+    abStatus(*readBi) (void *drvPvt,unsigned long *value,unsigned long mask);
+    abStatus(*btRead)(void *drvPvt,unsigned short *pread_msg,
+        unsigned short read_msg_len);
+    abStatus(*btWrite)(void *drvPvt,unsigned short *pwrite_msg,
+        unsigned short write_msg_len);
+    abStatus (*adapterStatus)
+        (unsigned short link,unsigned short adapter);
+    abStatus (*cardStatus)
+        (unsigned short link,unsigned short adapter, unsigned short card);
+}abDrv;
+ 
+extern abDrv *pabDrv;</pre>
+abDrv is a structure containing all the routines (methods) supported by the
+driver that can be used to access specific Allen Bradley I/O.modules. pabDrv,
+is the address of this structure.
+<pre>int ab_reset(void);
+int ab_reset_link(int link);
+int abConfigNlinks(int nlinks);
+int abConfigVme(int link, int base, int vector, int level);
+int abConfigBaud(int link, int baud);
+int abConfigScanList(int link, int scan_list_len, char *scan_list);
+#endif /*INCdrvAbh*/</pre>
+The above commands can be issued from the vxWorks shell.
+
+<h3>Card Registration</h3>
+Before any I/O module can be accessed, registerCard must be called. For
+example to register a binary card the following call is issued:
+<pre>abStatus        status;
+unsigned short  link,adapter,card;
+void            *drvPvt;
+...
+status = (*pabDrv-&gt;registerCard)(link,adapter,card,
+  typeBi,"BINARY",userCallback,&amp;drvPvt);
+switch(status) {
+case abSuccess:
+  /*Success. This card was previously registered*/
+  ...
+case abNewCard:
+  /*Success. This is the first registration call for this card*/
+  ...
+default:
+  /*All other status values are errors*/
+  printf(" error: %s\n",abStatusMessage(status);
+  ...
+}</pre>
+RegisterCard performs the following functions:
+<ul>
+  <li>It checks that link, adapter, and card are valid and that link is
+    initialized. If any of these checks fail, drvAb returns an error.</li>
+  <li>If the card has been previously registered it makes the following
+    checks:
+    <ul>
+      <li>If the previous card_name does not match the new card_name it
+        returns an error.</li>
+      <li>A check is made that the old card type matches the new type. The
+        first check is an exact match on types. The second type is for typeBi
+        or typeBo. The same card can be registered as both a binary in and a
+        binary out. If it is registered for both it is made a typeBiBo. If
+        any of these checks fail an error status is returned.</li>
+      <li>If the new card type and name is compatible with the previous then
+        drvAb returns abSuccess. The first registration call for a card that
+        specifies a callback routine determines the callback routine for this
+        card. If a card is registered as both typeBi and typeBo separate
+        callbacks are maintained. The drvPvt argument provided by the caller
+        is set equal to the address of a driver private structure that the
+        driver allocated for the card when registerCard was first called.</li>
+    </ul>
+  </li>
+  <li>If the card is new the driver allocates and initializes a driver
+    private structure for the card and returns abNewCard.</li>
+</ul>
+
+<h3>Type Independent Commands</h3>
+Commands are available to get the card location, retrieve status of a card,
+and to specify and retrieve a user private pointer.
+
+<h4>getLocation</h4>
+This routine, given the drvPvt field, returns the link, adapter, and card.
+This is useful for a callback routine that handles multiple card types.
+
+<h4>getStatus</h4>
+Retrieves the status for the communication with the card. It returns one of
+the following values:
+<ul>
+  <li>abSuccess - Last communication with the card is complete and was
+    successful.</li>
+  <li>abBtqueued - Block transfer to card has been queued to VME scanner but
+    is not yet complete.</li>
+  <li>abTimeout - Last block transfer request resulted in a time-out.</li>
+  <li>abLinkDown - The adapter is not responding,</li>
+  <li>abFailure - Other error.</li>
+</ul>
+Note that the status values returned depend on the type of card. For example
+binary cards never return any of the block transfer related status values.
+
+<h4>setUserPvt getUserPvt</h4>
+These routines store and retrieve a void * pointer in the private structure
+managed by abDrv.
+
+<h3>Binary I/O</h3>
+After registerCard, setNbits must be called before other driver calls. The
+actual algorithm executed by the read and update routines are determined by
+the number of bits specified in the call to setNbits.
+
+<h4>setNbits</h4>
+Before a binary module can be accessed the routine setNbits must be called.
+The first call to this routine for a card determines the number of bits. If a
+conflict arises abFailure is returned. The caller may proceed at it's own
+risk. The first call to setNbits for a card also sets that card active. All
+active input cards are scanned every 1/10 second. If any bit has changed
+since the last scan the binary input callback routine specified in
+registerCard is called.
+
+<h4>readBi</h4>
+This command retrieves, from the input image table, the current value of the
+binary input word. Note that the user supplies a mask that determines the
+bits that can be set in the value, i.e. the image table value is logically
+ored with the mask. It returns the value returned by getStatus.
+
+<h4>readBo</h4>
+This command retrieves, from the output image table, the current value of the
+binary input word. Note that the user supplies a mask that determines the
+bits that can be set in the value, i.e. the image table value is logically
+ored with the mask. It returns the value returned by getStatus.
+
+<h4>updateBo</h4>
+This command performs the following operations:
+<ul>
+  <li>The card is locked. This prevents multiple callers from trying to
+    modify the same word simultaneously.</li>
+  <li>The current output image table is read.</li>
+  <li>The bits specified by mask are taken from value. The other bits remain
+    as before. The result is written to the output image table.</li>
+  <li>The card is unlocked.</li>
+  <li>The value returned by getStatus is returned.</li>
+</ul>
+
+<h4>Binary Scanning</h4>
+The scan task discussed in the next section also checks binary modules. For
+both bi and bo the user supplied callback is called whenever the adapter
+status changes. For binary inputs the user callback is called whenever the
+value changes.
+
+<h3>Block Transfer Requests</h3>
+Both block transfer reads and writes can be issued. Only one request at a
+time can be outstanding. When the block transfer completes the user callback,
+supplied in the call to registerCard, is called. It is permissible to issue
+another block transfer read or write request from the callback routine. If a
+block transfer request fails, the driver will retry a total of 10 times
+before it reports a failure to the caller.
+
+<h4>btRead btWrite</h4>
+These routines return abBtqueued if the block transfer request is
+successfully queued. The caller must be prepared to deal with problems like
+ablinkDown. If a request is already outstanding then abBusy is returned.
+
+<h3>Analog Scanning</h3>
+abDrv provides scanning support for analog modules. The card type, specified
+when calling registerCard, is either typeAo or typeAi. The actual meaning of
+these terms is:
+<ul>
+  <li>typeAo - When the card is initialized the first block transfer request
+    is a read. After initialization all block transfer requests are writes.
+    In addition whenever updateAo is called a block transfer write is issued
+    the next time the scan task runs.</li>
+  <li>typeAi - When the card is initialized the first block transfer is a
+    write. After initialization all block transfer requests are reads.</li>
+</ul>
+For each link, i.e. VME scanner, abDrv spawns a scan task. This task runs,
+waits 1/10 second, runs, etc. This task keeps track of adapter status, card
+initialization, and periodic (reads, writes) of each typeAi and typeAo module.
+
+<p>It calls the callback whenever an adapter changes status or whenever a
+periodic block transfer completes. Note that no callback is made when the
+initialization block transfer completes.</p>
+
+<p>After registerCard is called, startScan must be called to start scanning.
+This call specifies the output and input block transfer messages as well as
+the update rate. The update rate is in units of.1 seconds, i.e. the basic
+scan task rate. It should be notified that this is not a guaranteed rate. The
+scanner retries unsuccessful block transfer requests several times before
+calling the user supplied callback. Also the "blue hose" may limit the number
+of block transfers.</p>
+
+<h3>adapterStatus cardStatus</h3>
+These routines return the current adapter/card status.
+
+<h3>Scanner Reset</h3>
+Two vxWorks shell commands are available to reinitialize the VME scanner.
+Hopefully these routines will never be needed.
+
+<h4>ab_reset</h4>
+This command resets all links.
+
+<h4>ab_reset_link(firstLink,lastLink)</h4>
+This command resets the specified links.
+
+<p>NOTE: For a two port scanner both links must be reset simultaneously.</p>
+
+<h2>License Agreement</h2>
+<pre>Copyright (c) 2002 University of Chicago. All rights reserved.
+
+EPICS_AB - EPICS allen Bradley support.
+EPICS_AB is distributed subject to the following license conditions:
+
+ SOFTWARE LICENSE AGREEMENT
+ Software: EPICS_AB
+
+ 1. The "Software", below, refers to EPICS_AB (in either source code, or
+    binary form and accompanying documentation). Each licensee is
+    addressed as "you" or "Licensee."
+
+ 2. The copyright holders shown above and their third-party licensors
+    hereby grant Licensee a royalty-free nonexclusive license, subject to
+    the limitations stated herein and U.S. Government license rights.
+
+ 3. You may modify and make a copy or copies of the Software for use
+    within your organization, if you meet the following conditions:
+      a. Copies in source code must include the copyright notice and this
+         Software License Agreement.
+      b. Copies in binary form must include the copyright notice and this
+         Software License Agreement in the documentation and/or other
+         materials provided with the copy.
+
+ 4. You may modify a copy or copies of the Software or any portion of it,
+    thus forming a work based on the Software, and distribute copies of
+    such work outside your organization, if you meet all of the following
+    conditions:
+      a. Copies in source code must include the copyright notice and this
+         Software License Agreement;
+      b. Copies in binary form must include the copyright notice and this
+         Software License Agreement in the documentation and/or other
+         materials provided with the copy;
+      c. Modified copies and works based on the Software must carry
+         prominent notices stating that you changed specified portions of
+         the Software.
+
+ 5. Portions of the Software resulted from work developed under a U.S.
+    Government contract and are subject to the following license: the
+    Government is granted for itself and others acting on its behalf a
+    paid-up, nonexclusive, irrevocable worldwide license in this computer
+    software to reproduce, prepare derivative works, and perform publicly
+    and display publicly.
+
+ 6. WARRANTY DISCLAIMER. THE SOFTWARE IS SUPPLIED "AS IS" WITHOUT WARRANTY
+    OF ANY KIND. THE COPYRIGHT HOLDERS, THEIR THIRD PARTY LICENSORS, THE
+    UNITED STATES, THE UNITED STATES DEPARTMENT OF ENERGY, AND THEIR
+    EMPLOYEES: (1) DISCLAIM ANY WARRANTIES, EXPRESS OR IMPLIED, INCLUDING
+    BUT NOT LIMITED TO ANY IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS
+    FOR A PARTICULAR PURPOSE, TITLE OR NON-INFRINGEMENT, (2) DO NOT ASSUME
+    ANY LEGAL LIABILITY OR RESPONSIBILITY FOR THE ACCURACY, COMPLETENESS,
+    OR USEFULNESS OF THE SOFTWARE, (3) DO NOT REPRESENT THAT USE OF THE
+    SOFTWARE WOULD NOT INFRINGE PRIVATELY OWNED RIGHTS, (4) DO NOT WARRANT
+    THAT THE SOFTWARE WILL FUNCTION UNINTERRUPTED, THAT IT IS ERROR-FREE
+    OR THAT ANY ERRORS WILL BE CORRECTED.
+
+ 7. LIMITATION OF LIABILITY. IN NO EVENT WILL THE COPYRIGHT HOLDERS, THEIR
+    THIRD PARTY LICENSORS, THE UNITED STATES, THE UNITED STATES DEPARTMENT
+    OF ENERGY, OR THEIR EMPLOYEES: BE LIABLE FOR ANY INDIRECT, INCIDENTAL,
+    CONSEQUENTIAL, SPECIAL OR PUNITIVE DAMAGES OF ANY KIND OR NATURE,
+    INCLUDING BUT NOT LIMITED TO LOSS OF PROFITS OR LOSS OF DATA, FOR ANY
+    REASON WHATSOEVER, WHETHER SUCH LIABILITY IS ASSERTED ON THE BASIS OF
+    CONTRACT, TORT (INCLUDING NEGLIGENCE OR STRICT LIABILITY), OR
+    OTHERWISE, EVEN IF ANY OF SAID PARTIES HAS BEEN WARNED OF THE
+    POSSIBILITY OF SUCH LOSS OR DAMAGES.</pre>
+</body>
+</html>

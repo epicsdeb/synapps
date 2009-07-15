@@ -1,0 +1,93 @@
+--README file for Pilatus SoftIOC version 1.00 --22.12.06--
+
+
+
+Prerequisites:
+
+--	Edit the file "startup.script" first. Here the pc-name or ip-address has to be 	given, according to the integration of the DAQ PC into the network.
+--	In the file "X06SA-PC-PILATUS_all.subs" one needs to specify the prefix. Here 	the default is PILATUS
+	Use BL typical Prefix such as X06SA-ES-PIL
+	Example:
+		caput X06SA-ES-PIL:EXPTIME-READ
+
+Most common used channels: 
+
+##specify a file name or path and filename
+FILENAME
+
+##specify an exposure time
+EXPTIME-SET
+
+##read back which exposure time is active
+EXPTIME-GET
+
+##start taking an image (be sure that image name and exposure time are set before)
+EXPOSURE-START
+
+##stop an ongoing exposure (this does not work if Number of Images > 1)
+EXPOSURE-STOP
+
+##start taking an image. Difference to EXPOSURE-START: here you supply the
+##filename along with the command like X06SA-ES-PIL:EXPOSURE-IMG test.tif
+##!!exposure time has to be set first!!
+EXPOSURE-IMG
+
+##disconnect from camserver
+DISCONNECT
+
+##make a socket connection to the camera
+CONNECT
+
+##specify the number of images that should be taken with the given parameters.
+##note: the image name will automatically be enumerated.
+NIMAGE-SET
+
+##read back the number of frames that is active
+NIMAGE-GET
+
+##specify an  ( |exptime|rdouttime|......| ) exposure period
+##              |-----exposure period----| * nframes
+EXPPER-SET
+
+##read back the number of frames that is active
+EXPPER-GET
+
+##specity a number of exposures to be done within one frame
+##very special command to date only Femto BL is interested in accumulating images
+NEXPFRM-SET
+
+##read back the number of frames that is active
+NEXPFRM-GET
+
+##specity a delay time: >>this is active in external mode only<<
+##when using an external trigger signal delay defines when an exposure
+##is started after a trigger was received.
+DELAY-SET
+
+##read back the number of frames that is active
+DELAY-GET
+
+##start exposure in  EXTERNAL TRIGGER MODE
+##If a trigger arrives it performs exposures with the settings
+##like Exposure Time, Exposure Period, Number of Frames, 
+##Eposures Per Frame and Delay
+##Exposure is started after a trigger is received.
+###################################################################
+#######---TRIGGER HAS TO BE RECEIVED BEFORE 15s TIMEOUT---#########
+################################################################### 
+EXT-TRIG-START
+
+##alternative way to start an external triggered image mode.
+##be sure to provide an image name when releasing this command
+EXT-TRIG-IMG
+
+##start exposure in  EXTERNAL ENABLE MODE
+##If a trigger arrives it performs exposures with the settings
+##like Exposure Period, Number of Frames, 
+##Exposures Per Frame and Delay
+##Exposure is started after a trigger is received (the gate length defines  
+##the exposure time).
+###################################################################
+#######---TRIGGER HAS TO BE RECEIVED BEFORE 15s TIMEOUT---#########
+###################################################################  
+EXT-ENBL-START

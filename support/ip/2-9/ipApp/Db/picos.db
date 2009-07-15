@@ -1,0 +1,92 @@
+grecord(bi,"$(P)pico_STAT_but$(pChan)") {
+	field(FLNK,"$(P)pico_STAT_cmd$(pChan).VAL  PP MS")
+}
+grecord(bi,"$(P)pico_CW$(pChan)") {
+	field(FLNK,"$(P)pico_DIR_latch$(pChan).VAL  PP MS")
+	field(ZNAM,"not CW")
+	field(ONAM,"CW")
+}
+grecord(bi,"$(P)pico_CCW$(pChan)") {
+	field(FLNK,"$(P)pico_DIR_latch$(pChan).VAL  PP MS")
+	field(ZNAM,"not CCW")
+	field(ONAM,"CCW")
+}
+grecord(calcout,"$(P)pico_DIR_latch$(pChan)") {
+	field(FLNK,"$(P)pico_POS_scalc$(pChan).VAL  PP MS")
+	field(CALC,"B || (C && (!A))")
+	field(INPA,"$(P)pico_CCW$(pChan).VAL  PP MS")
+	field(INPB,"$(P)pico_CW$(pChan).VAL  PP MS")
+	field(INPC,"$(P)pico_DIR_latch$(pChan).VAL  PP MS")
+}
+grecord(stringin,"$(P)pico_proxy$(pChan)") {
+	field(FLNK,"$(P)pico_GO$(pChan).VAL  PP MS")
+}
+grecord(stringin,"$(P)pico_VEL_stat$(pChan)") {
+	field(VAL,";:sour:puls:freq?")
+}
+grecord(stringin,"$(P)pico_VEL_cmd$(pChan)") {
+	field(VAL,":sour:puls:freq ")
+}
+grecord(stringin,"$(P)pico_VEL$(pChan)") {
+	field(FLNK,"$(P)pico_VEL_scalc$(pChan).VAL  PP MS")
+}
+grecord(stringin,"$(P)pico_STAT_cmd$(pChan)") {
+	field(FLNK,"$(P)pico_STATout$(pChan).VAL  PP MS")
+	field(VAL,":inst:stat?")
+}
+grecord(stringin,"$(P)pico_STAT$(pChan)") {
+	field(INP,"$(P)serialOI$(serChan).AINP  CPP MS")
+}
+grecord(stringin,"$(P)pico_SEL$(pChan)") {
+	field(DESC,"$(DESC)")
+	field(VAL,":inst:nsel $(pChan)")
+}
+grecord(stringin,"$(P)pico_POS_twk$(pChan)") {
+}
+grecord(stringin,"$(P)pico_POS_cmd$(pChan)") {
+	field(VAL,":sour:puls:coun ")
+}
+grecord(stringin,"$(P)pico_CW_cmd$(pChan)") {
+	field(VAL,":sour:dir CW;")
+}
+grecord(stringin,"$(P)pico_CCW_cmd$(pChan)") {
+	field(VAL,":sour:dir CCW;")
+}
+grecord(scalcout,"$(P)pico_VEL_scalc$(pChan)") {
+	field(INAA,"$(P)pico_VEL_cmd$(pChan).VAL  PP MS")
+	field(INBB,"$(P)pico_VEL$(pChan).VAL  PP MS")
+	field(INCC,"$(P)pico_VEL_stat$(pChan).VAL  PP MS")
+	field(OUT,"$(P)serialOI$(serChan).AOUT  CPP MS")
+	field(DOPT,"Use OCAL")
+	field(OCAL,"AA+BB+CC")
+	field(PREC,"5")
+}
+grecord(scalcout,"$(P)pico_STATout$(pChan)") {
+	field(INAA,"$(P)pico_STAT_cmd$(pChan).VAL  PP MS")
+	field(OUT,"$(P)serialOI$(serChan).AOUT  CPP MS")
+	field(DOPT,"Use OCAL")
+	field(OCAL,"AA")
+}
+grecord(scalcout,"$(P)pico_POS_scalc$(pChan)") {
+	field(FLNK,"$(P)pico_proxy$(pChan).VAL  PP MS")
+	field(INPA,"$(P)pico_DIR_latch$(pChan).VAL  PP MS")
+	field(INAA,"$(P)pico_POS_cmd$(pChan).VAL  PP MS")
+	field(INBB,"$(P)pico_POS_twk$(pChan).VAL  PP MS")
+	field(INCC,"$(P)pico_CW_cmd$(pChan).VAL  PP MS")
+	field(INDD,"$(P)pico_CCW_cmd$(pChan).VAL  PP MS")
+	field(OUT,"$(P)pico_proxy$(pChan).VAL  PP MS")
+	field(DOPT,"Use OCAL")
+	field(OCAL,"A?(CC+AA+BB):(DD+AA+BB)")
+	field(PREC,"5")
+}
+grecord(sseq,"$(P)pico_GO$(pChan)") {
+	field(DLY1,"0.5")
+	field(DOL1,"$(P)pico_SEL$(pChan).VAL  PP MS")
+	field(LNK1,"$(P)serialOI$(serChan).AOUT  PP MS")
+	field(DLY2,"0.5")
+	field(DOL2,"$(P)pico_proxy$(pChan).VAL  NPP MS")
+	field(LNK2,"$(P)serialOI$(serChan).AOUT  PP MS")
+	field(DLY3,"0.1")
+	field(LNK3,"$(P)serialOI$(serChan).AOUT  PP MS")
+	field(STR3,":inst:stat?")
+}

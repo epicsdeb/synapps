@@ -1,0 +1,641 @@
+
+file {
+	name="/home/sricat/BCDA/epics/3.13.0/baseR3.13.0.beta7_shareR1.0/ipApp/op/adl/IP330_adc.adl"
+	version=020305
+}
+display {
+	object {
+		x=53
+		y=173
+		width=205
+		height=220
+	}
+	clr=14
+	bclr=4
+	cmap=""
+	gridSpacing=5
+	gridOn=0
+	snapToGrid=1
+}
+"color map" {
+	ncolors=65
+	colors {
+		ffffff,
+		ececec,
+		dadada,
+		c8c8c8,
+		bbbbbb,
+		aeaeae,
+		9e9e9e,
+		919191,
+		858585,
+		787878,
+		696969,
+		5a5a5a,
+		464646,
+		2d2d2d,
+		000000,
+		00d800,
+		1ebb00,
+		339900,
+		2d7f00,
+		216c00,
+		fd0000,
+		de1309,
+		be190b,
+		a01207,
+		820400,
+		5893ff,
+		597ee1,
+		4b6ec7,
+		3a5eab,
+		27548d,
+		fbf34a,
+		f9da3c,
+		eeb62b,
+		e19015,
+		cd6100,
+		ffb0ff,
+		d67fe2,
+		ae4ebc,
+		8b1a96,
+		610a75,
+		a4aaff,
+		8793e2,
+		6a73c1,
+		4d52a4,
+		343386,
+		c7bb6d,
+		b79d5c,
+		a47e3c,
+		7d5627,
+		58340f,
+		99ffff,
+		73dfff,
+		4ea5f9,
+		2a63e4,
+		0a00b8,
+		ebf1b5,
+		d4db9d,
+		bbc187,
+		a6a462,
+		8b8239,
+		73ff6b,
+		52da3b,
+		3cb420,
+		289315,
+		1a7309,
+	}
+}
+rectangle {
+	object {
+		x=0
+		y=0
+		width=165
+		height=20
+	}
+	"basic attribute" {
+		clr=0
+	}
+}
+text {
+	object {
+		x=0
+		y=0
+		width=165
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="IP330 16-bit ADC"
+	align="horiz. centered"
+}
+"text update" {
+	object {
+		x=130
+		y=25
+		width=70
+		height=20
+	}
+	monitor {
+		chan="$(P)chan9AI"
+		clr=63
+		bclr=1
+	}
+	clrmod="alarm"
+	align="horiz. centered"
+}
+"text update" {
+	object {
+		x=130
+		y=50
+		width=70
+		height=20
+	}
+	monitor {
+		chan="$(P)chan10AI"
+		clr=63
+		bclr=1
+	}
+	clrmod="alarm"
+	align="horiz. centered"
+}
+"text update" {
+	object {
+		x=130
+		y=75
+		width=70
+		height=20
+	}
+	monitor {
+		chan="$(P)chan11AI"
+		clr=63
+		bclr=1
+	}
+	clrmod="alarm"
+	align="horiz. centered"
+}
+"text update" {
+	object {
+		x=130
+		y=100
+		width=70
+		height=20
+	}
+	monitor {
+		chan="$(P)chan12AI"
+		clr=63
+		bclr=1
+	}
+	clrmod="alarm"
+	align="horiz. centered"
+}
+"text update" {
+	object {
+		x=130
+		y=125
+		width=70
+		height=20
+	}
+	monitor {
+		chan="$(P)chan13AI"
+		clr=63
+		bclr=1
+	}
+	clrmod="alarm"
+	align="horiz. centered"
+}
+"text update" {
+	object {
+		x=130
+		y=150
+		width=70
+		height=20
+	}
+	monitor {
+		chan="$(P)chan14AI"
+		clr=63
+		bclr=1
+	}
+	clrmod="alarm"
+	align="horiz. centered"
+}
+"text update" {
+	object {
+		x=130
+		y=175
+		width=70
+		height=20
+	}
+	monitor {
+		chan="$(P)chan15AI"
+		clr=63
+		bclr=1
+	}
+	clrmod="alarm"
+	align="horiz. centered"
+}
+"text update" {
+	object {
+		x=130
+		y=200
+		width=70
+		height=20
+	}
+	monitor {
+		chan="$(P)chan16AI"
+		clr=63
+		bclr=1
+	}
+	clrmod="alarm"
+	align="horiz. centered"
+}
+"related display" {
+	object {
+		x=165
+		y=0
+		width=35
+		height=20
+	}
+	display[0] {
+		label="pinout"
+		name="IP330_pinout.adl"
+	}
+	display[1] {
+		label="DIP switch settings"
+		name="IP330_DIPswitch.adl"
+	}
+	clr=0
+	bclr=17
+	label="-MORE"
+}
+composite {
+	object {
+		x=25
+		y=25
+		width=70
+		height=195
+	}
+	"composite name"=""
+	vis="static"
+	chan=""
+	children {
+		"text update" {
+			object {
+				x=25
+				y=25
+				width=70
+				height=20
+			}
+			monitor {
+				chan="$(P)chan1AI"
+				clr=63
+				bclr=1
+			}
+			clrmod="alarm"
+			align="horiz. centered"
+		}
+		"text update" {
+			object {
+				x=25
+				y=50
+				width=70
+				height=20
+			}
+			monitor {
+				chan="$(P)chan2AI"
+				clr=63
+				bclr=1
+			}
+			clrmod="alarm"
+			align="horiz. centered"
+		}
+		"text update" {
+			object {
+				x=25
+				y=75
+				width=70
+				height=20
+			}
+			monitor {
+				chan="$(P)chan3AI"
+				clr=63
+				bclr=1
+			}
+			clrmod="alarm"
+			align="horiz. centered"
+		}
+		"text update" {
+			object {
+				x=25
+				y=100
+				width=70
+				height=20
+			}
+			monitor {
+				chan="$(P)chan4AI"
+				clr=63
+				bclr=1
+			}
+			clrmod="alarm"
+			align="horiz. centered"
+		}
+		"text update" {
+			object {
+				x=25
+				y=125
+				width=70
+				height=20
+			}
+			monitor {
+				chan="$(P)chan5AI"
+				clr=63
+				bclr=1
+			}
+			clrmod="alarm"
+			align="horiz. centered"
+		}
+		"text update" {
+			object {
+				x=25
+				y=150
+				width=70
+				height=20
+			}
+			monitor {
+				chan="$(P)chan6AI"
+				clr=63
+				bclr=1
+			}
+			clrmod="alarm"
+			align="horiz. centered"
+		}
+		"text update" {
+			object {
+				x=25
+				y=175
+				width=70
+				height=20
+			}
+			monitor {
+				chan="$(P)chan7AI"
+				clr=63
+				bclr=1
+			}
+			clrmod="alarm"
+			align="horiz. centered"
+		}
+		"text update" {
+			object {
+				x=25
+				y=200
+				width=70
+				height=20
+			}
+			monitor {
+				chan="$(P)chan8AI"
+				clr=63
+				bclr=1
+			}
+			clrmod="alarm"
+			align="horiz. centered"
+		}
+	}
+}
+"related display" {
+	object {
+		x=0
+		y=25
+		width=25
+		height=20
+	}
+	display[0] {
+		label="just 1"
+		name="IP330_adc_1ch.adl"
+		args="P=$(P),CHAN=1"
+	}
+	clr=0
+	bclr=17
+	label="-1"
+}
+"related display" {
+	object {
+		x=0
+		y=50
+		width=25
+		height=20
+	}
+	display[0] {
+		label="just 1"
+		name="IP330_adc_1ch.adl"
+		args="P=$(P),CHAN=2"
+	}
+	clr=0
+	bclr=17
+	label="-2"
+}
+"related display" {
+	object {
+		x=0
+		y=75
+		width=25
+		height=20
+	}
+	display[0] {
+		label="just 1"
+		name="IP330_adc_1ch.adl"
+		args="P=$(P),CHAN=3"
+	}
+	clr=0
+	bclr=17
+	label="-3"
+}
+"related display" {
+	object {
+		x=0
+		y=100
+		width=25
+		height=20
+	}
+	display[0] {
+		label="just 1"
+		name="IP330_adc_1ch.adl"
+		args="P=$(P),CHAN=4"
+	}
+	clr=0
+	bclr=17
+	label="-4"
+}
+"related display" {
+	object {
+		x=0
+		y=125
+		width=25
+		height=20
+	}
+	display[0] {
+		label="just 1"
+		name="IP330_adc_1ch.adl"
+		args="P=$(P),CHAN=5"
+	}
+	clr=0
+	bclr=17
+	label="-5"
+}
+"related display" {
+	object {
+		x=0
+		y=150
+		width=25
+		height=20
+	}
+	display[0] {
+		label="just 1"
+		name="IP330_adc_1ch.adl"
+		args="P=$(P),CHAN=6"
+	}
+	clr=0
+	bclr=17
+	label="-6"
+}
+"related display" {
+	object {
+		x=0
+		y=175
+		width=25
+		height=20
+	}
+	display[0] {
+		label="just 1"
+		name="IP330_adc_1ch.adl"
+		args="P=$(P),CHAN=7"
+	}
+	clr=0
+	bclr=17
+	label="-7"
+}
+"related display" {
+	object {
+		x=0
+		y=200
+		width=25
+		height=20
+	}
+	display[0] {
+		label="just 1"
+		name="IP330_adc_1ch.adl"
+		args="P=$(P),CHAN=8"
+	}
+	clr=0
+	bclr=17
+	label="-8"
+}
+"related display" {
+	object {
+		x=105
+		y=25
+		width=25
+		height=20
+	}
+	display[0] {
+		label="just 1"
+		name="IP330_adc_1ch.adl"
+		args="P=$(P),CHAN=9"
+	}
+	clr=0
+	bclr=17
+	label="-9"
+}
+"related display" {
+	object {
+		x=105
+		y=50
+		width=25
+		height=20
+	}
+	display[0] {
+		label="just 1"
+		name="IP330_adc_1ch.adl"
+		args="P=$(P),CHAN=10"
+	}
+	clr=0
+	bclr=17
+	label="-10"
+}
+"related display" {
+	object {
+		x=105
+		y=75
+		width=25
+		height=20
+	}
+	display[0] {
+		label="just 1"
+		name="IP330_adc_1ch.adl"
+		args="P=$(P),CHAN=11"
+	}
+	clr=0
+	bclr=17
+	label="-11"
+}
+"related display" {
+	object {
+		x=105
+		y=100
+		width=25
+		height=20
+	}
+	display[0] {
+		label="just 1"
+		name="IP330_adc_1ch.adl"
+		args="P=$(P),CHAN=12"
+	}
+	clr=0
+	bclr=17
+	label="-12"
+}
+"related display" {
+	object {
+		x=105
+		y=125
+		width=25
+		height=20
+	}
+	display[0] {
+		label="just 1"
+		name="IP330_adc_1ch.adl"
+		args="P=$(P),CHAN=13"
+	}
+	clr=0
+	bclr=17
+	label="-13"
+}
+"related display" {
+	object {
+		x=105
+		y=150
+		width=25
+		height=20
+	}
+	display[0] {
+		label="just 1"
+		name="IP330_adc_1ch.adl"
+		args="P=$(P),CHAN=14"
+	}
+	clr=0
+	bclr=17
+	label="-14"
+}
+"related display" {
+	object {
+		x=105
+		y=175
+		width=25
+		height=20
+	}
+	display[0] {
+		label="just 1"
+		name="IP330_adc_1ch.adl"
+		args="P=$(P),CHAN=15"
+	}
+	clr=0
+	bclr=17
+	label="-15"
+}
+"related display" {
+	object {
+		x=105
+		y=200
+		width=25
+		height=20
+	}
+	display[0] {
+		label="just 1"
+		name="IP330_adc_1ch.adl"
+		args="P=$(P),CHAN=16"
+	}
+	clr=0
+	bclr=17
+	label="-16"
+}

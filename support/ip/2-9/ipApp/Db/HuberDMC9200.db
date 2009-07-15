@@ -1,0 +1,615 @@
+grecord(stringout,"$(P)$(Q)1:PosQuery")
+{
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Q)1:PosQuery1.PROC PP MS")
+	field(VAL,"?PA 1")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(ai,"$(P)$(Q)1:Pos")
+{
+	field(DTYP,"asyn ai stringParm")
+	field(FLNK,"$(P)$(Q)1:PosDone.PROC PP MS")
+	field(INP,"@asyn($(PORT))TERM=ok>,FMT=%lf")
+	field(PREC,"2")
+}
+grecord(ao,"$(P)$(Q)1:PosPut")
+{
+	field(DTYP,"asyn ao stringParm")
+	field(FLNK,"$(P)$(Q)1:PosPut1.PROC PP MS")
+	field(OUT,"@asyn($(PORT))FMT=PA 1 %f")
+	field(PREC,"2")
+}
+grecord(stringin,"$(P)$(Q)1:PosQuery1")
+{
+	field(DTYP,"asyn si stringParm")
+	field(FLNK,"$(P)$(Q)1:Pos.PROC PP MS")
+	field(INP,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Q)1:StatusQuery")
+{
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Q)1:StatusQuery1.PROC PP MS")
+	field(VAL,"?S 1")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringin,"$(P)$(Q)1:StatusQuery1")
+{
+	field(DTYP,"asyn si stringParm")
+	field(FLNK,"$(P)$(Q)1:status.PROC PP MS")
+	field(INP,"@asyn($(PORT))")
+}
+grecord(bi,"$(P)$(Q)1:DMOV")
+{
+	field(ZNAM,"Moving")
+	field(ONAM,"Done")
+}
+grecord(stringin,"$(P)$(Q)1:PosPut1")
+{
+	field(DTYP,"asyn si stringParm")
+	field(FLNK,"$(P)$(Q)1:nDone.PROC PP MS")
+	field(INP,"@asyn($(PORT))TERM=ok>")
+}
+grecord(bo,"$(P)$(Q)1:nDone")
+{
+	field(OUT,"$(P)$(Q)1:DMOV.VAL PP MS")
+}
+grecord(bo,"$(P)$(Q)QueryBusy")
+{
+	field(ZNAM,"Done")
+	field(ONAM,"Busy")
+}
+grecord(bo,"$(P)$(Q)1:DMOV0")
+{
+	field(PINI,"YES")
+	field(DOL,"1")
+	field(OUT,"$(P)$(Q)1:DMOV.VAL PP MS")
+}
+grecord(longin,"$(P)$(Q)1:status")
+{
+	field(DESC,"%d")
+	field(DTYP,"asyn li stringParm")
+	field(FLNK,"$(P)$(Q)1:Parse.PROC PP MS")
+	field(INP,"@asyn($(PORT))TERM=ok>,FMT=%d")
+}
+grecord(bo,"$(P)$(Q)1:TWF")
+{
+	field(OUT,"$(P)$(Q)1:tweak.B PP MS")
+}
+grecord(bo,"$(P)$(Q)1:TWR")
+{
+	field(OUT,"$(P)$(Q)1:tweak.A PP MS")
+}
+grecord(transform,"$(P)$(Q)1:tweak")
+{
+	field(CLCD,"a?c-e:b?c+e:c")
+	field(CLCF,"0")
+	field(CLCG,"0")
+	field(INPA,"$(P)$(Q)1:TWR.VAL NPP NMS")
+	field(INPB,"$(P)$(Q)1:TWF.VAL NPP NMS")
+	field(INPC,"$(P)$(Q)1:PosPut.VAL NPP NMS")
+	field(INPE,"1")
+	field(OUTD,"$(P)$(Q)1:PosPut.VAL PP MS")
+	field(OUTF,"$(P)$(Q)1:TWF.VAL NPP NMS")
+	field(OUTG,"$(P)$(Q)1:TWR.VAL NPP NMS")
+	field(PREC,"2")
+}
+grecord(fanout,"$(P)$(Q)1:Ask1")
+{
+	field(SELM,"Specified")
+	field(SELL,"$(P)$(Q)1:AskQ.VAL PP MS")
+	field(LNK1,"$(P)$(Q)1:StatusQuery.PROC PP MS")
+	field(LNK2,"$(P)$(Q)2:Ask1.PROC PP MS")
+}
+grecord(calc,"$(P)$(Q)1:AskQ")
+{
+	field(CALC,"a?2:1")
+	field(INPA,"$(P)$(Q)1:DMOV.VAL NPP NMS")
+}
+grecord(ao,"$(P)$(Q)2:PosPut")
+{
+	field(DTYP,"asyn ao stringParm")
+	field(FLNK,"$(P)$(Q)2:PosPut1.PROC PP MS")
+	field(OUT,"@asyn($(PORT))FMT=PA 2 %f")
+	field(PREC,"2")
+}
+grecord(stringin,"$(P)$(Q)2:PosPut1")
+{
+	field(DTYP,"asyn si stringParm")
+	field(FLNK,"$(P)$(Q)2:nDone.PROC PP MS")
+	field(INP,"@asyn($(PORT))TERM=ok>")
+}
+grecord(bo,"$(P)$(Q)2:nDone")
+{
+	field(OUT,"$(P)$(Q)2:DMOV.VAL PP MS")
+}
+grecord(bo,"$(P)$(Q)2:DMOV0")
+{
+	field(PINI,"YES")
+	field(DOL,"1")
+	field(OUT,"$(P)$(Q)2:DMOV.VAL PP MS")
+}
+grecord(bo,"$(P)$(Q)2:TWF")
+{
+	field(OUT,"$(P)$(Q)2:tweak.B PP MS")
+}
+grecord(bo,"$(P)$(Q)2:TWR")
+{
+	field(OUT,"$(P)$(Q)2:tweak.A PP MS")
+}
+grecord(transform,"$(P)$(Q)2:tweak")
+{
+	field(CLCD,"a?c-e:b?c+e:c")
+	field(CLCF,"0")
+	field(CLCG,"0")
+	field(INPA,"$(P)$(Q)2:TWR.VAL NPP NMS")
+	field(INPB,"$(P)$(Q)2:TWF.VAL NPP NMS")
+	field(INPC,"$(P)$(Q)2:PosPut.VAL NPP NMS")
+	field(INPE,"1")
+	field(OUTD,"$(P)$(Q)2:PosPut.VAL PP MS")
+	field(OUTF,"$(P)$(Q)2:TWF.VAL NPP NMS")
+	field(OUTG,"$(P)$(Q)2:TWR.VAL NPP NMS")
+	field(PREC,"2")
+}
+grecord(stringout,"$(P)$(Q)2:PosQuery")
+{
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Q)2:PosQuery1.PROC PP MS")
+	field(VAL,"?PA 2")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(ai,"$(P)$(Q)2:Pos")
+{
+	field(DESC,"%lf")
+	field(DTYP,"asyn ai stringParm")
+	field(FLNK,"$(P)$(Q)2:PosDone.PROC PP MS")
+	field(INP,"@asyn($(PORT))TERM=ok>,FMT=%lf")
+	field(PREC,"2")
+}
+grecord(stringin,"$(P)$(Q)2:PosQuery1")
+{
+	field(DTYP,"asyn si stringParm")
+	field(FLNK,"$(P)$(Q)2:Pos.PROC PP MS")
+	field(INP,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Q)2:StatusQuery")
+{
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Q)2:StatusQuery1.PROC PP MS")
+	field(VAL,"?S 2")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringin,"$(P)$(Q)2:StatusQuery1")
+{
+	field(DTYP,"asyn si stringParm")
+	field(FLNK,"$(P)$(Q)2:status.PROC PP MS")
+	field(INP,"@asyn($(PORT))")
+}
+grecord(bi,"$(P)$(Q)2:DMOV")
+{
+	field(ZNAM,"Moving")
+	field(ONAM,"Done")
+}
+grecord(longin,"$(P)$(Q)2:status")
+{
+	field(DTYP,"asyn li stringParm")
+	field(FLNK,"$(P)$(Q)2:Parse.PROC PP MS")
+	field(INP,"@asyn($(PORT))TERM=ok>,FMT=%d")
+}
+grecord(fanout,"$(P)$(Q)2:Ask1")
+{
+	field(SELM,"Specified")
+	field(SELL,"$(P)$(Q)2:AskQ.VAL PP MS")
+	field(LNK1,"$(P)$(Q)2:StatusQuery.PROC PP MS")
+	field(LNK2,"$(P)$(Q)3:Ask1.PROC PP MS")
+}
+grecord(calc,"$(P)$(Q)2:AskQ")
+{
+	field(CALC,"a?2:1")
+	field(INPA,"$(P)$(Q)2:DMOV.VAL NPP NMS")
+}
+grecord(ao,"$(P)$(Q)3:PosPut")
+{
+	field(DTYP,"asyn ao stringParm")
+	field(FLNK,"$(P)$(Q)3:PosPut1.PROC PP MS")
+	field(OUT,"@asyn($(PORT))FMT=PA 3 %f")
+	field(PREC,"2")
+}
+grecord(stringin,"$(P)$(Q)3:PosPut1")
+{
+	field(DTYP,"asyn si stringParm")
+	field(FLNK,"$(P)$(Q)3:nDone.PROC PP MS")
+	field(INP,"@asyn($(PORT))TERM=ok>")
+}
+grecord(bo,"$(P)$(Q)3:nDone")
+{
+	field(OUT,"$(P)$(Q)3:DMOV.VAL PP MS")
+}
+grecord(bo,"$(P)$(Q)3:DMOV0")
+{
+	field(PINI,"YES")
+	field(DOL,"1")
+	field(OUT,"$(P)$(Q)3:DMOV.VAL PP MS")
+}
+grecord(bo,"$(P)$(Q)3:TWF")
+{
+	field(OUT,"$(P)$(Q)3:tweak.B PP MS")
+}
+grecord(bo,"$(P)$(Q)3:TWR")
+{
+	field(OUT,"$(P)$(Q)3:tweak.A PP MS")
+}
+grecord(transform,"$(P)$(Q)3:tweak")
+{
+	field(CLCD,"a?c-e:b?c+e:c")
+	field(CLCF,"0")
+	field(CLCG,"0")
+	field(INPA,"$(P)$(Q)3:TWR.VAL NPP NMS")
+	field(INPB,"$(P)$(Q)3:TWF.VAL NPP NMS")
+	field(INPC,"$(P)$(Q)3:PosPut.VAL NPP NMS")
+	field(INPE,"1")
+	field(OUTD,"$(P)$(Q)3:PosPut.VAL PP MS")
+	field(OUTF,"$(P)$(Q)3:TWF.VAL NPP NMS")
+	field(OUTG,"$(P)$(Q)3:TWR.VAL NPP NMS")
+	field(PREC,"2")
+}
+grecord(ao,"$(P)$(Q)4:PosPut")
+{
+	field(DTYP,"asyn ao stringParm")
+	field(FLNK,"$(P)$(Q)4:PosPut1.PROC PP MS")
+	field(OUT,"@asyn($(PORT))FMT=PA 4 %f")
+	field(PREC,"2")
+}
+grecord(stringin,"$(P)$(Q)4:PosPut1")
+{
+	field(DTYP,"asyn si stringParm")
+	field(FLNK,"$(P)$(Q)4:nDone.PROC PP MS")
+	field(INP,"@asyn($(PORT))TERM=ok>")
+}
+grecord(bo,"$(P)$(Q)4:nDone")
+{
+	field(OUT,"$(P)$(Q)4:DMOV.VAL PP MS")
+}
+grecord(bo,"$(P)$(Q)4:DMOV0")
+{
+	field(PINI,"YES")
+	field(DOL,"1")
+	field(OUT,"$(P)$(Q)4:DMOV.VAL PP MS")
+}
+grecord(bo,"$(P)$(Q)4:TWF")
+{
+	field(OUT,"$(P)$(Q)4:tweak.B PP MS")
+}
+grecord(bo,"$(P)$(Q)4:TWR")
+{
+	field(OUT,"$(P)$(Q)4:tweak.A PP MS")
+}
+grecord(transform,"$(P)$(Q)4:tweak")
+{
+	field(CLCD,"a?c-e:b?c+e:c")
+	field(CLCF,"0")
+	field(CLCG,"0")
+	field(INPA,"$(P)$(Q)4:TWR.VAL NPP NMS")
+	field(INPB,"$(P)$(Q)4:TWF.VAL NPP NMS")
+	field(INPC,"$(P)$(Q)4:PosPut.VAL NPP NMS")
+	field(INPE,"1")
+	field(OUTD,"$(P)$(Q)4:PosPut.VAL PP MS")
+	field(OUTF,"$(P)$(Q)4:TWF.VAL NPP NMS")
+	field(OUTG,"$(P)$(Q)4:TWR.VAL NPP NMS")
+	field(PREC,"2")
+}
+grecord(stringout,"$(P)$(Q)3:PosQuery")
+{
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Q)3:PosQuery1.PROC PP MS")
+	field(VAL,"?PA 3")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(ai,"$(P)$(Q)3:Pos")
+{
+	field(DESC,"%lf")
+	field(DTYP,"asyn ai stringParm")
+	field(FLNK,"$(P)$(Q)3:PosDone.PROC PP MS")
+	field(INP,"@asyn($(PORT))TERM=ok>,FMT=%lf")
+	field(PREC,"2")
+}
+grecord(stringin,"$(P)$(Q)3:PosQuery1")
+{
+	field(DTYP,"asyn si stringParm")
+	field(FLNK,"$(P)$(Q)3:Pos.PROC PP MS")
+	field(INP,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Q)3:StatusQuery")
+{
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Q)3:StatusQuery1.PROC PP MS")
+	field(VAL,"?S 3")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringin,"$(P)$(Q)3:StatusQuery1")
+{
+	field(DTYP,"asyn si stringParm")
+	field(FLNK,"$(P)$(Q)3:status.PROC PP MS")
+	field(INP,"@asyn($(PORT))")
+}
+grecord(bi,"$(P)$(Q)3:DMOV")
+{
+	field(ZNAM,"Moving")
+	field(ONAM,"Done")
+}
+grecord(longin,"$(P)$(Q)3:status")
+{
+	field(DTYP,"asyn li stringParm")
+	field(FLNK,"$(P)$(Q)3:Parse.PROC PP MS")
+	field(INP,"@asyn($(PORT))TERM=ok>,FMT=%d")
+}
+grecord(fanout,"$(P)$(Q)3:Ask1")
+{
+	field(SELM,"Specified")
+	field(SELL,"$(P)$(Q)3:AskQ.VAL PP MS")
+	field(LNK1,"$(P)$(Q)3:StatusQuery.PROC PP MS")
+	field(LNK2,"$(P)$(Q)4:Ask1.PROC PP MS")
+}
+grecord(calc,"$(P)$(Q)3:AskQ")
+{
+	field(CALC,"a?2:1")
+	field(INPA,"$(P)$(Q)3:DMOV.VAL NPP NMS")
+}
+grecord(stringout,"$(P)$(Q)4:PosQuery")
+{
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Q)4:PosQuery1.PROC PP MS")
+	field(VAL,"?PA 4")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(ai,"$(P)$(Q)4:Pos")
+{
+	field(DTYP,"asyn ai stringParm")
+	field(FLNK,"$(P)$(Q)4:PosDone.PROC PP MS")
+	field(INP,"@asyn($(PORT))TERM=ok>,FMT=%lf")
+	field(PREC,"2")
+}
+grecord(stringin,"$(P)$(Q)4:PosQuery1")
+{
+	field(DTYP,"asyn si stringParm")
+	field(FLNK,"$(P)$(Q)4:Pos.PROC PP MS")
+	field(INP,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Q)4:StatusQuery")
+{
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Q)4:StatusQuery1.PROC PP MS")
+	field(VAL,"?S 4")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringin,"$(P)$(Q)4:StatusQuery1")
+{
+	field(DTYP,"asyn si stringParm")
+	field(FLNK,"$(P)$(Q)4:status.PROC PP MS")
+	field(INP,"@asyn($(PORT))")
+}
+grecord(bi,"$(P)$(Q)4:DMOV")
+{
+	field(ZNAM,"Moving")
+	field(ONAM,"Done")
+}
+grecord(longin,"$(P)$(Q)4:status")
+{
+	field(DTYP,"asyn li stringParm")
+	field(FLNK,"$(P)$(Q)4:Parse.PROC PP MS")
+	field(INP,"@asyn($(PORT))TERM=ok>,FMT=%d")
+}
+grecord(calc,"$(P)$(Q)4:AskQ")
+{
+	field(CALC,"a?2:1")
+	field(INPA,"$(P)$(Q)4:DMOV.VAL NPP NMS")
+}
+grecord(fanout,"$(P)$(Q)4:Ask1")
+{
+	field(SELM,"Specified")
+	field(SELL,"$(P)$(Q)4:AskQ.VAL PP MS")
+	field(LNK1,"$(P)$(Q)4:StatusQuery.PROC PP MS")
+	field(LNK2,"$(P)$(Q)QueryDone.PROC PP MS")
+}
+grecord(stringout,"$(P)$(Q)Init")
+{
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Q)echo1.PROC PP MS")
+	field(VAL,"echoon")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringin,"$(P)$(Q)echo1")
+{
+	field(DTYP,"asyn si stringParm")
+	field(FLNK,"$(P)$(Q)Remote.PROC PP MS")
+	field(INP,"@asyn($(PORT))TERM=ok>")
+}
+grecord(stringout,"$(P)$(Q)Remote")
+{
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Q)echo2.PROC PP MS")
+	field(VAL,"remote")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringin,"$(P)$(Q)echo2")
+{
+	field(DTYP,"asyn si stringParm")
+	field(INP,"@asyn($(PORT))TERM=ok>")
+}
+grecord(stringout,"$(P)$(Q)Local")
+{
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Q)echo3.PROC PP MS")
+	field(VAL,"local")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringin,"$(P)$(Q)echo3")
+{
+	field(DTYP,"asyn si stringParm")
+	field(INP,"@asyn($(PORT))TERM=ok>")
+}
+grecord(stringout,"$(P)$(Q)MsgOut")
+{
+	field(DTYP,"asyn so stringParm")
+	field(VAL,"local")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringin,"$(P)$(Q)MsgIn")
+{
+	field(DTYP,"asyn si stringParm")
+	field(INP,"@asyn($(PORT))TERM=ok>")
+}
+grecord(transform,"$(P)$(Q)1:Parse")
+{
+	field(FLNK,"$(P)$(Q)1:PosQuery.PROC PP MS")
+	field(CLCB,"a&1")
+	field(CLCC,"a&2")
+	field(CLCD,"a&224")
+	field(CLCE,"a&256")
+	field(CLCF,"A&512")
+	field(INPA,"$(P)$(Q)1:status.VAL NPP NMS")
+	field(OUTB,"$(P)$(Q)1:DMOV.VAL PP MS")
+}
+grecord(transform,"$(P)$(Q)2:Parse")
+{
+	field(FLNK,"$(P)$(Q)2:PosQuery.PROC PP MS")
+	field(CLCB,"a&1")
+	field(CLCC,"a&2")
+	field(CLCD,"a&224")
+	field(CLCE,"A&1024")
+	field(CLCF,"A&2048")
+	field(INPA,"$(P)$(Q)2:status.VAL NPP NMS")
+	field(OUTB,"$(P)$(Q)2:DMOV.VAL PP MS")
+}
+grecord(transform,"$(P)$(Q)3:Parse")
+{
+	field(FLNK,"$(P)$(Q)3:PosQuery.PROC PP MS")
+	field(CLCB,"a&1")
+	field(CLCC,"a&2")
+	field(CLCD,"a&224")
+	field(CLCE,"A&4096")
+	field(CLCF,"A&8192")
+	field(INPA,"$(P)$(Q)3:status.VAL NPP NMS")
+	field(OUTB,"$(P)$(Q)3:DMOV.VAL PP MS")
+}
+grecord(transform,"$(P)$(Q)4:Parse")
+{
+	field(FLNK,"$(P)$(Q)4:PosQuery.PROC PP MS")
+	field(CLCB,"a&1")
+	field(CLCC,"a&2")
+	field(CLCD,"a&224")
+	field(CLCE,"A&16384")
+	field(CLCF,"A&32768")
+	field(INPA,"$(P)$(Q)4:status.VAL NPP NMS")
+	field(OUTB,"$(P)$(Q)4:DMOV.VAL PP MS")
+}
+grecord(swait,"$(P)$(Q)alldone")
+{
+	field(SCAN,"I/O Intr")
+	field(INAN,"$(P)$(Q)1:DMOV.VAL")
+	field(INBN,"$(P)$(Q)2:DMOV.VAL")
+	field(INCN,"$(P)$(Q)3:DMOV.VAL")
+	field(INDN,"$(P)$(Q)4:DMOV.VAL")
+	field(INEP,"No")
+	field(INFP,"No")
+	field(INGP,"No")
+	field(INHP,"No")
+	field(INIP,"No")
+	field(INJP,"No")
+	field(INKP,"No")
+	field(INLP,"No")
+	field(CALC,"a&b&c&d")
+}
+grecord(stringout,"$(P)$(Q)1:Stop")
+{
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Q)1:StopE.PROC PP MS")
+	field(VAL,"STOP 1")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Q)2:Stop")
+{
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Q)2:StopE.PROC PP MS")
+	field(VAL,"STOP 2")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Q)3:Stop")
+{
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Q)3:StopE.PROC PP MS")
+	field(VAL,"STOP 3")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringout,"$(P)$(Q)4:Stop")
+{
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Q)4:StopE.PROC PP MS")
+	field(VAL,"STOP 3")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringin,"$(P)$(Q)1:StopE")
+{
+	field(DTYP,"asyn si stringParm")
+	field(INP,"@asyn($(PORT))TERM=ok>")
+}
+grecord(stringin,"$(P)$(Q)2:StopE")
+{
+	field(DTYP,"asyn si stringParm")
+	field(INP,"@asyn($(PORT))TERM=ok>")
+}
+grecord(stringin,"$(P)$(Q)3:StopE")
+{
+	field(DTYP,"asyn si stringParm")
+	field(INP,"@asyn($(PORT))TERM=ok>")
+}
+grecord(stringin,"$(P)$(Q)4:StopE")
+{
+	field(DTYP,"asyn si stringParm")
+	field(INP,"@asyn($(PORT))TERM=ok>")
+}
+grecord(stringout,"$(P)$(Q)Stop")
+{
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(Q)StopE.PROC PP MS")
+	field(VAL,"STOP 0")
+	field(OUT,"@asyn($(PORT))")
+}
+grecord(stringin,"$(P)$(Q)StopE")
+{
+	field(DTYP,"asyn si stringParm")
+	field(INP,"@asyn($(PORT))TERM=ok>")
+}
+grecord(bo,"$(P)$(Q)Query")
+{
+	field(SCAN,"1 second")
+	field(SDIS,"$(P)$(Q)QueryBusy.VAL NPP NMS")
+	field(FLNK,"$(P)$(Q)1:Ask1.PROC PP MS")
+	field(OMSL,"closed_loop")
+	field(DOL,"1")
+	field(OUT,"$(P)$(Q)QueryBusy.VAL PP MS")
+}
+grecord(bo,"$(P)$(Q)QueryDone")
+{
+	field(OMSL,"closed_loop")
+	field(OUT,"$(P)$(Q)QueryBusy.VAL PP MS")
+}
+grecord(bo,"$(P)$(Q)1:PosDone")
+{
+	field(FLNK,"$(P)$(Q)2:Ask1.PROC PP MS")
+}
+grecord(bo,"$(P)$(Q)2:PosDone")
+{
+	field(FLNK,"$(P)$(Q)3:Ask1.PROC PP MS")
+}
+grecord(bo,"$(P)$(Q)3:PosDone")
+{
+	field(FLNK,"$(P)$(Q)4:Ask1.PROC PP MS")
+}
+grecord(bo,"$(P)$(Q)4:PosDone")
+{
+	field(FLNK,"$(P)$(Q)QueryDone.PROC PP MS")
+}
+grecord(bo,"$(P)$(Q)3:Name")
+grecord(bo,"$(P)$(Q)4:Name")
+grecord(bo,"$(P)$(Q)2:Name")
+grecord(bo,"$(P)$(Q)1:Name")

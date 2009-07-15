@@ -1,0 +1,468 @@
+# Sequence to read out amplifier and update adl screen.  When a value 
+# is input to the amp, the sequence is disabled by setting
+# $(P)cyberAmp$(N)Disable to 1.  This is necessary so that two commands to the
+# amplifier do not collide with each other.
+# Timothy Graber 3/01/02
+
+# Sequence disable command
+
+grecord(bo,"$(P)cyberAmp$(N)DisSeq")
+{
+}
+
+
+# Query commands to read out values
+# Read Voltage
+
+grecord(stringout,"$(P)cyberAmp$(N)VltStr")
+{
+	field(SCAN,"1 second")
+	field(SDIS,"$(P)cyberAmp$(N)DisSeq")
+	field(VAL,":SOUR$(N):VOLT?")
+	field(OUT,"$(P)cyberAmp$(N)QueryVlt PP MS")
+	field(FLNK,"$(P)cyberAmp$(N)VltDisSeq PP MS")
+}
+
+# At the beginning of the scan disable future scans 
+# until the sequence is finished.
+
+grecord(bo,"$(P)cyberAmp$(N)VltDisSeq")
+{
+	field(VAL,"1")
+	field(OUT,"$(P)cyberAmp$(N)DisSeq.VAL")
+}
+grecord(stringout,"$(P)cyberAmp$(N)QueryVlt")
+{
+	field(DTYP,"asyn so stringParm")
+	field(OUT,"@asyn($(PORT))TERM=0a")
+	field(FLNK,"$(P)cyberAmp$(N)VltRbv PP MS")
+}
+          
+# Read Parameter Voltage from Amp
+grecord(ai,"$(P)cyberAmp$(N)VltRbv")
+{
+	field(HOPR,"1250")
+	field(LOPR,"0")
+	field(PREC,"3")
+	field(DESC,"Voltage Input")
+	field(DTYP,"asyn ai stringParm")
+    	field(INP,"@asyn($(PORT))IX=1,TERM=0a,FMT=%lf")
+	field(FLNK,"$(P)cyberAmp$(N)GainStr PP MS")
+}
+
+
+################################################################################
+# Read Gain
+
+
+grecord(stringout,"$(P)cyberAmp$(N)GainStr")
+{
+	field(VAL,":INP$(N):GAIN?")
+	field(OUT,"$(P)cyberAmp$(N)QueryGain PP MS")
+}
+
+grecord(stringout,"$(P)cyberAmp$(N)QueryGain")
+{
+	field(DTYP,"asyn so stringParm")
+	field(OUT,"@asyn($(PORT))TERM=0a")
+	field(FLNK,"$(P)cyberAmp$(N)GainRbv PP MS")
+}
+          
+# Read Parameter Gain from Amp
+grecord(ai,"$(P)cyberAmp$(N)GainRbv")
+{
+ 	field(HOPR,"100")
+	field(LOPR,"0")
+	field(PREC,"3")
+	field(DESC,"Gain Setting")
+	field(DTYP,"asyn ai stringParm")
+    	field(INP,"@asyn($(PORT))IX=1,TERM=0a,FMT=%lf")
+	field(FLNK,"$(P)cyberAmp$(N)ScaLLStr PP MS")
+}
+
+
+
+################################################################################
+# Read lower level SCA
+
+grecord(stringout,"$(P)cyberAmp$(N)ScaLLStr")
+{
+	field(VAL,":SENS$(N):SCA:LOW?")
+	field(OUT,"$(P)cyberAmp$(N)QueryScaLL PP MS")
+}
+
+grecord(stringout,"$(P)cyberAmp$(N)QueryScaLL")
+{
+	field(DTYP,"asyn so stringParm")
+	field(OUT,"@asyn($(PORT))TERM=0a")
+	field(FLNK,"$(P)cyberAmp$(N)ScaLLRbv PP MS")
+}
+          
+# Read Parameter ScaLL from Amp
+grecord(ai,"$(P)cyberAmp$(N)ScaLLRbv")
+{
+ 	field(HOPR,"200")
+	field(LOPR,"0")
+	field(PREC,"3")
+	field(DESC,"SCA Lower Level Setting")
+	field(DTYP,"asyn ai stringParm")
+    	field(INP,"@asyn($(PORT))IX=1,TERM=0a,FMT=%lf")
+	field(FLNK,"$(P)cyberAmp$(N)ScaULStr PP MS")
+}
+
+
+
+################################################################################
+# Read Upper level SCA
+
+
+grecord(stringout,"$(P)cyberAmp$(N)ScaULStr")
+{
+	field(VAL,":SENS$(N):SCA:UPP?")
+	field(OUT,"$(P)cyberAmp$(N)QueryScaUL PP MS")
+}
+
+grecord(stringout,"$(P)cyberAmp$(N)QueryScaUL")
+{
+	field(DTYP,"asyn so stringParm")
+	field(OUT,"@asyn($(PORT))TERM=0a")
+	field(FLNK,"$(P)cyberAmp$(N)ScaULRbv PP MS")
+}
+          
+# Read Parameter ScaUL from Amp
+grecord(ai,"$(P)cyberAmp$(N)ScaULRbv")
+{
+ 	field(HOPR,"200")
+	field(LOPR,"0")
+	field(PREC,"3")
+	field(DESC,"SCA Upper Level Setting")
+	field(DTYP,"asyn ai stringParm")
+    	field(INP,"@asyn($(PORT))IX=1,TERM=0a,FMT=%lf")
+	field(FLNK,"$(P)cyberAmp$(N)PkTmStr PP MS")
+}
+
+################################################################################
+# Read Integration time
+
+grecord(stringout,"$(P)cyberAmp$(N)PkTmStr")
+{
+	field(VAL,":SENS$(N):PKT?")
+	field(OUT,"$(P)cyberAmp$(N)QueryPkTm PP MS")
+}
+
+grecord(stringout,"$(P)cyberAmp$(N)QueryPkTm")
+{
+	field(DTYP,"asyn so stringParm")
+	field(OUT,"@asyn($(PORT))TERM=0a")
+	field(FLNK,"$(P)cyberAmp$(N)PkTmRbv PP MS")
+}
+          
+# Read Parameter ScaUL from Amp
+grecord(ai,"$(P)cyberAmp$(N)PkTmRbv")
+{
+ 	field(HOPR,"3000")
+	field(LOPR,"0")
+	field(PREC,"0")
+	field(DESC,"Peak Time Setting")
+	field(DTYP,"asyn ai stringParm")
+    	field(INP,"@asyn($(PORT))IX=1,TERM=0a,FMT=%lf")
+	field(FLNK, "$(P)cyberAmp$(N)ScnClDis PP MS")
+}
+#Re-enable scan
+grecord(bo,"$(P)cyberAmp$(N)ScnClDis")
+{
+	field(VAL,"0")
+	field(OUT,"$(P)cyberAmp$(N)DisSeq.VAL")
+}
+
+
+################################################################################
+# This part of the data handles input to the AMP
+
+grecord(stringin,"$(P)cyberAmp$(N)Vlt") {
+	field(DESC,"Voltage Input")
+	field(FLNK,"$(P)cyberAmp$(N)ScnDis PP MS")
+}
+
+# Disable the Read scan to avoid collisions I should
+# wait until the scan finished
+# at this point but I am not sure how to do it.
+
+grecord(bo,"$(P)cyberAmp$(N)ScnDis")
+{
+	field(VAL,"1")
+	field(OUT,"$(P)cyberAmp$(N)DisSeq.VAL")
+	field(FLNK, "$(P)cyberAmp$(N)VltStCl PP MS")
+}
+
+grecord(scalcout,"$(P)cyberAmp$(N)VltStCl") 
+{
+	field(DESC,"Write Voltage String")
+	field(AA,":SOUR$(N):VOLT ")
+	field(INPB,"$(P)cyberAmp$(N)Vlt.VAL NPP NMS")
+	field(CALC,"AA+STR(B)")
+	field(OUT,"$(P)cyberAmp$(N)SetVlt PP NMS")
+}
+
+grecord(stringout,"$(P)cyberAmp$(N)SetVlt")
+{
+	field(DTYP,"asyn so stringParm")
+	field(OUT,"@asyn($(PORT))TERM=0a")
+	field(FLNK,"$(P)cyberAmp$(N)RdVlt PP MS")
+}
+          
+grecord(stringin,"$(P)cyberAmp$(N)RdVlt")
+{
+	field(DTYP,"asyn si stringParm")
+	field(INP,"@asyn($(PORT))TERM=06")
+	field(FLNK, "$(P)cyberAmp$(N)VltClDis PP MS")
+}
+#Enable the Read scan
+
+grecord(bo,"$(P)cyberAmp$(N)VltClDis")
+{
+	field(VAL,"0")
+	field(OUT,"$(P)cyberAmp$(N)DisSeq.VAL")
+}
+
+################################################################################
+
+grecord(stringin,"$(P)cyberAmp$(N)Gain") {
+	field(DESC,"Gain Input")
+	field(FLNK,"$(P)cyberAmp$(N)GainDisSeq PP MS")
+}
+
+grecord(bo,"$(P)cyberAmp$(N)GainDisSeq")
+{
+	field(VAL,"1")
+	field(OUT,"$(P)cyberAmp$(N)DisSeq.VAL")
+	field(FLNK, "$(P)cyberAmp$(N)GainStCl PP MS")
+}
+
+grecord(scalcout,"$(P)cyberAmp$(N)GainStCl") 
+{
+	field(DESC,"Write Gain")
+	field(AA,":INP$(N):GAIN ")
+	field(INPB,"$(P)cyberAmp$(N)Gain.VAL NPP NMS")
+	field(CALC,"AA+STR(B)")
+	field(OUT,"$(P)cyberAmp$(N)SetGain PP NMS")
+}
+
+grecord(stringout,"$(P)cyberAmp$(N)SetGain")
+{
+	field(DESC,"Oxford NaI Detector Control")
+	field(DTYP,"asyn so stringParm")
+	field(OUT,"@asyn($(PORT))TERM=0a")
+	field(FLNK,"$(P)cyberAmp$(N)RdGain PP MS")
+}
+          
+grecord(stringin,"$(P)cyberAmp$(N)RdGain")
+{
+	field(DTYP,"asyn si stringParm")
+	field(INP,"@asyn($(PORT))TERM=06")
+	field(FLNK, "$(P)cyberAmp$(N)GainClDis PP MS")
+}
+
+grecord(bo,"$(P)cyberAmp$(N)GainClDis")
+{
+	field(VAL,"0")
+	field(OUT,"$(P)cyberAmp$(N)DisSeq.VAL")
+}
+#####################################################################
+
+grecord(stringin,"$(P)cyberAmp$(N)ScaLL") {
+	field(DESC,"SCA Lower Level Input")
+	field(FLNK,"$(P)cyberAmp$(N)ScaLLDisSeq PP MS")
+}
+
+grecord(bo,"$(P)cyberAmp$(N)ScaLLDisSeq")
+{
+	field(VAL,"1")
+	field(OUT,"$(P)cyberAmp$(N)DisSeq.VAL")
+	field(FLNK, "$(P)cyberAmp$(N)ScaLLStCl PP MS")
+}
+
+grecord(scalcout,"$(P)cyberAmp$(N)ScaLLStCl") 
+{
+	field(DESC,"Write ScaLL")
+	field(AA,":SENS$(N):SCA:LOW ")
+	field(INPB,"$(P)cyberAmp$(N)ScaLL.VAL NPP NMS")
+	field(CALC,"AA+STR(B)")
+	field(OUT,"$(P)cyberAmp$(N)SetScaLL PP NMS")
+}
+
+grecord(stringout,"$(P)cyberAmp$(N)SetScaLL")
+{
+	field(DTYP,"asyn so stringParm")
+	field(OUT,"@asyn($(PORT))TERM=0a")
+	field(FLNK,"$(P)cyberAmp$(N)RdScaLL PP MS")
+}
+          
+grecord(stringin,"$(P)cyberAmp$(N)RdScaLL")
+{
+	field(DTYP,"asyn si stringParm")
+	field(INP,"@asyn($(PORT))TERM=06")
+	field(FLNK, "$(P)cyberAmp$(N)ScaLLClDis PP MS")
+}
+
+grecord(bo,"$(P)cyberAmp$(N)ScaLLClDis")
+{
+	field(VAL,"0")
+	field(OUT,"$(P)cyberAmp$(N)DisSeq.VAL")
+}
+################################################################################
+
+grecord(stringin,"$(P)cyberAmp$(N)ScaUL") {
+	field(DESC,"SCA Upper Level Input")
+	field(FLNK,"$(P)cyberAmp$(N)ScaULDisSeq PP MS")
+}
+
+grecord(bo,"$(P)cyberAmp$(N)ScaULDisSeq")
+{
+	field(VAL,"1")
+	field(OUT,"$(P)cyberAmp$(N)DisSeq.VAL")
+	field(FLNK, "$(P)cyberAmp$(N)ScaULStCl PP MS")
+}
+
+grecord(scalcout,"$(P)cyberAmp$(N)ScaULStCl") 
+{
+	field(DESC,"Write ScaUL")
+	field(AA,":SENS$(N):SCA:UPP ")
+	field(INPB,"$(P)cyberAmp$(N)ScaUL.VAL NPP NMS")
+	field(CALC,"AA+STR(B)")
+	field(OUT,"$(P)cyberAmp$(N)SetScaUL PP NMS")
+}
+
+grecord(stringout,"$(P)cyberAmp$(N)SetScaUL")
+{
+	field(DTYP,"asyn so stringParm")
+	field(OUT,"@asyn($(PORT))TERM=0a")
+	field(FLNK,"$(P)cyberAmp$(N)RdScaUL PP MS")
+}
+          
+grecord(stringin,"$(P)cyberAmp$(N)RdScaUL")
+{
+	field(DTYP,"asyn si stringParm")
+	field(INP,"@asyn($(PORT))TERM=06")
+	field(FLNK, "$(P)cyberAmp$(N)ScaULClDis PP MS")
+}
+
+grecord(bo,"$(P)cyberAmp$(N)ScaULClDis")
+{
+	field(VAL,"0")
+	field(OUT,"$(P)cyberAmp$(N)DisSeq.VAL")
+}
+
+#####################################################################
+
+grecord(bo,"$(P)cyberAmp$(N)RL") {
+	field(DESC,"Local/Remote")
+	field(ZNAM,"Local")
+	field(ONAM,"Remote")
+	field(FLNK, "$(P)cyberAmp$(N)RLDisSeq")
+}
+
+
+grecord(bo,"$(P)cyberAmp$(N)RLDisSeq")
+{
+	field(VAL,"1")
+	field(OUT,"$(P)cyberAmp$(N)DisSeq.VAL")
+	field(FLNK, "$(P)cyberAmp$(N)RLStScan PP MS")
+}
+grecord(scalcout,"$(P)cyberAmp$(N)RLStScan") 
+{
+	field(DESC,"Switch between R/L")
+	field(AA,"2 second")
+	field(BB,"Passive")
+	field(INPB,"$(P)cyberAmp$(N)RL.VAL NPP NMS")
+	field(CALC,"(B=1)?AA:BB")
+	field(OUT,"$(P)cyberAmp$(N)VltStr.SCAN")
+	field(FLNK,"$(P)cyberAmp$(N)RLStCl PP MS")
+}
+
+grecord(scalcout,"$(P)cyberAmp$(N)RLStCl") 
+{
+	field(DESC,"Switch between R/L")
+	field(AA,":SYST$(N):COMM:REM ON")
+	field(BB,":SYST$(N):COMM:REM OFF")
+	field(INPB,"$(P)cyberAmp$(N)RL.VAL NPP NMS")
+	field(CALC,"(B=1)?AA:BB")
+	field(OUT,"$(P)cyberAmp$(N)SetRL PP NMS")
+}
+
+grecord(stringout,"$(P)cyberAmp$(N)SetRL")
+{
+	field(DTYP,"asyn so stringParm")
+	field(OUT,"@asyn($(PORT))TERM=0a")
+	field(FLNK,"$(P)cyberAmp$(N)RdRL PP MS")
+}
+          
+grecord(stringin,"$(P)cyberAmp$(N)RdRL")
+{
+	field(DTYP,"asyn si stringParm")
+	field(INP,"@asyn($(PORT))TERM=06")
+	field(FLNK, "$(P)cyberAmp$(N)RLClDis PP MS")
+}
+
+grecord(bo,"$(P)cyberAmp$(N)RLClDis")
+{
+	field(VAL,"0")
+	field(OUT,"$(P)cyberAmp$(N)DisSeq.VAL")
+}
+
+#####################################################################
+
+
+grecord(mbbo,"$(P)cyberAmp$(N)PkTm") {
+	field(DESC,"Peak Time")
+	field(FLNK,"$(P)cyberAmp$(N)PkTmDisSeq  PP MS")
+	field(NOBT,"3")
+	field(ZRVL,"0x0")
+	field(ONVL,"0x1")
+	field(TWVL,"0x2")
+	field(THVL,"0x3")
+	field(ZRST,"0.3us")
+	field(ONST,"0.5us")
+	field(TWST,"1us")
+	field(THST,"3us")
+}
+
+grecord(bo,"$(P)cyberAmp$(N)PkTmDisSeq")
+{
+	field(VAL,"1")
+	field(OUT,"$(P)cyberAmp$(N)DisSeq.VAL")
+	field(FLNK,"$(P)cyberAmp$(N)PkTmStCl  PP MS")
+}
+
+
+grecord(scalcout,"$(P)cyberAmp$(N)PkTmStCl") 
+{
+	field(DESC,"Switch between R/L")
+	field(AA,":SENS$(N):PKT 300")
+	field(BB,":SENS$(N):PKT 500")
+	field(CC,":SENS$(N):PKT 1000")
+	field(DD,":SENS$(N):PKT 3000")
+	field(INPB,"$(P)cyberAmp$(N)PkTm.RVAL NPP NMS")
+	field(CALC,"(B=0)?AA:(B=1)?BB:(B=2)?CC:(B=3)?DD")
+	field(OUT,"$(P)cyberAmp$(N)SetRL PP NMS")
+}
+
+grecord(stringout,"$(P)cyberAmp$(N)SetPkTm")
+{
+	field(DTYP,"asyn so stringParm")
+	field(OUT,"@asyn($(PORT))TERM=0a")
+	field(FLNK,"$(P)cyberAmp$(N)RdPkTm PP MS")
+}
+          
+grecord(stringin,"$(P)cyberAmp$(N)RdPkTm")
+{
+	field(DTYP,"asyn si stringParm")
+	field(INP,"@asyn($(PORT))TERM=06")
+	field(FLNK, "$(P)cyberAmp$(N)PkTmClDis PP MS")
+}
+
+grecord(bo,"$(P)cyberAmp$(N)PkTmClDis")
+{
+	field(VAL,"0")
+	field(OUT,"$(P)cyberAmp$(N)DisSeq.VAL")
+}

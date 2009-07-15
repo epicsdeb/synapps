@@ -1,0 +1,403 @@
+menu(ab1771N_MTYP) {
+  choice(ab1771N_NIS,"1771-NIS")
+  choice(ab1771N_NIV,"1771-NIV")
+  choice(ab1771N_NIV1,"1771-NIV1")
+  choice(ab1771N_NIVR,"1771-NIVR")
+  choice(ab1771N_NIVT,"1771-NIVT")
+  choice(ab1771N_NR,"1771-NR")
+  choice(ab1771N_NT1,"1771-NT1")
+  choice(ab1771N_NT2,"1771-NT2")
+  choice(ab1771N_NOC,"1771-NOC")
+  choice(ab1771N_NOV,"1771-NOV")
+  choice(ab1771N_NB4T,"1771-NB4T")
+  choice(ab1771N_NB4S,"1771-NB4S")
+  choice(ab1771N_NBSC,"1771-NBSC")
+  choice(ab1771N_NBRC,"1771-NBRC")
+  choice(ab1771N_NBTC,"1771-NBTC")
+  choice(ab1771N_NBV1,"1771-NBV1")
+  choice(ab1771N_NBVC,"1771-NBVC")
+  choice(ab1771N_NX1,"1771-NX1")
+  choice(ab1771N_NX2,"1771-NX2")
+  choice(ab1771N_NX3,"1771-NX3")
+  choice(ab1771N_NX4,"1771-NX4")
+}
+menu(ab1771N_Units) {
+  choice(ab1771N_UnitsF,"degF")
+  choice(ab1771N_UnitsC,"degC")
+  choice(ab1771N_UnitsOhms,"Ohm")
+}
+menu(ab1771N_TYPE) {
+  choice(ab1771N_TYPE_VA,"Volts or Amps")
+  choice(ab1771N_TYPE_tcB,"tc B")
+  choice(ab1771N_TYPE_tcE,"tc E")
+  choice(ab1771N_TYPE_tcJ,"tc J")
+  choice(ab1771N_TYPE_tcK,"tc K")
+  choice(ab1771N_TYPE_tcR,"tc R")
+  choice(ab1771N_TYPE_tcS,"tc S")
+  choice(ab1771N_TYPE_tcT,"tc T")
+  choice(ab1771N_TYPE_tcC,"tc C")
+  choice(ab1771N_TYPE_tcN,"tc N")
+  choice(ab1771N_TYPE_RTDPtEurope,"RTD 100 ohm Pt, European Standard")
+  choice(ab1771N_TYPE_RTDPtUSA,"RTD 100 ohm Pt, USA Standard")
+  choice(ab1771N_TYPE_RTDCopper,"RTD 10 ohm copper")
+  choice(ab1771N_TYPE_RTDNickel,"RTD 120 ohm nickel")
+}
+menu(ab1771N_CJS) {
+  choice(ab1771N_CJS_Ok,"Cold Junction Ok")
+  choice(ab1771N_CJS_UnderRange,"Cold Junction  Under Range")
+  choice(ab1771N_CJS_OverRange,"Cold Junction  Over Range")
+  choice(ab1771N_CJS_Bad,"Cold Junction  bad Value")
+}
+menu(ab1771N_CMD) {
+  choice(ab1771N_CMD_None,"None")
+  choice(ab1771N_Init,"Initialize")
+}
+
+recordtype(ab1771N) {
+  include "dbCommon.dbd" 
+  field(VAL,DBF_STRING) {
+    prompt("Status")
+    special(SPC_NOMOD)
+    size(40)
+  }
+  field(CMD,DBF_MENU) {
+    prompt("Command")
+    interest(1)
+    menu(ab1771N_CMD)
+  }
+  field(LOCA,DBF_MENU) {
+    prompt("scanIoRequest comm err")
+    promptgroup(GUI_INPUTS)
+    interest(1)
+    menu(menuYesNo)
+  }
+  field(LINK,DBF_USHORT) {
+    prompt("Scanner Number")
+    promptgroup(GUI_INPUTS)
+    special(SPC_NOMOD)
+    interest(1)
+  }
+  field(RACK,DBF_USHORT) {
+    prompt("Rack")
+    promptgroup(GUI_INPUTS)
+    special(SPC_NOMOD)
+    interest(1)
+  }
+  field(SLOT,DBF_USHORT) {
+    prompt("Slot")
+    promptgroup(GUI_INPUTS)
+    special(SPC_NOMOD)
+    interest(1)
+  }
+  field(OUTM,DBF_NOACCESS) {
+    prompt("Output Message")
+    special(SPC_DBADDR)
+    size(4)
+    extra("short	*outm")
+  }
+  field(INPM,DBF_NOACCESS) {
+    prompt("Input Message")
+    special(SPC_DBADDR)
+    size(4)
+    extra("short	*inpm")
+  }
+  field(IAI1,DBF_NOACCESS) {
+    prompt("Interface for ai")
+    special(SPC_DBADDR)
+    size(4)
+    extra("void	*iai1")
+  }
+  field(IAO1,DBF_NOACCESS) {
+    prompt("Interface for ao")
+    special(SPC_DBADDR)
+    size(4)
+    extra("void	*iao1")
+  }
+  field(MTYP,DBF_MENU) {
+    prompt("Module Type")
+    promptgroup(GUI_INPUTS)
+    menu(ab1771N_MTYP)
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(SCAL,DBF_MENU) {
+    prompt("Temperature Scale")
+    promptgroup(GUI_INPUTS)
+    menu(ab1771N_Units)
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(CJAE,DBF_MENU) {
+    prompt("Cold Junction alarm enable")
+    promptgroup(GUI_INPUTS)
+    menu(menuYesNo)
+    interest(1)
+  }
+  field(CJS,DBF_MENU) {
+    prompt("Cold Junction status")
+    menu(ab1771N_CJS)
+    special(SPC_NOMOD)
+    interest(0)
+  }
+  field(CJT,DBF_FLOAT) {
+    prompt("Cold Junction Temperature ")
+    special(SPC_NOMOD)
+    interest(0)
+  }
+  field(TYP1,DBF_MENU) {
+    prompt("Chan 1 type")
+    promptgroup(GUI_INPUTS)
+    menu(ab1771N_TYPE)
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(FIL1,DBF_FLOAT) {
+    prompt("Chan 1 Filter Time Constant (.1 - 10.0)secs")
+    promptgroup(GUI_INPUTS)
+    interest(1)
+  }
+  field(RAL1,DBF_FLOAT) {
+    prompt("Chan 1 Rate Alarm ")
+    promptgroup(GUI_INPUTS)
+    interest(1)
+  }
+  field(OHM1,DBF_FLOAT) {
+    prompt("Chan 1 10 ohm offset (RTD Copper only)")
+    promptgroup(GUI_INPUTS)
+    interest(1)
+  }
+  field(STA1,DBF_SHORT) {
+    prompt("Chan 1 status")
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(RAW1,DBF_SHORT) {
+    prompt("Chan 1 raw value")
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(TYP2,DBF_MENU) {
+    prompt("Chan 2 type")
+    promptgroup(GUI_INPUTS)
+    menu(ab1771N_TYPE)
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(FIL2,DBF_FLOAT) {
+    prompt("Chan 2 Filter Time Constant (.1 - 10.0)secs")
+    promptgroup(GUI_INPUTS)
+    interest(1)
+  }
+  field(RAL2,DBF_FLOAT) {
+    prompt("Chan 2 Rate Alarm ")
+    promptgroup(GUI_INPUTS)
+    interest(1)
+  }
+  field(OHM2,DBF_FLOAT) {
+    prompt("Chan 2 10 ohm offset (RTD Copper only)")
+    promptgroup(GUI_INPUTS)
+    interest(1)
+  }
+  field(STA2,DBF_SHORT) {
+    prompt("Chan 2 status")
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(RAW2,DBF_SHORT) {
+    prompt("Chan 2 raw value")
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(TYP3,DBF_MENU) {
+    prompt("Chan 3 type")
+    promptgroup(GUI_INPUTS)
+    menu(ab1771N_TYPE)
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(FIL3,DBF_FLOAT) {
+    prompt("Chan 3 Filter Time Constant (.1 - 10.0)secs")
+    promptgroup(GUI_INPUTS)
+    interest(1)
+  }
+  field(RAL3,DBF_FLOAT) {
+    prompt("Chan 3 Rate Alarm ")
+    promptgroup(GUI_INPUTS)
+    interest(1)
+  }
+  field(OHM3,DBF_FLOAT) {
+    prompt("Chan 3 10 ohm offset (RTD Copper only)")
+    promptgroup(GUI_INPUTS)
+    interest(1)
+  }
+  field(STA3,DBF_SHORT) {
+    prompt("Chan 3 status")
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(RAW3,DBF_SHORT) {
+    prompt("Chan 3 raw value")
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(TYP4,DBF_MENU) {
+    prompt("Chan 4 type")
+    promptgroup(GUI_INPUTS)
+    menu(ab1771N_TYPE)
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(FIL4,DBF_FLOAT) {
+    prompt("Chan 4 Filter Time Constant (.1 - 10.0)secs")
+    promptgroup(GUI_INPUTS)
+    interest(1)
+  }
+  field(RAL4,DBF_FLOAT) {
+    prompt("Chan 4 Rate Alarm ")
+    promptgroup(GUI_INPUTS)
+    interest(1)
+  }
+  field(OHM4,DBF_FLOAT) {
+    prompt("Chan 4 10 ohm offset (RTD Copper only)")
+    promptgroup(GUI_INPUTS)
+    interest(1)
+  }
+  field(STA4,DBF_SHORT) {
+    prompt("Chan 4 status")
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(RAW4,DBF_SHORT) {
+    prompt("Chan 4 raw value")
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(TYP5,DBF_MENU) {
+    prompt("Chan 5 type")
+    promptgroup(GUI_INPUTS)
+    menu(ab1771N_TYPE)
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(FIL5,DBF_FLOAT) {
+    prompt("Chan 5 Filter Time Constant (.1 - 10.0)secs")
+    promptgroup(GUI_INPUTS)
+    interest(1)
+  }
+  field(RAL5,DBF_FLOAT) {
+    prompt("Chan 5 Rate Alarm ")
+    promptgroup(GUI_INPUTS)
+    interest(1)
+  }
+  field(OHM5,DBF_FLOAT) {
+    prompt("Chan 5 10 ohm offset (RTD Copper only)")
+    promptgroup(GUI_INPUTS)
+    interest(1)
+  }
+  field(STA5,DBF_SHORT) {
+    prompt("Chan 5 status")
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(RAW5,DBF_SHORT) {
+    prompt("Chan 5 raw value")
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(TYP6,DBF_MENU) {
+    prompt("Chan 6 type")
+    promptgroup(GUI_INPUTS)
+    menu(ab1771N_TYPE)
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(FIL6,DBF_FLOAT) {
+    prompt("Chan 6 Filter Time Constant (.1 - 10.0)secs")
+    promptgroup(GUI_INPUTS)
+    interest(1)
+  }
+  field(RAL6,DBF_FLOAT) {
+    prompt("Chan 6 Rate Alarm ")
+    promptgroup(GUI_INPUTS)
+    interest(1)
+  }
+  field(OHM6,DBF_FLOAT) {
+    prompt("Chan 6 10 ohm offset (RTD Copper only)")
+    promptgroup(GUI_INPUTS)
+    interest(1)
+  }
+  field(STA6,DBF_SHORT) {
+    prompt("Chan 6 status")
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(RAW6,DBF_SHORT) {
+    prompt("Chan 6 raw value")
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(TYP7,DBF_MENU) {
+    prompt("Chan 7 type")
+    promptgroup(GUI_INPUTS)
+    menu(ab1771N_TYPE)
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(FIL7,DBF_FLOAT) {
+    prompt("Chan 7 Filter Time Constant (.1 - 10.0)secs")
+    promptgroup(GUI_INPUTS)
+    interest(1)
+  }
+  field(RAL7,DBF_FLOAT) {
+    prompt("Chan 7 Rate Alarm ")
+    promptgroup(GUI_INPUTS)
+    interest(1)
+  }
+  field(OHM7,DBF_FLOAT) {
+    prompt("Chan 7 10 ohm offset (RTD Copper only)")
+    promptgroup(GUI_INPUTS)
+    interest(1)
+  }
+  field(STA7,DBF_SHORT) {
+    prompt("Chan 7 status")
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(RAW7,DBF_SHORT) {
+    prompt("Chan 7 raw value")
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(TYP8,DBF_MENU) {
+    prompt("Chan 8 type")
+    promptgroup(GUI_INPUTS)
+    menu(ab1771N_TYPE)
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(FIL8,DBF_FLOAT) {
+    prompt("Chan 8 Filter Time Constant (.1 - 10.0)secs")
+    promptgroup(GUI_INPUTS)
+    interest(1)
+  }
+  field(RAL8,DBF_FLOAT) {
+    prompt("Chan 8 Rate Alarm ")
+    promptgroup(GUI_INPUTS)
+    interest(1)
+  }
+  field(OHM8,DBF_FLOAT) {
+    prompt("Chan 8 10 ohm offset (RTD Copper only)")
+    promptgroup(GUI_INPUTS)
+    interest(1)
+  }
+  field(STA8,DBF_SHORT) {
+    prompt("Chan 8 status")
+    interest(1)
+    special(SPC_NOMOD)
+  }
+  field(RAW8,DBF_SHORT) {
+    prompt("Chan 8 raw value")
+    interest(1)
+    special(SPC_NOMOD)
+  }
+}

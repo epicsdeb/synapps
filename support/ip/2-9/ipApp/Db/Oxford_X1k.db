@@ -1,0 +1,17 @@
+grecord(ai,"$(P)$(S)_X1k_in_testAI") {
+	field(DTYP,"asyn ai stringParm")
+	field(INP,"@asyn($(PORT))TERM=0a,IX=1")
+}
+grecord(longin,"$(P)$(S)_X1k_in_testLI") {
+	field(DTYP,"asyn li stringParm")
+	field(INP,"@asyn($(PORT))TERM=0a,IX=1")
+}
+grecord(stringin,"$(P)$(S)_X1k_in") {
+	field(DTYP,"asyn si stringParm")
+	field(INP,"@asyn($(PORT))TERM=0a,IX=1")
+}
+grecord(stringout,"$(P)$(S)_X1k_out") {
+	field(DTYP,"asyn so stringParm")
+	field(FLNK,"$(P)$(S)_X1k_in.VAL  PP MS")
+	field(OUT,"@asyn($(PORT))TERM=0a")
+}

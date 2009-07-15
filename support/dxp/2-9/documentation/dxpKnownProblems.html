@@ -1,0 +1,89 @@
+<html>
+<head>
+  <title>dxp: Known Problems</title>
+</head>
+
+<center>
+<h1>dxp: Known Problems</h1>
+</center>
+
+<hr>
+<center>
+<h2>Release 2-6</h2>
+</center>
+
+<h3>Saturn</h3>
+In this and previous releases only the EPP (parallel port) version is supported.  R2-7 will support USB..
+<p></p>
+
+<hr>
+<center>
+<h2>Release 2-5</h2>
+</center>
+
+<h3>DXP4C2X</h3>
+Not supported in this release because its version of Handel lags behind xMAP and Saturn. (Support added in R2-6).
+<p></p>
+
+<hr>
+<center>
+<h2>Release 2-4</h2>
+</center>
+
+<h3>DXP4C2X</h3>
+Not supported in this release because its version of Handel lags behind xMAP and Saturn.
+<p></p>
+<h3>xMAP</h3>
+Does not work with release 0.9.1 DLLs.  Wrong data type for SCAs in devDxp.c can cause crashes.
+
+<hr>
+<center>
+<h2>Release 2-2</h2>
+</center>
+
+<h3>General problems.</h3>
+<ol>
+  <li>The baseline histogram readout and display sometimes stops working, and there
+      is no data for the baseline histogram.
+  <li>Counting for preset live time leads to actual elapsed live time
+      being not close to requested time.  Sometimes actual live times are 
+      less than preset, sometimes more than preset.  Should I be using
+      a different parameter, ELIVETIME, rather than LIVETIME?
+</ol>
+
+<h3>Problems with DXP2X</h3>
+<ol>
+  <li>Setting EMAX=>35 leads to errors (cannot set gain to < -6dB) 
+      when done in 1 big step,
+      but can often get to same value in small steps or other direction
+  <li>Changing peaking time on leads to big gain changes some times,
+      re-setting EMAX fixes problems
+  <li>Need to re-apply some settings (ADC rule, trigger?) after reboot
+      sometimes.  Is this related to problem 1?
+  <li>With non-modified version of md_wait in md_epics get errors in
+      xiaStartSystem(), RUNSTAT=1 (run busy), usually on first channel
+      in last module. Error is cannot set POLARITY, must stop run.
+      This problem has been worked around by making md_wait in md_epics
+      always wait for a minimum of 0.1 seconds, but this has a serious 
+      performance hit and must be fixed.
+  <li>vxWorks console output from Handel is being closed at end of st.cmd,
+      so error messages don't appear unless the command 
+      xiaSetLogOutput("stdout") is typed manually at the vxWorks prompt after
+      the startup script completes.
+</ol> 
+
+<h3>Needed features</h3>
+<ol>
+  <li>Add ReadBaseline to dxpMED.db to read all baselines</li>
+  <li>Implement ReadBaseline in dxpMED.st</li>
+  <li>Add ReadBaseline scan rate to NNelement.adl
+  <li>Add new fields to dxpRecord: MAX_WIDTH, BASE_CUT_ENABLE, 
+      BASE_THRESH_ENABLE 
+  <li>Add new fields to dxp_settings.req: MAX_WIDTH, BASE_CUT_ENABLE, 
+      BASE_THRESH_ENABLE 
+  <li>Add SCAs and MCA plots to menus in NNelement_dxp_all.adl
+  <li>Add copying ROIs to SCAs in NNelement.template
+</ol>
+
+</body>
+</html>
