@@ -18,15 +18,52 @@ export DH_OPTIONS
 
 EPICS_HOST_ARCH:=$(shell /usr/epics/base/startup/EpicsHostArch)
 
-MFLAGS=EPICS_BASE=/usr/epics/base
+MFLAGS += EPICS_BASE=/usr/epics/base
+MFLAGS += IPAC=$(CURDIR)/$(ipac_builddir)
+MFLAGS += SSCAN=$(CURDIR)/$(sscan_builddir)
+MFLAGS += SNCSEQ=$(CURDIR)/$(seq_builddir)
+MFLAGS += CALC=$(CURDIR)/$(calc_builddir)
 
 MODS += seq
 seq_VER = 2-0-12
-seq_INSTALLS = bin lib dbd include
+seq_INSTALLS = bin lib dbd include extra
 
-MODS += allenBradley
-allenBradley_VER = 2-1
-allenBradley_NAME = allenbradley
+MODS += ipac
+ipac_VER = 2-10
+ipac_INSTALLS = lib dbd include
+
+MODS += sscan
+sscan_VER = 2-6-4
+sscan_INSTALLS = lib dbd include
+
+MODS += autosave
+autosave_VER = 4-5
+autosave_INSTALLS = bin dbd lib
+
+MODS += asyn
+asyn_VER = 4-10
+asyn_MFLAGS = "DIRS=configure makeSupport asyn"
+asyn_INSTALLS = bin include lib db dbd templates
+
+MODS += calc
+calc_VER = 2-7
+calc_INSTALLS = lib dbd include
+
+MODS += motor
+motor_VER = 6-4-3
+motor_MFLAGS = ASYN=$(CURDIR)/$(asyn_builddir)
+motor_INSTALLS = bin include lib dbd
+
+MODS += stream
+stream_VER = 2-4
+stream_MFLAGS = ASYN=$(CURDIR)/$(asyn_builddir)
+stream_INSTALLS = bin include lib dbd
+
+# Extra install rules
+
+install-seq-extra:
+	install -d $(seq_instdev)/configure
+	install $(seq_builddir)/configure/RULES_BUILD $(seq_instdev)/configure/RULES.sncseq
 
 # Targets to pass through to module Makefile
 # $(1) is module name (ie seq)
@@ -80,16 +117,19 @@ install-$(1)-include:
 	install -d $$($(1)_instdev)/usr/epics/base
 	cp -r $$($(1)_builddir)/include $$($(1)_instdev)/usr/epics/base/
 
+install-$(1)-templates:
+	install -d $$($(1)_instdev)/usr/epics/base
+	cp -r $$($(1)_builddir)/templates $$($(1)_instdev)/usr/epics/base/
+
 all-install += install-$(1)
 endef
 
 #Architecture
 build: build-arch build-indep
 
-#$(foreach m,$(MODS),$(call target-mod,$(m),build))
-$(eval $(call target-mod,seq,all))
-$(eval $(call target-mod,seq,realclean))
-$(eval $(call install-mod,seq))
+$(eval $(foreach m,$(MODS),$(call target-mod,$(m),all)))
+$(eval $(foreach m,$(MODS),$(call target-mod,$(m),realclean)))
+$(eval $(foreach m,$(MODS),$(call install-mod,$(m))))
 
 #all-seq:
 #	$(MAKE) -f $(CURDIR)/debian/rules -C support/seq/$(seq_VER) $(MFLAGS) $(seq_MFLAGS) all
