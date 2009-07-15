@@ -46,6 +46,19 @@ sdesc['stream']='Support and Db generator for command/responce message passing d
 
 ldesc={}
 
+fulldeps=reduce(lambda a,b:a+', '+b,map(lambda a:'epics-%s-dev'%a,mods),'')
+
+out.write("""
+Package: epics-synapps-dev
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, epics-dev%(deps)s
+Description: A collection of tools to create beamline control systems.
+ synApps is a collection of software tools that help to create a control system for beamlines.
+ It contains beamline-control and data-acquisition components for an EPICS based control system.
+ synApps is distributed under the EPICS Open license. 
+ .
+ This is a meta package which will pull in synapps development packages.
+""" % {'deps':fulldeps} )
 
 for m in mods:
 	devdep=['epics-dev']
@@ -58,17 +71,18 @@ for m in mods:
 		else:
 			devdep.append(md)
 			libdep.append(md)
+	devdep.append('epics-%s-libs'%m)
 
 	params={'name':m}
 	params['sdesc']=sdesc.get(m,'Short Message')
 	params['ldesc']=ldesc.get(m,params['sdesc'])
-	params['devdep']=reduce(lambda a,b: a+', '+b,devdep)
-	params['libdep']=reduce(lambda a,b: a+', '+b,libdep)
+	params['devdep']=reduce(lambda a,b: a+', '+b,devdep,'')
+	params['libdep']=reduce(lambda a,b: a+', '+b,libdep,'')
 
 	out.write("""
 Package: epics-%(name)s-libs
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends} %(libdep)s
+Depends: ${shlibs:Depends}, ${misc:Depends}%(libdep)s
 Description: %(sdesc)s
  %(ldesc)s
  .
@@ -76,7 +90,7 @@ Description: %(sdesc)s
 
 Package: epics-%(name)s-dev
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends} %(devdep)s
+Depends: ${shlibs:Depends}, ${misc:Depends}%(devdep)s
 Description: %(sdesc)s
  %(ldesc)s
  .

@@ -16,6 +16,9 @@
 # This has to be exported to make some magic below work.
 export DH_OPTIONS
 
+#Architecture
+build: build-arch build-indep
+
 EPICS_HOST_ARCH:=$(shell /usr/epics/base/startup/EpicsHostArch)
 
 MFLAGS += EPICS_BASE=/usr/epics/base
@@ -62,8 +65,8 @@ stream_INSTALLS = bin include lib dbd
 # Extra install rules
 
 install-seq-extra:
-	install -d $(seq_instdev)/configure
-	install $(seq_builddir)/configure/RULES_BUILD $(seq_instdev)/configure/RULES.sncseq
+	install -d $(seq_instdev)/usr/epics/base/configure
+	install -m 644 $(seq_builddir)/configure/RULES_BUILD $(seq_instdev)/usr/epics/base/configure/RULES.sncseq
 
 # Targets to pass through to module Makefile
 # $(1) is module name (ie seq)
@@ -71,12 +74,13 @@ install-seq-extra:
 define target-mod
 
 $(2)-$(1):
+	EPICS_HOST_ARCH=$$(EPICS_HOST_ARCH) \
 	$(MAKE) -C support/$(1)/$$($(1)_VER) $$(MFLAGS) $$($(1)_MFLAGS) $(2)
 
 all-$(2) += $(2)-$(1)
 endef
 
-# Install a module into debian/epics-$(modname)-lib and debian/epics-$(modname)-dev
+# Install a module into debian/epics-$(modname)-libs and debian/epics-$(modname)-dev
 #
 # $(1) is module name (ie seq)
 define install-mod
@@ -86,7 +90,7 @@ $(1)_INSTALLS ?= bin lib db dbd include
 
 $(1)_builddir = support/$(1)/$$($(1)_VER)
 $(1)_instdev = debian/epics-$$($(1)_NAME)-dev
-$(1)_instlib = debian/epics-$$($(1)_NAME)-lib
+$(1)_instlib = debian/epics-$$($(1)_NAME)-libs
 
 install-$(1): $$($(1)_INSTALLS:%=install-$(1)-%)
 
@@ -123,9 +127,6 @@ install-$(1)-templates:
 
 all-install += install-$(1)
 endef
-
-#Architecture
-build: build-arch build-indep
 
 $(eval $(foreach m,$(MODS),$(call target-mod,$(m),all)))
 $(eval $(foreach m,$(MODS),$(call target-mod,$(m),realclean)))

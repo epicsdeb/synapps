@@ -14,9 +14,19 @@ Description: Documentation for synapps
  It contains beamline-control and data-acquisition components for
  an EPICS based control system. synApps is distributed under the EPICS Open license.
 
+Package: epics-synapps-dev
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, epics-dev, epics-seq-dev, epics-ipac-dev, epics-sscan-dev, epics-autosave-dev, epics-asyn-dev, epics-calc-dev, epics-motor-dev, epics-stream-dev
+Description: A collection of tools to create beamline control systems.
+ synApps is a collection of software tools that help to create a control system for beamlines.
+ It contains beamline-control and data-acquisition components for an EPICS based control system.
+ synApps is distributed under the EPICS Open license. 
+ .
+ This is a meta package which will pull in synapps development packages.
+
 Package: epics-seq-libs
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends} epics-libs
+Depends: ${shlibs:Depends}, ${misc:Depends}, epics-libs
 Description: EPICS State Notation Compiler
  EPICS State Notation Compiler
  .
@@ -24,7 +34,7 @@ Description: EPICS State Notation Compiler
 
 Package: epics-seq-dev
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends} epics-dev
+Depends: ${shlibs:Depends}, ${misc:Depends}, epics-dev, epics-seq-libs
 Description: EPICS State Notation Compiler
  EPICS State Notation Compiler
  .
@@ -32,7 +42,7 @@ Description: EPICS State Notation Compiler
 
 Package: epics-ipac-libs
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends} epics-libs
+Depends: ${shlibs:Depends}, ${misc:Depends}, epics-libs
 Description: Support for Industry Pack bus carriers (bridges)
  Support for Industry Pack bus carriers (bridges)
  .
@@ -40,7 +50,7 @@ Description: Support for Industry Pack bus carriers (bridges)
 
 Package: epics-ipac-dev
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends} epics-dev
+Depends: ${shlibs:Depends}, ${misc:Depends}, epics-dev, epics-ipac-libs
 Description: Support for Industry Pack bus carriers (bridges)
  Support for Industry Pack bus carriers (bridges)
  .
@@ -48,7 +58,7 @@ Description: Support for Industry Pack bus carriers (bridges)
 
 Package: epics-sscan-libs
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends} epics-libs
+Depends: ${shlibs:Depends}, ${misc:Depends}, epics-libs
 Description: Pattern scanning record
  Pattern scanning record
  .
@@ -56,7 +66,7 @@ Description: Pattern scanning record
 
 Package: epics-sscan-dev
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends} epics-dev
+Depends: ${shlibs:Depends}, ${misc:Depends}, epics-dev, epics-sscan-libs
 Description: Pattern scanning record
  Pattern scanning record
  .
@@ -64,7 +74,7 @@ Description: Pattern scanning record
 
 Package: epics-autosave-libs
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends} epics-libs
+Depends: ${shlibs:Depends}, ${misc:Depends}, epics-libs
 Description: Periodic save and automatic restore on start
  Periodic save and automatic restore on start
  .
@@ -72,7 +82,7 @@ Description: Periodic save and automatic restore on start
 
 Package: epics-autosave-dev
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends} epics-dev
+Depends: ${shlibs:Depends}, ${misc:Depends}, epics-dev, epics-autosave-libs
 Description: Periodic save and automatic restore on start
  Periodic save and automatic restore on start
  .
@@ -80,7 +90,7 @@ Description: Periodic save and automatic restore on start
 
 Package: epics-asyn-libs
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends} epics-libs, epics-seq-libs, epics-ipac-libs
+Depends: ${shlibs:Depends}, ${misc:Depends}, epics-libs, epics-seq-libs, epics-ipac-libs
 Description: The Asynchronous Record
  The Asynchronous Record
  .
@@ -88,7 +98,7 @@ Description: The Asynchronous Record
 
 Package: epics-asyn-dev
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends} epics-dev, epics-seq-dev, epics-ipac-dev
+Depends: ${shlibs:Depends}, ${misc:Depends}, epics-dev, epics-seq-dev, epics-ipac-dev, epics-asyn-libs
 Description: The Asynchronous Record
  The Asynchronous Record
  .
@@ -96,7 +106,7 @@ Description: The Asynchronous Record
 
 Package: epics-calc-libs
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends} epics-libs, epics-sscan-libs
+Depends: ${shlibs:Depends}, ${misc:Depends}, epics-libs, epics-sscan-libs
 Description: Advanced calculator record
  Advanced calculator record
  .
@@ -104,7 +114,7 @@ Description: Advanced calculator record
 
 Package: epics-calc-dev
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends} epics-dev, epics-sscan-dev
+Depends: ${shlibs:Depends}, ${misc:Depends}, epics-dev, epics-sscan-dev, epics-calc-libs
 Description: Advanced calculator record
  Advanced calculator record
  .
@@ -112,7 +122,7 @@ Description: Advanced calculator record
 
 Package: epics-motor-libs
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends} epics-libs, epics-asyn-libs, epics-seq-libs, epics-ipac-libs
+Depends: ${shlibs:Depends}, ${misc:Depends}, epics-libs, epics-asyn-libs, epics-seq-libs, epics-ipac-libs
 Description: Support for various motor controllers
  Support for various motor controllers
  .
@@ -120,7 +130,7 @@ Description: Support for various motor controllers
 
 Package: epics-motor-dev
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends} epics-dev, epics-asyn-dev, epics-seq-dev, epics-ipac-dev
+Depends: ${shlibs:Depends}, ${misc:Depends}, epics-dev, epics-asyn-dev, epics-seq-dev, epics-ipac-dev, epics-motor-libs
 Description: Support for various motor controllers
  Support for various motor controllers
  .
@@ -128,7 +138,7 @@ Description: Support for various motor controllers
 
 Package: epics-stream-libs
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends} epics-libs, epics-asyn-libs, epics-calc-libs, epics-sscan-libs
+Depends: ${shlibs:Depends}, ${misc:Depends}, epics-libs, epics-asyn-libs, epics-calc-libs, epics-sscan-libs
 Description: Support and Db generator for command/responce message passing devices
  Support and Db generator for command/responce message passing devices
  .
@@ -136,7 +146,7 @@ Description: Support and Db generator for command/responce message passing devic
 
 Package: epics-stream-dev
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends} epics-dev, epics-asyn-dev, epics-calc-dev, epics-sscan-dev
+Depends: ${shlibs:Depends}, ${misc:Depends}, epics-dev, epics-asyn-dev, epics-calc-dev, epics-sscan-dev, epics-stream-libs
 Description: Support and Db generator for command/responce message passing devices
  Support and Db generator for command/responce message passing devices
  .
