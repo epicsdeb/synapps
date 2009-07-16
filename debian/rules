@@ -21,6 +21,12 @@ build: build-arch build-indep
 
 EPICS_HOST_ARCH:=$(shell /usr/epics/base/startup/EpicsHostArch)
 
+RTEMS_TARGETS=RTEMS-mvme3100
+#DEBUG_TAGETS=$(EPICS_HOST_ARCH)-debug
+TARGETS+=$(DEBUG_TAGETS) $(RTEMS_TARGETS)
+
+MFLAGS += USE_RPATH=NO "CROSS_COMPILER_TARGET_ARCHS=$(TARGETS)"
+
 MFLAGS += EPICS_BASE=/usr/epics/base
 MFLAGS += IPAC=$(CURDIR)/$(ipac_builddir)
 MFLAGS += SSCAN=$(CURDIR)/$(sscan_builddir)
@@ -47,6 +53,7 @@ MODS += asyn
 asyn_VER = 4-10
 asyn_MFLAGS = "DIRS=configure makeSupport asyn"
 asyn_INSTALLS = bin include lib db dbd templates
+asyn_RTEMS-mvme3100_INSTALLS = lib
 
 MODS += calc
 calc_VER = 2-7
@@ -79,6 +86,35 @@ $(2)-$(1):
 
 all-$(2) += $(2)-$(1)
 endef
+
+# Rules for installing a target (ie RTEMS-mvme3100)
+#
+# $(1) is the module name
+# $(2) is the target name (mixed case) (RTEMS-mvme3100)
+define install-mod-targ
+
+$(1)_$(2)_LC = $$(shell echo -n $(2) | tr '[:upper:]' '[:lower:]')
+
+$(1)_$(2)_instdir = debian/epics-$$($(1)_NAME)-$$($(1)_$(2)_LC)
+
+$(1)_$(2)_INSTALLS ?= $$(filter bin lib,$$($(1)_INSTALLS))
+
+install-$(1)-$(2): $$($(1)_$(2)_INSTALLS:%=install-$(1)-$(2)-%)
+
+install-$(1)-$(2)-bin:
+	install -d $$($(1)_$(2)_instdir)/usr/epics/base/bin
+	cp -r $$($(1)_builddir)/bin/$(2) $$($(1)_$(2)_instdir)/usr/epics/base/bin/
+
+install-$(1)-$(2)-lib:
+	install -d $$($(1)_$(2)_instdir)/usr/epics/base/bin
+	cp -r $$($(1)_builddir)/lib/$(2) $$($(1)_$(2)_instdir)/usr/epics/base/lib/
+
+all-install += install-$(1)-$(2)
+endef
+
+info:
+	echo "seq_RTEMS-mvme3100_LC=$(seq_RTEMS-mvme3100_LC)"
+	echo "seq_RTEMS-mvme3100_instdir=$(seq_RTEMS-mvme3100_instdir)"
 
 # Install a module into debian/epics-$(modname)-libs and debian/epics-$(modname)-dev
 #
@@ -132,6 +168,7 @@ $(eval $(foreach m,$(MODS),$(call target-mod,$(m),all)))
 $(eval $(foreach m,$(MODS),$(call target-mod,$(m),realclean)))
 $(eval $(foreach m,$(MODS),$(call install-mod,$(m))))
 
+$(eval $(foreach m,$(MODS),$(foreach t,$(TARGETS),$(call install-mod-targ,$(m),$(t)))))
 #all-seq:
 #	$(MAKE) -f $(CURDIR)/debian/rules -C support/seq/$(seq_VER) $(MFLAGS) $(seq_MFLAGS) all
 

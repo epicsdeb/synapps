@@ -1,5 +1,15 @@
 #!/usr/bin/env python
 
+# Debian control file generater for SynApps package
+#
+# Creates the many packages for each component module
+#
+# ie for sncseq
+#  epics-seq-dev
+#  epics-seq-libs
+#  epics-seq-rtems-mvme3100
+#  epics-seq-rtems-pc386
+
 import sys
 
 if len(sys.argv)>=2:
@@ -24,6 +34,9 @@ Description: Documentation for synapps
  It contains beamline-control and data-acquisition components for
  an EPICS based control system. synApps is distributed under the EPICS Open license.
 """)
+
+targets={}
+targets['rtems-mvme3100']='MVME3100 PowerPC based SBC'
 
 mods=['seq','ipac','sscan','autosave','asyn','calc','motor','stream']
 
@@ -95,4 +108,25 @@ Description: %(sdesc)s
  %(ldesc)s
  .
  This package contains development headers, libraries, and utilities
+"""%params)
+
+	for t in targets:
+		params['target']=t
+
+		devdep=[]
+		for md in deps.get(m,[]):
+			if md in mods:
+				devdep.append('epics-%s-%s'%(md,t))
+
+		params['targdep']=reduce(lambda a,b: a+', '+b,devdep,'')
+		params['tdesc']=targets[t]
+
+		out.write("""
+Package: epics-%(name)s-%(target)s
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, epics-%(name)s-dev%(targdep)s
+Description: %(sdesc)s
+ %(ldesc)s
+ .
+ This package contains headers and libraries for the %(tdesc)s.
 """%params)
