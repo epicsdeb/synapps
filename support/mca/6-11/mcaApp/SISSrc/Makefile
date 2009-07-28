@@ -13,7 +13,7 @@ DBD += mcaSISTest.dbd
 # Build the library for ARCHs with VME capability.
 # This is vxWorks, RTEMS and Linux (with PCI/VME bridge)
 LIBRARY_IOC_vxWorks += mcaSIS
-LIBRARY_IOC_RTEMS += mcaSIS
+#LIBRARY_IOC_RTEMS += mcaSIS
 # If your version of Linux has support for VME devLib uncomment following line
 #LIBRARY_IOC_Linux += mcaSIS
 
@@ -32,7 +32,7 @@ mcaSIS_LIBS += $(EPICS_BASE_IOC_LIBS)
 
 #==================================
 PROD_IOC_vxWorks += mcaSISTest
-PROD_IOC_RTEMS += mcaSISTest
+#PROD_IOC_RTEMS += mcaSISTest
 # If your version of Linux has support for VME devLib uncomment following line
 #PROD_IOC_Linux += mcaSISTest
 
@@ -44,7 +44,7 @@ mcaSISTest_LIBS += mcaSIS
 mcaSISTest_LIBS += mca
 mcaSISTest_LIBS += std
 mcaSISTest_LIBS += busy
-mcaSISTest_LIBS += calc autosave
+mcaSISTest_LIBS += calc sscan autosave
 mcaSISTest_LIBS += asyn
 mcaSISTest_LIBS += seq pv
 mcaSISTest_LIBS += $(EPICS_BASE_IOC_LIBS)
