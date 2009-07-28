@@ -1,12 +1,46 @@
-
 # -*- makefile -*-
+
+# Basic site configuration here.
 
 EPICS_BASE = /usr/epics/base
 
 CROSS_COMPILER_TARGET_ARCHS += RTEMS-mvme3100
 
+# Can be installed In a single location
+# IE. $(INSTALL_LOCATION)/lib/archname/ will contain libraries
+# for all modules.
+#
+#Note: This will overwrite $(INSTALL_LOCATION)/configure/RELEASE
+#      and other.  It is better to install to a new directory
+#      and then copy what is appropriate.
+#INSTALL_LOCATION=
+
+#Note: SNCSEQ will create configure/RULES_BUILD with the additional
+#      rules required to handle .st files.
+
+#############################################################
+# Most users will not need to change anything below this line
+#############################################################
+
+# EPICS application bulk builder
+#  Michael Davidsaver <mdavidsaver@bnl.gov>
+#  July 2009
+
+# Sequentially builds a series of EPICS modules (configure/ + *App/)
+# which may depend on one another.
+# Based on SynApps makefile from Tim Mooney
+
+# Modules are identified by directory name (ie seq)
+# By default the makefile variable name is this name
+# all caps (ie SEQ).  When this is undesirable then
+# 'moddir_NAME' can be explicitly set (ie seq_NAME=SNCSEQ).
+#
+# The directory name is used when naming dependencies.
+
 # Modules must be listed in dependency order.
-#  A module must be listed after any modules it depends on
+#  A module must be listed after all modules it depends on.
+
+# The dependency list should include only direct dependencies.
 
 # Tier 1
 
@@ -52,7 +86,7 @@ motor_DEPS = asyn seq ipac
 
 MODS += std
 std_VER = 2-7
-std_DEPS = asyn
+std_DEPS = asyn seq
 
 MODS += dac128V
 dac128V_VER = 2-4
@@ -76,11 +110,11 @@ ip_DEPS = asyn ipac seq
 
 MODS += ccd
 ccd_VER = 1-10
-ccd_DEPS = busy asyn seq
+ccd_DEPS = busy asyn seq autosave
 
 MODS += optics
 optics_VER = 2-6-1
-optics_DEPS = asyn
+optics_DEPS = asyn seq
 
 MODS += stream
 stream_VER = 2-4
@@ -98,7 +132,7 @@ vac_DEPS = asyn ipac
 
 MODS += delaygen
 delaygen_VER = 1-0-3
-delaygen_DEPS = asyn std
+delaygen_DEPS = asyn std autosave
 
 MODS += camac
 camac_VER = 2-5
@@ -106,21 +140,21 @@ camac_DEPS = motor std
 
 MODS += mca
 mca_VER = 6-11
-mca_DEPS = asyn std
+mca_DEPS = seq asyn std busy autosave calc sscan
 
 MODS += vme
 vme_VER = 2-6
-vme_DEPS = std
+vme_DEPS = std seq
 
 MODS += pilatus
 pilatus_VER = 1-6
-pilatus_DEPS = asyn seq stream
+pilatus_DEPS = asyn busy calc sscan seq stream autosave
 
 # Tier 5
 
 MODS += dxp
 dxp_VER = 2-9
-dxp_DEPS = asyn camac mca busy
+dxp_DEPS = asyn seq camac mca busy autosave
 
 #MODS += 
 #_VER = 
@@ -130,10 +164,10 @@ dxp_DEPS = asyn camac mca busy
 
 SUPPORT = $(PWD)
 
+# makefile variable names to be passed to all modules
 ENVIRON = EPICS_BASE SUPPORT
 
-ifneq ($(INSTALLTO),)
-INSTALL_LOCATION=$(INSTALLTO)
+ifneq ($(INSTALL_LOCATION),)
 ENVIRON += INSTALL_LOCATION
 endif
 
@@ -144,9 +178,10 @@ endif
 # $(1) is ENVIRON name (ie EPICS_BASE)
 ENV = $(1)=$$($(1))
 
+# makefile variables to be passed to all modules
 E = $(foreach e,$(ENVIRON),$(call ENV,$(e)))
 
-# $(1) is path relative to module dir (ie bin)
+# $(1) is path relative to module dir (ie bin or lib/linux-x86)
 # $(2) is the module name (ie asyn)
 FORCERM = $(if $(1),rm -rf $(1:%=$(2)/$($(2)_VER)/%),)
 
@@ -157,12 +192,16 @@ all: realall # see below
 # $(1) is mod name (ie seq or sscan)
 define build-mod
 
+# Default to all caps.  'motor' becomes 'MOTOR'.
 $(1)_NAME ?= $(shell echo -n "$(1)" | tr '[:lower:]' '[:upper:]')
 
+# Specific makefile variables to be pass to the named module.
 $(1)_ENV ?= $$(foreach ee,$$($(1)_DEPS),$$($$(ee)_NAME)=$$(SUPPORT)/$$(ee)/$$($$(ee)_VER))
 
+# Build dependencies and module
 build-$(1): $$($(1)_DEPS:%=build-%) single-$(1)
 
+# Build module only
 single-$(1):
 	$$(MAKE) -C $(1)/$$($(1)_VER) $(E) $$($(1)_ENV)
 
@@ -180,9 +219,11 @@ rinfo-$(1): $$($(1)_DEPS:%=rinfo-%) info-$(1)
 
 info-all += info-$(1)
 
+# Use module realclean rule to remove 'O.*' subdirectories (ie O.linux-x86).
 realclean-$(1):
 	$$(MAKE) -C $(1)/$$($(1)_VER) $(E) $$($(1)_ENV) realclean
 
+# Delete module install directories
 $(1)_CLEAN ?= bin db dbd include lib html templates
 fullclean-$(1):
 	$$(call FORCERM,$$($(1)_CLEAN),$(1))
@@ -193,6 +234,7 @@ clean-all += clean-$(1)
 
 endef
 
+# Generate rules for all modules
 $(eval $(foreach m,$(MODS),$(call build-mod,$(m))))
 
 realall: $(build-all)
@@ -203,8 +245,14 @@ clean: $(clean-all)
 
 help:
 	@echo "Modules:"
-	@echo "$(MODS)" | tr ' ' '\n'
+	@echo " $(MODS)" | sed -e 's/ /\n  /g'
 	@echo "Targets:"
-	@echo "  all - Build all modules"
-	@echo "  build-MOD - build a module and its dependencies"
+	@echo "  all        - Build all modules"
+	@echo "  build-MOD  - build a module and its dependencies"
 	@echo "  single-MOD - build a module without updating dependencies"
+	@echo "  clean      - Clean all module"
+	@echo "  clean-MOD  - clean a single module"
+	@echo "Information targets:"
+	@echo "  info       - Show information about all modules"
+	@echo "  info-MOD   - Show information about a module"
+	@echo "  rinfo-MOD  - Show information about a module and its dependencies"
