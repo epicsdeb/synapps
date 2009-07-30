@@ -27,7 +27,7 @@ vme_SRCS_vxWorks += drvIK320.c
 vme_SRCS_vxWorks += drvIK320ErrStat.c
 
 #vme_SRCS_vxWorks += devScaler.c
-vme_SRCS_vxWorks += devScaler_debug.c
+vme_SRCS += devScaler_debug.c
 vme_SRCS_vxWorks += devScaler_VS.c
 vme_SRCS_vxWorks += vmeRecord.c
 vme_SRCS_vxWorks += devBunchClkGen.c

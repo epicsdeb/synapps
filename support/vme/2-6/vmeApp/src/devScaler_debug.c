@@ -55,6 +55,7 @@ typedef unsigned short uint16;
 #include	<rebootLib.h>
 extern int logMsg(char *fmt, ...);
 #else
+#define logMsg errlogPrintf
 #define printf errlogPrintf
 #endif
 
