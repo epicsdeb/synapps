@@ -708,6 +708,7 @@ static char *readbuf(volatile struct MAXv_motor *pmotor, char *bufptr)
 /* Configuration function for  module_types data     */
 /* areas. MAXvSetup()                                */
 /*****************************************************/
+extern "C"
 RTN_VALUES MAXvSetup(int num_cards, /* maximum number of cards in rack */
               int addrs_type,       /* VME address type; 16 - A16, 24 - A24 or 32 - A32. */
               unsigned int addrs,   /* Base Address. */
@@ -821,6 +822,7 @@ RTN_VALUES MAXvSetup(int num_cards, /* maximum number of cards in rack */
     return(rtnind);
 }
 
+extern "C"
 RTN_VALUES MAXvConfig(int card,                 /* number of card being configured */
                       const char *initstr)      /* initialization string */
 {
