@@ -239,7 +239,13 @@ $(eval $(foreach m,$(MODS),$(call build-mod,$(m))))
 
 realall: $(build-all)
 
-info: $(info-all)
+info: $(info-all) binfo
+
+binfo:
+	@echo "------------------"
+	@echo "EPICS_BASE: $(EPICS_BASE)"
+	@echo "INSTALL_LOCATION: $(INSTALL_LOCATION)"
+	@echo "CROSS_COMPILER_TARGET_ARCHS: $(CROSS_COMPILER_TARGET_ARCHS)"
 
 clean: $(clean-all)
 
@@ -253,6 +259,7 @@ help:
 	@echo "  clean      - Clean all module"
 	@echo "  clean-MOD  - clean a single module"
 	@echo "Information targets:"
-	@echo "  info       - Show information about all modules"
+	@echo "  info       - Show all information"
+	@echo "  binfo      - Show configuration options affecting build"
 	@echo "  info-MOD   - Show information about a module"
 	@echo "  rinfo-MOD  - Show information about a module and its dependencies"
