@@ -154,7 +154,7 @@ pilatus_DEPS = asyn busy calc sscan seq stream autosave
 
 MODS += dxp
 dxp_VER = 2-9
-dxp_DEPS = asyn seq camac mca busy autosave
+dxp_DEPS = asyn calc seq sscan camac mca busy autosave
 
 #MODS += 
 #_VER = 
