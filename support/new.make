@@ -195,8 +195,10 @@ define build-mod
 # Default to all caps.  'motor' becomes 'MOTOR'.
 $(1)_NAME ?= $(shell echo -n "$(1)" | tr '[:lower:]' '[:upper:]')
 
+$(1)_SONUM ?= $$(shell echo -n "$$($(1)_VER)" | tr '-' '.')
+
 # Specific makefile variables to be pass to the named module.
-$(1)_ENV ?= $$(foreach ee,$$($(1)_DEPS),$$($$(ee)_NAME)=$$(SUPPORT)/$$(ee)/$$($$(ee)_VER))
+$(1)_ENV ?= $$(foreach ee,$$($(1)_DEPS),$$($$(ee)_NAME)=$$(SUPPORT)/$$(ee)/$$($$(ee)_VER)) SHRLIB_VERSION=$$($(1)_SONUM)
 
 # Build dependencies and module
 build-$(1): $$($(1)_DEPS:%=build-%) single-$(1)
@@ -212,6 +214,7 @@ info-$(1):
 	@echo "Info: $(1)"
 	@echo "NAME=$$($(1)_NAME)"
 	@echo "VER=$$($(1)_VER)"
+	@echo "SONUM=$$($(1)_SONUM)"
 	@echo "DEPS=$$($(1)_DEPS)"
 	@echo "ENV=$$($(1)_ENV)"
 
