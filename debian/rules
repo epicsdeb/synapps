@@ -27,156 +27,13 @@ TARGETS+=$(DEBUG_TAGETS) $(RTEMS_TARGETS)
 
 MFLAGS += USE_RPATH=NO "CROSS_COMPILER_TARGET_ARCHS=$(TARGETS)"
 
-MFLAGS += EPICS_BASE=/usr/epics/base
-MFLAGS += IPAC=$(CURDIR)/$(ipac_builddir)
-MFLAGS += SSCAN=$(CURDIR)/$(sscan_builddir)
-MFLAGS += SNCSEQ=$(CURDIR)/$(seq_builddir)
-MFLAGS += CALC=$(CURDIR)/$(calc_builddir)
-
-MODS += seq
-seq_VER = 2-0-12
-seq_INSTALLS = bin lib dbd include extra
-
-MODS += ipac
-ipac_VER = 2-10
-ipac_INSTALLS = lib dbd include
-
-MODS += sscan
-sscan_VER = 2-6-4
-sscan_INSTALLS = lib dbd include
-
-MODS += autosave
-autosave_VER = 4-5
-autosave_INSTALLS = bin dbd lib
-
-MODS += asyn
-asyn_VER = 4-10
-asyn_MFLAGS = "DIRS=configure makeSupport asyn"
-asyn_INSTALLS = bin include lib db dbd templates
-asyn_RTEMS-mvme3100_INSTALLS = lib
-
-MODS += calc
-calc_VER = 2-7
-calc_INSTALLS = lib dbd include
-
-MODS += motor
-motor_VER = 6-4-3
-motor_MFLAGS = ASYN=$(CURDIR)/$(asyn_builddir)
-motor_INSTALLS = bin include lib dbd
-
-MODS += stream
-stream_VER = 2-4
-stream_MFLAGS = ASYN=$(CURDIR)/$(asyn_builddir)
-stream_INSTALLS = bin include lib dbd
-
-# Extra install rules
-
-install-seq-extra:
-	install -d $(seq_instdev)/usr/epics/base/configure
-	install -m 644 $(seq_builddir)/configure/RULES_BUILD $(seq_instdev)/usr/epics/base/configure/RULES.sncseq
-
-# Targets to pass through to module Makefile
-# $(1) is module name (ie seq)
-# $(2) is target (ie all, clean, ...)
-define target-mod
-
-$(2)-$(1):
-	EPICS_HOST_ARCH=$$(EPICS_HOST_ARCH) \
-	$(MAKE) -C support/$(1)/$$($(1)_VER) $$(MFLAGS) $$($(1)_MFLAGS) $(2)
-
-all-$(2) += $(2)-$(1)
-endef
-
-# Rules for installing a target (ie RTEMS-mvme3100)
-#
-# $(1) is the module name
-# $(2) is the target name (mixed case) (RTEMS-mvme3100)
-define install-mod-targ
-
-$(1)_$(2)_LC = $$(shell echo -n $(2) | tr '[:upper:]' '[:lower:]')
-
-$(1)_$(2)_instdir = debian/epics-$$($(1)_NAME)-$$($(1)_$(2)_LC)
-
-$(1)_$(2)_INSTALLS ?= $$(filter bin lib,$$($(1)_INSTALLS))
-
-install-$(1)-$(2): $$($(1)_$(2)_INSTALLS:%=install-$(1)-$(2)-%)
-
-install-$(1)-$(2)-bin:
-	install -d $$($(1)_$(2)_instdir)/usr/epics/base/bin
-	cp -r $$($(1)_builddir)/bin/$(2) $$($(1)_$(2)_instdir)/usr/epics/base/bin/
-
-install-$(1)-$(2)-lib:
-	install -d $$($(1)_$(2)_instdir)/usr/epics/base/bin
-	cp -r $$($(1)_builddir)/lib/$(2) $$($(1)_$(2)_instdir)/usr/epics/base/lib/
-
-all-install += install-$(1)-$(2)
-endef
-
-info:
-	echo "seq_RTEMS-mvme3100_LC=$(seq_RTEMS-mvme3100_LC)"
-	echo "seq_RTEMS-mvme3100_instdir=$(seq_RTEMS-mvme3100_instdir)"
-
-# Install a module into debian/epics-$(modname)-libs and debian/epics-$(modname)-dev
-#
-# $(1) is module name (ie seq)
-define install-mod
-
-$(1)_NAME ?= $(1)
-$(1)_INSTALLS ?= bin lib db dbd include
-
-$(1)_builddir = support/$(1)/$$($(1)_VER)
-$(1)_instdev = debian/epics-$$($(1)_NAME)-dev
-$(1)_instlib = debian/epics-$$($(1)_NAME)-libs
-
-install-$(1): $$($(1)_INSTALLS:%=install-$(1)-%)
-
-install-$(1)-bin:
-	install -d $$($(1)_instdev)/usr/epics/base/bin
-	cp -r $$($(1)_builddir)/bin/$$(EPICS_HOST_ARCH) $$($(1)_instdev)/usr/epics/base/bin/
-
-install-$(1)-lib:
-	install -d $$($(1)_instdev)/usr/epics/base/lib/$$(EPICS_HOST_ARCH)
-
-	cp -r $$($(1)_builddir)/lib/$$(EPICS_HOST_ARCH)/*.a $$($(1)_instdev)/usr/epics/base/lib/$$(EPICS_HOST_ARCH)/
-
-	install -d $$($(1)_instlib)/usr/lib
-	cp -r $$($(1)_builddir)/lib/$$(EPICS_HOST_ARCH)/*.so* $$($(1)_instlib)/usr/lib
-
-	for ff in $$($(1)_instlib)/usr/lib/*.so*; do ln -s ../../../../lib/`basename $$$$ff` $$($(1)_instdev)/usr/epics/base/lib/$$(EPICS_HOST_ARCH)/; done
-
-
-install-$(1)-db:
-	install -d $$($(1)_instdev)/usr/epics/base
-	cp -r $$($(1)_builddir)/db $$($(1)_instdev)/usr/epics/base/
-
-install-$(1)-dbd:
-	install -d $$($(1)_instdev)/usr/epics/base
-	cp -r $$($(1)_builddir)/dbd $$($(1)_instdev)/usr/epics/base/
-
-install-$(1)-include:
-	install -d $$($(1)_instdev)/usr/epics/base
-	cp -r $$($(1)_builddir)/include $$($(1)_instdev)/usr/epics/base/
-
-install-$(1)-templates:
-	install -d $$($(1)_instdev)/usr/epics/base
-	cp -r $$($(1)_builddir)/templates $$($(1)_instdev)/usr/epics/base/
-
-all-install += install-$(1)
-endef
-
-$(eval $(foreach m,$(MODS),$(call target-mod,$(m),all)))
-$(eval $(foreach m,$(MODS),$(call target-mod,$(m),realclean)))
-$(eval $(foreach m,$(MODS),$(call install-mod,$(m))))
-
-$(eval $(foreach m,$(MODS),$(foreach t,$(TARGETS),$(call install-mod-targ,$(m),$(t)))))
-#all-seq:
-#	$(MAKE) -f $(CURDIR)/debian/rules -C support/seq/$(seq_VER) $(MFLAGS) $(seq_MFLAGS) all
 
 build-arch: build-arch-stamp
 build-arch-stamp: $(all-all)
 
 	# Add here commands to compile the arch part of the package.
-	#$(MAKE)
+	$(MAKE) -f support/new.make -C support build-autosave
+	$(MAKE) -f support/new.make -C support INSTALL_LOCATION=$$PWD/inst build-autosave
 	touch $@
 
 build-indep: build-indep-stamp
@@ -186,10 +43,11 @@ build-indep-stamp:
 	#$(MAKE) doc
 	touch $@
 
-clean: $(all-realclean)
+clean:
 	dh_testdir
 	dh_testroot
 	rm -f build-arch-stamp build-indep-stamp
+	$(MAKE) -f support/new.make -C support clean
 
 	dh_clean 
 
@@ -200,13 +58,12 @@ install-indep:
 	dh_clean -k -i 
 	dh_installdirs -i
 
-	# Add here commands to install the indep part of the package into
-	# debian/<package>-doc.
-	#INSTALLDOC#
+	install -d debian/epics-synapps-doc/usr/share/doc/epics-synapps/
+	install -m 644 -t ddebian/epics-synapps-doc/usr/share/doc/epics-synapps/ README LICENSE
 
 	dh_install -i
 
-install-arch: install-arch-pre install-arch-body install-arch-post
+install-arch: install-arch-pre install-arch-host $(install-arch-targets) install-arch-post
 
 install-arch-pre:
 	dh_testdir
@@ -214,7 +71,56 @@ install-arch-pre:
 	dh_clean -k -s 
 	dh_installdirs -s
 
-install-arch-body: $(all-install)
+install-arch-host:
+	install -d debian/epics-synapps-dev/usr/bin
+	install -d debian/epics-synapps-dev/usr/lib
+
+	install -d debian/epics-synapps-dev/usr/epics/base/bin
+	install -d debian/epics-synapps-dev/usr/epics/base/bin/$(EPICS_HOST_ARCH)
+	install -d debian/epics-synapps-dev/usr/epics/base/lib
+	install -d debian/epics-synapps-dev/usr/epics/base/lib/$(EPICS_HOST_ARCH)
+	install -d debian/epics-synapps-dev/usr/epics/base/include
+	install -d debian/epics-synapps-dev/usr/epics/base/db
+	install -d debian/epics-synapps-dev/usr/epics/base/dbd
+
+	# Executables
+	install -m 755 -t debian/epics-synapps-dev/usr/epics/base/bin/$(EPICS_HOST_ARCH) \
+inst/bin/$(EPICS_HOST_ARCH)/snc
+	# Static libraries
+	install -m 644 -t debian/epics-synapps-dev/usr/epics/base/lib/$(EPICS_HOST_ARCH) \
+inst/lib/$(EPICS_HOST_ARCH)/*.a
+	# Shared libraries (/usr/lib)
+	install -m 644 -t debian/epics-synapps-dev/usr/lib \
+inst/lib/$(EPICS_HOST_ARCH)/*.so.*
+	# symlinks for compileing
+	# link /usr/epics/base/lib/host-arch/*.so to /usr/lib/*.so.*
+	for ff in inst/lib/$(EPICS_HOST_ARCH)/*.so; do \
+ln -s ../../../../lib/$(notdir $(ff)).* \
+debian/epics-synapps-dev/usr/epics/base/lib/$(EPICS_HOST_ARCH)/$(notdir $(ff)); \
+done
+	# database
+	install -m 644 -t debian/epics-synapps-dev/usr/epics/base/db \
+inst/db/*
+	# database definitions
+	install -m 644 -t debian/epics-synapps-dev/usr/epics/base/dbd \
+inst/dbd/*
+
+# $(1) is target name (ie RTEMS-mvme3100)
+define rule-install-target
+
+install-arch-$(1):
+	if [ -d inst/bin/$(1) ]; then \
+	cp -r inst/bin/$(1) debian/epics-synapps-dev/usr/epics/base/bin/;
+	fi
+	if [ -d inst/lib/$(1) ]; then \
+	cp -r inst/lib/$(1) debian/epics-synapps-dev/usr/epics/base/lib/;
+	fi
+
+install-arch-targets += install-arch-$(1)
+
+endef
+
+$(foreach targ,$(TARGETS),$(eval $(call rule-install-target,$(targ))))
 
 install-arch-post:
 	dh_install -s

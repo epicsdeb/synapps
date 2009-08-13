@@ -16,202 +16,21 @@ Description: Documentation for synapps
 
 Package: epics-synapps-dev
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, epics-dev, epics-seq-dev, epics-ipac-dev, epics-sscan-dev, epics-autosave-dev, epics-asyn-dev, epics-calc-dev, epics-motor-dev, epics-stream-dev
+Depends: ${shlibs:Depends}, ${misc:Depends}, epics-dev (>= 3.14.10), epics-dev (<< 3.14.11)
 Description: A collection of tools to create beamline control systems.
  synApps is a collection of software tools that help to create a control system for beamlines.
  It contains beamline-control and data-acquisition components for an EPICS based control system.
  synApps is distributed under the EPICS Open license. 
  .
- This is a meta package which will pull in synapps development packages.
+ This package contains support for the host system
 
-Package: epics-seq-libs
+Package: epics-synapps-mvme3100
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, epics-libs
-Description: EPICS State Notation Compiler
- EPICS State Notation Compiler
+Depends: ${shlibs:Depends}, ${misc:Depends}, epics-dev (>= 3.14.10), epics-dev (<< 3.14.11)
+Description: A collection of tools to create beamline control systems.
+ synApps is a collection of software tools that help to create a control system for beamlines.
+ It contains beamline-control and data-acquisition components for an EPICS based control system.
+ synApps is distributed under the EPICS Open license. 
  .
- This package contains shared libraries.
+ This package contains support for the MVME3100 PowerPC based VME SBC.
 
-Package: epics-seq-dev
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, epics-dev, epics-seq-libs
-Description: EPICS State Notation Compiler
- EPICS State Notation Compiler
- .
- This package contains development headers, libraries, and utilities
-
-Package: epics-seq-rtems-mvme3100
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, epics-seq-dev
-Description: EPICS State Notation Compiler
- EPICS State Notation Compiler
- .
- This package contains headers and libraries for the MVME3100 PowerPC based SBC.
-
-Package: epics-ipac-libs
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, epics-libs
-Description: Support for Industry Pack bus carriers (bridges)
- Support for Industry Pack bus carriers (bridges)
- .
- This package contains shared libraries.
-
-Package: epics-ipac-dev
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, epics-dev, epics-ipac-libs
-Description: Support for Industry Pack bus carriers (bridges)
- Support for Industry Pack bus carriers (bridges)
- .
- This package contains development headers, libraries, and utilities
-
-Package: epics-ipac-rtems-mvme3100
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, epics-ipac-dev
-Description: Support for Industry Pack bus carriers (bridges)
- Support for Industry Pack bus carriers (bridges)
- .
- This package contains headers and libraries for the MVME3100 PowerPC based SBC.
-
-Package: epics-sscan-libs
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, epics-libs
-Description: Pattern scanning record
- Pattern scanning record
- .
- This package contains shared libraries.
-
-Package: epics-sscan-dev
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, epics-dev, epics-sscan-libs
-Description: Pattern scanning record
- Pattern scanning record
- .
- This package contains development headers, libraries, and utilities
-
-Package: epics-sscan-rtems-mvme3100
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, epics-sscan-dev
-Description: Pattern scanning record
- Pattern scanning record
- .
- This package contains headers and libraries for the MVME3100 PowerPC based SBC.
-
-Package: epics-autosave-libs
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, epics-libs
-Description: Periodic save and automatic restore on start
- Periodic save and automatic restore on start
- .
- This package contains shared libraries.
-
-Package: epics-autosave-dev
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, epics-dev, epics-autosave-libs
-Description: Periodic save and automatic restore on start
- Periodic save and automatic restore on start
- .
- This package contains development headers, libraries, and utilities
-
-Package: epics-autosave-rtems-mvme3100
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, epics-autosave-dev
-Description: Periodic save and automatic restore on start
- Periodic save and automatic restore on start
- .
- This package contains headers and libraries for the MVME3100 PowerPC based SBC.
-
-Package: epics-asyn-libs
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, epics-libs, epics-seq-libs, epics-ipac-libs
-Description: The Asynchronous Record
- The Asynchronous Record
- .
- This package contains shared libraries.
-
-Package: epics-asyn-dev
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, epics-dev, epics-seq-dev, epics-ipac-dev, epics-asyn-libs
-Description: The Asynchronous Record
- The Asynchronous Record
- .
- This package contains development headers, libraries, and utilities
-
-Package: epics-asyn-rtems-mvme3100
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, epics-asyn-dev, epics-seq-rtems-mvme3100, epics-ipac-rtems-mvme3100
-Description: The Asynchronous Record
- The Asynchronous Record
- .
- This package contains headers and libraries for the MVME3100 PowerPC based SBC.
-
-Package: epics-calc-libs
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, epics-libs, epics-sscan-libs
-Description: Advanced calculator record
- Advanced calculator record
- .
- This package contains shared libraries.
-
-Package: epics-calc-dev
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, epics-dev, epics-sscan-dev, epics-calc-libs
-Description: Advanced calculator record
- Advanced calculator record
- .
- This package contains development headers, libraries, and utilities
-
-Package: epics-calc-rtems-mvme3100
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, epics-calc-dev, epics-sscan-rtems-mvme3100
-Description: Advanced calculator record
- Advanced calculator record
- .
- This package contains headers and libraries for the MVME3100 PowerPC based SBC.
-
-Package: epics-motor-libs
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, epics-libs, epics-asyn-libs, epics-seq-libs, epics-ipac-libs
-Description: Support for various motor controllers
- Support for various motor controllers
- .
- This package contains shared libraries.
-
-Package: epics-motor-dev
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, epics-dev, epics-asyn-dev, epics-seq-dev, epics-ipac-dev, epics-motor-libs
-Description: Support for various motor controllers
- Support for various motor controllers
- .
- This package contains development headers, libraries, and utilities
-
-Package: epics-motor-rtems-mvme3100
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, epics-motor-dev, epics-asyn-rtems-mvme3100, epics-seq-rtems-mvme3100, epics-ipac-rtems-mvme3100
-Description: Support for various motor controllers
- Support for various motor controllers
- .
- This package contains headers and libraries for the MVME3100 PowerPC based SBC.
-
-Package: epics-stream-libs
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, epics-libs, epics-asyn-libs, epics-calc-libs, epics-sscan-libs
-Description: Support and Db generator for command/responce message passing devices
- Support and Db generator for command/responce message passing devices
- .
- This package contains shared libraries.
-
-Package: epics-stream-dev
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, epics-dev, epics-asyn-dev, epics-calc-dev, epics-sscan-dev, epics-stream-libs
-Description: Support and Db generator for command/responce message passing devices
- Support and Db generator for command/responce message passing devices
- .
- This package contains development headers, libraries, and utilities
-
-Package: epics-stream-rtems-mvme3100
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, epics-stream-dev, epics-asyn-rtems-mvme3100, epics-calc-rtems-mvme3100, epics-sscan-rtems-mvme3100
-Description: Support and Db generator for command/responce message passing devices
- Support and Db generator for command/responce message passing devices
- .
- This package contains headers and libraries for the MVME3100 PowerPC based SBC.
