@@ -238,7 +238,7 @@ clean-all += clean-$(1)
 endef
 
 # Generate rules for all modules
-$(eval $(foreach m,$(MODS),$(call build-mod,$(m))))
+$(foreach m,$(MODS),$(eval $(call build-mod,$(m))))
 
 realall: $(build-all)
 
