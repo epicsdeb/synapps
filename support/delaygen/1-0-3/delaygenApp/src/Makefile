@@ -78,11 +78,11 @@ delaygenApp_SRCS_vxWorks += -nil-
 
 #-----------------------------------------------------------------------------
 # Include libraries
-delaygenApp_LIBS_Linux   += autosave std delaygen asyn
+delaygenApp_LIBS_Linux   += autosave pv seq std delaygen asyn
 delaygenApp_LIBS_Linux   += $(EPICS_BASE_IOC_LIBS)
-delaygenApp_LIBS_RTEMS   += autosave std delaygen asyn
+delaygenApp_LIBS_RTEMS   += autosave pv seq std delaygen asyn
 delaygenApp_LIBS_RTEMS   += $(EPICS_BASE_IOC_LIBS)
-delaygenApp_LIBS_vxWorks += autosave std delaygen asyn TyGSOctal Ipac ip
+delaygenApp_LIBS_vxWorks += autosave pv seq std delaygen asyn TyGSOctal Ipac ip
 delaygenApp_LIBS_vxWorks += $(EPICS_BASE_IOC_LIBS)
 
 #

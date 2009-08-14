@@ -132,7 +132,7 @@ vac_DEPS = asyn ipac
 
 MODS += delaygen
 delaygen_VER = 1-0-3
-delaygen_DEPS = asyn std autosave
+delaygen_DEPS = asyn seq std autosave
 
 MODS += camac
 camac_VER = 2-5
