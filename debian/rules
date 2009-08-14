@@ -25,15 +25,16 @@ RTEMS_TARGETS=RTEMS-mvme3100
 #DEBUG_TAGETS=$(EPICS_HOST_ARCH)-debug
 TARGETS+=$(DEBUG_TAGETS) $(RTEMS_TARGETS)
 
-MFLAGS += USE_RPATH=NO "CROSS_COMPILER_TARGET_ARCHS=$(TARGETS)"
+MFLAGS += EXTRA_ENV=USE_RPATH USE_RPATH=NO "CROSS_COMPILER_TARGET_ARCHS=$(TARGETS)"
 
 
 build-arch: build-arch-stamp
 build-arch-stamp: $(all-all)
 
 	# Add here commands to compile the arch part of the package.
-	$(MAKE) -f support/new.make -C support build-autosave
-	$(MAKE) -f support/new.make -C support INSTALL_LOCATION=$$PWD/inst build-autosave
+	cd support && EPICS_HOST_ARCH=$(EPICS_HOST_ARCH) $(MAKE) -f new.make $(MFLAGS) all
+	cd support && EPICS_HOST_ARCH=$(EPICS_HOST_ARCH) $(MAKE) -f new.make $(MFLAGS) INSTALL_LOCATION=$$PWD/inst all
+	ln -s support/inst inst
 	touch $@
 
 build-indep: build-indep-stamp
@@ -47,7 +48,8 @@ clean:
 	dh_testdir
 	dh_testroot
 	rm -f build-arch-stamp build-indep-stamp
-	$(MAKE) -f support/new.make -C support clean
+	cd support && EPICS_HOST_ARCH=$(EPICS_HOST_ARCH) $(MAKE) $(MFLAGS) -f new.make clean
+	rm -rf inst support/inst
 
 	dh_clean 
 
@@ -59,11 +61,9 @@ install-indep:
 	dh_installdirs -i
 
 	install -d debian/epics-synapps-doc/usr/share/doc/epics-synapps/
-	install -m 644 -t ddebian/epics-synapps-doc/usr/share/doc/epics-synapps/ README LICENSE
+	install -m 644 -t debian/epics-synapps-doc/usr/share/doc/epics-synapps/ support/README support/LICENSE
 
 	dh_install -i
-
-install-arch: install-arch-pre install-arch-host $(install-arch-targets) install-arch-post
 
 install-arch-pre:
 	dh_testdir
@@ -75,55 +75,89 @@ install-arch-host:
 	install -d debian/epics-synapps-dev/usr/bin
 	install -d debian/epics-synapps-dev/usr/lib
 
-	install -d debian/epics-synapps-dev/usr/epics/base/bin
 	install -d debian/epics-synapps-dev/usr/epics/base/bin/$(EPICS_HOST_ARCH)
-	install -d debian/epics-synapps-dev/usr/epics/base/lib
 	install -d debian/epics-synapps-dev/usr/epics/base/lib/$(EPICS_HOST_ARCH)
 	install -d debian/epics-synapps-dev/usr/epics/base/include
 	install -d debian/epics-synapps-dev/usr/epics/base/db
 	install -d debian/epics-synapps-dev/usr/epics/base/dbd
 
-	# Executables
+	install -d debian/epics-synapps-dev/usr/epics/base/configure/rules.d
+
+	install -m 644 support/seq/*/configure/RULES_BUILD \
+debian/epics-synapps-dev/usr/epics/base/configure/rules.d/seqsnc.make
+	echo 'SNC = $$(call PATH_FILTER, $$(TOOLS)/snc$$(HOSTEXE))' >> \
+debian/epics-synapps-dev/usr/epics/base/configure/rules.d/seqsnc.make
+
+	# Executables for /usr/epics/base/bin/host-arch/
 	install -m 755 -t debian/epics-synapps-dev/usr/epics/base/bin/$(EPICS_HOST_ARCH) \
+inst/bin/$(EPICS_HOST_ARCH)/*
+	# Executables for /usr/bin
+	install -m 755 -t debian/epics-synapps-dev/usr/bin \
 inst/bin/$(EPICS_HOST_ARCH)/snc
+	# symlink
+	rm -f debian/epics-synapps-dev/usr/epics/base/bin/$(EPICS_HOST_ARCH)/snc
+	ln -s ../../../../bin/snc debian/epics-synapps-dev/usr/epics/base/bin/$(EPICS_HOST_ARCH)/snc
+
 	# Static libraries
 	install -m 644 -t debian/epics-synapps-dev/usr/epics/base/lib/$(EPICS_HOST_ARCH) \
 inst/lib/$(EPICS_HOST_ARCH)/*.a
+
 	# Shared libraries (/usr/lib)
 	install -m 644 -t debian/epics-synapps-dev/usr/lib \
 inst/lib/$(EPICS_HOST_ARCH)/*.so.*
-	# symlinks for compileing
+
+	# copy broken symlinks
+	install -m 644 -t debian/epics-synapps-dev/usr/epics/base/lib/$(EPICS_HOST_ARCH) \
+inst/lib/$(EPICS_HOST_ARCH)/*.so
+
+	# fix symlinks for compileing
 	# link /usr/epics/base/lib/host-arch/*.so to /usr/lib/*.so.*
-	for ff in inst/lib/$(EPICS_HOST_ARCH)/*.so; do \
-ln -s ../../../../lib/$(notdir $(ff)).* \
-debian/epics-synapps-dev/usr/epics/base/lib/$(EPICS_HOST_ARCH)/$(notdir $(ff)); \
-done
+	$(MAKE) -f $(CURDIR)/debian/rules -C debian/epics-synapps-dev/usr/epics/base/lib/$(EPICS_HOST_ARCH) install-arch-host-lib
+
+	# headers
+	install -m 644 -t debian/epics-synapps-dev/usr/epics/base/include \
+inst/include/*
+
 	# database
 	install -m 644 -t debian/epics-synapps-dev/usr/epics/base/db \
 inst/db/*
+
 	# database definitions
 	install -m 644 -t debian/epics-synapps-dev/usr/epics/base/dbd \
 inst/dbd/*
 
+# in debian/epics-synapps-dev/usr/epics/base/lib/$(EPICS_HOST_ARCH)
+install-arch-host-lib:
+	for ff in *.so; do \
+rm -f $$ff; \
+ln -s ../../../../lib/$$ff.* $$ff; \
+done
+
 # $(1) is target name (ie RTEMS-mvme3100)
-define rule-install-target
+define rule-install-rtems
+
+$(1)-pkg = epics-synapps-$(1:RTEMS-%=%)
 
 install-arch-$(1):
 	if [ -d inst/bin/$(1) ]; then \
-	cp -r inst/bin/$(1) debian/epics-synapps-dev/usr/epics/base/bin/;
+	install -d debian/$$($(1)-pkg)/usr/epics/base/bin; \
+	cp -r inst/bin/$(1) debian/$$($(1)-pkg)/usr/epics/base/bin/; \
 	fi
 	if [ -d inst/lib/$(1) ]; then \
-	cp -r inst/lib/$(1) debian/epics-synapps-dev/usr/epics/base/lib/;
+	install -d debian/$$($(1)-pkg)/usr/epics/base/lib; \
+	cp -r inst/lib/$(1) debian/$$($(1)-pkg)/usr/epics/base/lib/; \
 	fi
 
 install-arch-targets += install-arch-$(1)
 
 endef
 
-$(foreach targ,$(TARGETS),$(eval $(call rule-install-target,$(targ))))
+$(foreach targ,$(RTEMS_TARGETS),$(eval $(call rule-install-rtems,$(targ))))
 
 install-arch-post:
 	dh_install -s
+
+install-arch: install-arch-pre install-arch-host $(install-arch-targets) install-arch-post
 
 # Must not depend on anything. This is to be called by
 # binary-arch/binary-indep

@@ -175,8 +175,10 @@ ifneq ($(CROSS_COMPILER_TARGET_ARCHS),)
 ENVIRON += CROSS_COMPILER_TARGET_ARCHS
 endif
 
+ENVIRON += $(EXTRA_ENV)
+
 # $(1) is ENVIRON name (ie EPICS_BASE)
-ENV = $(1)=$$($(1))
+ENV = $(1)=$($(1))
 
 # makefile variables to be passed to all modules
 E = $(foreach e,$(ENVIRON),$(call ENV,$(e)))
@@ -205,7 +207,7 @@ build-$(1): $$($(1)_DEPS:%=build-%) single-$(1)
 
 # Build module only
 single-$(1):
-	$$(MAKE) -C $(1)/$$($(1)_VER) $(E) $$($(1)_ENV)
+	$$(MAKE) -C $(1)/$$($(1)_VER) $$(E) $$($(1)_ENV)
 
 build-all += build-$(1)
 
@@ -216,7 +218,7 @@ info-$(1):
 	@echo "VER=$$($(1)_VER)"
 	@echo "SONUM=$$($(1)_SONUM)"
 	@echo "DEPS=$$($(1)_DEPS)"
-	@echo "ENV=$$($(1)_ENV)"
+	@echo "ENV=$$(E) $$($(1)_ENV)"
 
 rinfo-$(1): $$($(1)_DEPS:%=rinfo-%) info-$(1)
 
