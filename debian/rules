@@ -22,10 +22,10 @@ build: build-arch build-indep
 EPICS_HOST_ARCH:=$(shell /usr/epics/base/startup/EpicsHostArch)
 
 RTEMS_TARGETS=RTEMS-mvme3100
-#DEBUG_TAGETS=$(EPICS_HOST_ARCH)-debug
+DEBUG_TAGETS=$(EPICS_HOST_ARCH)-debug
 TARGETS+=$(DEBUG_TAGETS) $(RTEMS_TARGETS)
 
-MFLAGS += EXTRA_ENV=USE_RPATH USE_RPATH=NO "CROSS_COMPILER_TARGET_ARCHS=$(TARGETS)"
+MFLAGS += EXTRA_ENV=USE_RPATH USE_RPATH=NO CROSS_COMPILER_TARGET_ARCHS="\"$(TARGETS)\""
 
 
 build-arch: build-arch-stamp
@@ -126,6 +126,13 @@ inst/db/*
 	install -m 644 -t debian/epics-synapps-dev/usr/epics/base/dbd \
 inst/dbd/*
 
+	# host -debug
+	install -d debian/epics-synapps-dev/usr/epics/base/bin
+	cp -r inst/bin/$(EPICS_HOST_ARCH)-debug debian/epics-synapps-dev/usr/epics/base/bin/
+
+	install -d debian/epics-synapps-dev/usr/epics/base/lib
+	cp -r inst/lib/$(EPICS_HOST_ARCH)-debug debian/epics-synapps-dev/usr/epics/base/lib/
+
 # in debian/epics-synapps-dev/usr/epics/base/lib/$(EPICS_HOST_ARCH)
 install-arch-host-lib:
 	for ff in *.so; do \
@@ -139,10 +146,11 @@ define rule-install-rtems
 $(1)-pkg = epics-synapps-$(1:RTEMS-%=%)
 
 install-arch-$(1):
-	if [ -d inst/bin/$(1) ]; then \
-	install -d debian/$$($(1)-pkg)/usr/epics/base/bin; \
-	cp -r inst/bin/$(1) debian/$$($(1)-pkg)/usr/epics/base/bin/; \
-	fi
+# TODO: uncomment when building loadable objects
+# 	if [ -d inst/bin/$(1) ]; then \
+# 	install -d debian/$$($(1)-pkg)/usr/epics/base/bin; \
+# 	cp -r inst/bin/$(1) debian/$$($(1)-pkg)/usr/epics/base/bin/; \
+# 	fi
 	if [ -d inst/lib/$(1) ]; then \
 	install -d debian/$$($(1)-pkg)/usr/epics/base/lib; \
 	cp -r inst/lib/$(1) debian/$$($(1)-pkg)/usr/epics/base/lib/; \
