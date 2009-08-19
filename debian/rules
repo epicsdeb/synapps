@@ -71,76 +71,82 @@ install-arch-pre:
 	dh_clean -k -s 
 	dh_installdirs -s
 
+devdir=debian/epics-synapps-dev/usr
+
+basedir=$(devdir)/epics/base
+hostbin=$(hostbin)/bin/$(EPICS_HOST_ARCH)
+hostlib=$(hostbin)/lib/$(EPICS_HOST_ARCH)
+
 install-arch-host:
-	install -d debian/epics-synapps-dev/usr/bin
-	install -d debian/epics-synapps-dev/usr/lib
+	install -d $(devdir)/bin
+	install -d $(devdir)/lib
 
-	install -d debian/epics-synapps-dev/usr/epics/base/bin/$(EPICS_HOST_ARCH)
-	install -d debian/epics-synapps-dev/usr/epics/base/lib/$(EPICS_HOST_ARCH)
-	install -d debian/epics-synapps-dev/usr/epics/base/include
-	install -d debian/epics-synapps-dev/usr/epics/base/db
-	install -d debian/epics-synapps-dev/usr/epics/base/dbd
+	install -d $(basedir)/bin/$(EPICS_HOST_ARCH)
+	install -d $(basedir)/lib/$(EPICS_HOST_ARCH)
+	install -d $(basedir)/include
+	install -d $(basedir)/db
+	install -d $(basedir)/dbd
 
-	install -d debian/epics-synapps-dev/usr/epics/base/configure/rules.d
+	install -d $(basedir)/configure/rules.d
 
 	install -m 644 support/seq/*/configure/RULES_BUILD \
-debian/epics-synapps-dev/usr/epics/base/configure/rules.d/seqsnc.make
+$(basedir)/configure/rules.d/seqsnc.make
 
 	# Location of 'snc' executable changes
 
 	# remove old defintion of SNC=
 	sed -i -e '/^# snc executable/,/#----/d' \
-debian/epics-synapps-dev/usr/epics/base/configure/rules.d/seqsnc.make
+$(basedir)/configure/rules.d/seqsnc.make
 	# append new defintion
 	echo 'SNC = $$(call PATH_FILTER, $$(TOOLS)/snc$$(HOSTEXE))' >> \
-debian/epics-synapps-dev/usr/epics/base/configure/rules.d/seqsnc.make
+$(basedir)/configure/rules.d/seqsnc.make
 
 	# Executables for /usr/epics/base/bin/host-arch/
-	install -m 755 -t debian/epics-synapps-dev/usr/epics/base/bin/$(EPICS_HOST_ARCH) \
+	install -m 755 -t $(basedir)/bin/$(EPICS_HOST_ARCH) \
 inst/bin/$(EPICS_HOST_ARCH)/*
 	# Executables for /usr/bin
-	install -m 755 -t debian/epics-synapps-dev/usr/bin \
+	install -m 755 -t $(devdir)/bin \
 inst/bin/$(EPICS_HOST_ARCH)/snc
 	# symlink
-	rm -f debian/epics-synapps-dev/usr/epics/base/bin/$(EPICS_HOST_ARCH)/snc
-	ln -s ../../../../bin/snc debian/epics-synapps-dev/usr/epics/base/bin/$(EPICS_HOST_ARCH)/snc
+	rm -f $(basedir)/bin/$(EPICS_HOST_ARCH)/snc
+	ln -s ../../../../bin/snc $(basedir)/bin/$(EPICS_HOST_ARCH)/snc
 
 	# Static libraries
-	install -m 644 -t debian/epics-synapps-dev/usr/epics/base/lib/$(EPICS_HOST_ARCH) \
+	install -m 644 -t $(basedir)/lib/$(EPICS_HOST_ARCH) \
 inst/lib/$(EPICS_HOST_ARCH)/*.a
 
 	# Shared libraries (/usr/lib)
-	install -m 644 -t debian/epics-synapps-dev/usr/lib \
+	install -m 644 -t $(devdir)/lib \
 inst/lib/$(EPICS_HOST_ARCH)/*.so.*
 
 	# copy broken symlinks
-	install -m 644 -t debian/epics-synapps-dev/usr/epics/base/lib/$(EPICS_HOST_ARCH) \
+	install -m 644 -t $(basedir)/lib/$(EPICS_HOST_ARCH) \
 inst/lib/$(EPICS_HOST_ARCH)/*.so
 
 	# fix symlinks for compileing
 	# link /usr/epics/base/lib/host-arch/*.so to /usr/lib/*.so.*
-	$(MAKE) -f $(CURDIR)/debian/rules -C debian/epics-synapps-dev/usr/epics/base/lib/$(EPICS_HOST_ARCH) install-arch-host-lib
+	$(MAKE) -f $(CURDIR)/debian/rules -C $(basedir)/lib/$(EPICS_HOST_ARCH) install-arch-host-lib
 
 	# headers
-	install -m 644 -t debian/epics-synapps-dev/usr/epics/base/include \
+	install -m 644 -t $(basedir)/include \
 inst/include/*
 
 	# database
-	install -m 644 -t debian/epics-synapps-dev/usr/epics/base/db \
+	install -m 644 -t $(basedir)/db \
 inst/db/*
 
 	# database definitions
-	install -m 644 -t debian/epics-synapps-dev/usr/epics/base/dbd \
+	install -m 644 -t $(basedir)/dbd \
 inst/dbd/*
 
 	# host -debug
-	install -d debian/epics-synapps-dev/usr/epics/base/bin
-	cp -r inst/bin/$(EPICS_HOST_ARCH)-debug debian/epics-synapps-dev/usr/epics/base/bin/
+	install -d $(basedir)/bin
+	cp -r inst/bin/$(EPICS_HOST_ARCH)-debug $(basedir)/bin/
 
-	install -d debian/epics-synapps-dev/usr/epics/base/lib
-	cp -r inst/lib/$(EPICS_HOST_ARCH)-debug debian/epics-synapps-dev/usr/epics/base/lib/
+	install -d $(basedir)/lib
+	cp -r inst/lib/$(EPICS_HOST_ARCH)-debug $(basedir)/lib/
 
-# in debian/epics-synapps-dev/usr/epics/base/lib/$(EPICS_HOST_ARCH)
+# in $(basedir)/lib/$(EPICS_HOST_ARCH)
 install-arch-host-lib:
 	for ff in *.so; do \
 rm -f $$ff; \
