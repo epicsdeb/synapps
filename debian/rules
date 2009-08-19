@@ -85,6 +85,13 @@ install-arch-host:
 
 	install -m 644 support/seq/*/configure/RULES_BUILD \
 debian/epics-synapps-dev/usr/epics/base/configure/rules.d/seqsnc.make
+
+	# Location of 'snc' executable changes
+
+	# remove old defintion of SNC=
+	sed -i -e '/^# snc executable/,/#----/d' \
+debian/epics-synapps-dev/usr/epics/base/configure/rules.d/seqsnc.make
+	# append new defintion
 	echo 'SNC = $$(call PATH_FILTER, $$(TOOLS)/snc$$(HOSTEXE))' >> \
 debian/epics-synapps-dev/usr/epics/base/configure/rules.d/seqsnc.make
 
