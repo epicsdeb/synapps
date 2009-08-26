@@ -35,6 +35,20 @@ build-arch-stamp: $(all-all)
 	cd support && EPICS_HOST_ARCH=$(EPICS_HOST_ARCH) $(MAKE) -f new.make $(MFLAGS) all
 	cd support && EPICS_HOST_ARCH=$(EPICS_HOST_ARCH) $(MAKE) -f new.make $(MFLAGS) INSTALL_LOCATION=$$PWD/inst all
 	ln -s support/inst inst
+
+	# remove unneeded testing stuff
+	rm -f inst/bin/*/*test*
+	rm -f inst/bin/*/*demo*
+	rm -f inst/lib/*/*test*
+	rm -f inst/lib/*/*Test*
+	rm -f inst/lib/*/*demo*
+	rm -f inst/dbd/*test*
+	rm -f inst/dbd/*Test*
+	rm -f inst/dbd/*demo*
+	rm -f inst/db/*test*
+	rm -f inst/db/*Test*
+	rm -f inst/db/*demo*
+
 	touch $@
 
 build-indep: build-indep-stamp
