@@ -221,7 +221,7 @@ binary-common:
 #	dh_perl
 	dh_makeshlibs
 	dh_installdeb
-	dh_shlibdeps
+	LD_LIBRARY_PATH=$$LD_LIBRARY_PATH:$(CURDIR)/inst dh_shlibdeps
 	dh_gencontrol
 	dh_md5sums
 	dh_builddeb
