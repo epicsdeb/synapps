@@ -45,9 +45,10 @@ build-arch-stamp: $(all-all)
 	rm -f inst/dbd/*test*
 	rm -f inst/dbd/*Test*
 	rm -f inst/dbd/*demo*
-	rm -f inst/db/*test*
-	rm -f inst/db/*Test*
-	rm -f inst/db/*demo*
+
+	# We will fetch these ourselves
+	# since many are not install anyway
+	rm -rf inst/db
 
 	touch $@
 
@@ -88,20 +89,27 @@ install-arch-pre:
 devdir=debian/epics-synapps-dev/usr
 
 basedir=$(devdir)/epics/base
-hostbin=$(hostbin)/bin/$(EPICS_HOST_ARCH)
-hostlib=$(hostbin)/lib/$(EPICS_HOST_ARCH)
+hostbin=$(basedir)/bin/$(EPICS_HOST_ARCH)
+hostlib=$(basedir)/lib/$(EPICS_HOST_ARCH)
 
 install-arch-host:
 	install -d $(devdir)/bin
 	install -d $(devdir)/lib
 
-	install -d $(basedir)/bin/$(EPICS_HOST_ARCH)
-	install -d $(basedir)/lib/$(EPICS_HOST_ARCH)
+	install -d $(hostbin)
+	install -d $(hostlib)
 	install -d $(basedir)/include
 	install -d $(basedir)/db
 	install -d $(basedir)/dbd
+	install -d $(basedir)/as/req
 
 	install -d $(basedir)/configure/rules.d
+
+	# find all .db files
+	find support -name '*.db' -exec install -m 644 {} $(basedir)/db/ \;
+
+	# find all autosave request files
+	find support -name '*.req' -exec install -m 644 {} $(basedir)/as/req/ \;
 
 	install -m 644 support/seq/*/configure/RULES_BUILD \
 $(basedir)/configure/rules.d/seqsnc.make
@@ -116,17 +124,17 @@ $(basedir)/configure/rules.d/seqsnc.make
 $(basedir)/configure/rules.d/seqsnc.make
 
 	# Executables for /usr/epics/base/bin/host-arch/
-	install -m 755 -t $(basedir)/bin/$(EPICS_HOST_ARCH) \
+	install -m 755 -t $(hostbin) \
 inst/bin/$(EPICS_HOST_ARCH)/*
 	# Executables for /usr/bin
 	install -m 755 -t $(devdir)/bin \
 inst/bin/$(EPICS_HOST_ARCH)/snc
 	# symlink
-	rm -f $(basedir)/bin/$(EPICS_HOST_ARCH)/snc
-	ln -s ../../../../bin/snc $(basedir)/bin/$(EPICS_HOST_ARCH)/snc
+	rm -f $(hostbin)/snc
+	ln -s ../../../../bin/snc $(hostbin)/snc
 
 	# Static libraries
-	install -m 644 -t $(basedir)/lib/$(EPICS_HOST_ARCH) \
+	install -m 644 -t $(hostlib) \
 inst/lib/$(EPICS_HOST_ARCH)/*.a
 
 	# Shared libraries (/usr/lib)
@@ -134,20 +142,16 @@ inst/lib/$(EPICS_HOST_ARCH)/*.a
 inst/lib/$(EPICS_HOST_ARCH)/*.so.*
 
 	# copy broken symlinks
-	install -m 644 -t $(basedir)/lib/$(EPICS_HOST_ARCH) \
+	install -m 644 -t $(hostlib) \
 inst/lib/$(EPICS_HOST_ARCH)/*.so
 
 	# fix symlinks for compileing
 	# link /usr/epics/base/lib/host-arch/*.so to /usr/lib/*.so.*
-	$(MAKE) -f $(CURDIR)/debian/rules -C $(basedir)/lib/$(EPICS_HOST_ARCH) install-arch-host-lib
+	$(MAKE) -f $(CURDIR)/debian/rules -C $(hostlib) install-arch-host-lib
 
 	# headers
 	install -m 644 -t $(basedir)/include \
 inst/include/*
-
-	# database
-	install -m 644 -t $(basedir)/db \
-inst/db/*
 
 	# database definitions
 	install -m 644 -t $(basedir)/dbd \
@@ -160,7 +164,7 @@ inst/dbd/*
 	install -d $(basedir)/lib
 	cp -r inst/lib/$(EPICS_HOST_ARCH)-debug $(basedir)/lib/
 
-# in $(basedir)/lib/$(EPICS_HOST_ARCH)
+# in $(hostlib)
 install-arch-host-lib:
 	for ff in *.so; do \
 rm -f $$ff; \
