@@ -29,7 +29,7 @@ MFLAGS += EXTRA_ENV=USE_RPATH USE_RPATH=NO CROSS_COMPILER_TARGET_ARCHS="\"$(TARG
 
 
 build-arch: build-arch-stamp
-build-arch-stamp: $(all-all)
+build-arch-stamp: build-edl $(all-all)
 
 	# Add here commands to compile the arch part of the package.
 	cd support && EPICS_HOST_ARCH=$(EPICS_HOST_ARCH) $(MAKE) -f new.make $(MFLAGS) all
@@ -51,6 +51,21 @@ build-arch-stamp: $(all-all)
 	rm -rf inst/db
 
 	touch $@
+
+ADL=$(wildcard support/all_adl/*.adl)
+EDL=$(ADL:support/all_adl/%.adl=support/edl/%.edl)
+
+build-edl: build-edl-pre $(EDL)
+
+build-edl-pre:
+	rm -f support/edlskip
+
+$(EDL): \
+support/edl/%.edl: support/all_adl/%.adl
+	test -d support/edl || install -d support/edl
+	if adl2edl -rename -rgb $< > $@.tmp; then mv $@.tmp $@; \
+else rm $@.tmp; echo "Failed to convert $@" >> support/edlskip;\
+fi
 
 build-indep: build-indep-stamp
 build-indep-stamp:
@@ -77,6 +92,11 @@ install-indep:
 
 	install -d debian/epics-synapps-doc/usr/share/doc/epics-synapps/
 	install -m 644 -t debian/epics-synapps-doc/usr/share/doc/epics-synapps/ support/README support/LICENSE
+
+	install -d debian/edm-synapps/usr/epics/base/op/edl
+	install -m 644 -t debian/edm-synapps/usr/epics/base/op/edl support/edl/*.edl
+
+	install -m 644 support/edlskip debian/epics-synapps-doc/usr/share/doc/epics-synapps/
 
 	dh_install -i
 

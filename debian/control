@@ -2,7 +2,7 @@ Source: synapps
 Section: devel
 Priority: extra
 Maintainer: Michael Davidsaver <mdavidsaver@bnl.gov>
-Build-Depends: debhelper (>= 7), epics-dev (>= 3.14.10-5), epics-dev (<< 3.14.11), epics-rtems-mvme2100, epics-rtems-mvme3100, epics-rtems-mvme5500
+Build-Depends: debhelper (>= 7), epics-dev (>= 3.14.10-5), epics-dev (<< 3.14.11), epics-rtems-mvme2100, epics-rtems-mvme3100, epics-rtems-mvme5500, adl2edl
 Standards-Version: 3.7.3
 Homepage: http://www.aps.anl.gov/bcda/synApps/index.php
 
@@ -23,6 +23,17 @@ Description: A collection of tools to create beamline control systems.
  synApps is distributed under the EPICS Open license. 
  .
  This package contains support for the host system
+
+Package: edm-synapps
+Architecture: all
+Depends: edm
+Description: All EDM display panels from synapps
+ synApps is a collection of software tools that help to create a control system for beamlines.
+ It contains beamline-control and data-acquisition components for an EPICS based control system.
+ synApps is distributed under the EPICS Open license. 
+ .
+ This package contains EDM display panels.  These are converted from the MEDM panels
+ which are distributed with synapps.
 
 Package: epics-synapps-mvme2100
 Architecture: any
