@@ -83,6 +83,7 @@ busy_DEPS = asyn
 MODS += motor
 motor_VER = 6-4-3
 motor_DEPS = asyn seq ipac
+motor_CPPFLAGS = -DDEBUG
 
 MODS += std
 std_VER = 2-7
@@ -111,6 +112,7 @@ ip_DEPS = asyn ipac seq
 MODS += ccd
 ccd_VER = 1-10
 ccd_DEPS = busy asyn seq autosave
+ccd_CPPFLAGS = -DDEBUG
 
 MODS += optics
 optics_VER = 2-6-1
@@ -200,7 +202,9 @@ $(1)_NAME ?= $(shell echo -n "$(1)" | tr '[:lower:]' '[:upper:]')
 $(1)_SONUM ?= $$(shell echo -n "$$($(1)_VER)" | tr '-' '.')
 
 # Specific makefile variables to be pass to the named module.
-$(1)_ENV ?= $$(foreach ee,$$($(1)_DEPS),$$($$(ee)_NAME)=$$(SUPPORT)/$$(ee)/$$($$(ee)_VER)) SHRLIB_VERSION=$$($(1)_SONUM)
+$(1)_ENV ?= $$(foreach ee,$$($(1)_DEPS),$$($$(ee)_NAME)=$$(SUPPORT)/$$(ee)/$$($$(ee)_VER)) \
+SHRLIB_VERSION=$$($(1)_SONUM) \
+CMD_CPPFLAGS=$$($(1)_CPPFLAGS)
 
 # Build dependencies and module
 build-$(1): $$($(1)_DEPS:%=build-%) single-$(1)
