@@ -72,6 +72,21 @@ common-install-arch::
 	rm -f $(basedir)/dbd/*Test*
 	rm -f $(basedir)/dbd/*demo*
 
+	# remove example Apps
+	rm -f $(basedir)/bin/*/*App
+	rm -f $(basedir)/bin/*/sncD*
+	rm -f $(basedir)/bin/*/sncE*
+	rm -f $(basedir)/bin/*/sncO*
+
+	# remove misc
+	rm -f $(basedir)/bin/*/startWithIopl3
+	rm -f $(basedir)/bin/*/wrapper
+	rm -f $(basedir)/bin/*/wrapCmd
+	rm -f $(basedir)/bin/*/rdb*
+	rm -f $(basedir)/bin/*/showBurtDiff
+	rm -f $(basedir)/bin/*/XPSGatheringMain
+
+
 install/epics-synapps-dev::
 	# We will fetch these ourselves
 	# since many are not install anyway
