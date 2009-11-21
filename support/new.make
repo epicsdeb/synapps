@@ -164,7 +164,7 @@ dxp_DEPS = asyn calc seq sscan camac mca busy autosave
 
 #######################################
 
-SUPPORT = $(PWD)
+SUPPORT = $$PWD
 
 # makefile variable names to be passed to all modules
 ENVIRON = EPICS_BASE SUPPORT
