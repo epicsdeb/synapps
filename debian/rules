@@ -1,23 +1,9 @@
 #!/usr/bin/make -f
 # -*- makefile -*-
-# Sample debian/rules that uses debhelper.
-#
-# This file was originally written by Joey Hess and Craig Small.
-# As a special exception, when this file is copied by dh-make into a
-# dh-make output file, you may use that output file without restriction.
-# This special exception was added by Craig Small in version 0.37 of dh-make.
-#
-# Modified to make a template file for a multi-binary package with separated
-# build-arch and build-indep targets  by Bill Allombert 2001
 
-# Uncomment this to turn on verbose mode.
-#export DH_VERBOSE=1
-
-# This has to be exported to make some magic below work.
-export DH_OPTIONS
-
-#Architecture
-build: build-arch build-indep
+include /usr/share/cdbs/1/rules/debhelper.mk
+include /usr/share/cdbs/1/class/makefile.mk
+include /usr/share/cdbs/1/rules/utils.mk
 
 EPICS_HOST_ARCH:=$(shell /usr/epics/base/startup/EpicsHostArch)
 
@@ -25,111 +11,83 @@ RTEMS_TARGETS=RTEMS-mvme2100 RTEMS-mvme3100 RTEMS-mvme5500
 DEBUG_TAGETS=$(EPICS_HOST_ARCH)-debug
 TARGETS+=$(DEBUG_TAGETS) $(RTEMS_TARGETS)
 
-MFLAGS += EXTRA_ENV=USE_RPATH USE_RPATH=NO CROSS_COMPILER_TARGET_ARCHS="\"$(TARGETS)\""
+DEB_MAKE_MAKEVARS = EPICS_HOST_ARCH=$(EPICS_HOST_ARCH) \
+EXTRA_ENV=USE_RPATH USE_RPATH=NO \
+CROSS_COMPILER_TARGET_ARCHS=\""$(TARGETS)"\"
 
+# Prevent CFLAGS and similar from being passed to EPICS since
+# this will break cross-builds of things.
+DEB_MAKE_INVOKE  = $(DEB_MAKE_ENVVARS) $(MAKE) -f new.make -C $(DEB_BUILDDIR) $(DEB_MAKE_MAKEVARS)
 
-build-arch: build-arch-stamp
-build-arch-stamp: build-edl $(all-all)
+DEB_BUILDDIR=$(CURDIR)/support
 
-	# Add here commands to compile the arch part of the package.
-	cd support && EPICS_HOST_ARCH=$(EPICS_HOST_ARCH) $(MAKE) -f new.make $(MFLAGS) all
-	cd support && EPICS_HOST_ARCH=$(EPICS_HOST_ARCH) $(MAKE) -f new.make $(MFLAGS) INSTALL_LOCATION=$$PWD/inst all
-	ln -s support/inst inst
+DEB_MAKE_CLEAN_TARGET = clean
+DEB_MAKE_BUILD_TARGET = all
+DEB_MAKE_INSTALL_TARGET = all INSTALL_LOCATION=$(CURDIR)/debian/tmp/usr/epics/base
+DEB_MAKE_CHECK_TARGET =
 
-	# remove unneeded testing stuff
-	rm -f inst/bin/*/*test*
-	rm -f inst/bin/*/*demo*
-	rm -f inst/lib/*/*test*
-	rm -f inst/lib/*/*Test*
-	rm -f inst/lib/*/*demo*
-	rm -f inst/dbd/*test*
-	rm -f inst/dbd/*Test*
-	rm -f inst/dbd/*demo*
+DEB_INSTALL_DOCS_ALL = support/README support/LICENSE
 
-	# We will fetch these ourselves
-	# since many are not install anyway
-	rm -rf inst/db
+# prevent debug and cross targets from being stripped
+DEB_DH_STRIP_ARGS := -Xdebug -XRTEMS
 
-	touch $@
+build/edm-synapps:: convert-edl-stamp
 
-ADL=$(wildcard support/all_adl/*.adl)
-EDL=$(ADL:support/all_adl/%.adl=support/edl/%.edl)
+convert-edl-stamp:
+	install -d $(CURDIR)/op
+	install -m 644 -t $(CURDIR)/op support/all_adl/*.adl
 
-build-edl: build-edl-pre $(EDL)
-
-build-edl-pre:
 	rm -f support/edlskip
+	for ff in op/*.adl; do \
+		fromdos $$ff; \
+		if adl2edl -rename -rgb $$ff > $${ff%.adl}.edl.tmp; then \
+			mv $${ff%.adl}.edl.tmp $${ff%.adl}.edl; \
+		else \
+			rm $${ff%.adl}.edl.tmp; \
+			echo "Failed to convert $$ff" >> support/edlskip; \
+		fi \
+	done
 
-$(EDL): \
-support/edl/%.edl: support/all_adl/%.adl
-	test -d support/edl || install -d support/edl
-	if adl2edl -rename -rgb $< > $@.tmp; then mv $@.tmp $@; \
-else rm $@.tmp; echo "Failed to convert $@" >> support/edlskip;\
-fi
-
-build-indep: build-indep-stamp
-build-indep-stamp:
-
-	# Add here commands to compile the indep part of the package.
-	#$(MAKE) doc
 	touch $@
 
-clean:
-	dh_testdir
-	dh_testroot
-	rm -f build-arch-stamp build-indep-stamp
-	cd support && EPICS_HOST_ARCH=$(EPICS_HOST_ARCH) $(MAKE) $(MFLAGS) -f new.make clean
-	rm -rf inst support/inst
+clean::
+	rm -rf op
+	rm -f convert-edl-stamp support/edlskip
+	rm -f adltemp
 
-	dh_clean 
-
-install: install-indep install-arch
-install-indep:
-	dh_testdir
-	dh_testroot
-	dh_clean -k -i 
-	dh_installdirs -i
-
-	install -d debian/epics-synapps-doc/usr/share/doc/epics-synapps/
-	install -m 644 -t debian/epics-synapps-doc/usr/share/doc/epics-synapps/ support/README support/LICENSE
-
-	install -d debian/edm-synapps/usr/epics/base/op/edl
-	install -m 644 -t debian/edm-synapps/usr/epics/base/op/edl support/edl/*.edl
-
-	install -m 644 support/edlskip debian/epics-synapps-doc/usr/share/doc/epics-synapps/
-
-	dh_install -i
-
-install-arch-pre:
-	dh_testdir
-	dh_testroot
-	dh_clean -k -s 
-	dh_installdirs -s
-
-devdir=debian/epics-synapps-dev/usr
+devdir=debian/tmp/usr
 
 basedir=$(devdir)/epics/base
 hostbin=$(basedir)/bin/$(EPICS_HOST_ARCH)
 hostlib=$(basedir)/lib/$(EPICS_HOST_ARCH)
 
-install-arch-host:
-	install -d $(devdir)/bin
-	install -d $(devdir)/lib
+common-install-arch::
+	# remove unneeded testing stuff
+	rm -f $(basedir)/bin/*/*test*
+	rm -f $(basedir)/bin/*/*demo*
+	rm -f $(basedir)/lib/*/*test*
+	rm -f $(basedir)/lib/*/*Test*
+	rm -f $(basedir)/lib/*/*demo*
+	rm -f $(basedir)/dbd/*test*
+	rm -f $(basedir)/dbd/*Test*
+	rm -f $(basedir)/dbd/*demo*
 
-	install -d $(hostbin)
-	install -d $(hostlib)
-	install -d $(basedir)/include
-	install -d $(basedir)/db
-	install -d $(basedir)/dbd
-	install -d $(basedir)/as/req
-
-	install -d $(basedir)/configure/rules.d
+install/epics-synapps-dev::
+	# We will fetch these ourselves
+	# since many are not install anyway
+	rm -rf $(CURDIR)/debian/tmp/usr/epics/base/db/*
 
 	# find all .db files
 	find support -name '*.db' -exec install -m 644 {} $(basedir)/db/ \;
 
+	install -d $(basedir)/as/req
+
 	# find all autosave request files
 	find support -name '*.req' -exec install -m 644 {} $(basedir)/as/req/ \;
+
+	rm -f $(CURDIR)/debian/tmp/usr/epics/base/configure/RULES_BUILD
+	rm -f $(CURDIR)/debian/tmp/usr/epics/base/configure/RELEASE.*
+	install -d $(basedir)/configure/rules.d
 
 	install -m 644 support/seq/*/configure/RULES_BUILD \
 $(basedir)/configure/rules.d/seqsnc.make
@@ -143,119 +101,34 @@ $(basedir)/configure/rules.d/seqsnc.make
 	echo 'SNC = $$(call PATH_FILTER, $$(TOOLS)/snc$$(HOSTEXE))' >> \
 $(basedir)/configure/rules.d/seqsnc.make
 
-	# Executables for /usr/epics/base/bin/host-arch/
-	install -m 755 -t $(hostbin) \
-inst/bin/$(EPICS_HOST_ARCH)/*
 	# Executables for /usr/bin
-	install -m 755 -t $(devdir)/bin \
-inst/bin/$(EPICS_HOST_ARCH)/snc
+	install -d $(devdir)/bin
+	install -m 755 -t $(devdir)/bin $(hostbin)/snc
 	# symlink
 	rm -f $(hostbin)/snc
 	ln -s ../../../../bin/snc $(hostbin)/snc
 
-	# Static libraries
-	install -m 644 -t $(hostlib) \
-inst/lib/$(EPICS_HOST_ARCH)/*.a
+install/epics-synapps-libs::
+	install -d $(devdir)/lib
 
-	# Shared libraries (/usr/lib)
-	install -m 644 -t $(devdir)/lib \
-inst/lib/$(EPICS_HOST_ARCH)/*.so.*
+	# put sonamed libraries in /usr/lib
+	mv -t $(devdir)/lib $(hostlib)/*.so.*
 
-	# copy broken symlinks
-	install -m 644 -t $(hostlib) \
-inst/lib/$(EPICS_HOST_ARCH)/*.so
+	# put symlinks in /usr/epics/base/lib/$EPICS_HOST_ARCH/
+	for sonm in $(devdir)/lib/*.so.*; do \
+		lnam=`basename $$sonm|cut -f '1,2' -d '.'`; \
+		rm -f $(hostlib)/$${lnam}; \
+		ln -s ../../../../lib/`basename $$sonm` $(hostlib)/$$lnam; \
+	done
+# 	for ff in $(epics_linklib); do rm -f $$ff; ln -s ../../../../lib/`basename $$ff`.$(SOV) $$ff; done
 
-	# fix symlinks for compileing
-	# link /usr/epics/base/lib/host-arch/*.so to /usr/lib/*.so.*
-	$(MAKE) -f $(CURDIR)/debian/rules -C $(hostlib) install-arch-host-lib
+install/edm-synapps::
+	install -d $(basedir)/op/edl
+	install -m 644 -t $(basedir)/op/edl op/*.edl
 
-	# headers
-	install -m 644 -t $(basedir)/include \
-inst/include/*
+	install -d debian/tmp/usr/share/doc/edm-synapps
+	install -m 644 support/edlskip debian/tmp/usr/share/doc/edm-synapps/
 
-	# database definitions
-	install -m 644 -t $(basedir)/dbd \
-inst/dbd/*
-
-	# host -debug
-	install -d $(basedir)/bin
-	cp -r inst/bin/$(EPICS_HOST_ARCH)-debug $(basedir)/bin/
-
-	install -d $(basedir)/lib
-	cp -r inst/lib/$(EPICS_HOST_ARCH)-debug $(basedir)/lib/
-
-# in $(hostlib)
-install-arch-host-lib:
-	for ff in *.so; do \
-rm -f $$ff; \
-ln -s ../../../../lib/$$ff.* $$ff; \
-done
-
-# $(1) is target name (ie RTEMS-mvme3100)
-define rule-install-rtems
-
-$(1)-pkg = epics-synapps-$(1:RTEMS-%=%)
-
-install-arch-$(1):
-# TODO: uncomment when building loadable objects
-# 	if [ -d inst/bin/$(1) ]; then \
-# 	install -d debian/$$($(1)-pkg)/usr/epics/base/bin; \
-# 	cp -r inst/bin/$(1) debian/$$($(1)-pkg)/usr/epics/base/bin/; \
-# 	fi
-	if [ -d inst/lib/$(1) ]; then \
-	install -d debian/$$($(1)-pkg)/usr/epics/base/lib; \
-	cp -r inst/lib/$(1) debian/$$($(1)-pkg)/usr/epics/base/lib/; \
-	fi
-
-install-arch-targets += install-arch-$(1)
-
-endef
-
-$(foreach targ,$(RTEMS_TARGETS),$(eval $(call rule-install-rtems,$(targ))))
-
-install-arch-post:
-	dh_install -s
-
-install-arch: install-arch-pre install-arch-host $(install-arch-targets) install-arch-post
-
-# Must not depend on anything. This is to be called by
-# binary-arch/binary-indep
-# in another 'make' thread.
-binary-common:
-	dh_testdir
-	dh_testroot
-	dh_installchangelogs 
-	dh_installdocs
-	dh_installexamples
-#	dh_installmenu
-#	dh_installdebconf	
-#	dh_installlogrotate	
-#	dh_installemacsen
-#	dh_installpam
-#	dh_installmime
-#	dh_python
-#	dh_installinit
-#	dh_installcron
-#	dh_installinfo
-	dh_installman
-	dh_link
-	dh_strip -Xrtems -XRTEMS -Xdebug
-	dh_compress
-	dh_fixperms
-#	dh_perl
-	dh_makeshlibs
-	dh_installdeb
-	LD_LIBRARY_PATH=$$LD_LIBRARY_PATH:$(CURDIR)/inst dh_shlibdeps
-	dh_gencontrol
-	dh_md5sums
-	dh_builddeb
-# Build architecture independant packages using the common target.
-binary-indep: build-indep install-indep
-	$(MAKE) -f debian/rules DH_OPTIONS=-i binary-common
-
-# Build architecture dependant packages using the common target.
-binary-arch: build-arch install-arch
-	$(MAKE) -f debian/rules DH_OPTIONS=-s binary-common
-
-binary: binary-arch binary-indep
-.PHONY: build clean binary-indep binary-arch binary install install-indep install-arch
+install/medm-synapps::
+	install -d $(basedir)/op/adl
+	install -m 644 -t $(basedir)/op/adl op/*.adl
