@@ -22,6 +22,7 @@ Description: Documentation for synapps components
 Package: epics-synapps-libs
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, epics-dev (>= 3.14.10-7), epics-dev (<< 3.14.11)
+Conflicts: epics-synapps-dev (<= 5.4.1-2)
 Description: Shared libraries for IOCs using synApps modules
  synApps is a collection of software tools that help to create a control system
  for beamlines.  It contains beamline-control and data-acquisition components
@@ -33,6 +34,7 @@ Description: Shared libraries for IOCs using synApps modules
 Package: epics-synapps
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, epics-synapps-libs (= ${source:Version})
+Conflicts: epics-synapps-doc (<= 5.4.1-2)
 Suggests: epics-synapps-doc (= ${binary:Version})
 Description: Files for running IOCs using synApps modules
  synApps is a collection of software tools that help to create a control system
