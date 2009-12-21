@@ -4,8 +4,11 @@ Priority: extra
 Maintainer: Michael Davidsaver <mdavidsaver@bnl.gov>
 Build-Depends: debhelper (>= 7), cdbs,
                epics-dev (>= 3.14.10-7), epics-dev (<< 3.14.11),
-               epics-rtems-mvme2100, epics-rtems-mvme3100, epics-rtems-mvme5500,
+               rtems-epics-mvme2100,
+               rtems-epics-mvme3100,
+               rtems-epics-mvme5500,
                adl2edl, tofrodos,
+Rtems-Depends: rtems, rtems-libbspext, rtems-cexp, rtems-epics
 Standards-Version: 3.8.0
 Homepage: http://www.aps.anl.gov/bcda/synApps/index.php
 
@@ -82,11 +85,11 @@ Description: All MEDM display panels from synapps
  These will be useful if you find a problem with the automatically converted panels and
  want to rerun the conversion yourself.
 
-Package: epics-synapps-mvme2100
+Package: rtems-synapps-mvme2100
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends},
-         epics-synapps-dev (= ${binary:Version}),
-         epics-rtems-mvme2100,
+Depends: ${rtems:Depends}, epics-synapps-dev (= ${binary:Version})
+Conflicts: epics-synapps-mvme2100
+Provides: epics-synapps-mvme2100
 Description: synApps built for the mvme2100
  synApps is a collection of software tools that help to create a control system
  for beamlines.  It contains beamline-control and data-acquisition components
@@ -95,11 +98,11 @@ Description: synApps built for the mvme2100
  .
  This package contains support for the MVME2100 PowerPC based VME SBC.
 
-Package: epics-synapps-mvme3100
+Package: rtems-synapps-mvme3100
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends},
-         epics-synapps-dev (= ${binary:Version}),
-         epics-rtems-mvme3100,
+Depends: ${rtems:Depends}, epics-synapps-dev (= ${binary:Version})
+Conflicts: epics-synapps-mvme3100
+Provides: epics-synapps-mvme3100
 Description: synApps built for the mvme3100
  synApps is a collection of software tools that help to create a control system
  for beamlines.  It contains beamline-control and data-acquisition components
@@ -110,9 +113,9 @@ Description: synApps built for the mvme3100
 
 Package: epics-synapps-mvme5500
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends},
-         epics-synapps-dev (= ${binary:Version}),
-         epics-rtems-mvme5500,
+Depends: ${rtems:Depends}, epics-synapps-dev (= ${binary:Version})
+Conflicts: epics-synapps-mvme5500
+Provides: epics-synapps-mvme5500
 Description: synApps built for the mvme5500
  synApps is a collection of software tools that help to create a control system
  for beamlines.  It contains beamline-control and data-acquisition components
