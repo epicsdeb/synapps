@@ -15,6 +15,9 @@ CROSS_COMPILER_TARGET_ARCHS += RTEMS-mvme3100
 #      and then copy what is appropriate.
 #INSTALL_LOCATION=
 
+# Skip some modules
+SKIP += vxStats allenBradley
+
 #Note: SNCSEQ will create configure/RULES_BUILD with the additional
 #      rules required to handle .st files.
 
@@ -243,8 +246,10 @@ clean-all += clean-$(1)
 
 endef
 
+MMODS = $(filter-out $(SKIP),$(MODS))
+
 # Generate rules for all modules
-$(foreach m,$(MODS),$(eval $(call build-mod,$(m))))
+$(foreach m,$(MMODS),$(eval $(call build-mod,$(m))))
 
 realall: $(build-all)
 
@@ -260,7 +265,7 @@ clean: $(clean-all)
 
 help:
 	@echo "Modules:"
-	@echo " $(MODS)" | sed -e 's/ /\n  /g'
+	@echo " $(MMODS)" | sed -e 's/ /\n  /g'
 	@echo "Targets:"
 	@echo "  all        - Build all modules"
 	@echo "  build-MOD  - build a module and its dependencies"
