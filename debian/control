@@ -5,6 +5,7 @@ Maintainer: Michael Davidsaver <mdavidsaver@bnl.gov>
 Build-Depends: debhelper (>= 7), cdbs, rtems-debhelper,
                epics-dev (>= 3.14.10-10), epics-dev (<< 3.14.11),
                rtems-epics-mvme2100,
+               rtems-epics-mvme2307,
                rtems-epics-mvme3100,
                rtems-epics-mvme5500,
                adl2edl, tofrodos,
@@ -100,6 +101,20 @@ Description: synApps built for the mvme2100
  Open license. 
  .
  This package contains support for the MVME2100 PowerPC based VME SBC.
+
+Package: rtems-synapps-mvme2307
+Architecture: any
+Depends: ${rtems:Depends}, epics-synapps-dev (= ${binary:Version})
+Conflicts: epics-synapps-mvme2307
+Provides: epics-synapps-mvme2307
+Replaces: epics-synapps-mvme2307
+Description: synApps built for the mvme2307
+ synApps is a collection of software tools that help to create a control system
+ for beamlines.  It contains beamline-control and data-acquisition components
+ for an EPICS based control system.  synApps is distributed under the EPICS
+ Open license. 
+ .
+ This package contains support for the MVME2307 PowerPC based VME SBC.
 
 Package: rtems-synapps-mvme3100
 Architecture: any
