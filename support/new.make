@@ -161,6 +161,12 @@ MODS += dxp
 dxp_VER = 2-9
 dxp_DEPS = asyn calc seq sscan camac mca busy autosave
 
+MODS += xxx
+xxx_VER = 5-4
+xxx_DEPS += asyn calc seq sscan camac mca busy autosave motor std
+xxx_DEPS += dac128V ip330 ipUnidig love ccd optics stream delaygen
+xxx_DEPS += mca pilatus
+
 #MODS += 
 #_VER = 
 #_DEPS = 
