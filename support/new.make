@@ -18,6 +18,10 @@ CROSS_COMPILER_TARGET_ARCHS += RTEMS-mvme3100
 # Skip some modules
 SKIP += vxStats allenBradley
 
+LINUX_USB_INSTALLED=YES
+LINUX_TIFF_INSTALLED=YES
+ENVIRON += LINUX_USB_INSTALLED LINUX_TIFF_INSTALLED
+
 #Note: SNCSEQ will create configure/RULES_BUILD with the additional
 #      rules required to handle .st files.
 
