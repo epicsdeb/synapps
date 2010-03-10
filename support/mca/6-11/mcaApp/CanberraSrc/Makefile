@@ -36,13 +36,13 @@ PROD_IOC_Linux += nmcDemo
 # We can only use LLC sockets on Linux versions
 # more recent than 2.6.13 due to a show-shopper bug in the LLC socket
 # layer that was fixed in 2.6.14. 
-#USR_CFLAGS_Linux += -DUSE_SOCKETS
+USR_CFLAGS_Linux += -DUSE_SOCKETS
 # If LLC sockets are not being used on Linux, and libnet is being used instead, then
 # uncomment the following lines.
-USR_CFLAGS_linux-x86 += -g `libnet-config --defines` 
-mcaCanberra_SYS_LIBS_Linux += net pcap
-mcaAIM_SYS_LIBS_Linux      += net pcap
-nmcDemo_SYS_LIBS_Linux     += net pcap
+#USR_CFLAGS_linux-x86 += -g `libnet-config --defines` 
+#mcaCanberra_SYS_LIBS_Linux += net pcap
+#mcaAIM_SYS_LIBS_Linux      += net pcap
+#nmcDemo_SYS_LIBS_Linux     += net pcap
 
 ## <name>_registerRecordDeviceDriver.cpp will be created from <name>.dbd
 mcaCanberra_SRCS += nmc_comm_subs_1.c 
