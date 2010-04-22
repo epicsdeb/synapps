@@ -1,0 +1,514 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>areaDetectorReleaseNotes.html</title>
+  <meta content="text/html; charset=ISO-8859-1" http-equiv="Content-Type" />
+</head>
+<body>
+  <h1 style="text-align: center">
+    areaDetector Release Notes</h1>
+  <h2 style="text-align: center">
+    Release 1-6 (8-April-2010)</h2>
+  <ul>
+    <li>General
+      <ul>
+        <li>Converted to be compatible with asynPortDriver in asyn R4-13, which changes parameter
+          handling.</li>
+        <li>Changes to support 64-bit architectures, including linux-x86_64. This also required
+          changes to the synApps modules on which areaDetector applications depend (autosave,
+          busy, etc.)</li>
+        <li>Changes in Makefiles to support the win32-x86-debug architecture.</li>
+        <li>Added status parameter to indicate if the specified file path (NDFilePath) exists.
+          Added a record to NDFile.template and a status indicator to all medm file saving
+          screens.</li>
+        <li>Append a trailing '/' character to file path (NDFilePath) if one is not present.</li>
+      </ul>
+    </li>
+    <li>Drivers
+      <ul>
+        <li>Fixed a bug in the Roper driver. There was a buffer overflow problem in the function
+          that converts C strings to Windows BSTR strings. This would cause the IOC to crash
+          when saving SPE files with Comment PVs longer than 40 characters.</li>
+        <li>Many fixes to Windows Firewire driver:
+          <ul>
+            <li>Added dropped frame counter.</li>
+            <li>Fixed timeout problem with acquire times &gt; 1 second.</li>
+            <li>Fixed logic when acquisition was turned off</li>
+            <li>Fixed problem with constructor when it encountered a minor error; was causing
+              capture thread not to be started for some cameras.</li>
+            <li>Implemented AcquireTime parameter, previously the time could only be changed via
+              a Firewire feature.</li>
+            <li>Fixed bug when setting a feature value in non-absolute mode after it was set in
+              absolute mode.</li>
+            <li>Removed the ability to change video modes, formats or rates when acquiring because
+              it is too complex to stop and wait for it to be done.</li>
+            <li>Report details for all supported Firewire "features" in report() function, called
+              by asynReport() and dbior().</li>
+          </ul>
+        </li>
+        <li>pvCam driver. Fixed problem with exposure time being rounded to integer. Add PVs
+          to provide version information for software and firmware where possible. Add PVs
+          to provide serial numbers where possible. Perform checks on parameters that are
+          not available for all cameras. </li>
+        <li>ADSC driver. Fixed a bug where it would not correctly load the per-image parameters
+          for the first image in a dataset if they were changed after the acquisition was
+          started but before the first image was taken. Added ability to write simulated data
+          to disk in the simulation driver.</li>
+      </ul>
+    </li>
+    <li>Plugins
+      <ul>
+        <li>NDPluginROI. Major rewrite. Previously the ROI plugin supported multiple ROIs,
+          performed statistics calculations, and highlighted the ROIs. The new version is
+          much simpler; it supports only a single ROI, and does not calculate statistics or
+          do highlighting. Those functions have been moved to new plugins. One new function
+          has been added, the ability to divide the array by a scale factor, which is useful
+          for avoiding overflow when binning. Fixed problem when a single color is extracted
+          from a color image; it now removes the unused dimension and changes the colorMode
+          to mono.</li>
+        <li>NDPluginColorConvert. Added conversions from mono to RGB1, RGB2, and RGB3, and
+          from RGB1, RGB2, and RGB3 to mono. Previously this plugin only built on Linux and
+          WIN32. Now it builds and does all conversions except Bayer on all architectures.
+          Bayer conversion is restricted to Linux and WIN32.</li>
+        <li>Added new NDPluginStats plugin. This plugin calculates statistics on an array.
+          It replaces the statistics calculations that were previously performed in the ROI
+          plugin. It adds new statistics, including the centroid position and width. It also
+          computes X and Y profiles, including average profiles, profiles at the centroid
+          position, and profiles at a user-defined cursor position. Thanks to Stephen Mudie
+          from the Australian Synchrotron, John Dobbins from Cornell, and Huijuan Xu from
+          Brookhaven National Lab for the initial versions of these calculations.</li>
+        <li>Added new NDPluginProcess plugin. This plugin does arithmetic processing on arrays:
+          <ul>
+            <li>Background subtraction.</li>
+            <li>Flat field normalization.</li>
+            <li>Offset and scale.</li>
+            <li>Low and high clipping.</li>
+            <li>Recursive filtering in the time domain.</li>
+            <li>Conversion to a different output data type.</li>
+          </ul>
+        </li>
+        <li>Added new NDPluginOverlay plugin. This plugin adds graphic overlays to an image.
+          It replaces the "Highligh ROIs" function that was previously provided in the ROI
+          plugin. But it is much more general, and can be used to display not only ROIs, but
+          multiple cursors, user-defined boxes, etc.</li>
+      </ul>
+    </li>
+    <li>Example IOCs
+      <ul>
+        <li>Greatly simplified the st.cmd and auto_settings.req files for each IOC. This was
+          done by creating two new files: iocBoot/commonPlugins.cmd and iocBoot/commonPlugin_settings.req.
+          These files define a common set of plugins that are loaded for all example IOCs.
+          They load all of the plugins except the NDPluginStdArrays plugin, because that plugin
+          needs to have its data type and waveform size matched to the specific detector.</li>
+      </ul>
+    </li>
+    <li>medm screens
+      <ul>
+        <li>Created medm screen "components" which are used in actual screens via the "composite
+          file" mechanism wherever possible. This simplifies the maintenance of the medm screens
+          for detectors and plugins.</li>
+      </ul>
+    </li>
+    <li>Viewers
+      <ul>
+        <li>Fixed a bug in the ImageJ EPICS_AD_Viewer.java that required restarting the plugin
+          if it was told to start displaying before any frames had been acquired by the IOC.</li>
+      </ul>
+    </li>
+    <li>Internals
+      <ul>
+        <li>Added new form of NDArrayPool::convert that only changed data type, does not take
+          dims argument.</li>
+        <li>Added more fields to the NDArrayInfo_t structure and the NDArray::getInfo method
+          to simplify handling color images.</li>
+      </ul>
+    </li>
+  </ul>
+  <h2 style="text-align: center">
+    Release 1-5 (23-August-2009)</h2>
+  <ul>
+    <li>General
+      <ul>
+        <li>Added "attributes" to NDArray. Attributes are used to contain metadata about the
+          array. Each attribute has a name, description, datatype and value. Attributes can
+          be added by drivers or plugins, and travel with the array through the plugin chain,
+          and can ultimately be written with the array data to a file. Attributes can come
+          from driver or plugin parameters, or from EPICS PVs anywhere on the network.</li>
+        <li>Separated parameters and functions which are general to NDArray data (asynNDArrayDriver
+          base class) from those which are specific to areaDetector data (ADDriver base class).
+          This makes it easy and clean to use asynNDArray driver for future applications beyond
+          areaDetector, such as drivers for the XIA xMAP digital spectroscopy system.</li>
+      </ul>
+    </li>
+    <li>Drivers
+      <ul>
+        <li>New driver for mar345 online image plate detector. This driver communicates via
+          a TCP/IP socket with the mar345dtb program, which must be used to control the detector.</li>
+        <li>New driver for Firewire IIDC/DCAM cameras under Windows. This driver uses the
+          Windows 1394 camera driver from Carnegie Mellon University.</li>
+        <li>New driver for the Perkin-Elmer amorphous silicon flat panel detectors. Thanks
+          to Brian Tieman and John Hammonds for this driver.</li>
+        <li>New driver for the Roper Scientific detectors using the PVCAM library. Thanks
+          to Brian Tieman for this driver.</li>
+        <li>Added support for color to the simulation detector driver. It now supports color
+          modes Mono, RGB1, RGB2 and RGB3.</li>
+        <li>Fixed 2 serious bugs in the Roper driver. It was not selecting ROI mode correctly.
+          When NumAcquisitions was &gt; 1 it was only collecting the first frame correctly,
+          subsequent frames were the same as a first one. This has been isolated to a bug
+          in the WinView COM interface, and a workaround for the problem has been implemented.</li>
+        <li>Solved problem of Prosilica driver crashing on Linux. The problem was with the
+          SIGALARM signal handlers in EPICS base (R3.14.10 and earlier). There is a patch
+          for base to fix this problem, and this fix will be included in EPICS base 3.14.11.</li>
+        <li>Added an additional state, "Initializing" to DetectorState_RBV record.</li>
+        <li>Added support for ADTriggerMode=External in marCCD driver. In this mode the AcquireTime
+          is not used to stop acquisition; acquisition must be stopped by external software
+          settings Acquire=0. The AcquireTime PV is written to the marCCD TIFF file header
+          as usual. This allows an external timing control of the shutter but with the actual
+          exposure time written to the header. Fixed minor problem with marCCD driver. If
+          Acquire was set to Stop when it was not acquiring then the next time acquisition
+          was started it would stop immediately.</li>
+      </ul>
+    </li>
+    <li>Plugins
+      <ul>
+        <li>Changed NDPluginFile from directly supporting netCDF to be a base class from which
+          actual file plugins derive.</li>
+        <li>Changed netCDF file support to be derived class inheriting from NDPluginFile.
+          Added support for writing NDArray attributes to the netCDF file.</li>
+        <li>New file plugin for TIFF files. The TIFF support includes 8, 16 and 32-bit integers.
+          It supports monochrome and color images, including all 3 color interleave modes
+          (RGB1, RGB2 and RGB3. areaDetector contains all required support files to build
+          and run the TIFF file plugin on win32-x86, cygwin-x86 and Linux. To build on other
+          operating systems it is necessary to install the libtiff and libtiffstatic packages.
+          Thanks to John Hammonds for the initial work on this plugin.</li>
+        <li>New file plugin for JPEG files. The JPEG support is limited to 8-bit integers,
+          but it supports monochrome and color images, including all 3 color interleave modes
+          (RGB1, RGB2 and RGB3). Control is provided for the JPEG quality (compression) on
+          a scale of 0 (worst) to 100 (best). areaDetector contains all required support files
+          to build and run the JPEG file plugin on win32-x86, cygwin-x86, and Linux. To build
+          on other operating systems it is necessary to install the libjpeg and libjpegstatic
+          packages. </li>
+        <li>New file plugin for NeXus HDF files written by John Hammonds. The NeXus support
+          has not been extensively tested, and is currently limited to writing a single array
+          per file. Support for multiple arrays per file will be added in a future release.
+          areaDetector contains all required support files to build and run the NeXus file
+          plugin on win32-x86, cygwin-x86 and Linux. To build on other operating systems it
+          is necessary to install the Nexus, HDF4, HDF5, and MXML packages. </li>
+        <li>Fixed bug in NDPluginFile: was not closing file properly when stream mode was
+          stopped before the requested number of frames.</li>
+        <li>Fixed logic problem with FileNumber record in NDFile.template database. The previous
+          logic that kept the ao record in sync with the ai record was causing the ao record
+          to process when it should not have been, causing an extra call to the driver.</li>
+        <li>Added an additional record to NDPluginBase.template, PluginType_RBV. All plugins
+          set this to a unique string to identify the plugin type.</li>
+      </ul>
+    </li>
+    <li>medm displays
+      <ul>
+        <li>Added new top-level detector-specific displays for Prosilica (prosilica.adl),
+          Firewire (firewire.adl), and simDetector (simDetector.adl). ADBase.adl should no
+          longer be used for these cameras.</li>
+      </ul>
+    </li>
+    <li>Viewers
+      <ul>
+        <li>Added new ImageJ plugin viewer. This was begun by Tim Madden from APS, and now
+          includes support for all NDArray data types and color modes, i.e. Mono, RGB1 (pixel
+          interleave), RGB2 (row interleave) and RGB3 (plane interleave). The plugin directory
+          includes a plugin written elsewhere for reading and writing netCDF files, so ImageJ
+          can be used to display images and image sequences (movies) saved with the NDFileNetCDF
+          plugin. It also includes a dynamic profile plugin written elsewhere for line profiles
+          that update in real time as new images are displayed.</li>
+        <li>Improved IDL epics_ad_display viewer. The last image is now stored in the program,
+          and it is now redisplayed if the view mode is changed (TVSCL to iimage, etc.) or
+          if the display parameters are changed (autoscale, flip Y, minimum, maximum, etc.).</li>
+      </ul>
+    </li>
+    <li>Documentation
+      <ul>
+        <li>Documented the source code with comments that doxygen can process to produce HTML
+          documentation directly from the source. This provides documentation for each class,
+          as well as the class inheritance tree. Thanks to John Hammonds for starting this.</li>
+      </ul>
+    </li>
+    <li>Internals
+      <ul>
+        <li>Moved the asynPortDriver base C++ class from the areaDetector module to the asyn
+          module. The asynPortDriver base class was modified slightly to make it more general.
+          In particular the constructor no longer hardcodes ASYN_CANBLOCK, ASYN_MULTIDEVICE,
+          epicsThreadPriorityMedium, and epicsThreadStackMedium. This requires that asyn R4-11
+          or later be used, and requires 2 additional arguments to the constructor (priority
+          and stackSize) for all areaDetector drivers and plugins.</li>
+        <li>Removed mutexId from asynPortDriver base class, and added lock() and unlock()
+          methods. This hides the implementation of the locking, since we might want to implement
+          these with asynManager->lockPort in the future.</li>
+        <li>Removed the file ADStdParams.h. Moved the definition of parameters that are general
+          to NDArray drivers into asynNDArrayDriver.h, and those that are specific to areaDetector
+          drivers into ADDriver.h.</li>
+        <li>Added an XML parser which is used for attribute definition files.</li>
+        <li>Fixed Makefiles to instantiate templates on vxWorks.</li>
+        <li>Moved createFileName() from ADDriver and NDPluginDriver to their base class, asynNDArrayDriver.</li>
+        <li>Changed colorMode and bayerPattern from being properties of NDArray to being attributes,
+          since they are not general to NDArray but are specific to areaDetector.</li>
+        <li>Added new method asynPortDriver::drvUserCreateParam, which simplifies drvUserCreate
+          code in all drivers and plugins.</li>
+        <li>Reduced number of files for all plugins and drivers. Previously there was an XXX.cpp,
+          drvXXX.h, and drvXXXEpics.c. The .h and .c files were used to keep the drivers and
+          plugins independent of EPICS IOC code. It was decided that that extra 2 files per
+          driver and plugin were not worth the added complexity. If it is desired to run drivers
+          and plugins outside of an IOC it could be done with conditional compilation of the
+          IOC dependent code, which is all at the end of the .cpp file. The iocsh commands
+          to create plugins have been changed from drvNDxxxConfigure to NDxxxConfigure, for
+          example drvNDStdArraysConfigure was changed to NDStdArraysConfigure. This requires
+          changes to all st.cmd files.</li>
+        <li>Renamed a few parameters and the drvInfo strings to logically separate things
+          that are general to NDArrays and things that are specific to area detectors. For
+          example, the drvInfo fields IMAGE_SIZE_xxx were renamed to ARRAY_SIZE_xxx, and IMAGE_COUNTER
+          was renamed to ARRAY_COUNTER.</li>
+        <li>Added call to epicsExit() to all driver IOC main programs. This is important for
+          allowing EPICS to exit cleanly. Without this on Linux it was often necessary to
+          kill the IOC with ^C, rather than just typing "exit".</li>
+        <li>NDStdArrays.template had the DTYP field of the waveform record changed from asynInt$(SIZE)ArrayIn
+          to asyn$(TYPE)ArrayIn. This was needed to allow it to be used with asynFloat32 and
+          asynFloat64 data types. This requires a change to all iocBoot st.cmd files that
+          load this template file.</li>
+        <li>Plugins can now add attributes to an NDArray, which means they can modify the
+          array and hence need to make a copy of it. This requires that NDArray->release()
+          must be called in the plugin itself, rather than in the NDPluginDriver base class
+          as was done previously.</li>
+      </ul>
+    </li>
+  </ul>
+  <h2 style="text-align: center">
+    Release 1-4 (30-January-2009)</h2>
+  <ul>
+    <li>Added a driver for Roper Scientific (i.e. Princeton Instruments and Photometrics)
+      detectors. It uses the Microsoft COM interface to control the WinView or WinSpec
+      programs. The previous support in the "ccd" module used a Visual Basic socket server
+      and an SNL program to accomplish this. It was hard to maintain, because Visual Basic
+      changed incompatibly from one release of Visual Studio to the next, and because
+      it could not be built with the EPICS build system. The new driver is written in
+      C++, and is built entirely with the EPICS build system. It also supports more WinView
+      features than the ccd version, and makes the detector data available via callbacks.
+      This allows detector data to be displayed with EPICS clients, permits ROI or other
+      plugin calculations, and allows saving in other file formats if desired. </li>
+    <li>Added support for color:
+      <ul>
+        <li>Added NDColorMode_t and NDBayerPattern_t to NDArray.h. Added new fields colorMode
+          and bayerPattern to NDArray structure to indicate the color mode.</li>
+        <li>Added new parameter ADColorMode to ADStdDriverParams.h and new record ColorMode
+          to ADBase.template.</li>
+        <li>Added new parameter NDColorMode and NDBayerPattern to NDPluginBase.h and new records
+          ColorMode and BayerPattern to NDPluginBase.template. Added these records to all
+          plugin medm screens.</li>
+        <li>Added a new plugin NDPluginColorConvert to convert colors. It currently converts
+          Bayer to RGB1, RGB2 or RGB3, RGB1 to RGB2 or RGB3 and RGB3 to RGB1 or RGB2.</li>
+        <li>The Prosilica driver now supports color. It supports RGB1 and Bayer directly,
+          and RGB2 and RGB3 through the NDPluginColorConvert plugin.</li>
+        <li>The NDPluginFile driver now saves the ColorMode and BayerPattern to the netCDF
+          files.</li>
+      </ul>
+    </li>
+    <li>Added a Viewers directory. This contains an IDL viewer for displaying images.
+      The viewer supports color and several different viewing modes. It can be run for
+      free under the IDL Virtual Machine, and should work on any platform with a version
+      of ezcaIDL.so or ezcaIDL.dll built with EPICS 3.14. This directory also contains
+      IDL class libraries for accessing areaDetector. These classes are used by the viewers,
+      but can also be used for other IDL applications.</li>
+    <li>Added new parameters in ADStdDriverParams.h
+      <ul>
+        <li>ADTemperature</li>
+        <li>ADReadStatus</li>
+        <li>ADImageSizeZ</li>
+        <li>ADNumExposuresCounter</li>
+        <li>ADColorMode</li>
+        <li>ADPortNameSelf</li>
+      </ul>
+    </li>
+    <li>Pilatus driver
+      <ul>
+        <li>Send the imgpath command to camserver when the ADFilePath parameter is changed.
+          camserver will then create directories if they do not exist, whereas specifying
+          a path with non-existant directories in the "exposure" or acquire commands will
+          not create directories. </li>
+      </ul>
+    </li>
+    <li>Prosilica driver
+      <ul>
+        <li>Added support for color. </li>
+        <li>Added support for the external sync in, sync out and strobe signals. The sync
+          signals can also be used for general-purpose digital I/O.</li>
+        <li>Made minor changes to the code and to the build system to add support for running
+          the driver under Linux. There are some issues with this drivers use of SIGARLM via
+          Posix Timer library and EPICS signal handlers. I have made some minor modifications
+          to EPICS base 3.14.10 to allow the IOC to run. Prosilica is working on a new version
+          of their driver that should fix these issues, but it is not yet working. The prebuilt
+          binary version of this release of areaDetector includes the fixes to EPICS base
+          and does work satisfactorily.</li>
+      </ul>
+    </li>
+    <li>NDPluginROI
+      <ul>
+        <li>Fixed bug with missing roi argument to setIntegerParam call, some parameters not
+          updating correctly.</li>
+        <li>Added maxBuffers argument to constructor and to iocsh configuration command. This
+          was a serious oversight in the previous versions. maxROIs was being used where the
+          missing maxBuffers parameter should have been used. Unfortunately it requires a
+          new argument to the iocsh drvNDROIConfigure command, which is not backwards compatible
+          with previous startup scripts.</li>
+      </ul>
+    </li>
+    <li>NDArray
+      <ul>
+        <li>Changed the NDArray::copy() methods to NDArrayPool::copy(). Previously the copy
+          was being allocated from the NDArrayPool of the copy source, rather than from the
+          caller's array pool.</li>
+        <li>Added colorMode and bayerPattern fields to NDArray class.</li>
+        <li>Fixed a bug in the NDArray::convertDim function that could cause an array bounds
+          error if a dimension was reversed.</li>
+      </ul>
+    </li>
+    <li>asynPortDriver
+      <ul>
+        <li>Renamed the pasynUser member to pasynUserSelf. This avoids a name conflict with
+          the local variable pasynUser used in many derived classes. Unfortunately this requires
+          changes to derived class code where this-&gt;pasynUser was used.</li>
+      </ul>
+    </li>
+    <li>Added simulation code to ADSC driver. This allows it to be built and tested on
+      systems that do not have the ADSC hardware or software installed.</li>
+    <li>Added $(P)$(R)AutoSave to the save/restore settings in NDFile_settings.req so
+      it will be restored on reboot. This requires care when using drivers such as the
+      Prosilica which can rapidly save very large data files, since file saving may be
+      resumed on reboot. </li>
+    <li>Removed abusy record, replaced with new version of busy record from new busy module.</li>
+    <li>Renamed ADPlugin library to NDPlugin, because it is really N-dimensional.</li>
+    <li>Renamed marCCD library to marCCD_AD, because marCCD is already used in the ccd
+      module, and it conflicts. Changed marCCDSupport.dbd to marCCD_ADSupport.dbd, name
+      of register command, etc.</li>
+    <li>Added PortName_RBV record to ADBase.template and NDPluginBase.template and to
+      all driver and plugin medm screens. This allows the user to see the asyn port name
+      of the driver or plugin, which is useful when switching the NDArray callback source.</li>
+    <li>Modified the detector medm screens to contain links to the plugins that are normally
+      loaded for that driver, e.g. a single instance each of NDStdArrays, NDROI, NDFile
+      and NDColorConvert (for detectors that support color).</li>
+  </ul>
+  <h2 style="text-align: center">
+    Release 1-3 (24-November-2008)</h2>
+  <ul>
+    <li>Added a driver for MarCCD detectors. Compared to the previous support in the "ccd"
+      module, this driver uses the faster Version 1 protocol for the Mar server. It also
+      makes the detector data available via callbacks (by reading the TIFF files as soon
+      as they are written). This allows detector data to be displayed with EPICS clients,
+      and for ROI calculations.</li>
+    <li>Added support for shutter control. Supports shutters that are driven directly
+      from the detector hardware, as well as shutters controlled by EPICS records. Shutter
+      support is implemented for the MarCCD, Pilatus, and simulation detectors.</li>
+    <li>Added new methods for shutter support to the detector base class ADDriver.cpp
+      <ul>
+        <li>ADDriver::setShutter()</li>
+        <li>ADDriver::writeInt32</li>
+      </ul>
+    </li>
+    <li>Reorganized the file I/O parameters, template files and medm screens
+      <ul>
+        <li>Moved the file capture parameters from NDPluginFile.h and NDPluginFile.cpp to
+          ADStdDriverParams.h. This allows a detector driver to use these capture parameters
+          if desired.</li>
+        <li>Removed all of the file I/O records from ADBase.template and ADBase_settings.req.
+          These previously duplicated the records in NDFile.template and NDFile_settings.req,
+          which was hard to maintain. IOCs for detector drivers that can do file I/O now need
+          to load NDFile.template, while those that cannot no longer need to load these records.
+          They also need to have NDFile_settings.req added to auto_settings.req. This does
+          not effect the file plugin support, only drivers that directly do file I/O.</li>
+        <li>Removed the file I/O PVs from ADBase.adl. Added a related display link to NDFile.adl.</li>
+        <li>NDFile.adl now contains only the file related PVs, not the plugin related PVs.
+          The new file NDPluginFile.adl replaces the previous version of NDFile.adl, and contains
+          both the file PVs and the plugin PVs.</li>
+      </ul>
+    </li>
+    <li>Added new enums in ADStdDriverParams.h
+      <ul>
+        <li>ADFrameType_t</li>
+        <li>ADShutterMode_t</li>
+        <li>ADFileMode_t</li>
+      </ul>
+    </li>
+    <li>Added new parameters in ADStdDriverParams.h
+      <ul>
+        <li>ADShutterControl (replaces ADShutter)</li>
+        <li>ADShutterControlEPICS</li>
+        <li>ADShutterStatus</li>
+        <li>ADShutterMode</li>
+        <li>ADShutterOpenDelay</li>
+        <li>ADShutterCloseDelay</li>
+        <li>ADTimeRemaining</li>
+        <li>ADNumImagesCounter</li>
+        <li>ADFrameType</li>
+        <li>ADArrayCallbacks</li>
+        <li>ADFileWriteMode</li>
+        <li>ADFileNumCapture</li>
+        <li>ADFileNumCaptured</li>
+        <li>ADFileCapture</li>
+      </ul>
+      ADArrayCallbacks can be set to 0 to disable callbacks with detector data. For the
+      MarCCD and Pilatus detectors setting this to 0 will disable reading the disk files
+      after collection. This can be used to reduce overhead when EPICS is being used just
+      for control, rather than to access the data. </li>
+    <li>Added variant of NDPluginDriver::createFileName that returns the filePath and
+      fileName separately, rather than a complete file name including the path.</li>
+  </ul>
+  <h2 style="text-align: center">
+    Release 1-2 (24-October-2008)</h2>
+  <ul>
+    <li>Major update to documentation</li>
+    <li>Significant enhancement to ROI plugin. Added net counts, ROI highlighting.</li>
+    <li>Added driver for Pilatus detectors. This has undergone limited testing.</li>
+    <li>Added driver for ADSC detectors (done by Lewis Muir, IMCA-CAT)</li>
+    <li>Removed separate readback parameters in drivers and template files</li>
+    <li>Changed from mbbi/mbbo records to bi/bo records where possible now that the asynInt32
+      interface supports bi/bo records.</li>
+    <li>Internals
+      <ul>
+        <li>Renamed asynParamBase to asynPortDriver.</li>
+        <li>Renamed NDArrayBase to NDArrayDriver</li>
+        <li>Renamed NDPluginBase to NDPluginDriver</li>
+        <li>Renamed NDArrayBuff to NDArrayPool, now in NDArray.cpp.</li>
+        <li>Renamed ADDriverBase to ADDriver</li>
+        <li>Removed ADUtils</li>
+        <li>The asynHandle interface in asyn was renamed to asynGenericPointer, many changes
+          to incorporate this.</li>
+        <li>Base class constructor no longer initializes all asyn interfaces, only the selected
+          ones.</li>
+        <li>NDArray pool is no longer global, each server creates its own pool if needed.</li>
+        <li>Implemented real routines for writeInt32, writeFloat64, and writeOctet in asynPortDriver.cpp,
+          removed them from ADDriver.cpp where they were not needed.</li>
+      </ul>
+    </li>
+  </ul>
+  <h2 style="text-align: center">
+    Release 1-1 (10-May-2008)</h2>
+  <ul>
+    <li>Major rewrite. Converted device drivers and plugins from C to C++ with C++ base
+      classes that handle many of the details of asyn and of callbacks and threading for
+      plugins.</li>
+    <li>Everything except device drivers and top-level EPICS databases and channel access
+      clients are now fully N-dimensional, not restricted to 2-D.</li>
+    <li>NDPluginFile now uses netCDF format, which is a portable self-describing binary
+      file format.</li>
+    <li>Added NDPluginROI which implements region-of-interest.</li>
+  </ul>
+  <h2 style="text-align: center">
+    Release 1-0 (11-Apr-2008)</h2>
+  <ul>
+    <li>Initial release, still many things remaining to be done.</li>
+  </ul>
+  <address>
+    Suggestions and Comments to:
+    <br />
+    <a href="mailto:rivers@cars.uchicago.edu">Mark Rivers </a>: (rivers@cars.uchicago.edu)
+    <br />
+  </address>
+</body>
+</html>

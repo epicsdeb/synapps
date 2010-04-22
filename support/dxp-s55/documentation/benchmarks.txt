@@ -1,0 +1,204 @@
+Benchmarks
+
+1000 point scan, .01 second real time, saveData saving complete spectra.
+0 settling times
+No positioner drives, time=positioner readback
+
+Linux (colorado), Saturn, USB 2.0, R3-0 (scans dxpSaturn_0015-0019.mda)
+Times: 47.1, 46.7, 48.4, 49.5, 46.1
+Comments:  
+  - No hangups
+  - 3/5 scans were perfect
+  - 2 scans had ~5 points with only .001 sec real time (wrong) and 1 point
+  with 0 counts in spectrum
+
+Linux (colorado), Saturn, USB 2.0, R2-11 (scans dxpSaturn_0021-0025.mda)
+Times: 14.7, 14.3, 22.0, 22.6, 22.1, 17.8
+Comments:  Data are all good, no dropped points
+
+This is the asynTrace printout for R2-11 when acquiring a single point for .01 seconds
+2009/10/24 10:07:14.710 devMcaAsyn::send_msg: dxpSaturn:mca1 command=3, pact=0, rdns=0, rdng=0
+2009/10/24 10:07:14.710 DXP1 addr 0 queueRequest priority 0 not lockHolder
+2009/10/24 10:07:14.710 DXP1 callback
+2009/10/24 10:07:14.710 devMcaAsyn::asynCallback: dxpSaturn:mca1 command=3, ivalue=0, dvalue=0.000000
+2009/10/24 10:07:14.710 drvDxpWrite DXP1 detChan=0, command=3, ivalue=0, dvalue=0.000000
+2009/10/24 10:07:14.711 devMcaAsyn::send_msg: dxpSaturn:mca1 command=1, pact=0, rdns=0, rdng=0
+2009/10/24 10:07:14.711 DXP1 addr 0 queueRequest priority 0 not lockHolder
+2009/10/24 10:07:14.711 devMcaAsyn::send_msg: dxpSaturn:mca1 command=4, pact=0, rdns=0, rdng=0
+2009/10/24 10:07:14.711 DXP1 callback
+2009/10/24 10:07:14.711 devMcaAsyn::asynCallback: dxpSaturn:mca1 command=1, ivalue=0, dvalue=0.000000
+2009/10/24 10:07:14.711 drvDxpWrite DXP1 detChan=0, command=1, ivalue=0, dvalue=0.000000
+2009/10/24 10:07:14.711 DXP1 addr 0 queueRequest priority 0 not lockHolder
+2009/10/24 10:07:14.713 drvDxpPvt [DXP1 detChan=0]: start acq. status=0
+2009/10/24 10:07:14.713 DXP1 callback
+2009/10/24 10:07:14.713 devMcaAsyn::asynCallback: dxpSaturn:mca1 command=4, ivalue=0, dvalue=0.000000
+2009/10/24 10:07:14.713 drvDxpWrite DXP1 detChan=0, command=4, ivalue=0, dvalue=0.000000
+2009/10/24 10:07:14.713 DXP1 lockPort
+2009/10/24 10:07:14.727 getAcquisitionStatus [DXP1 detChan=0]): acquiring=0
+2009/10/24 10:07:14.727 drvDxpRead DXP1 detChan=0, command=20, *pivalue=0
+2009/10/24 10:07:14.727 drvDxpRead DXP1 detChan=0, command=21, *pfvalue=0.007457
+2009/10/24 10:07:14.727 drvDxpRead DXP1 detChan=0, command=22, *pfvalue=0.010002
+2009/10/24 10:07:14.727 drvDxpRead DXP1 detChan=0, command=23, *pfvalue=0.000000
+2009/10/24 10:07:14.727 drvDxpRead DXP1 detChan=0, command=16, *pfvalue=0.000000
+2009/10/24 10:07:14.727 devMcaAsyn::send_msg: dxpSaturn:mca1 command=4, pact=1, rdns=1, rdng=0
+2009/10/24 10:07:14.727 devMcaAsyn::send_msg, record=dxpSaturn:mca1, elapsed real=0.010002, elapsed live=0.007457, dwell time=0.000000, acqg=0
+2009/10/24 10:07:14.727 devMcaAsyn::send_msg: dxpSaturn:mca1 command=0, pact=1, rdns=0, rdng=0
+2009/10/24 10:07:14.727 DXP1 addr 0 queueRequest priority 0 not lockHolder
+2009/10/24 10:07:14.727 DXP1 callback
+2009/10/24 10:07:14.727 DXP1 unlockPort
+2009/10/24 10:07:14.727 drvDxp::pollTask: issuing callback addr=0, reason=20, acquiring=0
+2009/10/24 10:07:14.728 dxpSaturn:mca1ReadCallback devAsynInt32::interruptCallbackInput new value=0
+2009/10/24 10:07:14.728 devMcaAsyn::asynCallback: dxpSaturn:mca1 command=0, ivalue=0, dvalue=0.000000
+2009/10/24 10:07:14.728 dxpSaturn:mca1ReadCallback devAsynInt32::getCallbackValue from ringBuffer value=0
+2009/10/24 10:07:14.730 devMcaAsyn::read_value, record=dxpSaturn:mca1, nord=2048
+
+This took only .020 seconds.
+
+2009/10/24 10:16:06.494 devMcaAsyn::send_msg: dxpSaturn:mca1 command=3, pact=0, rdns=0, rdng=0
+2009/10/24 10:16:06.494 DXP1 addr 0 queueRequest priority 0 not lockHolder
+2009/10/24 10:16:06.494 DXP1 callback
+2009/10/24 10:16:06.494 devMcaAsyn::asynCallback: dxpSaturn:mca1 command=3, ivalue=0, dvalue=0.000000
+2009/10/24 10:16:06.494 NDDxp::writeInt32 [DXP1]: function=3 value=0 addr=0 channel=0
+2009/10/24 10:16:06.494 NDDxp::getAcquisitionStatistics addr=0 channel=0
+2009/10/24 10:16:06.494 NDDxp::getAcquisitionStatistics start channel 0
+2009/10/24 10:16:06.494 dxpSaturn:dxp1:ElapsedLiveTime devAsynFloat64::interruptCallbackInput new value=0.000000
+2009/10/24 10:16:06.494 dxpSaturn:dxp1:ElapsedRealTime devAsynFloat64::interruptCallbackInput new value=0.000000
+2009/10/24 10:16:06.494 dxpSaturn:dxp1:Events devAsynInt32::interruptCallbackInput new value=0
+2009/10/24 10:16:06.494 dxpSaturn:dxp1:InputCountRate devAsynFloat64::interruptCallbackInput new value=0.000000
+2009/10/24 10:16:06.494 dxpSaturn:dxp1:OutputCountRate devAsynFloat64::interruptCallbackInput new value=0.000000
+2009/10/24 10:16:06.494 dxpSaturn:dxp1:Triggers devAsynInt32::interruptCallbackInput new value=0
+2009/10/24 10:16:06.494 dxpSaturn:dxp1:ElapsedTriggerLiveTime devAsynFloat64::interruptCallbackInput new value=0.000000
+2009/10/24 10:16:06.494 dxpSaturn:dxp1:ElapsedLiveTime devAsynFloat64::getCallbackValue from ringBuffer value=0.000000
+2009/10/24 10:16:06.494 dxpSaturn:dxp1:ElapsedRealTime devAsynFloat64::getCallbackValue from ringBuffer value=0.000000
+2009/10/24 10:16:06.494 dxpSaturn:dxp1:Events devAsynInt32::getCallbackValue from ringBuffer value=0
+2009/10/24 10:16:06.494 dxpSaturn:dxp1:InputCountRate devAsynFloat64::getCallbackValue from ringBuffer value=0.000000
+2009/10/24 10:16:06.495 dxpSaturn:dxp1:OutputCountRate devAsynFloat64::getCallbackValue from ringBuffer value=0.000000
+2009/10/24 10:16:06.495 dxpSaturn:dxp1:Triggers devAsynInt32::getCallbackValue from ringBuffer value=0
+2009/10/24 10:16:06.495 dxpSaturn:dxp1:ElapsedTriggerLiveTime devAsynFloat64::getCallbackValue from ringBuffer value=0.000000
+2009/10/24 10:16:06.495 devMcaAsyn::send_msg: dxpSaturn:mca1 command=1, pact=0, rdns=0, rdng=0
+2009/10/24 10:16:06.495 DXP1 addr 0 queueRequest priority 0 not lockHolder
+2009/10/24 10:16:06.495 devMcaAsyn::send_msg: dxpSaturn:mca1 command=4, pact=0, rdns=0, rdng=0
+2009/10/24 10:16:06.495 DXP1 callback 2009/10/24 10:16:06.495 devMcaAsyn::asynCallback: dxpSaturn:mca1 command=1, ivalue=0, dvalue=0.000000
+2009/10/24 10:16:06.495 NDDxp::writeInt32 [DXP1]: function=1 value=0 addr=0 channel=0
+2009/10/24 10:16:06.495 NDDxp::startAcquire ch=0 acquiring=0, erased=1
+2009/10/24 10:16:06.495 DXP1 addr 0 queueRequest priority 0 not lockHolder
+2009/10/24 10:16:06.496 dxpSaturn:mca1ReadCallback devAsynInt32::interruptCallbackInput new value=1
+2009/10/24 10:16:06.496 DXP1 callback 2009/10/24 10:16:06.496 devMcaAsyn::asynCallback: dxpSaturn:mca1 command=4, ivalue=0, dvalue=0.000000
+2009/10/24 10:16:06.496 NDDxp::acquisitionTask [DXP1]: started! (mode=0)
+2009/10/24 10:16:06.496 dxpSaturn:mca1ReadCallback devAsynInt32::getCallbackValue from ringBuffer value=1
+2009/10/24 10:16:06.497 NDDxp::getAcquisitionStatus addr=0 channel=0: acquiring=1
+2009/10/24 10:16:06.497 NDDxp::getAcquisitionStatus addr=1 channel=-1: acquiring=1
+2009/10/24 10:16:06.497 NDDxp::acquisitionTask Doing callbacks
+2009/10/24 10:16:06.497 NDDxp::acquisitionTask Sleeping for 0.009607 seconds
+2009/10/24 10:16:06.497 NDDxp::writeInt32 [DXP1]: function=4 value=0 addr=0 channel=0
+2009/10/24 10:16:06.497 NDDxp::writeInt32 mcaReadStatus [4] mode=0
+2009/10/24 10:16:06.498 NDDxp::getAcquisitionStatus addr=0 channel=0: acquiring=1
+2009/10/24 10:16:06.498 NDDxp::getAcquisitionStatistics addr=0 channel=0
+2009/10/24 10:16:06.498 NDDxp::getAcquisitionStatistics start channel 0
+2009/10/24 10:16:06.500 NDDxp::getAcquisitionStatistics  channel 0 runtime=0.002500
+2009/10/24 10:16:06.512 NDDxp::getAcquisitionStatistics  channel 0 trigger livetime=0.010456
+2009/10/24 10:16:06.524 NDDxp::getAcquisitionStatistics  channel 0 events=63
+2009/10/24 10:16:06.526 NDDxp::getAcquisitionStatistics  channel 0 triggers=63
+2009/10/24 10:16:06.526 NDDxp::getAcquisitionStatistics  channel 0 ICR=6025.479169
+2009/10/24 10:16:06.526 NDDxp::getAcquisitionStatistics  channel 0 OCR=25195.968645
+2009/10/24 10:16:06.526 NDDxp::getAcquisitionStatistics  channel 0 energy livetime=0.010456
+2009/10/24 10:16:06.526 NDDxp::getAcquisitionStatistics end channel 0
+2009/10/24 10:16:06.526 dxpSaturn:dxp1:ElapsedRealTime devAsynFloat64::interruptCallbackInput new value=0.002500
+2009/10/24 10:16:06.526 dxpSaturn:dxp1:ElapsedTriggerLiveTime devAsynFloat64::interruptCallbackInput new value=0.010456
+2009/10/24 10:16:06.526 dxpSaturn:dxp1:Events devAsynInt32::interruptCallbackInput new value=63
+2009/10/24 10:16:06.526 dxpSaturn:dxp1:Triggers devAsynInt32::interruptCallbackInput new value=63
+2009/10/24 10:16:06.526 dxpSaturn:dxp1:InputCountRate devAsynFloat64::interruptCallbackInput new value=6025.479169
+2009/10/24 10:16:06.526 dxpSaturn:dxp1:OutputCountRate devAsynFloat64::interruptCallbackInput new value=25195.968645
+2009/10/24 10:16:06.526 dxpSaturn:dxp1:ElapsedLiveTime devAsynFloat64::interruptCallbackInput new value=0.010456
+2009/10/24 10:16:06.526 asynPortDriver:readInt32: function=20, value=1
+2009/10/24 10:16:06.526 asynPortDriver:readFloat64: function=21, value=0.010456
+2009/10/24 10:16:06.526 asynPortDriver:readFloat64: function=22, value=0.002500
+2009/10/24 10:16:06.526 asynPortDriver:readFloat64: function=16, value=1.000000
+2009/10/24 10:16:06.526 devMcaAsyn::send_msg: dxpSaturn:mca1 command=4, pact=1, rdns=1, rdng=0
+2009/10/24 10:16:06.526 devMcaAsyn::send_msg, record=dxpSaturn:mca1, elapsed real=0.002500, elapsed live=0.010456, dwell time=1.000000, acqg=1
+2009/10/24 10:16:06.527 devMcaAsyn::send_msg: dxpSaturn:mca1 command=4, pact=1, rdns=0, rdng=0
+2009/10/24 10:16:06.527 DXP1 addr 0 queueRequest priority 0 not lockHolder
+2009/10/24 10:16:06.527 DXP1 callback
+2009/10/24 10:16:06.527 devMcaAsyn::asynCallback: dxpSaturn:mca1 command=4, ivalue=1, dvalue=0.000000
+2009/10/24 10:16:06.527 NDDxp::writeInt32 [DXP1]: function=4 value=0 addr=0 channel=0
+2009/10/24 10:16:06.527 NDDxp::writeInt32 mcaReadStatus [4] mode=0
+2009/10/24 10:16:06.527 dxpSaturn:dxp1:ElapsedRealTime devAsynFloat64::getCallbackValue from ringBuffer value=0.002500
+2009/10/24 10:16:06.527 dxpSaturn:dxp1:ElapsedTriggerLiveTime devAsynFloat64::getCallbackValue from ringBuffer value=0.010456
+2009/10/24 10:16:06.527 dxpSaturn:dxp1:Events devAsynInt32::getCallbackValue from ringBuffer value=63
+2009/10/24 10:16:06.527 dxpSaturn:dxp1:Triggers devAsynInt32::getCallbackValue from ringBuffer value=63
+2009/10/24 10:16:06.527 dxpSaturn:dxp1:InputCountRate devAsynFloat64::getCallbackValue from ringBuffer value=6025.479169
+2009/10/24 10:16:06.527 dxpSaturn:dxp1:OutputCountRate devAsynFloat64::getCallbackValue from ringBuffer value=25195.968645
+2009/10/24 10:16:06.527 dxpSaturn:dxp1:ElapsedLiveTime devAsynFloat64::getCallbackValue from ringBuffer value=0.010456
+2009/10/24 10:16:06.531 NDDxp::getAcquisitionStatus addr=0 channel=0: acquiring=0
+2009/10/24 10:16:06.531 dxpSaturn:mca1ReadCallback devAsynInt32::interruptCallbackInput new value=0
+2009/10/24 10:16:06.531 asynPortDriver:readInt32: function=20, value=0
+2009/10/24 10:16:06.531 asynPortDriver:readFloat64: function=21, value=0.010456
+2009/10/24 10:16:06.531 asynPortDriver:readFloat64: function=22, value=0.002500
+2009/10/24 10:16:06.531 dxpSaturn:mca1ReadCallback devAsynInt32::getCallbackValue from ringBuffer value=0
+2009/10/24 10:16:06.531 asynPortDriver:readFloat64: function=16, value=1.000000
+2009/10/24 10:16:06.531 devMcaAsyn::send_msg: dxpSaturn:mca1 command=4, pact=1, rdns=1, rdng=0
+2009/10/24 10:16:06.531 devMcaAsyn::send_msg, record=dxpSaturn:mca1, elapsed real=0.002500, elapsed live=0.010456, dwell time=1.000000, acqg=0
+2009/10/24 10:16:06.531 devMcaAsyn::send_msg: dxpSaturn:mca1 command=0, pact=1, rdns=0, rdng=0
+2009/10/24 10:16:06.531 DXP1 addr 0 queueRequest priority 0 not lockHolder
+2009/10/24 10:16:06.531 DXP1 callback
+2009/10/24 10:16:06.531 devMcaAsyn::asynCallback: dxpSaturn:mca1 command=0, ivalue=0, dvalue=0.000000
+2009/10/24 10:16:06.532 NDDxp::getAcquisitionStatus addr=0 channel=0: acquiring=0
+2009/10/24 10:16:06.532 NDDxp::getAcquisitionStatus addr=1 channel=-1: acquiring=0
+2009/10/24 10:16:06.532 NDDxp::acquisitionTask Detected acquisition stop! Now reading statistics
+2009/10/24 10:16:06.532 NDDxp::getAcquisitionStatistics addr=-1 channel=-1
+2009/10/24 10:16:06.532 NDDxp::getAcquisitionStatistics start DXP_ALL
+2009/10/24 10:16:06.532 NDDxp::getAcquisitionStatistics addr=0 channel=0
+2009/10/24 10:16:06.532 NDDxp::getAcquisitionStatistics start channel 0
+2009/10/24 10:16:06.535 NDDxp::getAcquisitionStatistics  channel 0 runtime=0.010500
+2009/10/24 10:16:06.547 NDDxp::getAcquisitionStatistics  channel 0 trigger livetime=0.010456
+2009/10/24 10:16:06.559 NDDxp::getAcquisitionStatistics  channel 0 events=63
+2009/10/24 10:16:06.560 NDDxp::getAcquisitionStatistics  channel 0 triggers=63
+2009/10/24 10:16:06.560 NDDxp::getAcquisitionStatistics  channel 0 ICR=6025.479169
+2009/10/24 10:16:06.560 NDDxp::getAcquisitionStatistics  channel 0 OCR=6000.000000
+2009/10/24 10:16:06.560 NDDxp::getAcquisitionStatistics  channel 0 energy livetime=0.010456
+2009/10/24 10:16:06.560 NDDxp::getAcquisitionStatistics end channel 0
+2009/10/24 10:16:06.560 NDDxp::getAcquisitionStatistics end DXP_ALL
+2009/10/24 10:16:06.560 NDDxp::acquisitionTask Detected acquisition stop! Now reading data
+2009/10/24 10:16:06.562 NDDxp::getMcaData Got MCA spectrum channel:0 ptr:0xf7c01638
+\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000
+2009/10/24 10:16:06.562 NDDxp::acquisitionTask Doing callbacks
+2009/10/24 10:16:06.562 dxpSaturn:dxp1:ElapsedRealTime devAsynFloat64::interruptCallbackInput new value=0.010500
+2009/10/24 10:16:06.562 dxpSaturn:dxp1:OutputCountRate devAsynFloat64::interruptCallbackInput new value=6000.000000
+2009/10/24 10:16:06.562 NDDxp:acquisitionTask Waiting for acquisition to start!
+2009/10/24 10:16:06.562 NDDxp::readInt32Array addr=0 channel=0 function=0
+2009/10/24 10:16:06.562 NDDxp::readInt32Array getting mcaData. ch=0 mcaNumChannels=2048 mcaAcquiring=0
+2009/10/24 10:16:06.563 NDDxp::readInt32Array mode=0 acquiring=0
+2009/10/24 10:16:06.563 dxpSaturn:dxp1:ElapsedRealTime devAsynFloat64::getCallbackValue from ringBuffer value=0.010500
+2009/10/24 10:16:06.563 devMcaAsyn::read_value, record=dxpSaturn:mca1, nord=2048
+2009/10/24 10:16:06.563 dxpSaturn:dxp1:OutputCountRate devAsynFloat64::getCallbackValue from ringBuffer value=6000.000000
+
+This took .069 seconds.  Most of the time is spent in
+getAcquisitionStatististics, about 30msec.  It takes about 12msec to read the
+trigger livetime, and about 12msec to read events.  It only takes 1msec to
+read the triggers and 3msec to read the runtime.  It only takes 2msec to read
+the 2048 channel spectra!
+
+
+Nov. 2.
+New version of 3-0 code. Changed getAcquisitionStatistics to do low-level parameter read on Saturn and "module_statistics" read 
+on xMAP, and construct statistics from that.
+
+Linux (colorado), Saturn, USB 2.0, R3-0 (scans dxpSaturn0042-0046.mda)
+Times: 19.8, 20.0, 19.9, 20.0, 20.0
+Comments:  
+  - No hangups
+  - All scans were perfect, live time, real time and count sums all seem correct
+
+Cygwin, Saturn, USB 2.0, R3-0 (scans dxpSaturn0052_01-0056_01.mda)
+Times: 25.0, 25.2, 25.0, 25.0, 25.1
+Comments:  
+  - No hangups
+  - 1/5 scans had one point with 0 live and real time.  Counts were all OK.
+
+Cygwin, xMAP, 12 channels, R3-0 (scans dxpXMAP_0011.mda)
+Times: 36.9, 37.1, 36.6, 36.8
+Comments:  
+  - No hangups
+  - 3-14 points have 0 live time and low (but non-zero) real time.
+  - At least 4 points have low (but non-zero) counts.  Some of these are same points as 0 live time.
+

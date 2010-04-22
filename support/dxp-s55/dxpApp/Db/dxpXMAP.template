@@ -1,0 +1,212 @@
+record(mbbo, "$(P)CollectMode") {
+  field(DESC, "Mode select")
+  field(DTYP, "asynInt32")
+  field(OUT,  "$(IO)DxpCollectMode")
+  field(PINI, "YES")
+  field(ZRVL, "0")
+  field(ZRST, "MCA spectra")
+  field(ONVL, "1")
+  field(ONST, "MCA mapping")
+  field(TWVL, "2")
+  field(TWST, "SCA mapping")
+  field(IVOA, "Don't drive outputs")
+}
+
+record(mbbi, "$(P)CollectMode_RBV") {
+  field(DESC, "Mode select")
+  field(DTYP, "asynInt32")
+  field(INP,  "$(IO)DxpCollectMode")
+  field(ZRVL, "0")
+  field(ZRST, "MCA spectra")
+  field(ONVL, "1")
+  field(ONST, "MCA mapping")
+  field(TWVL, "2")
+  field(TWST, "SCA mapping")
+  field(SCAN, "I/O Intr")
+}
+
+record(bo, "$(P)NextPixel") {
+  field(DESC, "Next map pixel")
+  field(VAL,  "1")
+  field(DTYP, "asynInt32")
+  field(OUT,  "$(IO)DxpNextPixel")
+  field(ZNAM, "Next")
+  field(ONAM, "Next")
+}
+
+record(mbbo, "$(P)PixelAdvanceMode") {
+  field(DESC, "Pixel advance mode select")
+  field(DTYP, "asynInt32")
+  field(OUT,  "$(IO)DxpPixelAdvanceMode")
+  field(PINI, "YES")
+  field(ZRVL, "0")
+  field(ZRST, "Gate")
+  field(ONVL, "1")
+  field(ONST, "Sync")
+  field(IVOA, "Don't drive outputs")
+}
+
+record(mbbi, "$(P)PixelAdvanceMode_RBV") {
+  field(DESC, "Pixel advance mode select")
+  field(DTYP, "asynInt32")
+  field(INP,  "$(IO)DxpPixelAdvanceMode")
+  field(ZRVL, "0")
+  field(ZRST, "Gate")
+  field(ONVL, "1")
+  field(ONST, "Sync")
+  field(SCAN, "I/O Intr")
+}
+
+record(longout, "$(P)PixelsPerRun") {
+  field(DESC, "Pixels per run")
+  field(VAL,  "1")
+  field(DTYP, "asynInt32")
+  field(OUT,  "$(IO)DxpPixelsPerRun")
+  field(PINI, "YES")
+}
+
+record(longin, "$(P)PixelsPerRun_RBV") {
+  field(DESC, "Pixels per run")
+  field(DTYP, "asynInt32")
+  field(INP,  "$(IO)DxpPixelsPerRun")
+  field(SCAN, "I/O Intr")
+}
+
+record(mbbo, "$(P)AutoPixelsPerBuffer") {
+  field(DESC, "Max. pixels per buffer")
+  field(DTYP, "asynInt32")
+  field(OUT,  "$(IO)DxpAutoPixelsPerBuffer")
+  field(PINI, "YES")
+  field(ZRVL, "0")
+  field(ZRST, "Manual")
+  field(ONVL, "1")
+  field(ONST, "Auto")
+  field(IVOA, "Don't drive outputs")
+}
+
+record(mbbi, "$(P)AutoPixelsPerBuffer_RBV") {
+  field(DESC, "Max. pixels per buffer")
+  field(DTYP, "asynInt32")
+  field(INP,  "$(IO)DxpAutoPixelsPerBuffer")
+  field(ZRVL, "0")
+  field(ZRST, "Manual")
+  field(ONVL, "1")
+  field(ONST, "Auto")
+  field(SCAN, "I/O Intr")
+}
+
+record(longout, "$(P)PixelsPerBuffer") {
+  field(DESC, "Pixels per mapping buffer")
+  field(VAL,  "-1")
+  field(PINI, "YES")
+  field(DTYP, "asynInt32")
+  field(OUT,  "$(IO)DxpPixelsPerBuffer")
+}
+
+record(longin, "$(P)PixelsPerBuffer_RBV") {
+  field(DESC, "Pixels per mapping buffer")
+  field(DTYP, "asynInt32")
+  field(INP,  "$(IO)DxpPixelsPerBuffer")
+  field(SCAN, "I/O Intr")
+}
+
+record(longin, "$(P)BufferSize_RBV") {
+  field(DESC, "Buffer size")
+  field(DTYP, "asynInt32")
+  field(INP,  "$(IO)Array_Size")
+  field(SCAN, "I/O Intr")
+}
+
+record(mbbo, "$(P)IgnoreGate") {
+  field(DESC, "Ignore gate")
+  field(DTYP, "asynInt32")
+  field(OUT,  "$(IO)DxpIgnoreGate")
+  field(PINI, "YES")
+  field(ZRVL, "0")
+  field(ZRST, "No")
+  field(ONVL, "1")
+  field(ONST, "Yes")
+  field(IVOA, "Don't drive outputs")
+}
+
+record(mbbi, "$(P)IgnoreGate_RBV") {
+  field(DESC, "Ignore gate")
+  field(DTYP, "asynInt32")
+  field(INP,  "$(IO)DxpIgnoreGate")
+  field(ZRVL, "0")
+  field(ZRST, "No")
+  field(ONVL, "1")
+  field(ONST, "Yes")
+  field(SCAN, "I/O Intr")
+}
+
+record(longout, "$(P)SyncCount") {
+  field(DESC, "Sync divider count")
+  field(VAL,  "1")
+  field(PINI, "YES")
+  field(DTYP, "asynInt32")
+  field(OUT,  "$(IO)DxpSyncCount")
+}
+
+record(longin, "$(P)SyncCount_RBV") {
+  field(DESC, "Sync divider count")
+  field(DTYP, "asynInt32")
+  field(INP,  "$(IO)DxpSyncCount")
+  field(SCAN, "I/O Intr")
+}
+
+record(mbbo, "$(P)InputLogicPolarity") {
+  field(DESC, "Input logic polarity")
+  field(DTYP, "asynInt32")
+  field(OUT,  "$(IO)DxpInputLogicPolarity")
+  field(PINI, "YES")
+  field(ZRVL, "0")
+  field(ZRST, "Normal")
+  field(ONVL, "1")
+  field(ONST, "Inverted")
+  field(IVOA, "Don't drive outputs")
+}
+
+record(mbbi, "$(P)InputLogicPolarity_RBV") {
+  field(DESC, "Input logic polarity")
+  field(DTYP, "asynInt32")
+  field(INP,  "$(IO)DxpInputLogicPolarity")
+  field(ZRVL, "0")
+  field(ZRST, "Normal")
+  field(ONVL, "1")
+  field(ONST, "Inverted")
+  field(SCAN, "I/O Intr")
+}
+
+record(mbbo, "$(P)AutoApply") {
+  field(DESC, "Auto apply on xMAP")
+  field(DTYP, "asynInt32")
+  field(OUT,  "$(IO)DxpXMAPAutoApply")
+  field(PINI, "YES")
+  field(ZRVL, "0")
+  field(ZRST, "No")
+  field(ONVL, "1")
+  field(ONST, "Yes")
+  field(IVOA, "Don't drive outputs")
+}
+
+record(mbbi, "$(P)AutoApply_RBV") {
+  field(DESC, "Auto apply on xMAP")
+  field(DTYP, "asynInt32")
+  field(INP,  "$(IO)DxpXMAPAutoApply")
+  field(ZRVL, "0")
+  field(ZRST, "No")
+  field(ONVL, "1")
+  field(ONST, "Yes")
+  field(SCAN, "I/O Intr")
+}
+
+record(longout, "$(P)Apply") {
+  field(DESC, "Force xMAP apply")
+  field(VAL,  "1")
+  field(PINI, "NO")
+  field(DTYP, "asynInt32")
+  field(OUT,  "$(IO)DxpXMAPApply")
+}
+
+

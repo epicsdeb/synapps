@@ -1,0 +1,92 @@
+This documentation was extracted from drvIp1k125.c
+
+    drvIp1k125.c
+
+    This driver cooperates with specific FPGA firmware loaded into the
+    Acromag IP-EP200 (and probably also the IP-1K125, for which the support
+    was originally written).  The loaded FPGA firmware includes Eric Norum's
+    IndustryPack Bridge, which is an interface between the IndustryPack bus
+    and the Altera FPGA's Avalon bus.  The IndustryPack Bridge does not
+    define anything we can write to in the FPGA.  It's job is to support
+    additional firmware loaded into the FPGA.  The additional firmware
+    defines registers that we can read and write, and it can take one of the
+    two forms (sopc components) supported by this driver:
+
+        1) fieldIO_registerSet component
+
+           A set of seven 16-bit registers defined by 'fieldIO_registerSet'
+           below.  This register set provides bit-level I/O direction and
+           interrupt-generation support, and is intended primarily to
+           implement field I/O registers.
+
+        2) single 16-bit register component
+
+           a single 16-bit register, which has no interrupt service or bit-level
+           I/O direction.  This type of sopc component is just a plain 16-bit
+           register, which can be written to or read.  This driver doesn't know
+           or care what the register might be connected to inside the FPGA.
+
+x The following is no longer true:
+x    Currently, a fieldIO_registerSet must be located in the IndustryPack
+x    module's IO space, because we believe there is a bug in the IP-EP200's
+x    implementation that prevents us from reading from this module's MEM
+x    space, and because there's no point to the a fieldIO_registerSet that
+x    cannot be read.  The single register can be functional in either address
+x    space, though if it's located in MEM space, we won't be able to read it.
+    
+    Each fieldIO_registerSet component must be initialized by a separate call to
+    initIp1k125(), because the component's sopc address must be specified at
+    init time, so that the interrupt-service routine associated with the
+    component can use the sopc address.  Currently, each call to initIp1k125()
+    defines a new asyn port, connects an interrupt-service routine, creates a
+    message queue, and launches a thread.
+
+    Single 16-bit register components need not have their sopc addresses known
+    at init time, because they are not associated with an interrupt service
+    routine.  As a consequence, many such single-register components can be
+    served by a single asyn port.  Users of this port must specify the sopc
+    address of the register they want to  read or write in their asynUser
+    structure. Records do this by including the address in the definition of the
+    record's OUT or INP field.  For example, the ADDR macro in the following
+    field definition should be set to the register's sopc address:
+    field(OUT,"@asynMask($(PORT),$(ADDR),0x2f)")
+
+    The addressing of sopc components requires some explanation.  When a
+    component is loaded into the FPGA, it is given an sopc address, which is a
+    number in one of two regions of the Avalon address space.  These regions of
+    Avalon memory space are mapped by the IndustryPack Bridge to specific ranges
+    of the IndustryPack module's IO and MEM spaces.  The IO and MEM spaces, in
+    turn, are mapped by the IndustryPack carrier, and by the ipac-module
+    software, to corresponding ranges in a VME address space.  The lowest
+    address in the IndustryPack module's IO space is mapped to the VME A16
+    address given by ipmBaseAddr(carrier, slot, ipac_addrIO), which I'll call
+    IOBASE in the following table.  The lowest address in the IndustryPack
+    module's MEM space is mapped to the VME A32 address given by
+    ipmBaseAddr(carrier, slot, ipac_addrMem), which I'll call MEMBASE in the
+    following table.  (The module's MEM space could also have been mapped to the
+    VME A24 space.  This code doesn't know or care, because it just gets the VME
+    address by making a function call to code provided by the ipac module.)
+    
+    Note that IOBASE and MEMBASE depend on the IndustryPack carrier and slot
+    into which the IP-EP200 module has been placed.
+
+    Avalon_address | IP_space  IP_address  | VME_space   VME_address
+    (sopc address) |                       |                 
+    ---------------|-----------------------|-----------------------------
+    0x000000       | IO        0x000000    | A16         IOBASE+0x000000     
+    ...            | IO        ...         | A16         ...             
+    0x00007f       | IO        0x00007f    | A16         IOBASE+0x00007f     
+                   |                       |                                        
+    0x800000       | MEM       0x000000    | A32         MEMBASE+0x000000
+    ...            | MEM       ...         | A32         ...
+    0xffffff       | MEM       0x7fffff    | A32         MEMBASE+0x7fffff
+    
+    Thus, if a component is created with the sopc address 0x000010, it can be
+    accessed at the IO-space address 0x000010, which is mapped to the VME
+    address IOBASE+0x000010.  If a component is created with the sopc address
+    0x800003, it can be accessed at MEM-space address 0x000003, which is
+    mapped to the VME address MEMBASE+0x000003.
+
+    Note that users of this code are not expected to know anything about this
+    address-mapping business.  The only address users ever specify is the sopc
+    address, exactly as it was specified to Quartus.

@@ -1,0 +1,30 @@
+# This database is used with mca.db for drivers that can issue callbacks when acquisition completes
+record(ai,"$(P)$(R)ReadCallback") {
+       field(SCAN,"I/O Intr")
+       field(DTYP, "asynInt32")
+       field(INP, "$(IO)MCA_ACQUIRING")
+       field(FLNK, "$(P)$(R)ReadStatusOnce PP MS")
+}
+
+record(bo,"$(P)$(R)ReadStatusOnce") {
+       field(VAL, "1")
+       field(OUT, "$(P)$(R).PROC PP MS")
+}
+
+record(ai, "$(P)$(R)CollectData") {
+       field(SCAN,"I/O Intr")
+       field(DTYP, "asynInt32")
+       field(VAL, "0")
+       field(PINI, "YES")
+       field(INP, "$(IO)DxpForceRead")
+       field(FLNK, "$(P)$(R)ReadDataOnce PP MS")
+}
+
+record(calcout, $(P)$(R)ReadDataOnce) {
+       field(CALC, "A")
+       field(INPA, "$(P)$(R)CollectData")
+       field(OUT, "$(P)$(R).READ PP MS")
+       field(OOPT, "When Non-zero")
+}
+
+

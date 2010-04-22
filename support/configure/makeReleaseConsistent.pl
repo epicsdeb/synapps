@@ -54,9 +54,9 @@ FOR each release file.
 ENDFOR
 =cut
 #
-# Version:	1.1
-# Modified By:	sluiter
-# Last Modified:2008/08/26 18:09:18
+# Version:	$Revision: 1.1 $
+# Modified By:	$Author: sluiter $
+# Last Modified:$Date: 2008-08-26 18:09:18 $
 
 # NOTE with Perl 5.6, replace the following with File::Temp.
 use POSIX;

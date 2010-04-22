@@ -1,0 +1,26 @@
+# Initialize to "2@" so that blank signals don't blink continuously on startup.
+record(stringout,"$(P)$(H)SignalToShow") {
+	field(VAL,"2@")
+	field(UDF,"0")
+}
+record(calcout,"$(P)$(H)SignalBlink") {
+	field(INPA,"$(P)$(H)SignalBlink NPP")
+	field(SCAN,".5 second")
+	field(CALC,"A?0:1")
+}
+record(stringout,"$(P)$(H)NullSigName") {
+	field(VAL,"2@")
+	field(UDF,"0")
+}
+record(bo,"$(P)$(H)ScanRate") {
+	field(SCAN,".2 second")
+	field(UDF,"0")
+}
+record(bo,"$(P)$(H)ReadRateON") {
+	field(SCAN,".2 second")
+	field(UDF,"0")
+}
+record(bo,"$(P)$(H)ReadRateOFF") {
+	field(SCAN,"Passive")
+	field(UDF,"0")
+}

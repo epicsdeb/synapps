@@ -1,0 +1,448 @@
+## Instrument PVs
+record(bi,"$(P)$(R)disableScanBI")
+{
+    field(DTYP, "Soft Channel")
+    field(SCAN, "Passive")
+    field(DISS, "INVALID")
+    field(ZNAM, "ON")
+    field(ONAM, "OFF")
+}
+record(stringin,"$(P)$(R)identSI")
+{
+    field(PINI, "YES")
+    field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+    field(DISS, "INVALID")
+    field(DESC, "Ident")
+    field(SCAN, "Passive")
+    field(DTYP, "asynOctetRead")
+    field(INP,  "@asyn($(PORT),0) NONE")
+}
+#
+#
+record(mbbi,"$(P)$(R)trigRateMI")
+{
+    field(PINI, "YES")
+    field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+    field(DISS, "INVALID")
+    field(DESC, "Trigger Rate")
+    field(SCAN, "Passive")
+    field(ZRST, "0001")
+    field(ONST, "0002")
+    field(TWST, "0005")
+    field(THST, "0010")
+    field(ZRVL, "1")
+    field(ONVL, "2")
+    field(TWVL, "5")
+    field(THVL, "10")
+    field(DTYP, "asynUInt32Digital")
+    field(INP,  "@asynMask($(PORT),1,0xFF) NONE")
+}
+record(mbbo,"$(P)$(R)trigRateMO")
+{
+    field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+    field(DISS, "INVALID")
+    field(DESC, "Trigger Rate")
+    field(SCAN, "Passive")
+    field(ZRST, "0001")
+    field(ONST, "0002")
+    field(TWST, "0005")
+    field(THST, "0010")
+    field(ZRVL, "1")
+    field(ONVL, "2")
+    field(TWVL, "5")
+    field(THVL, "10")
+    field(DTYP, "asynUInt32Digital")
+    field(OUT,  "@asynMask($(PORT),1,0xFF) NONE")
+    field(FLNK, "$(P)$(R)trigRateMI")
+}
+#
+#
+record(bi,"$(P)$(R)bwdSwitchBI")
+{
+    field(PINI, "YES")
+    field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+    field(DISS, "INVALID")
+	field(DESC, "BWD SWITCH")
+    field(SCAN, "1 second")
+    field(ZNAM, "OFF")
+    field(ONAM, "ON")
+    field(DTYP, "asynUInt32Digital")
+    field(INP,  "@asynMask($(PORT),2,0x1) NONE")
+}
+record(bi,"$(P)$(R)bwdPD1BI")
+{
+    field(PINI, "YES")
+    field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+    field(DISS, "INVALID")
+	field(DESC, "BWD PD1")
+    field(SCAN, "1 second")
+    field(ZNAM, "OFF")
+    field(ONAM, "ON")
+    field(DTYP, "asynUInt32Digital")
+    field(INP,  "@asynMask($(PORT),3,0x4) NONE")
+}
+record(bi,"$(P)$(R)bwdPD2BI")
+{
+    field(PINI, "YES")
+    field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+    field(DISS, "INVALID")
+	field(DESC, "BWD PD2")
+    field(SCAN, "1 second")
+    field(ZNAM, "OFF")
+    field(ONAM, "ON")
+    field(DTYP, "asynUInt32Digital")
+    field(INP,  "@asynMask($(PORT),3,0x2) NONE")
+}
+record(bi,"$(P)$(R)bwdVdcIntlckBI")
+{
+    field(PINI, "YES")
+    field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+    field(DISS, "INVALID")
+	field(DESC, "BWD VDC INTLCK")
+    field(SCAN, "1 second")
+    field(ZNAM, "OFF")
+    field(ONAM, "ON")
+    field(DTYP, "asynUInt32Digital")
+    field(INP,  "@asynMask($(PORT),3,0x1) NONE")
+}
+record(bo,"$(P)$(R)bwdResetBO")
+{
+    field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+    field(DISS, "INVALID")
+    field(DESC, "BWD Reset")
+    field(ZNAM, "OFF")
+    field(ONAM, "ON")
+    field(DTYP, "asynUInt32Digital")
+    field(OUT,  "@asynMask($(PORT),3,0x1) NONE")
+    field(FLNK, "$(P)$(R)bwdFO")
+}
+record(fanout,"$(P)$(R)bwdFO")
+{
+    field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+    field(DISS, "INVALID")
+	field(LNK1, "$(P)$(R)bwdSwitchBI")
+	field(LNK2, "$(P)$(R)bwdPD1BI")
+	field(LNK3, "$(P)$(R)bwdPD2BI")
+	field(LNK4, "$(P)$(R)bwdVdcIntlckBI")
+}
+#
+#
+record(transform,"$(P)$(R)rfSyncXF")
+{
+    field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+    field(DESC, "RF SYNC XF")
+    field(INPA, "$(P)$(R)rfSyncBI CP NMS")
+    field(CLCB, "A")
+    field(CMTA, "Input field")
+    field(CMTB, "RF SYNC XF")
+    field(OUTB, "$(P)$(R)rfSyncBO NPP NMS")
+}
+record(bi,"$(P)$(R)rfSyncBI")
+{
+    field(PINI, "YES")
+    field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+    field(DISS, "INVALID")
+	field(DESC, "RF SYNC")
+    field(SCAN, "1 second")
+    field(ZNAM, "DIS")
+    field(ONAM, "ENA")
+    field(DTYP, "asynUInt32Digital")
+    field(INP,  "@asynMask($(PORT),4,0x1) NONE")
+}
+record(bo,"$(P)$(R)rfSyncBO")
+{
+    field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+    field(DISS, "INVALID")
+    field(DESC, "RF Sync")
+    field(ZNAM, "DIS")
+    field(ONAM, "ENA")
+    field(DTYP, "asynUInt32Digital")
+    field(OUT,  "@asynMask($(PORT),4,0x1) NONE")
+    field(FLNK, "$(P)$(R)rfSyncBI")
+}
+#
+#
+record(transform,"$(P)$(R)trigModXF")
+{
+    field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+    field(DESC, "TRIG MODE XF")
+    field(INPA, "$(P)$(R)trigModeBI CP NMS")
+    field(CLCB, "A")
+    field(CMTA, "Input field")
+    field(CMTB, "TRIG MODE XF")
+    field(OUTB, "$(P)$(R)trigModeBO NPP NMS")
+}
+record(bi,"$(P)$(R)trigModeBI")
+{
+    field(PINI, "YES")
+    field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+    field(DISS, "INVALID")
+	field(DESC, "TRIG MODE")
+    field(SCAN, "1 second")
+    field(ZNAM, "CONTINUOUS")
+    field(ONAM, "SINGLE-SHOT")
+    field(DTYP, "asynUInt32Digital")
+    field(INP,  "@asynMask($(PORT),5,0x1) NONE")
+}
+record(bo,"$(P)$(R)trigModeBO")
+{
+    field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+    field(DISS, "INVALID")
+    field(DESC, "TRIG MODE")
+    field(ZNAM, "CONTINUOUS")
+    field(ONAM, "SINGLE-SHOT")
+    field(DTYP, "asynUInt32Digital")
+    field(OUT,  "@asynMask($(PORT),5,0x1) NONE")
+    field(FLNK, "$(P)$(R)trigModeBI")
+}
+#
+#
+record(bo,"$(P)$(R)manTrigBO")
+{
+    field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+    field(DISS, "INVALID")
+    field(DESC, "RF Sync")
+    field(ONAM, "TRIG")
+    field(DTYP, "asynUInt32Digital")
+    field(OUT,  "@asynMask($(PORT),6,0x1) NONE")
+}
+#
+# CHANNEL 3
+record(transform,"$(P)$(R)Ch3outDelayXF")
+{
+    field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+    field(DESC, "CH3 OUT DLY XF")
+    field(INPA, "$(P)$(R)Ch3outDelayBI CP NMS")
+    field(CLCB, "A")
+    field(CMTA, "Input field")
+    field(CMTB, "CH3 OUT DLY XF")
+    field(OUTB, "$(P)$(R)Ch3outDelayBO NPP NMS")
+}
+record(bi,"$(P)$(R)Ch3outDelayBI")
+{
+    field(PINI, "YES")
+    field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+    field(DISS, "INVALID")
+	field(DESC, "CH3 OUT DLY STATE")
+    field(SCAN, "1 second")
+    field(ZNAM, "DIS")
+    field(ONAM, "ENA")
+    field(DTYP, "asynUInt32Digital")
+    field(INP,  "@asynMask($(PORT),11,0x1) NONE")
+}
+record(bo,"$(P)$(R)Ch3outDelayBO")
+{
+    field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+    field(DISS, "INVALID")
+    field(DESC, "CH3 OUT DLY STATE")
+    field(ZNAM, "DIS")
+    field(ONAM, "ENA")
+    field(DTYP, "asynUInt32Digital")
+    field(OUT,  "@asynMask($(PORT),11,0x1) NONE")
+    field(FLNK, "$(P)$(R)Ch3outDelayBI")
+}
+record(ai,"$(P)$(R)Ch3outDelayAI")
+{
+    field(PINI, "YES")
+    field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+    field(DISS, "INVALID")
+    field(DESC, "CH3 OUT DELAY")
+    field(SCAN, "Passive")
+    field(PREC, "1")
+    field(DTYP, "asynFloat64")
+    field(INP,  "@asyn($(PORT),12) NONE")
+}
+record(ao,"$(P)$(R)Ch3outDelayAO")
+{
+    field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+    field(DISS, "INVALID")
+    field(DESC, "CH3 OUT DELAY")
+    field(PREC, "1")
+    field(DTYP, "asynFloat64")
+    field(OUT,  "@asyn($(PORT),12) NONE")
+    field(FLNK, "$(P)$(R)Ch3outDelayAI")
+}
+record(calcout,"$(P)$(R)Ch3outDelayIncCO")
+{
+    field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+    field(DESC, "CH3 OUT DLY STEP INC")
+    field(INPA, "$(P)$(R)Ch3outDelayAO NPP NMS")
+    field(INPB, "$(P)$(R)Ch3outDelayStepAO NPP NMS")
+    field(CALC, "A+B")
+    field(OUT,  "$(P)$(R)Ch3outDelayAO PP NMS")
+}
+record(calcout,"$(P)$(R)Ch3outDelayDecCO")
+{
+    field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+    field(DESC, "CH3 OUT DLY STEP DEC")
+    field(INPA, "$(P)$(R)Ch3outDelayAO NPP NMS")
+    field(INPB, "$(P)$(R)Ch3outDelayStepAO NPP NMS")
+    field(CALC, "A-B")
+    field(OUT,  "$(P)$(R)Ch3outDelayAO PP NMS")
+}
+record(ao,"$(P)$(R)Ch3outDelayStepAO")
+{
+    field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+    field(DESC, "CH3 OUT DLY STEP")
+    field(PREC, "2")
+}
+#
+# CHANNEL 2
+record(transform,"$(P)$(R)Ch2outDelayXF")
+{
+    field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+    field(DESC, "CH2 OUT DLY XF")
+    field(INPA, "$(P)$(R)Ch2outDelayBI CP NMS")
+    field(CLCB, "A")
+    field(CMTA, "Input field")
+    field(CMTB, "CH2 OUT DLY XF")
+    field(OUTB, "$(P)$(R)Ch2outDelayBO NPP NMS")
+}
+record(bi,"$(P)$(R)Ch2outDelayBI")
+{
+    field(PINI, "YES")
+    field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+    field(DISS, "INVALID")
+	field(DESC, "CH2 OUT DLY STATE")
+    field(SCAN, "1 second")
+    field(ZNAM, "DIS")
+    field(ONAM, "ENA")
+    field(DTYP, "asynUInt32Digital")
+    field(INP,  "@asynMask($(PORT),9,0x1) NONE")
+}
+record(bo,"$(P)$(R)Ch2outDelayBO")
+{
+    field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+    field(DISS, "INVALID")
+    field(DESC, "CH2 OUT DLY STATE")
+    field(ZNAM, "DIS")
+    field(ONAM, "ENA")
+    field(DTYP, "asynUInt32Digital")
+    field(OUT,  "@asynMask($(PORT),9,0x1) NONE")
+    field(FLNK, "$(P)$(R)Ch2outDelayBI")
+}
+record(ai,"$(P)$(R)Ch2outDelayAI")
+{
+    field(PINI, "YES")
+    field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+    field(DISS, "INVALID")
+    field(DESC, "CH2 OUT DELAY")
+    field(SCAN, "Passive")
+    field(PREC, "1")
+    field(DTYP, "asynFloat64")
+    field(INP,  "@asyn($(PORT),10) NONE")
+}
+record(ao,"$(P)$(R)Ch2outDelayAO")
+{
+    field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+    field(DISS, "INVALID")
+    field(DESC, "CH2 OUT DELAY")
+    field(PREC, "1")
+    field(DTYP, "asynFloat64")
+    field(OUT,  "@asyn($(PORT),10) NONE")
+    field(FLNK, "$(P)$(R)Ch2outDelayAI")
+}
+record(calcout,"$(P)$(R)Ch2outDelayIncCO")
+{
+    field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+    field(DESC, "CH2 OUT DLY STEP INC")
+    field(INPA, "$(P)$(R)Ch2outDelayAO NPP NMS")
+    field(INPB, "$(P)$(R)Ch2outDelayStepAO NPP NMS")
+    field(CALC, "A+B")
+    field(OUT,  "$(P)$(R)Ch2outDelayAO PP NMS")
+}
+record(calcout,"$(P)$(R)Ch2outDelayDecCO")
+{
+    field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+    field(DESC, "CH2 OUT DLY STEP DEC")
+    field(INPA, "$(P)$(R)Ch2outDelayAO NPP NMS")
+    field(INPB, "$(P)$(R)Ch2outDelayStepAO NPP NMS")
+    field(CALC, "A-B")
+    field(OUT,  "$(P)$(R)Ch2outDelayAO PP NMS")
+}
+record(ao,"$(P)$(R)Ch2outDelayStepAO")
+{
+    field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+    field(DESC, "CH2 OUT DLY STEP")
+    field(PREC, "2")
+}
+#
+# CHANNEL 1
+record(transform,"$(P)$(R)Ch1outDelayXF")
+{
+    field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+    field(DESC, "CH1 OUT DLY XF")
+    field(INPA, "$(P)$(R)Ch1outDelayBI CP NMS")
+    field(CLCB, "A")
+    field(CMTA, "Input field")
+    field(CMTB, "CH1 OUT DLY XF")
+    field(OUTB, "$(P)$(R)Ch1outDelayBO NPP NMS")
+}
+record(bi,"$(P)$(R)Ch1outDelayBI")
+{
+    field(PINI, "YES")
+    field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+    field(DISS, "INVALID")
+	field(DESC, "CH1 OUT DLY STATE")
+    field(SCAN, "1 second")
+    field(ZNAM, "DIS")
+    field(ONAM, "ENA")
+    field(DTYP, "asynUInt32Digital")
+    field(INP,  "@asynMask($(PORT),7,0x1) NONE")
+}
+record(bo,"$(P)$(R)Ch1outDelayBO")
+{
+    field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+    field(DISS, "INVALID")
+    field(DESC, "CH1 OUT DLY STATE")
+    field(ZNAM, "DIS")
+    field(ONAM, "ENA")
+    field(DTYP, "asynUInt32Digital")
+    field(OUT,  "@asynMask($(PORT),7,0x1) NONE")
+    field(FLNK, "$(P)$(R)Ch1outDelayBI")
+}
+record(ai,"$(P)$(R)Ch1outDelayAI")
+{
+    field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+    field(DISS, "INVALID")
+    field(PINI, "YES")
+    field(DESC, "CH1 OUT DELAY")
+    field(SCAN, "Passive")
+    field(PREC, "1")
+    field(DTYP, "asynFloat64")
+    field(INP,  "@asyn($(PORT),8) NONE")
+}
+record(ao,"$(P)$(R)Ch1outDelayAO")
+{
+    field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+    field(DISS, "INVALID")
+    field(DESC, "CH1 OUT DELAY")
+    field(PREC, "1")
+    field(DTYP, "asynFloat64")
+    field(OUT,  "@asyn($(PORT),8) NONE")
+    field(FLNK, "$(P)$(R)Ch1outDelayAI")
+}
+record(calcout,"$(P)$(R)Ch1outDelayIncCO")
+{
+    field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+    field(DESC, "CH1 OUT DLY STEP INC")
+    field(INPA, "$(P)$(R)Ch1outDelayAO NPP NMS")
+    field(INPB, "$(P)$(R)Ch1outDelayStepAO NPP NMS")
+    field(CALC, "A+B")
+    field(OUT,  "$(P)$(R)Ch1outDelayAO PP NMS")
+}
+record(calcout,"$(P)$(R)Ch1outDelayDecCO")
+{
+    field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+    field(DESC, "CH1 OUT DLY STEP DEC")
+    field(INPA, "$(P)$(R)Ch1outDelayAO NPP NMS")
+    field(INPB, "$(P)$(R)Ch1outDelayStepAO NPP NMS")
+    field(CALC, "A-B")
+    field(OUT,  "$(P)$(R)Ch1outDelayAO PP NMS")
+}
+record(ao,"$(P)$(R)Ch1outDelayStepAO")
+{
+    field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+    field(DESC, "CH1 OUT DLY STEP")
+    field(PREC, "2")
+}

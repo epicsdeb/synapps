@@ -1,0 +1,125 @@
+Differences between closed-off sequencer version in kroot/kss/epcom/seq
+and v1.9.3p2 (just before started on OSI port).
+
+--------------------------------------------------------------------------------
+diff -r src/gen_ss_code.c /home/wlupton/kroot/kss/epcom/seq/gen_ss_code.c
+17d16
+< 29apr99,wfl     Avoided compilation warnings.
+20,21c19
+< #include	<string.h>
+< 
+---
+> #include	"parse.h"
+24,25d21
+< 
+< #include	"parse.h"
+27d22
+< #include	"proto.h"
+39,41d33
+< int		state_block_index_from_name();
+< int		special_func();
+< 
+709c701
+< 		eval_expr(EXIT_STMT, ep, (Expr *)NULL, 1);
+---
+> 		eval_expr(EXIT_STMT, ep, 0, 1);
+
+--------------------------------------------------------------------------------
+diff -r src/gen_tables.c /home/wlupton/kroot/kss/epcom/seq/gen_tables.c
+21d20
+< 29apr99,wfl	Avoided compilation warnings.
+26,28c25
+< #include	<stdlib.h>
+< #include	<string.h>
+< 
+---
+> #include	"parse.h"
+30d26
+< 
+32,33d27
+< #include	"parse.h"
+< #include	"proto.h"
+46,47d39
+< 
+< int		find_error_state();
+
+--------------------------------------------------------------------------------
+diff -r src/parse.c /home/wlupton/kroot/kss/epcom/seq/parse.c
+23d22
+< 29apr99,wfl	Avoided compilation warnings.
+28d26
+< #include	<math.h>
+30,32d27
+< #include	<stdlib.h>
+< #include	<string.h>
+< 
+34c29
+< #include	"proto.h"	/* function prototypes */
+---
+> #include	<math.h>
+736c731
+< 	phase2();
+---
+> 	phase2(ss_list);
+
+--------------------------------------------------------------------------------
+diff -r src/parse.h /home/wlupton/kroot/kss/epcom/seq/parse.h
+19,28d18
+< 
+< #ifndef INCLparseh
+< #define INCLparseh
+< 
+< /* Allow this file to be included after snc.h */
+< #ifdef INCLsnch
+< #undef Expr
+< #undef Var
+< #endif
+< 
+143,144d132
+< 
+< #endif	/*INCLparseh*/
+
+--------------------------------------------------------------------------------
+diff -r src/phase2.c /home/wlupton/kroot/kss/epcom/seq/phase2.c
+22d21
+< 29apr99,wfl     Avoided compilation warnings.
+27,29d25
+< #include	<stdlib.h>
+< #include	<string.h>
+< 
+32d27
+< #include	"proto.h"	/* function prototypes */
+53,55d47
+< 
+< int	db_queue_count();
+< int	db_chan_count();
+
+--------------------------------------------------------------------------------
+diff -r src/seq_mac.c /home/wlupton/kroot/kss/epcom/seq/seq_mac.c
+17d16
+< 29apr99,wfl     Avoided compilation warnings.
+22d20
+< #include	"ctype.h"
+
+--------------------------------------------------------------------------------
+diff -r src/seq_main.c /home/wlupton/kroot/kss/epcom/seq/seq_main.c
+52a53
+> 17may99,wfl     Moved misplaced event array initialization.
+282a284
+> 		pSP->pEvents[i] = 0;
+287d288
+< 		pSP->pEvents[i] = 0;
+
+--------------------------------------------------------------------------------
+diff -r src/snc_main.c /home/wlupton/kroot/kss/epcom/seq/snc_main.c
+24d23
+< 29apr99,wfl	Avoided compilation warnings.
+29,32d27
+< #include	<stdlib.h>
+< #include	<string.h>
+< 
+< #include	"proto.h"
+84c79
+< 	FILE	*infp, *outfp;
+---
+> 	FILE	*infp, *outfp, *freopen();

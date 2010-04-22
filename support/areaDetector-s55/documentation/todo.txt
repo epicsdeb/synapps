@@ -1,0 +1,46 @@
+R1-6
+
+Firewire (Windows) driver:
+- Not working correctly for AcquireTime initially - absolute/device mode
+  problem
+
+Longer term:
+
+    General
+
+- Supports 64-bits
+
+- Redo locking mechanism so plugins can reprocess data when something changes?
+  - One lock for parameter library, another lock for messageQueue, etc?
+  - Make overlay plugin do updates when values are changed even if new frame not acquired, etc.
+
+- Document NeXus file plugin - add XML file documentation
+
+- Transform plugin: write documentation
+
+- Performance measurements
+
+- Prosilica once I fixed stale frame bug it won't exit when acquiring if very
+  busy
+
+- Implement and improve connection management
+
+    asynPortDriver
+- Implement portNameSelf in asynPortDriver (but leave it in ADBase.template).
+- Make it handle array interfaces with pointers?
+
+    NDPluginBase
+- Add all 10 dimensions to database?
+  
+   File plugins
+-  Implement reading
+
+
+    Prosilica driver
+- Connection management
+  - Sense disconnect, autoreconnect
+  - Implement link callback.  When matches uniqueID, call Disconnect or Connect
+  
+   IDL
+- Get Stephen Mudie's code included and fixed
+- Change image_display table widgets to text widgets or CW_field widgets

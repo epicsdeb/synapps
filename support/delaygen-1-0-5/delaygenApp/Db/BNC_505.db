@@ -1,0 +1,119 @@
+# BNC_505.db
+# Mark Rivers
+# University of Chicago
+# April 9, 2009
+
+# Database file for Berkeley Nucleonics 505 pulse/delay generator
+# This uses the streamDevice protocol file BNC_505.protocol
+
+###################################################
+# Records controlling the overall mode and timing #
+###################################################
+record(bo, "$(P)$(R)Run") {
+    field(DTYP, "stream")
+    field(OUT,  "@BNC_505.protocol setRun $(PORT)")
+    field(ZNAM, "Stop")
+    field(ONAM, "Run")
+}
+
+record(ao, "$(P)$(R)Period") {
+    field(DTYP, "stream")
+    field(OUT,  "@BNC_505.protocol setPeriod $(PORT)")
+    field(PREC, "4")
+    field(DRVL, "500e-9")
+    field(DRVH, "1000")
+    field(EGU,  "sec")
+}
+
+record(ao,"$(P)$(R)PeriodTweak") {
+        field(VAL, "1e-5")
+        field(PREC,"3")
+}
+
+record(calcout,"$(P)$(R)PeriodTweakDown") {
+        field(INPA,"$(P)$(R)PeriodTweak NPP NMS")
+        field(INPB,"$(P)$(R)Period NPP NMS")
+        field(CALC,"B-A")
+        field(OUT, "$(P)$(R)Period PP NMS")
+}
+
+record(calcout,"$(P)$(R)PeriodTweakUp") {
+        field(INPA,"$(P)$(R)PeriodTweak NPP NMS")
+        field(INPB,"$(P)$(R)Period NPP NMS")
+        field(CALC,"B+A")
+        field(OUT, "$(P)$(R)Period PP NMS")
+}
+
+
+record(mbbo, "$(P)$(R)Mode") {
+    field(DTYP, "stream")
+    field(OUT,  "@BNC_505.protocol setMode $(PORT)")
+    field(ZRST, "Normal")
+    field(ZRVL, "0")
+    field(ONST, "Single")
+    field(ONVL, "1")
+    field(TWST, "Burst")
+    field(TWVL, "2")
+    field(THST, "Duty Cycle")
+    field(THVL, "3")
+}
+
+record(longout, "$(P)$(R)BurstCount") {
+    field(DTYP, "stream")
+    field(OUT,  "@BNC_505.protocol setBurstCount $(PORT)")
+    field(DRVL, "1")
+    field(DRVH, "1000000")
+}
+
+record(longout, "$(P)$(R)PulseCount") {
+    field(DTYP, "stream")
+    field(OUT,  "@BNC_505.protocol setPulseCount $(PORT)")
+}
+
+record(longout, "$(P)$(R)OffCount") {
+    field(DTYP, "stream")
+    field(OUT,  "@BNC_505.protocol setOffCount $(PORT)")
+}
+
+############################################
+# These records are for the external input #
+############################################
+record(mbbo, "$(P)$(R)ExtMode") {
+    field(DTYP, "stream")
+    field(OUT,  "@BNC_505.protocol setExtMode $(PORT)")
+    field(ZRST, "Disabled")
+    field(ZRVL, "0")
+    field(ONST, "Trigger")
+    field(ONVL, "1")
+    field(TWST, "Gate")
+    field(TWVL, "2")
+}
+
+record(ao, "$(P)$(R)ExtLevel") {
+    field(DTYP, "stream")
+    field(OUT,  "@BNC_505.protocol setExtLevel $(PORT)")
+    field(PREC, "4")
+    field(DRVL, "0.2")
+    field(DRVH, "15")
+    field(EGU,  "V")
+}
+
+record(mbbo, "$(P)$(R)ExtEdge") {
+    field(DTYP, "stream")
+    field(OUT,  "@BNC_505.protocol setExtEdge $(PORT)")
+    field(ZRST, "Rising")
+    field(ZRVL, "0")
+    field(ONST, "Falling")
+    field(ONVL, "1")
+}
+
+record(mbbo, "$(P)$(R)ExtPolarity") {
+    field(DTYP, "stream")
+    field(OUT,  "@BNC_505.protocol setExtPolarity $(PORT)")
+    field(ZRST, "Low")
+    field(ZRVL, "0")
+    field(ONST, "High")
+    field(ONVL, "1")
+}
+
+

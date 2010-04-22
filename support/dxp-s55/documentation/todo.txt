@@ -1,0 +1,47 @@
+                       DXP 3-0 Things to do
+
+- Get non-root access to USB Saturn systems working on Linux.  
+  udev does not seem to be working like it did previously?
+
+- EPP mode not working on Linux?  Or Windows?
+
+- Implement correct horizontal axis scaling of baseline histogram and diagnostic traces
+  
+- When using the EPICS sscan record to do rapid data collection, the scan occasionally
+  hangs up (every few hunded points) because the MCA record did not complete processing (?). 
+  There are also occasional data dropouts (elapsed times and spectra are 0).
+  Check this on Saturn and xMAP: still happening?
+  
+- Test performance when doing rapid scanning on all models, make at least as good as 2-11 corrected for small additional 
+  overhead to read extra parameters to do accurate live time correction.
+
+- Test all preset modes on Saturn and xMAP
+
+- Test AutoApply and Apply
+  - Measure improvement in iocInit compared to 2-10 release with 16 channel
+    system
+  
+- Mapping mode:
+  - Add read rate, MBytes to medm screen
+  - Test gate and sync modes together - HAS PROBLEMS, WAIT FOR REPLY FROM PETER
+  - Test saving TIFF and NeXus files
+ 
+- Alphabetize the low-level parameters with a sort array.  Use this array to
+  map between asynPortDriver parameter numbers and indices in the Handel array.
+
+- Make the low-level parameter strings be PINI=YES, not I/O Intr, since they
+  only need to process once at iocInit.
+
+- Make sure all parameters have corresponding PVs, and eliminate any unneeded parameters
+
+- Need to copy data to NDArray for callbacks to work in MCA mode.  Do we care
+  about this?
+  
+- Add and test PollTime PV, add to medm screen
+
+- Add and test ResetDelay, add to medm screen.  Add RCTau?  Display one or other depending on preamp type?
+
+- Add polarity?
+  
+- Documentation of all the changes
+

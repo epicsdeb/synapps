@@ -1,0 +1,228 @@
+The idea of programmable glue is to provide EPICS users and developers with a
+pool of pre-programmed electronic circuits, which have been implemented in an
+FPGA, and a capability for routing signals (field wires, EPICS bit values, or
+inputs/outputs of other pre-programmed circuits) to and from these circuits,
+using EPICS.
+
+For example, a user might connect field-input pin 1 to the D input of a D
+flip-flop, field-input pin 2 to the clock input of the flip-flop, field-output
+pin 1 to the Q output of the flip-flop, and a binary EPICS PV to the clear
+input of the flip-flop.  The FPGA would contain routing electronics that
+allow EPICS to control signal connections by setting bits of registers
+implemented in the FPGA.  EPICS database and display fragments would permit
+users to control these signal-connection registers manually, through EPICS
+client software, and with autosave.
+
+
+
+possible circuits
+-----------------
+
+divide-by-N
+	inputs:
+		input, enable - route
+		N - EPICS PV
+	outputs:
+		Q, Q* - route
+
+delay
+	inputs:
+		input, clock - route
+	outputs:
+		output - route
+
+quadrature encoder up/dn counter
+	inputs:
+		A, B, load, clear - route
+		preset - EPICS PV
+	outputs:
+		count - EPICS PV
+
+gated counter
+	inputs:
+		input, gate - route
+	outputs:
+		count - EPICS PV
+
+pulse output
+	inputs:
+		start, clock - route
+		counts - EPICS PV
+	outputs:
+		Q, Q* - route
+
+preset counter
+	inputs:
+		clock, Q, Q* - route
+		preset - EPICS PV
+	outputs:
+		Q, Q* - route
+
+clock
+	inputs:
+		freq - EPICS PV
+	outputs:
+		Q, Q* - route
+
+and/nand
+	inputs:
+		input1, input2 - route
+	outputs:
+		Q, Q* - route
+
+or/nor
+	inputs:
+		input1, input2 - route
+	outputs:
+		Q, Q* - route
+
+D flip flop
+	inputs:
+		D, preset, clear, clock - route
+	outputs:
+		Q, Q* - route
+
+fanout
+	inputs:
+		value - route
+	outputs:
+		Q1, Q2, Q3, Q4 - route
+
+multiplexer
+	inputs:
+		X1, X2, X3, X4, A1, A2 - route
+	outputs:
+		Q - route
+
+demultiplexer
+	inputs:
+		value, A1, A2 - route
+	outputs:
+		Q1, Q2, Q3, Q4 - route
+
+input pin (N)
+	inputs:
+		value - route
+
+output pin (N)
+	outputs:
+		value - route
+------------------------------------------------------------------------
+57 routed signals (33 inputs, 24 outputs)
+N input signals, N output signals
+
+
+
+========================================================================
+
+Somehow we have to associate devices in the FPGA with EPICS records.  It would
+be nice to be able to do this in a way that permits software to discover and
+configure itself to FPGA content.  In any case, somewhere there must exist a
+list of the devices, the EPICS-addressable elements of those devices, and the
+information required to access them.  Here's a first shot at the items such a
+list might contain:
+
+------------------------------------------------------------------------
+device	device	element	element	register	EPICS			
+type	number	type	name	address		PV				description
+------------------------------------------------------------------------
+AND		1		IN		IN1		?			AND_1_IN1		AND gate input
+AND		1		IN		IN2		?			AND_1_IN2		AND gate input
+AND		1		OUT		POUT	?			AND_1_POUT		AND gate output
+AND		1		OUT		NOUT	?			AND_1_NOUT		AND gate output
+
+DLY		1		IN		IN		?			DLY_1_IN		Time delay input
+DLY		1		IN		CLOCK	?			DLY_1_CLOCK		Time delay clock
+DLY		1		OUT		OUT		?			DLY_1_OUT		Time delay output
+DLY		1		REG		PERIOD	?			DLY_1_PERIOD	Clock period
+
+DivByN	1		IN		CLOCK	?			DivByN_1_CLOCK	Signal to be divided
+DivByN	1		IN		ENABLE	?			DivByN_1_ENABLE Allow count to proceed
+DivByN	1		IN		RESET	?			DivByN_1_RESET	Restart count at 0
+DivByN	1		OUT		POUT	?			DivByN_1_POUT	Positive output
+DivByN	1		OUT		NOUT	?			DivByN_1_NOUT	Negative output
+DivByN	1		REG		N		?			DivByN_1_N		Divisor
+
+FO		1		OUT		OUT		?			FO_1_OUT		field-output pin
+
+FI		1		IN		IN		?			FI_1_IN			field-input pin
+------------------------------------------------------------------------
+
+device type:
+-----------
+
+We need to show the user a picture of each device implemented in the FPGA,
+and provide medm control fields associated with the device's elements (e.g,
+inputs).
+
+element types:
+-------------
+
+IN	input, routed via a multiplexer from any of NBUS bus signals.  NBUS is a
+	fixed feature of an FPGA implementation.  Bus signal 0 is connected to
+	ground.
+
+OUT	output, routed via a demultiplexer to any of NBUS bus signals, except that
+	no connection is made to the signal selected by the demultiplexer address 0.
+
+REG	integer value written by EPICS to a parameter register with a fixed connection to a
+	specific device instance.
+
+
+========================================================================
+Deployment considerations
+
+We need to ensure that the software agrees with the FPGA programming.  Thus
+far, the software dependence on FPGA content is of two kinds:
+
+1) Dependence on the register-set with which SOPC components are implemented.
+   There are two different register sets currently in use: Marty's original
+   register set (called 'fieldIO_registerSet' in comments within drvIp1k125.c),
+   and Kurt's register set (called 'single 16-bit register' -- a misnomer,
+   because there are several registers, but thus far only one register is used.)
+   This dependence is restricted to the driver code, drvIp1k125.c.
+
+2) Dependence on the user circuits attached to 'single 16-bit register' SOPC
+   components.  For example, the trial implementation of softGlue has several
+   AND/NAND gates, several OR/NOR gates, some counters, etc., controlled by
+   'single 16-bit register' components.
+   This dependence is restricted to the database, autosave-request file, and
+   MEDM displays, which should have an analog for each 'single 16-bit register'
+   component, and should know which component address corresponds with which
+   user circuit, and with which part of the user circuit.
+   For example, the inverting output of AND/NAND gate #1 is associated by
+   address with a 'single 16-bit register' component.  In the future, it might
+   also be associated with a particular bit of a particular readback register,
+   and it also might be associated with some interrupt-related infrastructure.
+
+There are several possible ways to manage software dependence on FPGA content:
+
+1) Deploy softGlue as a module, with fixed FPGA content loaded at IOC boot time,
+and matching EPICS software.  To upgrade, one would link one's IOC software to
+a new version of the softGlue module, and rebuild.
+
+2) Write the content in flash memory on the IP module, and also write a unique
+version number into the FPGA, and have the software read the version number and
+check it against the software version number.  This method would require flash
+programming to upgrade.  If this cannot be done via the IP bus, then upgrades
+would be a problem.
+
+3) Some other way.
+
+For now, alternative (1) is assumed.  To accomplish this, we need to do the
+following:
+
+1) Use Quartus to write a file, in the Intel Hex format, that can be loaded into
+   the FPGA via the IP bus.
+
+2) Write software to do the loading, and invoke it from the st.cmd file before
+   the software intended to use the FPGA has started running.
+
+3) Configure the IP module to permit programming via the IP bus (as opposed to
+   programming from the onboard flash memory).  This is done by setting the DIP
+   jumper labelled 'CONFIGURE FPGA OVER IP BUS' to the 'IP BUS' position.
+
+The FPGA is programmed by setting bit 0 of the Config/control register, and
+writing FPGA-program data, a byte at a time, to the Config Data register.
+The procedure is detailed in section 3 of the Acromag Series IP-EP201
+user's manual, IP_EP20x_797a.pdf

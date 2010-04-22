@@ -1,0 +1,30 @@
+#RELEASE Location of external products
+# Run "gnumake clean uninstall install" in the application
+# top directory each time this file is changed.
+
+TEMPLATE_TOP=$(EPICS_BASE)/templates/makeBaseApp/top
+
+#If using the sequencer, point SNCSEQ at its top directory:
+SNCSEQ=J:/epics/devel/seq/2-0-12
+
+# For scaler record
+STD=J:/epics/devel/std/2-7
+
+
+# The following modules are not needed to build the vme module, but vme
+# still does have a dependence on them.  For example, vme might provide a
+# database that uses a record type, or device support, provided by one of
+# these modules.
+# For busy record
+#BUSY=J:/epics/devel/busy
+# For transform, etc. records
+#CALC=J:/epics/devel/calc/2-6beta
+# stdSupport has some things that require ASYN
+#ASYN=J:/epics/devel/asyn/4-4beta
+
+# EPICS_BASE usually appears last so other apps can override stuff:
+EPICS_BASE=H:/epics/base-3.14.11
+
+#Capfast users may need the following definitions
+#CAPFAST_TEMPLATES=
+#SCH2EDIF_PATH=

@@ -1,0 +1,345 @@
+<html>
+  <head>
+    <title>EPICS ePID controls for feedback</title>
+    <meta name="description" content=""/>
+    <meta name="keywords" content="PID, feedback, beamline controls, EPICS"/>
+    <meta name="author" content="Argonne National Laboratory"/>
+  </head>
+  <body>
+    <h1 class="UNI_headline">EPICS ePID controls for feedback</h1>
+    <p><strong>Purpose</strong>: use the EPICS epid record for generic software feedback</p>
+    <p><strong>Author</strong>: Pete R. Jemian </p>
+    <p>subversion property $Id: index.html 9860 2009-12-09 22:40:21Z jemian $</p>
+    <h2>Theory of operation</h2>
+    <ol>
+      <li>A signal is available as an EPICS process variable (<strong>IN</strong>). The signal
+        source can be in the same VME with the feedback software or in another VME (or other EPICS
+        IOC) available on the network.</li>
+      <li>An input calculation (swait record) is used to allow some flexibility for conditioning the
+        input signal to the feedback.</li>
+      <li>An epid record is used to provide real-time feedback and recalculate the output
+        variable.</li>
+      <li>The output from the epid record is buffered by the outbuf calculation which watches the
+        Feedback ON (FBON) switch and retains the previous output value if the feedback software is
+        switched off.</li>
+      <li>An output calculation is used to allow some flexibility for conditioning the output signal
+        to the positioner (<strong>OUT</strong>). The conditioned epid result is pushed to the
+        positioner.</li>
+      <li>A positioner responds to the result from the epid record and thus further modifies the
+        input signal.</li>
+      <li>The feedback can be switched on manually or automatically, subject to the logic of some
+        other calculation (<strong>CALC</strong>). For example, a <em>shutter closed</em> signal
+        could suspend feedback. In this case, the output is not driven.</li>
+      <li>When the feedback is switched on, the positioner should not jerk to a different position.
+        The feedback software must be prepared to start moving the positioner from its present
+        location.</li>
+    </ol>
+    <h2>Related information</h2>
+    <ul>
+      <li>calc (EPICS Record): <a href="http://www.aps.anl.gov/bcda/synApps/calc/calc.html"
+          >http://www.aps.anl.gov/bcda/synApps/calc/calc.html</a></li>
+      <li>epid (EPICS Record): <a href="http://cars9.uchicago.edu/software/epics/epidRecord.html"
+          >http://cars9.uchicago.edu/software/epics/epidRecord.html</a></li>
+      <li>swait (EPICS Record): <a
+          href="http://www.aps.anl.gov/bcda/synApps/calc/R2-4/swaitRecord.html"
+          >http://www.aps.anl.gov/bcda/synApps/calc/R2-4/swaitRecord.html</a></li>
+      <li>source code components: <ul>
+          <li>EPICS MEDM screen: <a href="source/fb_epid.adl">fb_epid.adl</a></li>
+          <li>EPICS database: <a href="source/fb_epid.db">fb_epid.db</a></li>
+          <li>EPICS template: <a href="source/fb_epid_example.template"
+            >fb_epid_example.template</a></li>
+          <li>EPICS IOC configuration: <a href="source/fb_epid_example_st.cmd"
+              >fb_epid_example_st.cmd</a></li>
+          <li>EPICS autosave/restore request: <a href="source/fb_epid_example_auto_sr.req"
+              >fb_epid_example_auto_sr.req</a></li>
+          <li>EPICS autosave/restore example data: <a href="source/fb_epid_example_auto_sr.sav"
+              >fb_epid_example_auto_sr.sav</a></li>
+        </ul></li>
+      <li>
+        <a href="docv1.html">previous observations</a>
+      </li>
+    </ul>
+    <h2>MEDM control screen </h2>
+    <table>
+      <caption>fb_epid database GUI </caption>
+      <tr>
+        <td valign="top">
+          <p>The MEDM screen provides access to all the controls of the <a
+              href="http://cars9.uchicago.edu/software/epics/epidRecord.html">epid</a> record. To
+            add some flexibility, an EPICS interface database has been created. The user can change
+            the input variable(s) through a <a
+              href="http://www.aps.anl.gov/aod/bcda/synApps/calc/calc.html">calculation</a> (<a
+              href="http://www.aps.anl.gov/aod/bcda/synApps/calc/R2-4/swaitRecord.html">swait</a>
+            record). </p>
+          <p>Control of the output variable will be permitted between the software limits shown at
+            the bottom of the control screen. From the output calc, it is possible to change the PV
+            which will be directed by this database. </p>
+          <p>The enable calculation can be used to provide automated on/off.</p>
+        </td>
+        <td>
+          <img src="fb_epid_adl.png" alt="MEDM controls"/>
+        </td>
+      </tr>
+    </table>
+    <h1 class="UNI_headline">Information for the EPICS System Administrator</h1>
+    <h2>How to use the database </h2>
+    <p> Use one instance of this database for each feedback channel. If two different methods for
+      feedback are desired for a given axis, call two instances of this database. For example, on
+      33ID for feedback of the DCM crystal 2 PZT, one might choose either the XBPM position signal
+      or the D3 graphite foil intensity to drive the PZT position.</p>
+    <table cellpadding="5">
+      <tr>
+        <th>
+          <table border="2">
+            <caption> Example XBPM position feedback </caption>
+            <tr>
+              <th>macro</th>
+              <td>
+                <strong>meaning</strong>
+              </td>
+            </tr>
+            <tr>
+              <th>P</th>
+              <td>iad:fbe:xbpm:y</td>
+            </tr>
+            <tr>
+              <th>IN</th>
+              <td>iad:xbpm:pos:y</td>
+            </tr>
+            <tr>
+              <th>OUT</th>
+              <td>iad:540:c0:out0</td>
+            </tr>
+            <tr>
+              <th>MODE</th>
+              <td>PID</td>
+            </tr>
+            <tr>
+              <th>CALC</th>
+              <td>A&amp;&amp;B&amp;&amp;C</td>
+            </tr>
+            <tr>
+              <th>PERMIT1</th>
+              <td>iad:beamAvailable.VAL</td>
+            </tr>
+            <tr>
+              <th>PERMIT2</th>
+              <td>iad:xbpm:current:ok.VAL</td>
+            </tr>
+            <tr>
+              <th>PERMIT3</th>
+              <td>&nbsp;</td>
+            </tr>
+            <tr>
+              <th>PERMIT4</th>
+              <td>&nbsp;</td>
+            </tr>
+          </table>
+        </th>
+        <td>
+          <table border="2">
+            <caption> Example D3 foil feedback </caption>
+            <tr>
+              <th>macro</th>
+              <td>
+                <strong>meaning</strong>
+              </td>
+            </tr>
+            <tr>
+              <th>P</th>
+              <td>iad:fbe:D3:y</td>
+            </tr>
+            <tr>
+              <th>IN</th>
+              <td>iad:540:c0:in10</td>
+            </tr>
+            <tr>
+              <th>OUT</th>
+              <td>iad:540:c0:out0</td>
+            </tr>
+            <tr>
+              <th>MODE</th>
+              <td>Max/Min</td>
+            </tr>
+            <tr>
+              <th>CALC</th>
+              <td>A&amp;&amp;B</td>
+            </tr>
+            <tr>
+              <th>PERMIT1</th>
+              <td>iad:beamAvailable.VAL</td>
+            </tr>
+            <tr>
+              <th>PERMIT2</th>
+              <td>&nbsp;</td>
+            </tr>
+            <tr>
+              <th>PERMIT3</th>
+              <td>&nbsp;</td>
+            </tr>
+            <tr>
+              <th>PERMIT4</th>
+              <td>&nbsp;</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+    <h2>Database flow chart </h2>
+    <p>The present database was constructed after a brief period of <a href="tests">development
+        testing</a>.</p>
+    <p>
+      <a href="fb_epid.png">
+        <img src="fb_epid.png" alt="database flow chart" width="80%"/>
+      </a>
+    </p>
+
+    <h1>User Configuration</h1>
+    <p>Once the software has been installed (IOC configured with database and autosave/restore
+      configured to retain settings across restarts of the IOC), some careful setup needs to happen
+      before the software is ready to be used.</p>
+    <p>First, it is necessary to identify the EPICS PVs for the control variable (such as a
+      positioner or the power to a heating element) and the signal variable (the PV that is sampled
+      for the PID loop). These may have been configured in the IOC but it is possible to change them
+      while the IOC is running. They can be changed without need to recompile or restart the EPICS
+      IOC.</p>
+    <p>To avoid any unexpected consequences, be sure the <tt>fb_epid</tt> software is switched off
+      before changing any PVs or changing between modes of operation. In the MEDM screen, in the
+        <em>EPID output</em> section, press the button marked <em>off</em>. </p>
+    <p>It is most important to make sure that the input signal is updated faster than the
+      recalculation interval for the <tt>fb_epid</tt> software or instability will occur. A factor
+      of 3 to 10 input updates per output update is reasonable. The output will be updated each time
+      the <tt>epid</tt> is processed.</p>
+
+    <h2>Setup of the calculations</h2>
+    <p>The versatility of the <tt>fb_epid</tt> support lies in the various calculations that can be
+      reconfigured by the user while the IOC is operating.</p>
+
+    <h3>Setting the enable calculation</h3>
+    <p>The operation of <tt>fb_epid</tt> is permitted when the result of the <em>enable</em>
+      calculation is 1.0. The first, obvious, choice is that <tt>bo</tt> record is provided to the
+      user to switch the <tt>fb_epid</tt> software on and off. But the software should also disable
+      itself when the input signal goes out of range or also due to some other operating parameters. </p>
+    <p>Other factors can be built into the <em>enable</em> calculation. For example, on undulator
+      beam lines, it is not useful to run the feedback if the undulator is not operating (gap is
+      closed or magnets are energized). In such a case, monitor the PV for the undulator gap (APS
+      undulator A) and enable only if the gap is below some reasonable number such as 50 mm. </p>
+    <p> One should also factor the <tt>fb_epid</tt> input signal into the <em>enable</em>
+      calculation by checking that is within a valid operating range. </p>
+
+    <h3>Setting the input calculation</h3>
+    <p>It is possible to perform limited math on the input signal to be used. For example, when the
+      goal is to maximize the conductance through a crystal pair, such as a monochromator, the best
+      signal would be a ratio between detector immediately before and after the pair of crystals.
+      The control variable would be the rotation angle of either of the two crystals (usually a fine
+      rotation of the second crystal). The input calculation would then monitor the PVs for both
+      detectors and calculate the ratio of the two: <tt>A/B</tt>. In this example, it would also be
+      useful to include the PV of this calculation in the <em>enable</em> calculation and ensure
+      that the ratio is acceptable.</p>
+
+    <h3>Setting the limits on the output</h3>
+    <p> To prevent the epid record from driving the control variable out of bounds, there are limits
+      for low and high. The software will not allow the positioner to drive outside of these limits.
+        <strong style="color: red">Editor: Is this correct or is it a clamp on the output or a reset
+        if the value is found to go outside the range?</strong>
+    </p>
+
+    <h2>Tuning of the epid record</h2>
+    <p>For more information about the EPICS <tt>epid</tt> record, see <a
+        href="http://cars9.uchicago.edu/software/epics/epidRecord.html"
+        >http://cars9.uchicago.edu/software/epics/epidRecord.html</a>. There is a special discussion
+      on <a href="http://cars9.uchicago.edu/software/epics/epidRecord.html#Feedback%20Tuning"
+        >feedback tuning</a> in PID mode.</p>
+    <p>The epid record can run in either Max/Min or PID mode. Max/Min is used to maximize a positive
+      input signal or minimize a negative input signal such as from a beam line detector. PID mode
+      is used to keep the input signal at constant value such as holding a sample's temperature
+      constant. </p>
+    <p>
+      <strong style="color: red">Editor: What is the role of the <em>Set Point</em> in PID
+        mode?</strong> Probably need to check the epid record source code for this information. </p>
+
+    <h3>Max/Min mode</h3>
+    <p>Max/Min mode is useful for monochromator feedback or other situations where a positive signal
+      is to be maximized (or a negative signal is to be minimized). The online <tt>epid</tt> record
+      documentation is lacking details about this mode so one is referred to inspecting the <a
+        href="https://subversion.xor.aps.anl.gov/trac/synApps/browser/trunk/support/std/vstub/stdApp/src/devEpidSoft.c"
+        >source code</a>.</p>
+
+    <h3>PID mode</h3>
+    <p>PID mode is useful for holding the input signal to the <em>Set Point</em> by adjusting the
+      control variable. The <a
+        href="http://cars9.uchicago.edu/software/epics/epidRecord.html#Feedback%20Parameters"
+          ><tt>epid</tt> record documentation</a> provides a good description of how to set the PID
+      constants.</p>
+
+    <h1>Macro substitutions in the support files</h1>
+
+    <h2>Macro substitutions in the fb_epid.adl file</h2>
+    <p>Here is an example command line that calls the support.</p>
+    <pre>need to supply example</pre>
+    <p>There are several macro substitutions in the <tt>fb_epid.adl</tt> to simplify use of the MEDM
+      screen.</p>
+    <table border="2">
+      <tr>
+        <th>macro</th>
+        <th>description</th>
+      </tr>
+      <tr>
+        <td>$(P)</td>
+        <td>Prefix for this instance of support.</td>
+      </tr>
+      <tr>
+        <td>$(E)</td>
+        <td>description</td>
+      </tr>
+    </table>
+
+    <h2>Macro substitutions in the fb_epid.db file</h2>
+    <p>There are several macro substitutions in the <tt>fb_epid.db</tt> to simplify installation of
+      the EPICS database.</p>
+    <table border="2">
+      <tr>
+        <th>macro</th>
+        <th>description</th>
+      </tr>
+      <tr>
+        <td>$(P)</td>
+        <td>Prefix for this instance of this database. Note that <tt>$(P):in.INAN</tt> holds PV name
+          of input PV (by default)</td>
+      </tr>
+      <tr>
+        <td>$(IN)</td>
+        <td>PV name: input signal</td>
+      </tr>
+      <tr>
+        <td>$(OUT)</td>
+        <td>PV name: output positioner</td>
+      </tr>
+      <tr>
+        <td>$(MODE)</td>
+        <td>either <em>PID</em> or <em>Max/Min</em></td>
+      </tr>
+      <tr>
+        <td>$(CALC)</td>
+        <td>string: actual calculation to go in <tt>$(P):enable.CALC</tt>, 1=feedback on, 0=feedback
+          off. A trivial value might be "A" which only watches the value of <tt>$(P):on</tt>.</td>
+      </tr>
+      <tr>
+        <td>$(PERMIT1)</td>
+        <td>PV name: boolean value to permit operations; value becomes <tt>$(P):enable.B</tt></td>
+      </tr>
+      <tr>
+        <td>$(PERMIT2)</td>
+        <td>PV name: boolean value to permit operations; value becomes <tt>$(P):enable.C</tt></td>
+      </tr>
+      <tr>
+        <td>$(PERMIT3)</td>
+        <td>PV name: boolean value to permit operations; value becomes <tt>$(P):enable.D</tt></td>
+      </tr>
+      <tr>
+        <td>$(PERMIT4)</td>
+        <td>PV name: boolean value to permit operations; value becomes <tt>$(P):enable.E</tt></td>
+      </tr>
+    </table>
+  </body>
+</html>

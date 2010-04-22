@@ -1,0 +1,262 @@
+# BNC_505.protocol
+# Mark Rivers
+# University of Chicago
+# April 9, 2009
+
+# stream protocol file for Berkeley Nucleonics 505 pulse/delay generator
+
+# Mark Rivers
+# April 8, 2009
+
+#######################################################################
+# These are for the overall operation, not for specific pulse outputs #
+#######################################################################
+getRun {
+   out ":PULSE0:STATE?";
+   in  "%d";
+}
+
+setRun {
+   out ":PULSE0:STATE %d";
+   in  "ok";
+   @init {getRun;}
+}
+
+getPeriod {
+   out ":PULSE0:PERIOD?";
+   in  "%f";
+}
+
+setPeriod {
+   out ":PULSE0:PERIOD %e";
+   in  "ok";
+   @init {getPeriod;}
+}
+
+getMode {
+   out ":PULSE0:MODE?";
+   in  "%{NORM|SING|BURS|DCYC}";
+}
+
+setMode {
+   out ":PULSE0:MODE %{NORM|SING|BURS|DCYC}";
+   in  "ok";
+   @init {getMode;}
+}
+
+getBurstCount {
+   out ":PULSE0:BCOUNTER?";
+   in  "%d";
+}
+
+setBurstCount {
+   out ":PULSE0:BCOUNTER %d";
+   in  "ok";
+   @init {getBurstCount;}
+}
+
+getPulseCount {
+   out ":PULSE0:PCOUNTER?";
+   in  "%d";
+}
+
+setPulseCount {
+   out ":PULSE0:PCOUNTER %d";
+   in  "ok";
+   @init {getPulseCount;}
+}
+
+getOffCount {
+   out ":PULSE0:OCOUNTER?";
+   in  "%d";
+}
+
+setOffCount {
+   out ":PULSE0:OCOUNTER %d";
+   in  "ok";
+   @init {getOffCount;}
+}
+
+####################################
+# These are for the external input #
+####################################
+getExtMode {
+   out ":PULSE0:EXTERNAL:MODE?";
+   in  "%{DIS|TRIG|GAT}";
+}
+
+setExtMode {
+   out ":PULSE0:EXTERNAL:MODE %{DIS|TRIG|GAT}";
+   in  "ok";
+   @init {getExtMode;}
+}
+
+getExtLevel {
+   out ":PULSE0:EXTERNAL:LEVEL?";
+   in  "%f";
+}
+
+setExtLevel {
+   out ":PULSE0:EXTERNAL:LEVEL %f";
+   in  "ok";
+   @init {getExtLevel;}
+}
+
+getExtEdge {
+   out ":PULSE0:EXTERNAL:EDGE?";
+   in  "%{RIS|FALL}";
+}
+
+setExtEdge {
+   out ":PULSE0:EXTERNAL:EDGE %{RIS|FALL}";
+   in  "ok";
+   @init {getExtEdge;}
+}
+
+getExtPolarity {
+   out ":PULSE0:EXTERNAL:POLARITY?";
+   in  "%{LOW|HIGH}";
+}
+
+setExtPolarity {
+   out ":PULSE0:EXTERNAL:POLARITY %{LOW|HIGH}";
+   in  "ok";
+   @init {getExtPolarity;}
+}
+
+
+######################################################################################
+# These are for Pulse N output.  First protocol argument is pulse number (1, 2, ...) #
+######################################################################################
+getPState {
+   out ":PULSE\$1:STATE?";
+   in  "%d";
+}
+
+setPState {
+   out ":PULSE\$1:STATE %d";
+   in  "ok";
+   @init {getPState;}
+}
+
+getPWidth {
+   out ":PULSE\$1:WIDTH?";
+   in  "%f";
+}
+
+setPWidth {
+   out ":PULSE\$1:WIDTH %e";
+   in  "ok";
+   @init {getPWidth;}
+}
+
+getPDelay {
+   out ":PULSE\$1:DELAY?";
+   in  "%f";
+}
+
+setPDelay {
+   out ":PULSE\$1:DELAY %e";
+   in  "ok";
+   @init {getPDelay;}
+}
+
+getPSync {
+   out ":PULSE\$1:SYNC?";
+   in  "%{TO|T1|T2|T3|T4|T5|T6|T7|T8}";
+}
+
+setPSync {
+   out ":PULSE\$1:SYNC %{TO|T1|T2|T3|T4|T5|T6|T7|T8}";
+   in  "ok";
+   @init {getPSync;}
+}
+
+getPPolarity {
+   out ":PULSE\$1:POLARITY?";
+   in  "%{NORM|INV}";
+}
+
+setPPolarity {
+   out ":PULSE\$1:POLARITY %{NORM|INV}";
+   in  "ok";
+   @init {getPPolarity;}
+}
+
+getPAmplitude {
+   out ":PULSE\$1:OUTPUT:AMPLITUDE?";
+   in  "%f";
+}
+
+setPAmplitude {
+   out ":PULSE\$1:OUTPUT:AMPLITUDE %f";
+   in  "ok";
+   @init {getPAmplitude;}
+}
+
+getPMode {
+   out ":PULSE\$1:CMODE?";
+   in  "%{NORM|SING|BURS|DCYCLE}";
+}
+
+setPMode {
+   out ":PULSE\$1:CMODE %{NORM|SING|BURS|DCYCLE}";
+   in  "ok";
+   @init {getPMode;}
+}
+
+getPBurstCount {
+   out ":PULSE\$1:BCOUNTER?";
+   in  "%d";
+}
+
+setPBurstCount {
+   out ":PULSE\$1:BCOUNTER %d";
+   in  "ok";
+   @init {getPBurstCount;}
+}
+
+getPPulseCount {
+   out ":PULSE\$1:PCOUNTER?";
+   in  "%d";
+}
+
+setPPulseCount {
+   out ":PULSE\$1:PCOUNTER %d";
+   in  "ok";
+   @init {getPPulseCount;}
+}
+
+getPOffCount {
+   out ":PULSE\$1:OCOUNTER?";
+   in  "%d";
+}
+
+setPOffCount {
+   out ":PULSE\$1:OCOUNTER %d";
+   in  "ok";
+   @init {getPOffCount;}
+}
+
+getPWaitCount {
+   out ":PULSE\$1:WCOUNTER?";
+   in  "%d";
+}
+
+setPWaitCount {
+   out ":PULSE\$1:WCOUNTER %d";
+   in  "ok";
+   @init {getPWaitCount;}
+}
+
+getPGate {
+   out ":PULSE\$1:CGATE?";
+   in  "%{DIS|LOW|HIGH}";
+}
+
+setPGate {
+   out ":PULSE\$1:CGATE %{DIS|LOW|HIGH}";
+   in  "ok";
+   @init {getPGate;}
+}
+

@@ -1,0 +1,13 @@
+record(longout,"$(P)$(H)$(SIG)") {
+	field(PINI,"YES")
+	field(DTYP,"Soft Channel")
+	field(OUT,"$(P)$(H)$(SIG)calc.A PP")
+}
+record(calcout,"$(P)$(H)$(SIG)calc") {
+	field(CALC,"$(CALC=A)")
+	field(OUT,"$(P)$(H)$(SIG)out PP")
+}
+record(longout,"$(P)$(H)$(SIG)out") {
+	field(DTYP,"asynUInt32Digital")
+	field(OUT,"@asynMask($(PORT),$(ADDR),0xffff)")
+}

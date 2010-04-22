@@ -1,0 +1,219 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<title>calcReleaseNotes</title>
+</head>
+
+<body bgcolor="#FFFFFF">
+
+<h1 align="center">calc Release Notes</h1>
+
+<h2 align="center">Release 2-8</h2>
+<ul>
+
+<li>Modified subAve.c (which supports userAve10.db) to add two algorithms: a
+line fit, selected by setting the sub record's .F field to 1, and a modified
+line fit, in which the calculated slope is multiplied by the correlation
+coefficient (.F ==2).  These algorithms fit recorded values, seen as a function
+of the time they were recorded, to a line, and return the line evaluated at the
+time the most recent input value was recorded.  This is nearly the same as
+taking the average, if the input signal's true value is constant.  But if the
+input signal varies with time, a line fit can yield a better estimate of the
+true current value.  This is particularly useful when the smoothed value is
+needed in a PID loop.
+
+<li>subAve.c had fixed 10,000 element buffer.  Now it starts with 100 elements
+	and grows as needed to as many as 100,000 elements.
+
+<li>userAve10.db, userAve.adl - modifications to add subAve.c's new line-fit
+	algorithm.  Modifications to allow clients easily to acquire an averaged
+	value (for example, in a scan) by writing to an "acquire" PV.  Clients
+	that use ca_put_callback to start acquisition will receive a callback when
+	the specified number of readings have been averaged.
+
+<li>Modified sCalc support to add the function nrndm, a pseudorandom number
+normally (i.e., bell curve) distribed about zero, with a standard deviation of
+one.  This affects sCalcout and transform records.
+
+<li>Fixed a bug in the sCalcoutRecord (thanks to Lewis Muir for finding and
+diagnosing the problem).  The record was not in all cases checking that an
+input link had one of the supported types before before using it to fill the
+associated value field.  As a result, a link to a DBF_CHAR or DBF_UCHAR PV
+would clear the following link's value field.
+
+<li>Fixes for EPICS 3.14.11, notably, adding errlog.h
+
+<li>Added FLNK to swait_settings.req (the 'userCalc' record)
+
+<li>Added a simple soft function generator (sine square triangle), FuncGen*
+
+<li>sCalc's max() and min() functions fixed for 64-bit architecture.  This
+fixes sCalcoutRecord, transformRecord, and swaitRecord.
+
+</ul>
+
+<h2 align="center">Release 2-7</h2>
+<ul>
+<li>Instead of the genSub record, the calc module now uses the aSub record
+in EPICS base (3.14.10 and higher).  Thanks to Eric Norum for detailing the
+required changes.
+<li>transform record exports transformRecordDebug, and calcSupport.dbd names it.
+<li>new .adl files yyArrayCalc*.adl
+<li>CalcRecord*.adl: deleted link-valid fields, which don't exist for calc record.
+<li>sCalcPerform now returns an error if the sscanf function fails to convert.
+<li>the sCalcout record now sets VAL==-1 and SVAL == "***ERROR***" if sCalcPerform
+returns an error.
+</ul>
+
+<h2 align="center">Release 2-6-7</h2>
+<ul>
+
+<li>Use new linkHelp displays (from std module) in displays that have links
+
+</ul>
+
+<h2 align="center">Release 2-6-6</h2>
+<ul>
+
+<li>The aCalcout record was not handling alarms correctly, Peter Mueller fixed it.
+
+<li>calcDocs.html now describes the databases, autosave-request files, and
+MEDM-display files in the calc module.
+
+<li>Added a set of user-transform record that are individually enabled/disabled.
+
+</ul>
+
+<h2 align="center">Release 2-6-5</h2>
+<ul>
+<li>The sCalcout record now supports the function, "len()", which returns the
+length of its argument *converted to string, if necessary).
+<li>Made the build sensitive to the modules in configure/RELEASE, so people
+don't have to get a copy of sscan and gensub just to use, say, the sCalcout
+record.  calcSupport.dbd and libcalc will include whatever calc was able to
+build, and this is determined by what modules are named in configure/RELEASE.
+<li>For sCalcout and aCalcout records, fixed check of outlink (if link to link
+field, or if .WAIT, then outlink attribute must be CA).
+</ul>
+
+<h2 align="center">Release 2-6-4</h2>
+<ul>
+<li>The transform record can now use both the input link and the expression to
+find a new value for a value field.  This is enabled by the COPT (calc option)
+field.  With the default value of COPT, "Conditional", the presence of the input
+link INPA precludes evaluation of the expression CLCA.  This is the way the
+transform record has always worked in the past.   With COPT="Always", all
+expressions are evaluated, whether or not the corresponding input link exists. 
+(As before, all input links execute before any calculations are performed.)
+<li>Minor changes to some display and documentation files.
+</ul>
+
+<h2 align="center">Release 2-6-3</h2>
+<ul>
+<li>array calcs reworked to allocate arrays only as needed.
+<br>aCalcPerform
+allocates no stack space until it is called.  Then, it allocates 20
+arrays of length aCalcArraySize (a volatile int, settable from the shell)
+or the arraySize argument specified by the first caller, whichever is
+larger.
+<br>aCalcoutRecord allocates an NELEM-size array for each variable AA-LL,
+when that variable is first read from or written to.
+<li>swaitRecord's .CALC field defaults to "0" instead of "", because ""
+will not be legal in EPICS 3.13.9.
+</ul>
+
+<h2 align="center">Release 2-6-2</h2>
+<ul>
+<li><p>Added the following functions for the aCalcout record
+<dl>
+<dt>DERIV <dd>take derivative (with respect to element number)
+<dt>FITPOLY <dd>fit to 2nd order polynomial
+<dt>FITMPOLY <dd>masked fit to 2nd order polynomial
+<dt>NSMOO <dd>apply smoothing operator a specified number of times
+</dl>
+<li>reworked medm displays that describe calc expressions
+<li>reworked medm displays for aCalcout record
+<li>fixed swaitRecord docs
+</ul>
+
+<h2 align="center">Release 2-6-1</h2>
+<ul>
+<li><p>sCalcout and aCalcout records were not calling device support's
+init_record() routine
+<li><p>Added FWHM function to array calc support.
+</ul>
+
+<h2 align="center">Release 2-6</h2>
+<ul>
+<li><p>Added array calc support.  This generalizes EPICS standard calc support
+in much the same way that the string calc support did, but with arrays
+instead of strings.
+
+<li><p>Added a python program to test string-calc software.
+
+<li><p>Interp support uses different genSub-record fields, and has acquired a mode switch
+and a success indicator.  See calc/documentation/interp.README.
+
+<li><p>sCalcout record has two new functions:
+<ul>
+<li>TR_ESC() translates escape sequences into the characters they represent
+<li>ESC()    translates selected unprintable characters into escape sequences.
+</ul>
+</ul>
+
+<h2 align="center">Release 2-4</h2>
+
+This version is intended to build with EPICS base 3.14.7.
+
+<ul>
+<li><p>interp.c, interp.db, interp.adl - no longer supports spline
+interpolation. Array length no longer limited to 2000 elements.  Added range
+checking.  Now the number of elements must be specified at load time, with the
+macro, N.  Polynomial order is now forced to be in [0..10].
+<li><p>All databases have been converted to vdct.
+<li><p>Swait-record documentation added
+<li><p>New string operators '-|' and '|-' (delete first/last occurrence of
+substring).
+<li><p>Added arrayTest.c, a gensub-based support for producing unique
+arrays at runtime, e.g., for verifying that sscanRecord/saveData are
+storing data exactly as it was acquired.  Also added arrayTest.db and
+arrayTest.adl.
+<li><p>Complete list of stringCalc functions, operators, and
+constants, with examples, is available as a set of medm displays,
+starting with the top-level display "calcExamples.adl".  All medm
+displays that display calc expressions call up these doc displays.
+<li><P>stringCalc record now uses device support.  Supplied soft device
+support allows the user to specify whether or not to wait for completion
+of the operation started by the OUT link.
+<li><P>EPICS base no longer contains the code required to check calc
+expressions for the sCalcout and transform records at boot time or DCT
+time.  (At run time, the expressions are checked by sCalcPostfix.)
+<li><P><a href="cvsLog.txt">cvs log</a>
+</ul>
+
+<h2 align="center">Release 2-3</h2>
+
+<p align="left">This is the first release of the synApps calc module.
+Version numbering for this module begins with 2.3 because this module
+was split from version 2.2 of the std module, and I wanted to retain
+the CVS histories of module contents.</p>
+
+This version is intended to build with EPICS base 3.14.5.
+
+Differences from software as previously released in std 2.2:
+<ul>
+<li><p>interp.c, interp.db, interp.adl - now supports spline and
+polynomial interpolation.
+<li><p>subAve.c - registry stuff
+
+
+<address>
+    Suggestions and Comments to: <br>
+    <a href="mailto:mooney@aps.anl.gov">Tim Mooney </a>:
+    (mooney@aps.anl.gov) <br>
+    Last modified: December 22, 2004 
+</address>
+</body>
+</html>

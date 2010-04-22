@@ -1,0 +1,38 @@
+# Redefine the TraceMode choices, eliminating all but the first 2  
+# dxpHighLevel.template is for the xMAP.  Must load this file after that one.
+record(mbbo, "$(P)$(R)TraceMode") {
+    field(TWST, "")
+    field(THST, "")
+    field(FRST, "")
+    field(FVST, "")
+    field(SXST, "")
+}
+
+record(mbbi, "$(P)$(R)TraceMode_RBV") {
+    field(TWST, "")
+    field(THST, "")
+    field(FRST, "")
+    field(FVST, "")
+    field(SXST, "")
+}
+
+# Redefine the PresetMode choices, eliminating all but the first 3  
+record(mbbo, "$(P)$(R)PresetMode") {
+    field(THVL, "")
+    field(THST, "")
+    field(FRVL, "")
+    field(FRST, "")
+}
+
+record(mbbi, "$(P)$(R)PresetMode_RBV") {
+    field(THVL, "")
+    field(THST, "")
+    field(FRVL, "")
+    field(FRST, "")
+}
+
+# Redefine the number of elements in TraceData. xMAP has 4096, Saturn has only 4000  
+record(waveform, "$(P)$(R)TraceData") {
+    field(NELM, "4000")
+}
+

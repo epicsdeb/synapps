@@ -1,0 +1,161 @@
+# BNC_505_Pn.db
+# Mark Rivers
+# University of Chicago
+# April 9, 2009
+
+# Database file for Berkeley Nucleonics 505 pulse/delay generator
+# This uses the streamDevice protocol file BNC_505.protocol
+
+#########################################
+# Records controlling pulse $(N) output #
+#########################################
+record(bo, "$(P)$(R)P$(N):State") {
+    field(DTYP, "stream")
+    field(OUT,  "@BNC_505.protocol setPState($(N)) $(PORT)")
+    field(ZNAM, "Off")
+    field(ONAM, "On")
+}
+
+record(ao, "$(P)$(R)P$(N):Width") {
+    field(DTYP, "stream")
+    field(OUT,  "@BNC_505.protocol setPWidth($(N)) $(PORT)")
+    field(PREC, "4")
+    field(DRVL, "100e-9")
+    field(DRVH, "1000")
+    field(EGU,  "sec")
+}
+
+record(ao,"$(P)$(R)P$(N):WidthTweak") {
+        field(VAL, "1e-5")
+        field(PREC,"3")
+}
+
+record(calcout,"$(P)$(R)P$(N):WidthTweakDown") {
+        field(INPA,"$(P)$(R)P$(N):WidthTweak NPP NMS")
+        field(INPB,"$(P)$(R)P$(N):Width NPP NMS")
+        field(CALC,"B-A")
+        field(OUT, "$(P)$(R)P$(N):Width PP NMS")
+}
+
+record(calcout,"$(P)$(R)P$(N):WidthTweakUp") {
+        field(INPA,"$(P)$(R)P$(N):WidthTweak NPP NMS")
+        field(INPB,"$(P)$(R)P$(N):Width NPP NMS")
+        field(CALC,"B+A")
+        field(OUT, "$(P)$(R)P$(N):Width PP NMS")
+}
+
+record(ao, "$(P)$(R)P$(N):Delay") {
+    field(DTYP, "stream")
+    field(OUT,  "@BNC_505.protocol setPDelay($(N)) $(PORT)")
+    field(PREC, "4")
+    field(DRVL, "0")
+    field(DRVH, "1000")
+    field(EGU,  "sec")
+}
+
+record(ao,"$(P)$(R)P$(N):DelayTweak") {
+        field(VAL, "1e-5")
+        field(PREC,"3")
+}
+
+record(calcout,"$(P)$(R)P$(N):DelayTweakDown") {
+        field(INPA,"$(P)$(R)P$(N):DelayTweak NPP NMS")
+        field(INPB,"$(P)$(R)P$(N):Delay NPP NMS")
+        field(CALC,"B-A")
+        field(OUT, "$(P)$(R)P$(N):Delay PP NMS")
+}
+
+record(calcout,"$(P)$(R)P$(N):DelayTweakUp") {
+        field(INPA,"$(P)$(R)P$(N):DelayTweak NPP NMS")
+        field(INPB,"$(P)$(R)P$(N):Delay NPP NMS")
+        field(CALC,"B+A")
+        field(OUT, "$(P)$(R)P$(N):Delay PP NMS")
+}
+
+
+record(mbbo, "$(P)$(R)P$(N):Sync") {
+    field(DTYP, "stream")
+    field(OUT,  "@BNC_505.protocol setPSync($(N)) $(PORT)")
+    field(ZRST, "T0")
+    field(ZRVL, "0")
+    field(ONST, "T1")
+    field(ONVL, "1")
+    field(TWST, "T2")
+    field(TWVL, "2")
+    field(THST, "T3")
+    field(THVL, "3")
+    field(FRST, "T4")
+    field(FRVL, "4")
+    field(FVST, "T5")
+    field(FVVL, "5")
+    field(SXST, "T6")
+    field(SXVL, "6")
+    field(SVST, "T7")
+    field(SVVL, "7")
+    field(EIST, "T8")
+    field(EIVL, "8")
+}
+
+record(mbbo, "$(P)$(R)P$(N):Polarity") {
+    field(DTYP, "stream")
+    field(OUT,  "@BNC_505.protocol setPPolarity($(N)) $(PORT)")
+    field(ZRST, "Normal")
+    field(ZRVL, "0")
+    field(ONST, "Inverted")
+    field(ONVL, "1")
+}
+
+record(ao, "$(P)$(R)P$(N):Amplitude") {
+    field(DTYP, "stream")
+    field(OUT,  "@BNC_505.protocol setPAmplitude($(N)) $(PORT)")
+    field(PREC, "3")
+    field(DRVL, "1")
+    field(DRVH, "20")
+    field(EGU,  "V")
+}
+
+record(mbbo, "$(P)$(R)P$(N):Mode") {
+    field(DTYP, "stream")
+    field(OUT,  "@BNC_505.protocol setPMode($(N)) $(PORT)")
+    field(ZRST, "Normal")
+    field(ZRVL, "0")
+    field(ONST, "Single")
+    field(ONVL, "1")
+    field(TWST, "Burst")
+    field(TWVL, "2")
+    field(THST, "Duty Cycle")
+    field(THVL, "3")
+}
+
+record(longout, "$(P)$(R)P$(N):BurstCount") {
+    field(DTYP, "stream")
+    field(OUT,  "@BNC_505.protocol setPBurstCount($(N)) $(PORT)")
+    field(DRVL, "1")
+    field(DRVH, "1000000")
+}
+
+record(longout, "$(P)$(R)P$(N):PulseCount") {
+    field(DTYP, "stream")
+    field(OUT,  "@BNC_505.protocol setPPulseCount($(N)) $(PORT)")
+}
+
+record(longout, "$(P)$(R)P$(N):OffCount") {
+    field(DTYP, "stream")
+    field(OUT,  "@BNC_505.protocol setPOffCount($(N)) $(PORT)")
+}
+
+record(longout, "$(P)$(R)P$(N):WaitCount") {
+    field(DTYP, "stream")
+    field(OUT,  "@BNC_505.protocol setPWaitCount($(N)) $(PORT)")
+}
+
+record(mbbo, "$(P)$(R)P$(N):Gate") {
+    field(DTYP, "stream")
+    field(OUT,  "@BNC_505.protocol setPGate($(N)) $(PORT)")
+    field(ZRST, "Disable")
+    field(ZRVL, "0")
+    field(ONST, "Low")
+    field(ONVL, "1")
+    field(TWST, "High")
+    field(TWVL, "2")
+}

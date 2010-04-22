@@ -1,0 +1,25 @@
+To run the 830 with RS232:
+
+Baud: 9600
+Parity: No
+Stop bits: 2
+Data bits: 8
+Handshaking: No
+inputEos: CR
+outputEos: CR
+
+Cable:
+db9 DTE   SR830 db25
+-------   ----------
+   3         2
+   2         3
+   5         7
+
+Loading the databases, for example:
+# Stanford SR830 Lock-in Amp
+dbLoadRecords("$(TOP)/30idbApp/Db/SR830.vdb","P=30idb:,N=1,PORT=serial9")
+dbLoadRecords("$(TOP)/30idbApp/Db/SR830.vdb","P=30idb:,N=2,PORT=serial10")
+dbLoadRecords("$(TOP)/30idbApp/Db/SR830.vdb","P=30idb:,N=3,PORT=serial11")
+
+The arguments for the medm display are simply:
+P=xyz:, N=1

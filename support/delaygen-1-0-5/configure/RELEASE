@@ -1,0 +1,35 @@
+#RELEASE Location of external products
+# Run "make clean uninstall install" in the application
+# top directory each time this file is changed.
+#
+# NOTE: The build does not check dependancies on files
+# external to this application. Thus you should run
+# "make clean uninstall install" in the top directory
+# each time EPICS_BASE, SNCSEQ, or any other external
+# module defined in the RELEASE file is rebuilt.
+
+TEMPLATE_TOP=$(EPICS_BASE)/templates/makeBaseApp/top
+
+# If you don't want to install into $(TOP) then
+# define INSTALL_LOCATION_APP here
+#INSTALL_LOCATION_APP=$(TOP)/target
+
+# synApps support modules
+SUPPORT=/home/oxygen/MOONEY/distrib/synApps_5_5/support
+
+# Modules required for building module
+ASYN=/home/oxygen/MOONEY/distrib/synApps_5_5/support/asyn-4-13
+STD=/home/oxygen/MOONEY/distrib/synApps_5_5/support/std-2-8
+IP=/home/oxygen/MOONEY/distrib/synApps_5_5/support/ip-2-10
+STREAM=/home/oxygen/MOONEY/distrib/synApps_5_5/support/stream-2-4-1
+IPAC=/home/oxygen/MOONEY/distrib/synApps_5_5/support/ipac-2-11
+
+# Modules required for building module application
+AUTOSAVE=/home/oxygen/MOONEY/distrib/synApps_5_5/support/autosave-4-6
+
+# EPICS_BASE usually appears last so other apps can override stuff:
+EPICS_BASE=/home/oxygen/MOONEY/epics/base-3.14.11
+
+#Capfast users may need the following definitions
+#CAPFAST_TEMPLATES=
+#SCH2EDIF_PATH=

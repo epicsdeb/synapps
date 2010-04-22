@@ -1,0 +1,113 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=iso-8859-1">
+	<TITLE>vmeReleaseNotes</TITLE>
+	<META NAME="GENERATOR" CONTENT="StarOffice 7  (Solaris Sparc)">
+	<META NAME="CREATED" CONTENT="20041223;10520000">
+	<META NAME="CHANGED" CONTENT="20060510;6491400">
+</HEAD>
+<BODY LANG="en-US" BGCOLOR="#ffffff" DIR="LTR">
+<H2 ALIGN=CENTER>vme Release Notes</H2>
+
+<H2 ALIGN=LEFT>Release 2-7 (Mar. 30,2010)</H2>
+<ul>
+<li> fixes for EPICS 3.14.11
+<li> devScaler.c, devScaler_debug.c - check that scaler_state exists at init.
+</ul>
+
+<H2 ALIGN=LEFT>Release 2-6 (Dec. 19,2008)</H2>
+<ul>
+<li>removed iocBoot example, and associated build in src
+<li>use devScaler_debug.c for VSC-series scalers, because many of the new series
+have hardware trouble.
+</ul>
+
+
+
+
+
+<H2 ALIGN=LEFT>Release 2-4-4 (Dec. 5, 2006)</H2>
+<P ALIGN=LEFT>Changed:</P>
+<UL>
+	<LI><P ALIGN=LEFT STYLE="margin-bottom: 0in">The following changes
+	were made to files:
+	<BR>1) devScaler.c, devScaler_VS.c &ndash; changed to new interface between scaler
+               record and device support.
+        <BR>2) Db/Jscaler* &ndash; deleted, these are obsolete and stdApp/Db/scaler* should be
+               used instead.
+</UL>
+
+<H2 ALIGN=LEFT>Release 2-4-3</H2>
+<P ALIGN=LEFT>Changed:</P>
+<UL>
+	<LI><P ALIGN=LEFT STYLE="margin-bottom: 0in">The following changes
+	were made to files:
+	<BR>1) Acromag_16IO.db &ndash; card number is now a macro.
+	<BR>2) devScaler.c &ndash; removed debug macro definitions with a
+	variable number of arguments
+	<BR>3) devScaler_VS.c &ndash; removed debug macro definitions with a
+	variable number of arguments
+	<BR>4) vmeRecord.c &ndash; removed debug macro definitions with a
+	variable number of arguments
+</UL>
+
+<H2 ALIGN=LEFT>Release 2-4-2</H2>
+<P ALIGN=LEFT>Changed:</P>
+<UL>
+	<LI><P ALIGN=LEFT STYLE="margin-bottom: 0in">The following changes
+	were made to files:<BR>1) getFilledBuckets.st &ndash; To allow
+	multiple instances.<BR>2) vmeVXSupport.db &ndash; Included
+	vmsSupport.dbd.<BR>3) Acro_bi_scan.adl &ndash; Added &ldquo;9440&rdquo;
+	to PV names,<BR>4) BunchClkGen.db &ndash; To allow multiple
+	instances.</P>
+	<LI><P ALIGN=LEFT STYLE="margin-bottom: 0in">The following changes
+	were made to the Heidenhain IK320 device driver.<BR>1) Elminated the
+	need to call drvIK320RegErrStr() from the vxWorks st.cmd file.<BR>2)
+	taskDelay(1)'s and semTake(**, 1)'s with delay of 1 tick changed to
+	5ms.<BR>3) Allow reading encoder without referencing.</P>
+</UL>
+<H2 ALIGN=LEFT>Release 2-4-1</H2>
+<P ALIGN=LEFT>Changed:</P>
+<UL>
+	<LI><P ALIGN=LEFT STYLE="margin-bottom: 0in">The devAvme9440 module
+	is OS independent.</P>
+</UL>
+<H2 ALIGN=LEFT>Release 2-4-0</H2>
+<P ALIGN=LEFT>Tested using base 3.14.6 and 3.14.7, seq 2.0.8, calc
+2.3, sscan 2.3, std 2.3, and asyn 1.2.</P>
+<P ALIGN=LEFT>New support:</P>
+<UL>
+	<LI><P STYLE="margin-bottom: 0in">MRD-100:<BR>1) devAvmeMRD &ndash;
+	Provides new device support and is the first step in moving away
+	from using devA32Vme.<BR>2) msl_mrd100.db &ndash; Modified to
+	reflect new device support module.<BR>3) msl_mrd101.db &ndash;
+	Modified to reflect new device support module.</P>
+	<LI><P ALIGN=LEFT STYLE="margin-bottom: 0in">Added Joerger VSxx
+	scaler.</P>
+	<LI><P ALIGN=LEFT STYLE="margin-bottom: 0in">Added support for
+	Acromag 9210 and 9440</P>
+	<LI><P STYLE="margin-bottom: 0in">Added new vmeTest test
+	application. It's a menu-driven application that provides simple VME
+	read/write operations. 
+	</P>
+</UL>
+<H2 ALIGN=LEFT>Release 2-3</H2>
+<P ALIGN=LEFT>This is the first release of the synApps vme module.
+Version numbering for this module begins with 2.3 because this module
+was split from version 2.2 of the std module, and I wanted to retain
+the CVS histories of module contents.</P>
+<P>This version is intended to build with EPICS base 3.14.5.
+Differences from software as previously released in std 2.2: 
+</P>
+<UL>
+	<LI><P STYLE="margin-bottom: 0in">Converted to EPICS 3.14. 
+	</P>
+	<LI><P>VME_DAC_SETTINGS.req, VME_DAC_POSITIONS.req - New files 
+	</P>
+</UL>
+<ADDRESS STYLE="text-align: left">Suggestions and Comments to: <BR><A HREF="mailto:dkline@aps.anl.gov">David
+Kline </A>: (dkline@aps.anl.gov) <BR>Last modified: May 10, 2006 
+</ADDRESS>
+</BODY>
+</HTML>

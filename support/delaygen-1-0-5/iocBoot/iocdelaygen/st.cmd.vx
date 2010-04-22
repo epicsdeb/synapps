@@ -1,0 +1,92 @@
+#------------------------------------------------------------------------------
+# VxWorks startup file
+#------------------------------------------------------------------------------
+
+## vxWorks startup script
+sysVmeMapShow
+
+## For vxStats
+engineer="Kline 2-8639"
+location="401-B1208"
+
+cd ""
+< ../nfsCommands
+< cdCommands
+
+## How to set and get the clock rate
+#sysClkRateSet(100)
+#sysClkRateGet()
+
+##
+cd topbin
+
+# If the VxWorks kernel was built using the project facility, the following must
+# be added before any C++ code is loaded (see SPR #28980).
+sysCplusEnable=1
+
+## Load synApps EPICS software
+ld < delaygenApp.munch
+
+cd startup
+
+#------------------------------------------------------------------------------
+# Register all support components
+dbLoadDatabase("../../dbd/iocdelaygenAppVxWorks.dbd")
+iocdelaygenAppVxWorks_registerRecordDeviceDriver(pdbbase)
+
+#------------------------------------------------------------------------------
+# Asyn support
+
+## Serial communications
+ipacAddVIPC616_01("0x2000,0xA0000000")
+ipacReport(2)
+
+tyGSOctalDrv(1)
+tyGSOctalModuleInit("UART_0","232",0x80,0,0)
+tyGSAsynInit("D0","UART_0",0,19200,'N',1,8,'N',"\r\n","\n")
+tyGSAsynInit("D1","UART_0",1, 9600,'N',1,8,'N',"","")
+tyGSAsynInit("D2","UART_0",2, 9600,'N',1,8,'N',"","")
+tyGSAsynInit("D3","UART_0",3, 9600,'N',1,8,'N',"","")
+tyGSAsynInit("D4","UART_0",4, 9600,'N',1,8,'N',"","")
+tyGSAsynInit("D5","UART_0",5, 9600,'N',1,8,'N',"","")
+tyGSAsynInit("D6","UART_0",6, 9600,'N',1,8,'N',"","")
+tyGSAsynInit("D7","UART_0",7, 9600,'N',1,8,'N',"","")
+
+## Interpose interface for NI GPIB-RS232 converter
+#   nigpibInterfaceConfig(ioport,addr,conv,timeout)
+#       ioport  - Asyn port name (i.e. "L2")
+#       addr    - GPIB device address (valid when conv=1)
+#       bsiz    - NI GPIB-RS232 read buffer size (in bytes)
+#       timeout - Communication timeout (default 3s)
+#
+#nigpibInterposeConfig("D0",23,60,0);
+
+## Asyn record support
+dbLoadRecords("../../db/asynRecord.db","P=delaygen:,R=asynD0,PORT=D0,ADDR=0,OMAX=0,IMAX=0")
+
+## Device specific configuration
+#< colby.cmd
+#< dg645.cmd
+#< dg535.cmd
+#< gigabaudics.cmd
+#< drvAsynCoherentSDG.cmd
+
+#------------------------------------------------------------------------------
+# Configure auto save/restore
+< save_restore.cmd
+
+#------------------------------------------------------------------------------
+# Start IOC
+iocInit()
+
+#------------------------------------------------------------------------------
+# Start autosave
+
+# Monitor every five seconds
+#create_monitor_set("auto_positions.req",5,"P=delaygen:")
+
+# Monitor every ten seconds
+#create_monitor_set("auto_settings.req",10,"P=delaygen:")
+
+#
+#------------------------------------------------------------------------------

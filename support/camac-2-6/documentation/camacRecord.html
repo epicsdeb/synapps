@@ -1,0 +1,448 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>camac - Generic CAMAC Record</title>
+  <meta content="text/html; charset=ISO-8859-1" http-equiv="Content-Type" />
+</head>
+<body>
+  <h1>
+    camac - Generic CAMAC Record</h1>
+  <address>
+    Mark Rivers</address>
+  <hr />
+  <h2>
+    Contents</h2>
+  <ul>
+    <li><a href="#Overview">Overview</a> </li>
+    <li><a href="#Fields">Field Descriptions</a> </li>
+    <li><a href="#Example">Example</a> </li>
+  </ul>
+  <h2 id="Overview">
+    Overview</h2>
+  <p>
+    The CAMAC record is designed to perform generic CAMAC I/O. The CAMAC Branch (B),
+    Crate (C), Slot (N), Subaddress (A), Function code (F) and transfer mode are all
+    controlled by record fields which can be modified at run time. Applications for
+    this record include accessing CAMAC modules for which no device support exists,
+    and for performing CAMAC diagnostics.
+  </p>
+  <p>
+    The CAMAC record is intended only for this specialized CAMAC I/O function. The CAMAC
+    record directly calls the ESONE compatible CAMAC library, without an intermediate
+    device support layer.
+  </p>
+  <p>
+    The CAMAC record supports array operations, i.e. CAMAC block transfer operations.
+    The VAL field contains the data to be written or the data read. Depending upon the
+    CAMAC hardware being used this may use DMA from the CAMAC controller to the VME
+    bus memory.
+  </p>
+  <p>
+    This record requires the use of an underlying ESONE compatible CAMAC library. A
+    library which supports serial highway drivers and the Kinetic Systems 2917/3922
+    parallel bus crate controller is part of the camac module.
+  </p>
+  <p>
+    If a CAMAC operation returns Q=0 it will be reflected in the Q field of the record,
+    but will not raise an alarm. X=0 will raise a minor alarm. Any other errors detected
+    in the CAMAC library will raise a major alarm.
+  </p>
+  <hr />
+  <h2 id="Fields">
+    Record Field Descriptions</h2>
+  <table border="1" cellpadding="2" cellspacing="2" style="text-align: left">
+    <tr>
+      <th>
+        Name</th>
+      <th>
+        Access</th>
+      <th>
+        Prompt</th>
+      <th>
+        Data type</th>
+      <th>
+        Description</th>
+    </tr>
+    <tr>
+      <td>
+        VAL</td>
+      <td>
+        R/W*</td>
+      <td>
+        "Current value"</td>
+      <td>
+        DBF_LONG (array)</td>
+      <td>
+        The data to be written to CAMAC or the data read from CAMAC. This is always an array
+        of LONGS. The maximum array length is determined by NMAX at IOC initialization.
+        The actual array length is equal to NACT.</td>
+    </tr>
+    <tr>
+      <td>
+        Q</td>
+      <td>
+        R</td>
+      <td>
+        "Q response"</td>
+      <td>
+        DBF_LONG</td>
+      <td>
+        The CAMAC Q response of the previous operation. This field is only guaranteed to
+        be valid if TMOD="Single".</td>
+    </tr>
+    <tr>
+      <td>
+        X</td>
+      <td>
+        R</td>
+      <td>
+        "X response"</td>
+      <td>
+        DBF_LONG</td>
+      <td>
+        The CAMAC X response of the previous operation. This field is only guaranteed to
+        be valid if TMOD="Single".</td>
+    </tr>
+    <tr>
+      <td>
+        INHB</td>
+      <td>
+        R</td>
+      <td>
+        "Inhibit status"</td>
+      <td>
+        DBF_LONG</td>
+      <td>
+        The status of the crate Inhibit signal (0=clear, 1=set).</td>
+    </tr>
+    <tr>
+      <td>
+        B</td>
+      <td>
+        R/W</td>
+      <td>
+        "Branch"</td>
+      <td>
+        DBF_LONG</td>
+      <td>
+        The CAMAC Branch to use for the operation. Branch numbers start at 0.</td>
+    </tr>
+    <tr>
+      <td>
+        C</td>
+      <td>
+        R/W</td>
+      <td>
+        "Crate"</td>
+      <td>
+        DBF_LONG</td>
+      <td>
+        The CAMAC Crate to use for the operation. Crate numbers start at 0 or 1 depending
+        upon the hardware type.</td>
+    </tr>
+    <tr>
+      <td>
+        N</td>
+      <td>
+        R/W</td>
+      <td>
+        "Station"</td>
+      <td>
+        DBF_LONG</td>
+      <td>
+        The CAMAC station (or slot) to use for the operation. Valid station numbers are
+        typically 1-23 and 30.</td>
+    </tr>
+    <tr>
+      <td>
+        A</td>
+      <td>
+        R/W</td>
+      <td>
+        "Subaddress"</td>
+      <td>
+        DBF_LONG</td>
+      <td>
+        The CAMAC subaddress to use for the operation. Valid subadresses are 0-15.</td>
+    </tr>
+    <tr>
+      <td>
+        F</td>
+      <td>
+        R/W</td>
+      <td>
+        "Function"</td>
+      <td>
+        DBF_LONG</td>
+      <td>
+        The CAMAC function code to use for the operation. Valid function are codes 0-31.
+        Function codes in the range 0-7 are CAMAC read operations, function codes in the
+        range 16-23 are CAMAC write operations, and function codes in the range 8-15 and
+        24-31 are CAMAC control operations.</td>
+    </tr>
+    <tr>
+      <td>
+        TMOD</td>
+      <td>
+        R/W</td>
+      <td>
+        "Transfer mode"</td>
+      <td>
+        DBF_RECCHOICE</td>
+      <td>
+        The data transfer mode. The choices are:
+        <table>
+          <tr>
+            <td>
+              "Single"</td>
+            <td>
+              Single-cycle CAMAC transfer. NUSE is ignored.</td>
+          </tr>
+          <tr>
+            <td>
+              "Q Stop"</td>
+            <td>
+              Q-stop block mode transfer. The controller attempts to perform NUSE CAMAC cycles,
+              but stops if there is a Q=0 response.</td>
+          </tr>
+          <tr>
+            <td>
+              "Q Repeat"</td>
+            <td>
+              Q-repeat block mode transfer. The controller attempts to perform NUSE CAMAC cycles.
+              It repeats any operations which have Q=0 response (up to some hardware-dependent
+              timeout).</td>
+          </tr>
+          <tr>
+            <td>
+              "Q Scan"</td>
+            <td>
+              Q-scan block mode transfer. The controller attempts to perform NUSE CAMAC cycles,
+              automatically incrementing the subaddress and station number. The operation will
+              terminate if the last slot is reached before NUSE successful cycles have completed.</td>
+          </tr>
+        </table>
+        <p>
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        NMAX</td>
+      <td>
+        R</td>
+      <td>
+        "Max. number of values"</td>
+      <td>
+        DBF_LONG</td>
+      <td>
+        The allocated length of the VAL array. It cannot be modified after the IOC is initialized.</td>
+    </tr>
+    <tr>
+      <td>
+        NUSE</td>
+      <td>
+        R/W</td>
+      <td>
+        "Number of values to R/W"</td>
+      <td>
+        DBF_LONG</td>
+      <td>
+        The number of values to attempt to transfer when the record processes. This number
+        is ignored if TMOD is "Single". It must be less than or equal to NMAX.</td>
+    </tr>
+    <tr>
+      <td>
+        NACT</td>
+      <td>
+        R</td>
+      <td>
+        "Actual number of values R/W"</td>
+      <td>
+        DBF_LONG</td>
+      <td>
+        The actual number of values which were transferred in the last CAMAC operation.
+        This number may be less than NUSE if a Q Stop, Q Repeat or Q Scan operation terminated
+        prematurely due to a Q=0 or timeout.</td>
+    </tr>
+    <tr>
+      <td>
+        CCMD</td>
+      <td>
+        R/W*</td>
+      <td>
+        "Crate Command"</td>
+      <td>
+        DBF_RECCHOICE</td>
+      <td>
+        A crate controller command. The choices are:
+        <table>
+          <tr>
+            <td>
+              "None"</td>
+            <td>
+              This is the default. No crate controller command is executed.</td>
+          </tr>
+          <tr>
+            <td>
+              "Clear Inhibit"</td>
+            <td>
+              Clears the crate Inhibit signal.</td>
+          </tr>
+          <tr>
+            <td>
+              "Set Inhibit"</td>
+            <td>
+              Sets the crate Inhibit signal.</td>
+          </tr>
+          <tr>
+            <td>
+              "Clear (C)"</td>
+            <td>
+              Executes a crate Clear (C) cycle</td>
+          </tr>
+          <tr>
+            <td>
+              "Initialize (Z)"</td>
+            <td>
+              Executes a crate Initialize (Z) cycle</td>
+          </tr>
+          <tr>
+            <td>
+              Note: If the CCMD field is set to any value except "None" then the following occurs:
+              the record processes, the appropriate crate controller command is executed by the
+              crate controller specified in the B and C fields, and CCMD is set back to "None".
+              The record processing only performs the crate controller command, i.e. it does not
+              also perform the CAMAC operation indicated by N, A, F.</td>
+          </tr>
+        </table>
+        <p>
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <th>
+        Private Fields</th>
+    </tr>
+    <tr>
+      <td>
+        BPTR</td>
+      <td>
+        N</td>
+      <td>
+        "Buffer Pointer"</td>
+      <td>
+        DBF_NOACCESS</td>
+      <td>
+        The pointer to the buffer for the VAL field.</td>
+    </tr>
+    <tr>
+      <td>
+        <table>
+          <tr>
+            <td>
+              Note: In the Access column above:
+            </td>
+          </tr>
+          <tr>
+            <td>
+              R</td>
+            <td>
+              Read only</td>
+            <td>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              R/W</td>
+            <td>
+              Read and write are allowed</td>
+          </tr>
+          <tr>
+            <td>
+              R/W*</td>
+            <td>
+              Read and write are allowed; write triggers record processing if the record's SCAN
+              field is set to "Passive".</td>
+          </tr>
+          <tr>
+            <td>
+              N</td>
+            <td>
+              No access allowed
+            </td>
+          </tr>
+        </table>
+        <p>
+        </p>
+      </td>
+    </tr>
+  </table>
+  <p>
+  </p>
+  <hr />
+  <p>
+  </p>
+  <hr />
+  <h2 id="Example">
+    Example</h2>
+  <p>
+    The following IDL program demonstrates the use of the Generic CAMAC record. It does
+    a block-mode read of a scaler in slot 14 and plots the results. It also demonstrates
+    using the "Crate Command" (CCMD) field to clear the Inhibit line.
+  </p>
+  <pre>; This IDL program demonstrates the use of the 
+; Generic CAMAC record. 
+; It does a Q-repeat read of a scaler in slot 14 
+; and plots the results.
+
+; The name of the generic CAMAC record
+rec = 'test_camac1'
+
+; Set up B, C, N, A for scaler 0 (first scaler)
+;   in slot 14 on crate 0, branch 0.
+t = caput(rec+'.B', 0)
+t = caput(rec+'.C', 0)
+t = caput(rec+'.N', 14)
+t = caput(rec+'.A', 0)
+
+; Make sure the crate Inhibit line is clear, 
+;   because it would stop the scaler
+t = caput(rec+'.CCMD', &quot;Clear Inhibit&quot;)
+
+; Set the transfer mode to Q-repeat
+t = caput(rec+'.TMOD', &quot;Q Repeat&quot;)
+
+; Set up to read the scaler 1024 times
+t = caput(rec+'.NUSE', 1024)
+
+; Read the scaler into the record VAL field
+;   by forcing the record to process
+t = caput(rec+'.PROC', 1)
+
+; Make sure we got the number of values we expected
+t = caget(rec+'.NACT', nact)
+if (nact eq 1024) then $
+    print, 'Read CAMAC scaler OK' $
+else $
+    print, 'Error reading CAMAC scaler'
+
+; Read the data into IDL - only valid data
+t = caget(rec, data, max=nact)
+
+; Plot the data
+plot, data
+
+end
+</pre>
+  <p>
+  </p>
+  <hr />
+  <address>
+    Suggestions and comments to: <a href="mailto:rivers@cars.uchicago.edu">Mark Rivers
+    </a>: (rivers@cars.uchicago.edu)
+    <br />
+  </address>
+</body>
+</html>

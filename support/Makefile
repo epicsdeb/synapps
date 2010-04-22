@@ -1,8 +1,8 @@
 #FILENAME:	Makefile
 #USAGE:		Top Makefile
-#Version:	1.14
-#Modified By:	mooney
-#Last Modified:	2009/03/06 20:20:43
+#Version:	$Revision: 1.14 $
+#Modified By:	$Author: mooney $
+#Last Modified:	$Date: 2009-03-06 20:20:43 $
 #NOTES- The "SUPPORT_DIRS" order is based on compile time dependencies.
 #     - The user must modify SUPPORT and EPICS_BASE in the
 #       <synApps>/support/configure directory for the local configuration.
@@ -30,8 +30,10 @@ RELEASE_FILES += $(VXSTATS)/configure/RELEASE
 SUPPORT_DIRS += $(SNCSEQ)
 RELEASE_FILES += $(SNCSEQ)/configure/RELEASE
 
-SUPPORT_DIRS += $(ALLEN_BRADLEY)
-RELEASE_FILES += $(ALLEN_BRADLEY)/configure/RELEASE
+ifdef ALLEN_BRADLEY
+	SUPPORT_DIRS += $(ALLEN_BRADLEY)
+	RELEASE_FILES += $(ALLEN_BRADLEY)/configure/RELEASE
+endif
 
 SUPPORT_DIRS += $(IPAC)
 RELEASE_FILES += $(IPAC)/configure/RELEASE
@@ -86,10 +88,6 @@ SUPPORT_DIRS += $(IP)
 RELEASE_FILES += $(IP)/configure/RELEASE
 $(IP)_DEPEND_DIRS = $(ASYN) $(IPAC) $(SNCSEQ)
 
-SUPPORT_DIRS += $(CCD)
-RELEASE_FILES += $(CCD)/configure/RELEASE
-$(CCD)_DEPEND_DIRS = $(BUSY) $(ASYN) $(SNCSEQ)
-
 SUPPORT_DIRS += $(OPTICS)
 RELEASE_FILES += $(OPTICS)/configure/RELEASE
 $(OPTICS)_DEPEND_DIRS = $(ASYN)
@@ -106,6 +104,9 @@ SUPPORT_DIRS += $(VAC)
 RELEASE_FILES += $(VAC)/configure/RELEASE
 $(VAC)_DEPEND_DIRS = $(ASYN) $(IPAC)
 
+SUPPORT_DIRS += $(SOFTGLUE)
+RELEASE_FILES += $(SOFTGLUE)/configure/RELEASE
+$(SOFTGLUE)_DEPEND_DIRS = $(ASYN) $(IPAC)
 
 ################### 4th Tier Support Modules #####################
 
@@ -129,30 +130,21 @@ $(VME)_DEPEND_DIRS = $(STD)
 #!RELEASE_FILES += $(EBRICK)/configure/RELEASE
 #!$(EBRICK)_DEPEND_DIRS = $(STD)
 
-SUPPORT_DIRS += $(PILATUS)
-RELEASE_FILES += $(PILATUS)/configure/RELEASE
-$(PILATUS)_DEPEND_DIRS = $(ASYN) $(SNCSEQ) $(STREAM)
-
 ################### 5th Tier Support Modules #####################
 
-SUPPORT_DIRS += $(DXP)
-RELEASE_FILES += $(DXP)/configure/RELEASE
-$(DXP)_DEPEND_DIRS = $(ASYN) $(CAMAC) $(MCA) $(BUSY)
-
-ifeq ($(EPICS_HOST_ARCH), linux-x86)
-ifeq ($(LINUX_TIFF_INSTALLED), YES)
 SUPPORT_DIRS += $(AREA_DETECTOR)
-$(AREA_DETECTOR)_DEPEND_DIRS = $(ASYN) $(SSCAN) $(MCA)
-endif
-else
-SUPPORT_DIRS += $(AREA_DETECTOR)
-$(AREA_DETECTOR)_DEPEND_DIRS = $(ASYN) $(SSCAN) $(MCA)
-endif
 RELEASE_FILES += $(AREA_DETECTOR)/configure/RELEASE
+$(AREA_DETECTOR)_DEPEND_DIRS = $(ASYN) $(SSCAN) $(MCA)
 
 SUPPORT_DIRS += $(QUADEM)
 RELEASE_FILES += $(QUADEM)/configure/RELEASE
 $(QUADEM)_DEPEND_DIRS = $(ASYN) $(MCA)
+
+################### 6th Tier Support Modules #####################
+
+SUPPORT_DIRS += $(DXP)
+RELEASE_FILES += $(DXP)/configure/RELEASE
+$(DXP)_DEPEND_DIRS = $(AREA_DETECTOR) $(ASYN) $(CAMAC) $(MCA) $(BUSY)
 
 ################### End of Support-Modules #####################
 

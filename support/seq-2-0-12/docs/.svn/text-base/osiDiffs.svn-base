@@ -1,0 +1,2756 @@
+### diffs from 1.9.3p2 up to 2.0.0p0 (ignoring Makefiles etc)
+
+Index: Version
+===================================================================
+RCS file: /usr/local/epics/cvsroot/sequencer/src/Version,v
+retrieving revision 1.1.1.1
+retrieving revision 1.2
+diff -r1.1.1.1 -r1.2
+1c1
+< 1.9.3.p2
+---
+> 2.0.0.p0
+
+Index: gen_ss_code.c
+===================================================================
+RCS file: /usr/local/epics/cvsroot/sequencer/src/gen_ss_code.c,v
+retrieving revision 1.2
+retrieving revision 1.4
+diff -r1.2 -r1.4
+17a18
+> 29apr99,wfl	Removed unnecessary include files.
+22,24d22
+< #include	"cadef.h"
+< #include 	"dbDefs.h"
+< 
+26d23
+< #include 	"seqCom.h"
+28a26,30
+> #ifndef TRUE
+> #define TRUE    1
+> #define FALSE   0
+> #endif  /*TRUE*/
+> 
+119,120c121,123
+<  * a call to seq_delayInit().  Adds ssId, delay id parameters and cast to float.
+<  * Example:  seq_delayInit(ssId, 1, (float)(<some expression>));
+---
+>  * a call to seq_delayInit().  Adds ssId, delay id parameters and cast to
+>  * double.
+>  * Example:  seq_delayInit(ssId, 1, (double)(<some expression>));
+
+Index: gen_tables.c
+===================================================================
+RCS file: /usr/local/epics/cvsroot/sequencer/src/gen_tables.c,v
+retrieving revision 1.2
+retrieving revision 1.3
+diff -r1.2 -r1.3
+21a22
+> 29apr99,wfl	Removed unnecessary include files and unused vx_opt option.
+29,30d29
+< #include	"dbDefs.h"
+< 
+355,356c354
+< 	extern int	async_opt, debug_opt, reent_opt,
+< 			 newef_opt, conn_opt, vx_opt;
+---
+> 	extern int	async_opt, debug_opt, reent_opt, newef_opt, conn_opt;
+369,370d366
+< 	if (vx_opt)
+< 		printf(" | OPT_VXWORKS");
+
+Index: parse.c
+===================================================================
+RCS file: /usr/local/epics/cvsroot/sequencer/src/parse.c,v
+retrieving revision 1.2
+retrieving revision 1.4
+diff -r1.2 -r1.4
+23c23,24
+< 29apr99,wfl	Avoided compilation warnings.
+---
+> 29apr99,wfl	Avoided compilation warnings; removed unused vx_opt option.
+> 17may99,wfl	Fixed crash in debug output.
+153c154
+< 			reent_opt, warn_opt, vx_opt, newef_opt;
+---
+> 			reent_opt, warn_opt, newef_opt;
+166c167
+<  		case 'e':
+---
+> 	    case 'e':
+169d169
+< 
+179,181d178
+< 	    case 'v':
+< 		vx_opt = value;
+< 		break;
+431c428,430
+< 	fprintf(stderr, "monitor_stmt: name=%s[%s]\n", name, subscript);
+---
+> 	fprintf(stderr, "monitor_stmt: name=%s", name);
+> 	if (subscript != NULL) fprintf(stderr, "[%s]", subscript);
+> 	fprintf(stderr, "\n");
+
+Index: phase2.c
+===================================================================
+RCS file: /usr/local/epics/cvsroot/sequencer/src/phase2.c,v
+retrieving revision 1.2
+retrieving revision 1.5
+diff -r1.2 -r1.5
+22c22,23
+< 29apr99,wfl     Avoided compilation warnings.
+---
+> 29apr99,wfl     Avoided compilation warnings; removed unused include files.
+> 17may99,wfl	Added main program under UNIX.
+31d31
+< #include 	"seqCom.h"
+33a34,38
+> #ifndef TRUE
+> #define TRUE    1
+> #define FALSE   0
+> #endif  /*TRUE*/
+> 
+124d128
+< 	printf("#define ANSI\n"); /* Expands ANSI prototypes in seqCom.h */
+144c148,159
+< 	printf("\nextern struct seqProgram %s;\n", prog_name);
+---
+> 	printf("\nextern struct seqProgram %s;\n\n", prog_name);
+> 
+>         /* Main program (Unix only) */
+>         printf("/* Unix main program */\n");
+>         printf("#ifdef UNIX\n");
+>         printf("int main(int argc,char *argv[]) {\n");
+> 	printf("    char *macro_def = (argc>1)?argv[1]:NULL;\n");
+> 	printf("    long stack_size = (argc>2)?atof(argv[2]):0;\n");
+> 	printf("    return seq((void *)&%s, macro_def, stack_size);\n",
+> 		prog_name);
+> 	printf("}\n");
+>         printf("#endif /*UNIX*/\n");
+
+Index: seq.h
+===================================================================
+RCS file: /usr/local/epics/cvsroot/sequencer/src/seq.h,v
+retrieving revision 1.1.1.1
+retrieving revision 1.6
+diff -r1.1.1.1 -r1.6
+42c42
+< 		allow "unlimited" number of channels.
+---
+>  *		allow "unlimited" number of channels.
+45,47c45,48
+< 		of values returned with monitors and pvGet().
+<    09aug96,wfl	Added syncQ queue support.
+< 
+---
+>  *		of values returned with monitors and pvGet().
+>  * 09aug96,wfl	Added syncQ queue support.
+>  * 30apr99,wfl	Replaced VxWorks dependencies with OSI.
+>  * 17may99,wfl	Changed FUNCPTR etc to SEQFUNCPTR; corrected sequencer() proto.
+52d52
+< #ifndef	TRUE
+54c54,62
+< #endif
+---
+> 
+> #include	"OSIsem.h"
+> #include	"OSIthread.h"
+> #include	"OSItime.h"
+> 
+> #include	"epicsTypes.h"
+> #include	"ellLib.h"
+> 
+> #include	"pv.h"
+58,65c66,76
+< #ifndef	VOID
+< #include	"cadef.h"
+< #include	"db_access.h"
+< #include	"alarm.h"
+< #include	"vxWorks.h"
+< #include	"ioLib.h"
+< #include	"semLib.h"
+< #include	"taskLib.h"
+---
+> #define		OK 0
+> #define		ERROR (-1)
+> #define		LOCAL static
+> 
+> typedef		void (*SEQVOIDFUNCPTR) (); /* used for task watchdog only */
+> 
+> /* global variable for PV system context */
+> #ifdef		DECLARE_PV_SYS
+> 		void *pvSys;
+> #else
+> 		extern void *pvSys;
+68c79
+< /* Structure to hold information about database channels */
+---
+> /* Structure to hold information about database channels */
+79c90
+< 	BOOL		monFlag;	/* TRUE if channel is to be monitored */
+---
+> 	epicsBoolean	monFlag;	/* TRUE if channel is to be monitored */
+88,91c99,102
+< 	chid		chid;		/* ptr to channel id (from ca_search()) */
+< 	BOOL		assigned;	/* TRUE only if channel is assigned */
+< 	BOOL		connected;	/* TRUE only if channel is connected */
+< 	BOOL		getComplete;	/* TRUE if previous pvGet completed */
+---
+> 	void		*pvid;		/* PV (process variable) id */
+> 	epicsBoolean	assigned;	/* TRUE only if channel is assigned */
+> 	epicsBoolean	connected;	/* TRUE only if channel is connected */
+> 	epicsBoolean	getComplete;	/* TRUE if previous pvGet completed */
+94c105
+< 	TS_STAMP	timeStamp;	/* time stamp */
+---
+> 	pvStamp		timeStamp;	/* time stamp */
+97c108
+< 	short		size;		/* size (in bytes) of single variable element */
+---
+> 	short		size;		/* size (in bytes) of single var elem */
+100,103c111,114
+< 	BOOL		monitored;	/* TRUE if channel IS monitored */
+< 	evid		evid;		/* event id (supplied by CA) */
+< 	SEM_ID		getSemId;	/* semaphore id for async get */
+< 	struct state_program *sprog;	/* state program that owns this structure */
+---
+> 	epicsBoolean	monitored;	/* TRUE if channel IS monitored */
+> 	void		*evid;		/* event id (supplied by PV lib) */
+> 	OSIsemId	getSemId;	/* semaphore id for async get */
+> 	struct state_program *sprog;	/* state program that owns this struct*/
+112c123
+< 	union db_access_val value;	/* value, time stamp etc */
+---
+> 	pvValue		value;		/* value, time stamp etc */
+121,123c132,134
+< 	ACTION_FUNC	actionFunc;	/* ptr to action routine for this state */
+< 	EVENT_FUNC	eventFunc;	/* ptr to event routine for this state */
+< 	DELAY_FUNC	delayFunc;	/* ptr to delay setup routine for this state */
+---
+> 	ACTION_FUNC	actionFunc;	/* ptr to action rout. for this state */
+> 	EVENT_FUNC	eventFunc;	/* ptr to event rout. for this state */
+> 	DELAY_FUNC	delayFunc;	/* ptr to delay rout. for this state */
+128c139
+< #define	MAX_NDELAY	20		/* max # delays allowed in each SS */
+---
+> #define	MAX_NDELAY	20	/* max # delays allowed in each SS */
+133,136c144,147
+< 	long		taskId;		/* task id */
+< 	long		taskPriority;	/* task priority */
+< 	SEM_ID		syncSemId;	/* semaphore for event sync */
+< 	SEM_ID		getSemId;	/* semaphore for synchronous pvGet() */
+---
+> 	OSIthreadId	threadId;	/* thread id */
+> 	int		threadPriority;	/* thread priority */
+> 	OSIsemId	syncSemId;	/* semaphore for event sync */
+> 	OSIsemId	getSemId;	/* semaphore for synchronous pvGet() */
+142,143c153,154
+< 	short		errorState;	/* error state index (-1 if none defined) */
+< 	short		transNum;	/* highest priority trans. # that triggered */
+---
+> 	short		errorState;	/* error state index (-1 if none defd)*/
+> 	short		transNum;	/* highest prio trans. # triggered */
+146,148c157,159
+< 	ULONG		delay[MAX_NDELAY]; /* queued delay value in tics */
+< 	BOOL		delayExpired[MAX_NDELAY]; /* TRUE if delay expired */
+< 	ULONG		timeEntered;	/* time that a state was entered */
+---
+> 	double		delay[MAX_NDELAY]; /* queued delay value in secs */
+> 	epicsBoolean	delayExpired[MAX_NDELAY]; /* TRUE if delay expired */
+> 	double		timeEntered;	/* time that a state was entered */
+159c170
+< /* All information about a state program.
+---
+> /* All information about a state program.
+165,168c176,179
+< 	long		taskId;		/* task id (main task) */
+< 	BOOL		task_is_deleted;/* TRUE if main task has been deleted */
+< 	long		taskPriority;	/* task priority */
+< 	SEM_ID		caSemId;	/* semiphore for locking CA events */
+---
+> 	OSIthreadId	threadId;	/* thread id (main thread) */
+> 	epicsBoolean	thread_is_deleted;/* TRUE if main thread is deleted */
+> 	int		threadPriority;	/* thread priority */
+> 	OSIsemId	caSemId;	/* semiphore for locking CA events */
+170c181
+< 	long		numChans;	/* number of db channels, incl. unassigned */
+---
+> 	long		numChans;	/* number of db channels, incl. unass */
+183c194
+< 	SEM_ID		logSemId;	/* logfile locking semaphore */
+---
+> 	OSIsemId	logSemId;	/* logfile locking semaphore */
+185c196
+< 	int			numQueues;	/* number of syncQ queues */
+---
+> 	int		numQueues;	/* number of syncQ queues */
+193,196c204,206
+< /* Task parameters */
+< #define SPAWN_STACK_SIZE	10000
+< #define SPAWN_OPTIONS		VX_DEALLOC_STACK | VX_FP_TASK | VX_STDIO
+< #define SPAWN_PRIORITY		100
+---
+> /* Thread parameters */
+> #define THREAD_STACK_SIZE	10000
+> #define THREAD_PRIORITY		100
+199,203d208
+< long	seqConnect (SPROG *);
+< VOID	seqEventHandler (struct event_handler_args);
+< VOID	seqConnHandler (struct connection_handler_args);
+< VOID	seqCallbackHandler(struct event_handler_args);
+< VOID	seqWakeup (SPROG *, long);
+205,207c210,212
+< VOID	seqFree (SPROG *);
+< long	sequencer (SPROG *, long, char *);
+< VOID	ssEntry (SPROG *, SSCB *);
+---
+> void	seqWakeup (SPROG *, long);
+> void	seqFree (SPROG *);
+> long	sequencer (SPROG *);
+211,213c216,218
+< VOID	seqMacEval (char *, char *, long, MACRO *);
+< STATUS	seq_log ();
+< SPROG	*seqFindProg (long);
+---
+> void	seqMacEval (char *, char *, long, MACRO *);
+> epicsStatus seq_log ();
+> SPROG	*seqFindProg (OSIthreadId);
+
+Index: seqCom.h
+===================================================================
+RCS file: /usr/local/epics/cvsroot/sequencer/src/seqCom.h,v
+retrieving revision 1.1.1.1
+retrieving revision 1.6
+diff -r1.1.1.1 -r1.6
+3c3
+<  *	DESCRIPTION: Common definitions for state programs and run-time sequencer.
+---
+>  *	DESCRIPTION: Common defs for state programs and run-time sequencer.
+27a28,29
+>  * 29apr99,wfl	Tidied, removed tsDefs.h, used SEQ_TIME_STAMP; removed vx_opt.
+>  * 17may99,wfl	Added stdlib.h and seq() prototype.
+32c34,35
+< #define	MAGIC	960811		/* current magic number for SPROG */
+---
+> #include	<stdio.h>	/* standard i/o defs */
+> #include	<stdlib.h>	/* standard library defs */
+34,35c37
+< #include	"tsDefs.h"	/* time stamp defs */
+< #include	"stdio.h"	/* standard i/o defs */
+---
+> #define	MAGIC	960811		/* current magic number for SPROG */
+44d45
+< #define	OPT_VXWORKS	(1<<6)	/* include VxWorks files */
+50,52c51,53
+< #define bitSet(word, bitnum)	 (word[(bitnum)/NBITS] |=  (1<<((bitnum)%NBITS)))
+< #define bitClear(word, bitnum)	 (word[(bitnum)/NBITS] &= ~(1<<((bitnum)%NBITS)))
+< #define bitTest(word, bitnum)	((word[(bitnum)/NBITS] &   (1<<((bitnum)%NBITS))) != 0)
+---
+> #define bitSet(word, bitnum)   (word[(bitnum)/NBITS] |=  (1<<((bitnum)%NBITS)))
+> #define bitClear(word, bitnum) (word[(bitnum)/NBITS] &= ~(1<<((bitnum)%NBITS)))
+> #define bitTest(word, bitnum) ((word[(bitnum)/NBITS] &   (1<<((bitnum)%NBITS))) != 0)
+81c82
+< 	char		*pVarName;	/* variable name, including subscripts */
+---
+> 	char		*pVarName;	/* variable name, including subscripts*/
+87,90c88,90
+< 	int			queued;		/* TRUE if queued via syncQ */
+< 	int			maxQueueSize;	/* max syncQ queue size (0 => def) */
+< 	int			queueIndex;	/* syncQ queue index */
+< 
+---
+> 	int		queued;		/* TRUE if queued via syncQ */
+> 	int		maxQueueSize;	/* max syncQ queue size (0 => def) */
+> 	int		queueIndex;	/* syncQ queue index */
+109c109
+< 	long		errorState;	/* error state index (-1 if none defined) */
+---
+> 	long		errorState;	/* error state index (-1 if none defd)*/
+126,127c126
+< 	int			numQueues;	/* number of syncQ queues */
+< 
+---
+> 	int		numQueues;	/* number of syncQ queues */
+130c129,136
+< 
+---
+> /* ### If pv.h hasn't been included, declare pvStamp type (temporary?) */
+> #ifndef INCLpvh
+> typedef struct {
+>     unsigned long sec;
+>     unsigned long nsec;
+> } pvStamp;
+> #endif
+> 
+137a144,146
+> #ifndef INCLseqh /* prefer more-specific seq.h prototype */
+> long	seq(void *, char *, long);	/* initiate state program */
+> #endif
+143,144c152,153
+< int		seq_pvGetQ(SS_ID, int);		/* get queued pv value */
+< int		seq_pvFreeQ(SS_ID, int);	/* free elements on pv queue */
+---
+> int	seq_pvGetQ(SS_ID, int);		/* get queued pv value */
+> int	seq_pvFreeQ(SS_ID, int);	/* free elements on pv queue */
+146c155
+< TS_STAMP seq_pvTimeStamp(SS_ID, long);	/* get time stamp value */
+---
+> pvStamp seq_pvTimeStamp(SS_ID, long); /* get time stamp value */
+156,158c165,167
+< long	seq_pvConnectCount(SS_ID);	/* returns number of channels connected */
+< long	seq_pvAssignCount(SS_ID);	/* returns number of channels assigned */
+< long	seq_pvCount(SS_ID, long);		/* returns number of elements in array */
+---
+> long	seq_pvConnectCount(SS_ID);	/* returns number of channels conn'ed */
+> long	seq_pvAssignCount(SS_ID);	/* returns number of channels ass'ned */
+> long	seq_pvCount(SS_ID, long);	/* returns number of elements in arr */
+161,162c170,171
+< long	seq_seqLog();			/* Logging: variable number of parameters */
+< void	seq_delayInit(SS_ID, long, float);/* initialize a delay entry */
+---
+> long	seq_seqLog();			/* Logging: variable number of params */
+> void	seq_delayInit(SS_ID, long, double);/* initialize a delay entry */
+164c173
+< char   *seq_macValueGet(SS_ID, char *);	/* Given macro name, return ptr to value */
+---
+> char   *seq_macValueGet(SS_ID, char *);	/* Given macro name, return ptr to val*/
+
+Index: seq_ca.c
+===================================================================
+RCS file: /usr/local/epics/cvsroot/sequencer/src/seq_ca.c,v
+retrieving revision 1.1.1.1
+retrieving revision 1.7
+diff -r1.1.1.1 -r1.7
+39,40c39,40
+<  *		all state programs.  Added seq_disconnect() and ca_import_cancel().
+< 		DB name resolution was moved to seq_main.c.
+---
+>  *		all state programs.  Added seq_disconnect() and ca_import_
+>  *		cancel(). DB name resolution was moved to seq_main.c.
+48a49,51
+>  * 30apr99,wfl	Replaced VxWorks task dependencies with OSI.
+>  * 17may99,wfl	Fixed errors in debug output; checked for NULL mask pointer
+>  *		(NULL mask pointer bug had always been present).
+51c54,55
+< #define		ANSI
+---
+> #include	<string.h>
+> 
+53,55d56
+< #include	"string.h"
+< #include	"logLib.h"
+< #include	"taskVarLib.h"
+57,58c58,59
+< LOCAL VOID proc_db_events(union db_access_val *, CHAN *, long);
+< LOCAL VOID proc_db_events_queued(union db_access_val * , CHAN *);
+---
+> LOCAL void proc_db_events(pvValue *, CHAN *, long);
+> LOCAL void proc_db_events_queued(pvValue *, CHAN *);
+60c61
+< /*#define		DEBUG*/
+---
+> /*#define	DEBUG*/
+73c74
+< 	extern		VOID seq_conn_handler();
+---
+> 	extern		void seq_conn_handler();
+85,86c86,87
+< 		logMsg("seq_connect: connect %s to %s\n",
+< 		 pDB->pVarName, pDB->dbName, 0,0,0,0);
+---
+> 		epicsPrintf("seq_connect: connect %s to %s\n", pDB->pVarName,
+> 			pDB->dbName);
+89,94c90,92
+< 		status = ca_build_and_connect(
+< 			pDB->dbName,		/* DB channel name */
+< 			TYPENOTCONN,		/* Don't get initial value */
+< 			0,			/* get count (n/a) */
+< 			&(pDB->chid),		/* ptr to chid */
+< 			0,			/* ptr to value (n/a) */
+---
+> 		status = pvVarCreate(
+> 			pvSys,			/* PV system context */
+> 			pDB->dbName,		/* PV name */
+96,97c94,96
+< 			pDB);			/* user ptr is CHAN structure */
+< 		if (status != ECA_NORMAL)
+---
+> 			pDB,			/* private data is CHAN struc */
+> 			&pDB->pvid );		/* ptr to PV id */
+> 		if (status != pvStatOK)
+99,101c98,100
+< 			SEVCHK(status, "ca_search");
+< 			ca_task_exit();
+< 			return -1;
+---
+> 			epicsPrintf("seq_connect: pvVarCreate() %s failure: "
+> 				"%s\n", pDB->dbName, pvSysGetMess(pvSys));
+> 			return status;
+114c113
+< 	ca_flush_io();
+---
+> 	pvSysFlush( pvSys );
+122,124c121
+<  * seq_event_handler() - Channel access events (monitors) come here.
+<  * args points to CA event handler argument structure.  args.usr contains
+<  * a pointer to the channel structure (CHAN *).
+---
+>  * seq_event_handler() - PV events (monitors) come here.
+126c123,124
+< VOID seq_event_handler(struct event_handler_args args)
+---
+> void seq_event_handler(void *var, pvType type, int count, pvValue *pValue,
+> 		       void *arg)
+129,131c127
+< 	proc_db_events((union db_access_val *)args.dbr, (CHAN *)args.usr, MON_COMPLETE);
+< 
+< 	return;
+---
+> 	proc_db_events(pValue, (CHAN *)arg, MON_COMPLETE);
+137d132
+<  * args.usr points to the db structure (CHAN *) for tis channel.
+139c134,135
+< VOID seq_callback_handler(struct event_handler_args args)
+---
+> void seq_callback_handler(void *var, pvType type, int count, pvValue *pValue,
+> 			  void *arg)
+143,145c139
+< 	proc_db_events((union db_access_val *)args.dbr, (CHAN *)args.usr, GET_COMPLETE);
+< 
+< 	return;
+---
+> 	proc_db_events(pValue, (CHAN *)arg, GET_COMPLETE);
+149c143
+< LOCAL VOID proc_db_events(union db_access_val *pAccess, CHAN *pDB, long complete_type)
+---
+> LOCAL void proc_db_events(pvValue *pValue, CHAN *pDB, long complete_type)
+155,156c149,150
+< 	logMsg("proc_db_events: var=%s, pv=%s\n", pDB->VarName, pDB->dbName,
+< 	       0,0,0,0);
+---
+> 	epicsPrintf("proc_db_events: var=%s, pv=%s\n", pDB->pVarName,
+> 	    pDB->dbName);
+162c156
+< 	    proc_db_events_queued(pAccess, pDB);
+---
+> 	    proc_db_events_queued(pValue, pDB);
+167,168c161,162
+< 	pVal = (void *)((long)pAccess + pDB->dbOffset); /* ptr to data in CA structure */
+< 	bcopy(pVal, pDB->pVar, pDB->size * pDB->dbCount);
+---
+> 	pVal = (void *)((long)pValue + pDB->dbOffset); /* ptr to data */
+> 	memcpy(pDB->pVar, pVal, pDB->size * pDB->dbCount);
+171,172c165,166
+< 	pDB->status = pAccess->tchrval.status;
+< 	pDB->severity = pAccess->tchrval.severity;
+---
+> 	pDB->status = pValue->timeStringVal.status;
+> 	pDB->severity = pValue->timeStringVal.severity;
+175c169
+< 	pDB->timeStamp = pAccess->tchrval.stamp;
+---
+> 	pDB->timeStamp = pValue->timeStringVal.stamp;
+194,195c188,190
+< 	if ( (complete_type == GET_COMPLETE) && ((pSP->options & OPT_ASYNC) == 0) )
+< 		semGive(pDB->getSemId);
+---
+> 	if ( (complete_type == GET_COMPLETE) &&
+> 					     ((pSP->options & OPT_ASYNC) == 0) )
+> 		OSIsemGive(pDB->getSemId);
+200c195
+< LOCAL VOID proc_db_events_queued(union db_access_val *pAccess , CHAN *pDB)
+---
+> LOCAL void proc_db_events_queued(pvValue *pValue, CHAN *pDB)
+214c209
+< 	logMsg("proc_db_events_queued: var=%s, pv=%s, count(max)=%d(%d), "
+---
+> 	epicsPrintf("proc_db_events_queued: var=%s, pv=%s, count(max)=%d(%d), "
+216c211
+< 	       pDB->maxQueueSize, pDB->queueIndex, 0);
+---
+> 	       pDB->maxQueueSize, pDB->queueIndex);
+226,228c221,222
+< 			logMsg("proc_db_events_queued: %s queue memory "
+< 			       "allocation failure\n", (int)pDB->pVarName,
+< 			       0,0,0,0,0);
+---
+> 			epicsPrintf("proc_db_events_queued: %s queue memory "
+> 			       "allocation failure\n", (int)pDB->pVarName);
+238,239c232,233
+< 			logMsg("proc_db_events_queued: %s queue inconsistent "
+< 			       "failure\n", (int)pDB->pVarName, 0,0,0,0,0);
+---
+> 			epicsPrintf("proc_db_events_queued: %s queue "
+> 				"inconsistent failure\n", pDB->pVarName);
+247c241
+< 	bcopy((char *)pAccess, (char *)&pEntry->value, sizeof(pEntry->value));
+---
+> 	memcpy((char *)&pEntry->value, (char *)pValue, sizeof(pEntry->value));
+251c245
+< 	logMsg("setting event flag %d\n", pDB->efId, 0,0,0,0,0);
+---
+> 	epicsPrintf("setting event flag %d\n", pDB->efId);
+264c258
+< 	STATUS		status;
+---
+> 	epicsStatus	status;
+266,267c260,261
+< 	extern int	seqAuxTaskId;
+< 	SPROG		*pMySP; /* will be NULL if this task is not a sequencer task */
+---
+> 	SPROG		*pMySP; /* will be NULL if this thread is not a
+> 				   sequencer thread */
+273,274c267,268
+< 	/* Import Channel Access context from the auxillary seq. task */
+< 	pMySP = seqFindProg(taskIdSelf() );
+---
+> 	/* Import Channel Access context from the auxiliary seq. thread */
+> 	pMySP = seqFindProg(OSIthreadGetIdSelf());
+278c272
+< 		logMsg("seq_disconnect: ca_import\n", 0,0,0,0,0,0);
+---
+> 		epicsPrintf("seq_disconnect: ca_import\n");
+280c274,275
+< 		status = ca_import(seqAuxTaskId); /* not a sequencer task */
+---
+> #if 0 /* ### VxWorks-specific */
+> 		status = ca_import(seqAuxThreadId); /* not a sequencer thread */
+281a277
+> #endif
+286,287c282
+< 	logMsg("seq_disconnect: pSP = 0x%x, pDB = 0x%x\n",
+< 	 pSP, pDB, 0,0,0,0);
+---
+> 	epicsPrintf("seq_disconnect: pSP = 0x%x, pDB = 0x%x\n", pSP, pDB);
+295,297c290,292
+< 		logMsg("seq_disconnect: disconnect %s from %s\n",
+< 		 pDB->pVarName, pDB->dbName, 0,0,0,0);
+< 		taskDelay(sysClkRateGet() / 10);
+---
+> 		epicsPrintf("seq_disconnect: disconnect %s from %s\n",
+>  			pDB->pVarName, pDB->dbName);
+> 		OSIthreadSleep(0.1);
+299,301c294,298
+< 		/* Disconnect this channel */
+< 		status = ca_clear_channel(pDB->chid);
+< 		SEVCHK (status, "seq_disconnect: ca_clear_channel");
+---
+> 		/* Disconnect this PV */
+> 		status = pvVarDestroy(pDB->pvid);
+> 		if (status != pvStatOK)
+> 		    epicsPrintf("seq_disconnect: pvVarDestroy() %s failure: "
+> 				"%s\n", pDB->dbName, pvSysGetMess(pvSys));
+310c307
+< 	ca_flush_io();
+---
+> 	pvSysFlush(pvSys);
+316c313
+< 		logMsg("seq_disconnect: ca_import_cancel\n", 0,0,0,0,0,0);
+---
+> 		epicsPrintf("seq_disconnect: ca_import_cancel\n");
+318c315,316
+< 		SEVCHK(ca_import_cancel(taskIdSelf()),
+---
+> #if 0 /* ### VxWorks-specific */
+> 		SEVCHK(ca_import_cancel(OSIthreadGetIdSelf()),
+319a318
+> #endif
+329c328
+< VOID seq_conn_handler(struct connection_handler_args args)
+---
+> void seq_conn_handler(void *var,int connected)
+334,335c333,334
+< 	/* User argument is db ptr (specified at ca_search() ) */
+< 	pDB = (CHAN *)ca_puser(args.chid);
+---
+> 	/* Private data is db ptr (specified at pvVarCreate()) */
+> 	pDB = (CHAN *)pvVarGetPrivate(var);
+340,341c339,340
+< 	/* Check for connected */
+< 	if (ca_field_type(args.chid) == TYPENOTCONN)
+---
+> 	/* If PV not connected */
+> 	if (!connected)
+347,348c346,347
+< 		logMsg("%s disconnected from %s\n", pDB->VarName, pDB->dbName,
+< 		       0,0,0,0);
+---
+> 		epicsPrintf("%s disconnected from %s\n", pDB->pVarName,
+> 			pDB->dbName);
+358,359c357
+< 		logMsg("%s connected to %s\n", pDB->VarName, pDB->dbName,
+< 		       0,0,0,0);
+---
+> 		epicsPrintf("%s connected to %s\n", pDB->pVarName, pDB->dbName);
+361c359
+< 		pDB->dbCount = ca_element_count(args.chid);
+---
+> 		pDB->dbCount = pvVarGetCount(var);
+376c374
+< VOID seqWakeup(SPROG *pSP, long eventNum)
+---
+> void seqWakeup(SPROG *pSP, long eventNum)
+385c383,384
+< 		if ( (eventNum == 0) || bitTest(pSS->pMask, eventNum) )
+---
+> 		if ( (eventNum == 0) || 
+> 		     ( pSS->pMask != NULL && bitTest(pSS->pMask, eventNum) ) )
+387c386
+< 			semGive(pSS->syncSemId); /* wake up the ss task */
+---
+> 			OSIsemGive(pSS->syncSemId); /* wake up the ss thread */
+
+Index: seq_if.c
+===================================================================
+RCS file: /usr/local/epics/cvsroot/sequencer/src/seq_if.c,v
+retrieving revision 1.1.1.1
+retrieving revision 1.8
+diff -r1.1.1.1 -r1.8
+37c37
+< 
+---
+>  * 29apr99,wfl	Used SEQ_TIME_STAMP; removed unused vx_opt option.
+39a40
+> #include 	<stdlib.h>
+42d42
+< #define		ANSI
+44,48d43
+< #include	"tickLib.h"
+< #include	"logLib.h"
+< #include	"sysLib.h"
+< 
+< /* See seqCom.h for function prototypes (ANSI standard) */
+77c72
+< 	ca_flush_io();
+---
+> 	pvSysFlush(pvSys);
+88,89c83,85
+< 	int		status, sem_status;
+< 	extern		VOID seq_callback_handler();
+---
+> 	int		status;
+> 	semTakeStatus	sem_status;
+> 	extern		void seq_callback_handler();
+97c93
+< 		return ECA_DISCONN;
+---
+> 		return pvStatDISCONN;
+106c102
+< 		semTake(pSS->getSemId, NO_WAIT);
+---
+> 		OSIsemTakeNoWait(pSS->getSemId);
+109,111c105,108
+< 	/* Perform the CA get operation with a callback routine specified */
+< 	status = ca_array_get_callback(
+< 			pDB->getType,		/* db request type */
+---
+> 	/* Perform the PV get operation with a callback routine specified */
+> 	status = pvVarGetCallback(
+> 			pDB->pvid,		/* PV id */
+> 			pDB->getType,		/* request type */
+113,115c110
+< 			pDB->chid,		/* chid */
+< 			seq_callback_handler
+< ,	/* callback handler */
+---
+> 			seq_callback_handler,	/* callback handler */
+118c113
+< 	if (status != ECA_NORMAL)
+---
+> 	if (status != pvStatOK)
+119a115,116
+> 		epicsPrintf("seq_pvGet: pvVarGetCallback() %s failure: %s\n",
+>                             pDB->dbName, pvSysGetMess(pvSys));
+121,122d117
+< 		SEVCHK(status, "pvGet");
+< 
+126c121
+< 	ca_flush_io();
+---
+> 	pvSysFlush(pvSys);
+129c124
+< 		return ECA_NORMAL;
+---
+> 		return pvStatOK;
+133,134c128,129
+< 	sem_status = semTake(pSS->getSemId, 10*sysClkRateGet());
+< 	if (sem_status != OK)
+---
+> 	sem_status = OSIsemTakeTimeout(pSS->getSemId, 10.0);
+> 	if (sem_status != semTakeOK)
+136,137c131,132
+< 		logMsg ("semTake error=%d\n", sem_status, 0,0,0,0,0);
+< 		return ECA_TIMEOUT;
+---
+> 		epicsPrintf("semTake error=%d\n", sem_status);
+> 		return pvStatTIMEOUT;
+140c135
+< 	return ECA_NORMAL;
+---
+> 	return pvStatOK;
+169,170c164,165
+< 	logMsg("seq_pvPut: pv name=%s, pVar=0x%x\n", pDB->dbName, pDB->pVar,
+< 	       0,0,0,0);
+---
+> 	epicsPrintf("seq_pvPut: pv name=%s, pVar=0x%x\n", pDB->dbName,
+> 		pDB->pVar);
+174c169
+< 		return ECA_DISCONN;
+---
+> 		return pvStatDISCONN;
+179c174,183
+< 	status = ca_array_put(pDB->putType, count, pDB->chid, pDB->pVar);
+---
+> 	/* ### problem for KTL (will do KTL_NOWAIT and pend will not (yet)
+> 	       properly handle wait for completion) */
+> 	status = pvVarPutNoBlock(pDB->pvid, pDB->putType, count,
+> 				 (pvValue *)pDB->pVar);
+> 
+> 	if (status != pvStatOK)
+> 	{
+> 		epicsPrintf("seq_pvPut: pvVarPutNoBlock() %s failure: %s\n",
+>                             pDB->dbName, pvSysGetMess(pvSys));
+> 	}
+182,183c186,188
+< 	logMsg("seq_pvPut: status=%d\n", status, 0,0,0,0,0);
+< 	if (status != ECA_NORMAL)
+---
+> 	epicsPrintf("seq_pvPut: status=%d, mess=%s\n", status,
+> 		pvSysGetMess(pvSys));
+> 	if (status != pvStatOK)
+186c191
+< 		 pDB->dbName, status);
+---
+> 			pDB->dbName, status);
+196c201
+<  * Assign to a zero-lth string ("") disconnects/de-assignes.
+---
+>  * Assign to a zero-length string ("") disconnects/de-assigns.
+203c208
+< 	extern		VOID seq_conn_handler();
+---
+> 	extern		void seq_conn_handler();
+212,215c217,223
+< 	{	/* Disconnect this channel */
+< 		status = ca_clear_channel(pDB->chid);
+< 		if (status != ECA_NORMAL)
+< 			return status;
+---
+> 	{	/* Disconnect this PV */
+> 		status = pvVarDestroy(pDB->pvid);
+> 		if (status != pvStatOK)
+> 		{
+> 			epicsPrintf("seq_pvAssign: pvVarDestroy() %s failure: "
+> 				    "%s\n", pDB->dbName, pvSysGetMess(pvSys));
+> 		}
+236c244,245
+< 		status = ca_build_and_connect(
+---
+> 		status = pvVarCreate(
+> 			pvSys,			/* PV system context */
+238,241d246
+< 			TYPENOTCONN,		/* Don't get initial value */
+< 			0,			/* get count (n/a) */
+< 			&(pDB->chid),		/* ptr to chid */
+< 			0,			/* ptr to value (n/a) */
+243,244c248,250
+< 			pDB);			/* user ptr is CHAN structure */
+< 		if (status != ECA_NORMAL)
+---
+> 			pDB,			/* user ptr is CHAN structure */
+> 			&pDB->pvid);		/* ptr to pvid */
+> 		if (status != pvStatOK)
+245a252,253
+> 			epicsPrintf("seq_pvAssign: pvVarCreate() %s failure: "
+> 				    "%s\n", pDB->dbName, pvSysGetMess(pvSys));
+252c260
+< 			if (status != ECA_NORMAL)
+---
+> 			if (status != pvStatOK)
+257c265
+< 	ca_flush_io();
+---
+> 	pvSysFlush(pvSys);
+259c267
+< 	return ECA_NORMAL;
+---
+> 	return pvStatOK;
+269c277
+< 	extern		VOID seq_event_handler();
+---
+> 	extern		void seq_event_handler();
+283c291
+< 		return ECA_NORMAL;
+---
+> 		return pvStatOK;
+285c293,294
+< 	status = ca_add_array_event(
+---
+> 	status = pvVarMonitorOn(
+> 		 pDB->pvid,		/* pvid */
+288d296
+< 		 pDB->chid,		/* chid */
+291,293d298
+< 		 0.0,			/* pos. delta value */
+< 		 0.0,			/* neg. delta value */
+< 		 0.0,			/* timeout */
+296c301
+< 	if (status != ECA_NORMAL)
+---
+> 	if (status != pvStatOK)
+298,299c303,304
+< 		SEVCHK(status, "ca_add_array_event");
+< 		ca_task_exit();	/* this is serious */
+---
+> 		epicsPrintf("seq_pvMonitor: pvVarMonitorOn() %s failure: %s\n",
+>                             pDB->dbName, pvSysGetMess(pvSys));
+302c307
+< 	ca_flush_io();
+---
+> 	pvSysFlush(pvSys);
+305c310
+< 	return ECA_NORMAL;
+---
+> 	return pvStatOK;
+322,323c327,328
+< 	status = ca_clear_event(pDB->evid);
+< 	if (status != ECA_NORMAL)
+---
+> 	status = pvVarMonitorOff(pDB->pvid,pDB->evid);
+> 	if (status != pvStatOK)
+325c330,331
+< 		SEVCHK(status, "ca_clear_event");
+---
+> 		epicsPrintf("seq_pvStopMonitor: pvVarMonitorOff() %s failure: "
+> 			    "%s\n", pDB->dbName, pvSysGetMess(pvSys));
+444c450
+< TS_STAMP seq_pvTimeStamp(SS_ID ssId, long pvId)
+---
+> pvStamp seq_pvTimeStamp(SS_ID ssId, long pvId)
+457c463
+< VOID seq_efSet(SS_ID ssId, long ev_flag)
+---
+> void seq_efSet(SS_ID ssId, long ev_flag)
+466,468c472,474
+< 	logMsg("seq_efSet: pSP=0x%x, pSS=0x%x, ev_flag=0x%x\n", pSP, pSS,
+< 	 ev_flag, 0,0,0);
+< 	taskDelay(sysClkRateGet() / 5);
+---
+> 	epicsPrintf("seq_efSet: pSP=0x%x, pSS=0x%x, ev_flag=0x%x\n", pSP, pSS,
+> 		ev_flag);
+> 	OSIthreadSleep(0.2);
+472c478
+< 	semTake(pSP->caSemId, WAIT_FOREVER);
+---
+> 	OSIsemTake(pSP->caSemId);
+479c485
+< 	semGive(pSP->caSemId);
+---
+> 	OSIsemGive(pSP->caSemId);
+496,497c502,503
+< 	logMsg("seq_efTest: ev_flag=%d, event=0x%x, isSet=%d\n",
+< 	 ev_flag, pSP->pEvents[0], isSet, 0,0,0,0);
+---
+> 	epicsPrintf("seq_efTest: ev_flag=%d, event=0x%x, isSet=%d\n",
+> 		ev_flag, pSP->pEvents[0], isSet);
+517c523
+< 	semTake(pSP->caSemId, WAIT_FOREVER);
+---
+> 	OSIsemTake(pSP->caSemId);
+524c530
+< 	semGive(pSP->caSemId);
+---
+> 	OSIsemGive(pSP->caSemId);
+568,569c574
+< 	logMsg("seq_pvGetQ: pv name=%s, isSet=%d\n", pDB->dbName, isSet,
+< 	 0,0,0,0);
+---
+> 	epicsPrintf("seq_pvGetQ: pv name=%s, isSet=%d\n", pDB->dbName, isSet);
+575,577c580,582
+< 		QENTRY			*pEntry;
+< 		union db_access_val	*pAccess;
+< 		void			*pVal;
+---
+> 		QENTRY	*pEntry;
+> 		pvValue	*pAccess;
+> 		void	*pVal;
+585,586c590,591
+< 			logMsg("seq_pvGetQ: evflag set but queue empty "
+< 			 "(impossible)\n", 0,0,0,0,0,0);
+---
+> 			epicsPrintf("seq_pvGetQ: evflag set but queue empty "
+> 				"(impossible)\n");
+601c606
+< 			bcopy(pVal, pDB->pVar, pDB->size * 1 );
+---
+> 			memcpy(pDB->pVar, pVal, pDB->size * 1 );
+605,606c610,611
+< 			pDB->status = pAccess->tchrval.status;
+< 			pDB->severity = pAccess->tchrval.severity;
+---
+> 			pDB->status = pAccess->timeStringVal.status;
+> 			pDB->severity = pAccess->timeStringVal.severity;
+609c614
+< 			pDB->timeStamp = pAccess->tchrval.stamp;
+---
+> 			pDB->timeStamp = pAccess->timeStringVal.stamp;
+639c644
+< 	semTake(pSP->caSemId, WAIT_FOREVER);
+---
+> 	OSIsemTake(pSP->caSemId);
+642,643c647,648
+< 	logMsg("seq_pvFreeQ: pv name=%s, count=%d\n", pDB->dbName,
+< 		ellCount(&pSP->pQueues[pDB->queueIndex]), 0,0,0,0);
+---
+> 	epicsPrintf("seq_pvFreeQ: pv name=%s, count=%d\n", pDB->dbName,
+> 		ellCount(&pSP->pQueues[pDB->queueIndex]));
+656c661
+< 	semGive(pSP->caSemId);
+---
+> 	OSIsemGive(pSP->caSemId);
+666c671
+< 	ULONG		timeElapsed;
+---
+> 	double		timeNow, timeElapsed;
+671c676,677
+< 	timeElapsed = tickGet() - pSS->timeEntered;
+---
+> 	OSItimeGetCurrentTimeDouble( &timeNow );
+> 	timeElapsed = timeNow - pSS->timeEntered;
+686c692
+< VOID seq_delayInit(SS_ID ssId, long delayId, float delay)
+---
+> void seq_delayInit(SS_ID ssId, long delayId, double delay)
+693,694c699,700
+< 	/* Convert delay time to tics & save */
+< 	pSS->delay[delayId] = delay * sysClkRateGet();
+---
+> 	/* Save delay time */
+> 	pSS->delay[delayId] = delay;
+712c718
+< 	    case 'c': return ( (pSP->options & OPT_CONN) != 0);
+---
+> 	    case 'c': return ( (pSP->options & OPT_CONN)  != 0);
+716d721
+< 	    case 'v': return ( (pSP->options & OPT_VXWORKS) != 0);
+
+Index: seq_mac.c
+===================================================================
+RCS file: /usr/local/epics/cvsroot/sequencer/src/seq_mac.c,v
+retrieving revision 1.2
+retrieving revision 1.8
+diff -r1.2 -r1.8
+18c18,19
+< 
+---
+> 17may99,wfl	Replaced VxWorks dependencies with OSI calls; avoided step
+> 		beyond end of macro definition string.
+20c21,25
+< #define		ANSI
+---
+> 
+> #include	<ctype.h>
+> #include	<stdlib.h>
+> #include	<string.h>
+> 
+22,24d26
+< #include	"ctype.h"
+< #include	"string.h"
+< #include	"sysLib.h"
+37c39
+< VOID seqMacEval(pInStr, pOutStr, maxChar, pMac)
+---
+> void seqMacEval(pInStr, pOutStr, maxChar, pMac)
+47,48c49,50
+< 	logMsg("seqMacEval: InStr=%s\n", pInStr, 0,0,0,0,0);
+< 	taskDelay(sysClkRateGet()/2);
+---
+> 	epicsPrintf("seqMacEval: InStr=%s\n", pInStr);
+> 	OSIthreadSleep(0.5);
+69,70c71,72
+< 			logMsg("Macro name=%s\n", name, 0,0,0,0,0);
+< 			taskDelay(sysClkRateGet() / 2);
+---
+> 			epicsPrintf("Macro name=%s\n", name);
+> 			OSIthreadSleep(0.5);
+80c82
+< 				logMsg("Value=%s\n", pValue, 0,0,0,0,0);
+---
+> 				epicsPrintf("Value=%s\n", pValue);
+96,97c98,99
+< 	logMsg("OutStr=%s\n", pTmp, 0,0,0,0,0);
+< 	taskDelay(sysClkRateGet() / 2);
+---
+> 	epicsPrintf("OutStr=%s\n", pTmp);
+> 	OSIthreadSleep(0.5);
+125c127
+< 	logMsg("seqMacValGet: name=%s", pName, 0,0,0,0,0);
+---
+> 	epicsPrintf("seqMacValGet: name=%s", pName);
+134c136
+< 				logMsg(", value=%s\n", pMac->pValue, 0,0,0,0,0);
+---
+> 				epicsPrintf(", value=%s\n", pMac->pValue);
+141c143
+< 	logMsg(", no value\n", 0,0,0,0,0,0);
+---
+> 	epicsPrintf(", no value\n");
+156d157
+< 	char		*skipBlanks();
+160a162,163
+> 	if (pMacStr == NULL) pMacStr = "";
+> 
+175,176c178,179
+< 		bcopy(pMacStr, pName, nChar);
+< 		pName[nChar] = 0;
+---
+> 		memcpy(pName, pMacStr, nChar);
+> 		pName[nChar] = '\0';
+178,179c181,182
+< 		logMsg("name=%s, nChar=%d\n", pName, nChar, 0,0,0,0);
+< 		taskDelay(sysClkRateGet() / 2);
+---
+> 		epicsPrintf("name=%s, nChar=%d\n", pName, nChar);
+> 		OSIthreadSleep(0.5);
+195,196c198,201
+< 		{	/* no value after the macro name */
+< 			pMacStr++;
+---
+> 		{
+> 			/* no value after the macro name */
+> 			if (*pMacStr != '\0')
+> 				pMacStr++;
+199c204
+< 		if (*pMacStr++ != '=')
+---
+> 		if (*pMacStr == '\0' || *pMacStr++ != '=')
+218,219c223,224
+< 		bcopy(pMacStr, pValue, nChar);
+< 		pValue[nChar] = 0;
+---
+> 		memcpy(pValue, pMacStr, nChar);
+> 		pValue[nChar] = '\0';
+221,222c226,227
+< 		logMsg("value=%s, nChar=%d\n", pValue, nChar, 0,0,0,0);
+< 		taskDelay(sysClkRateGet() / 2);
+---
+> 		epicsPrintf("value=%s, nChar=%d\n", pValue, nChar);
+> 		OSIthreadSleep(0.5);
+228c233
+< 		if (*pMacStr++ != ',')
+---
+> 		if (*pMacStr == '\0' || *pMacStr++ != ',')
+231c236
+< 	if (*pMacStr == 0)
+---
+> 	if (*pMacStr == '\0')
+299,300c304,305
+< 	logMsg("seqMacTblGet: name=%s\n", pName, 0,0,0,0,0);
+< 	taskDelay(sysClkRateGet() / 2);
+---
+> 	epicsPrintf("seqMacTblGet: name=%s\n", pName);
+> 	OSIthreadSleep(0.5);
+
+Index: seq_main.c
+===================================================================
+RCS file: /usr/local/epics/cvsroot/sequencer/src/seq_main.c,v
+retrieving revision 1.1.1.1
+retrieving revision 1.10
+diff -r1.1.1.1 -r1.10
+52a53,55
+> 30apr99,wfl	Replaced VxWorks dependencies with OSI.
+> 17may99,wfl	Under UNIX, call OSIthreadJoinAll() rather than exiting.
+> 17may99,wfl	Moved misplaced event array initialization.
+55a59,66
+> #ifdef		vxWorks
+> #include	"vxWorks.h"	/*needed by sys/stat.h (unfortunately)*/
+> #endif
+> 
+> #include	<sys/types.h>
+> #include	<sys/stat.h>
+> 
+> #include	<fcntl.h>
+56a68
+> #include 	<unistd.h>
+58d69
+< #include	"seqCom.h"
+60,65d70
+< #include	"taskLib.h"
+< #include	"taskHookLib.h"
+< #include	"logLib.h"
+< #include	"errnoLib.h"
+< #include	"usrLib.h"
+< #include	"sysLib.h"
+72c77
+< /* ANSI functional prototypes for local routines */
+---
+> /* function prototypes for local routines */
+74,81c79,86
+< LOCAL	VOID init_sprog(struct seqProgram *, SPROG *);
+< LOCAL	VOID init_sscb(struct seqProgram *, SPROG *);
+< LOCAL	VOID init_chan(struct seqProgram *, SPROG *);
+< LOCAL	VOID init_mac(SPROG *);
+< 
+< LOCAL	VOID seq_logInit(SPROG *);
+< LOCAL	VOID seqChanNameEval(SPROG *);
+< LOCAL	VOID selectDBtype(char *, short *, short *, short *, short *);
+---
+> LOCAL	void init_sprog(struct seqProgram *, SPROG *);
+> LOCAL	void init_sscb(struct seqProgram *, SPROG *);
+> LOCAL	void init_chan(struct seqProgram *, SPROG *);
+> LOCAL	void init_mac(SPROG *);
+> 
+> LOCAL	void seq_logInit(SPROG *);
+> LOCAL	void seqChanNameEval(SPROG *);
+> LOCAL	void selectDBtype(char *, short *, short *, short *, short *);
+85c90
+< /*	Flag to indicate that "taskDeleteHookAdd()" was called */
+---
+> /*	Flag to indicate that "OSIthreadDeleteHookAdd()" was called */
+88,89c93,94
+< /*	Auxillary sequencer task id; used to share CA context. */
+< int	seqAuxTaskId = 0;
+---
+> /*	Auxiliary sequencer thread id; used to share CA context. */
+> OSIthreadId seqAuxThreadId = (OSIthreadId) 0;
+98c103
+<  * Creates the initial state program task and returns its task id.
+---
+>  * Creates the initial state program thread and returns its thread id.
+102c107
+< struct seqProgram	*pSeqProg;	/* state program info generated by snc */
+---
+> struct seqProgram	*pSeqProg;	/* state prog info generated by snc */
+106,107c111,112
+< 	int		tid;
+< 	extern		sprog_delete();	/* Task delete routine */
+---
+> 	OSIthreadId	tid;
+> 	extern		sprog_delete();	/* Thread delete routine */
+110,111c115,116
+< 	char		*pValue, *ptask_name;
+< 	extern		seqAuxTask();
+---
+> 	char		*pValue, *pThread_name, *pPvSysName;
+> 	extern		void *seqAuxThread(void *);
+116,135d120
+< 	/* Spawn the sequencer auxillary task */
+< 	if (seqAuxTaskId == 0)
+< 	{
+< 		taskSpawn("seqAux", SPAWN_PRIORITY-1, VX_FP_TASK, 2000, seqAuxTask,
+< 		 0,0,0,0,0,0,0,0,0,0);
+< 		while (seqAuxTaskId == 0)
+< 			/* wait for task to init. ch'l access */
+< 		    taskDelay(sysClkRateGet() / 10);
+< #ifdef	DEBUG
+< 	logMsg("task seqAux spawned, tid=0x%x\n", seqAuxTaskId, 0,0,0,0,0);
+< #endif	/*DEBUG*/
+< 	}
+< 
+< 	/* Specify a routine to run at task delete */
+< 	if (!seqDeleteHookAdded)
+< 	{
+< 		taskDeleteHookAdd(sprog_delete);
+< 		seqDeleteHookAdded = TRUE;
+< 	}
+< 
+145,148c130,133
+< 		logMsg("Illegal magic number in state program.\n", 0,0,0,0,0,0);
+< 		logMsg(" - Possible mismatch between SNC & SEQ versions\n",
+< 		 0,0,0,0,0,0);
+< 		logMsg(" - Re-compile your program?\n", 0,0,0,0,0,0);
+---
+> 		epicsPrintf("Illegal magic number in state program.\n");
+> 		epicsPrintf(" - Possible mismatch between SNC & SEQ "
+> 			"versions\n");
+> 		epicsPrintf(" - Re-compile your program?\n");
+169c154
+< 		stack_size = SPAWN_STACK_SIZE;
+---
+> 		stack_size = THREAD_STACK_SIZE;
+175,176c160,161
+< 	if (stack_size < SPAWN_STACK_SIZE/2)
+< 		stack_size = SPAWN_STACK_SIZE/2;
+---
+> 	if (stack_size < THREAD_STACK_SIZE/2)
+> 		stack_size = THREAD_STACK_SIZE/2;
+178c163
+< 	/* Specify task name */
+---
+> 	/* Specify thread name */
+181c166,173
+< 		ptask_name = pValue;
+---
+> 		pThread_name = pValue;
+> 	else
+> 		pThread_name = pSP->pProgName;
+> 
+> 	/* Specify PV system name */
+> 	pValue = seqMacValGet(pSP->pMacros, "pvsys");
+> 	if (pValue != NULL && strlen(pValue) > 0)
+> 		pPvSysName = pValue;
+183c175,197
+< 		ptask_name = pSP->pProgName;
+---
+> 		pPvSysName = "ca";
+> 
+> 	/* Spawn the sequencer auxiliary thread */
+> 	if (seqAuxThreadId == (OSIthreadId) 0)
+> 	{
+> 		OSIthreadCreate("seqAux", THREAD_PRIORITY-1, 2000,
+> 				(THREADFUNC)seqAuxThread, pPvSysName );
+> 		while (seqAuxThreadId == (OSIthreadId) 0)
+> 		    /* wait for thread to init. message system */
+> 		    OSIthreadSleep(0.1);
+> #ifdef	DEBUG
+> 	epicsPrintf("thread seqAux spawned, tid=0x%x\n", (int) seqAuxThreadId);
+> #endif	/*DEBUG*/
+> 	}
+> 
+> #if 0 /* ### this is VxWorks specific */
+> 	/* Specify a routine to run at thread delete */
+> 	if (!seqDeleteHookAdded)
+> 	{
+> 		OSIthreadDeleteHookAdd(sprog_delete);
+> 		seqDeleteHookAdded = TRUE;
+> 	}
+> #endif
+185c199
+< 	/* Spawn the initial sequencer task */
+---
+> 	/* Spawn the initial sequencer thread */
+187,188c201,202
+< 	logMsg("Spawning task %s, stack_size=%d\n", ptask_name, stack_size,
+< 	 0,0,0,0);
+---
+> 	epicsPrintf("Spawning thread %s, stack_size=%d\n", pThread_name,
+> 		stack_size);
+190,191c204,205
+< 	/* Specify task priority */
+< 	pSP->taskPriority = SPAWN_PRIORITY;
+---
+> 	/* Specify thread priority */
+> 	pSP->threadPriority = THREAD_PRIORITY;
+195c209
+< 		sscanf(pValue, "%ld", &(pSP->taskPriority));
+---
+> 		sscanf(pValue, "%d", &(pSP->threadPriority));
+197,210c211,242
+< 	if (pSP->taskPriority < SPAWN_PRIORITY)
+< 		pSP->taskPriority = SPAWN_PRIORITY;
+< 	if (pSP->taskPriority > 255)
+< 		pSP->taskPriority = 255;
+< 
+< 	tid = taskSpawn(ptask_name, pSP->taskPriority, SPAWN_OPTIONS,
+< 	 stack_size, (FUNCPTR)sequencer, (int)pSP, stack_size, (int)ptask_name,
+< 	 0,0,0,0,0,0,0);
+< 
+< 	seq_log(pSP, "Spawning state program \"%s\", task name = \"%s\"\n",
+< 	 pSP->pProgName, ptask_name);
+< 	seq_log(pSP, "  Task id = %d = 0x%x\n", tid, tid);
+< 
+< 	/* Return task id to calling program */
+---
+> 	if (pSP->threadPriority < THREAD_PRIORITY)
+> 		pSP->threadPriority = THREAD_PRIORITY;
+> 	/* ### need symbolic low/high priorities */
+> 	if (pSP->threadPriority > 255)
+> 		pSP->threadPriority = 255;
+> 
+> 	tid = OSIthreadCreate(pThread_name, pSP->threadPriority, stack_size,
+> 			      (THREADFUNC)sequencer, pSP);
+> 
+> 	seq_log(pSP, "Spawning state program \"%s\", thread name = \"%s\"\n",
+> 	 pSP->pProgName, pThread_name);
+> 	seq_log(pSP, "Thread id = %d = 0x%x\n", tid, tid);
+> 
+> 	/* Unix behavior is special; want to wait for all spawned threads
+> 	   to exit before exiting, then return */
+> #ifdef UNIX
+> 	while (TRUE) {
+> 	    char s[133] = "";
+> 	    printf(": ");
+> 	    if (scanf("%s",s) <= 0)
+> 		break;
+> 	    if (strcmp(s,"chan") == 0)
+> 		seqChanShow(tid,NULL);
+> 	    else
+> 		seqShow(tid);
+> 	}
+> #if FALSE
+> 	OSIthreadJoinAll();
+> #endif
+> 	return 0;
+> #else
+> 	/* If not Unix, return thread id to calling program */
+211a244
+> #endif
+237,238c270,271
+<  * Copy data from seqCom.h structures into this task's dynamic structures as defined
+<  * in seq.h.
+---
+>  * Copy data from seqCom.h structures into this thread's dynamic structures
+>  * as defined in seq.h.
+240c273
+< LOCAL VOID init_sprog(pSeqProg, pSP)
+---
+> LOCAL void init_sprog(pSeqProg, pSP)
+259,261c292,294
+< 	logMsg("init_sprog: num SS=%d, num Chans=%d, num Events=%d, "
+< 	 "Prog Name=%s, var Size=%d\n", pSP->numSS, pSP->numChans,
+< 	 pSP->numEvents, pSP->pProgName, pSP->varSize, 0);
+---
+> 	epicsPrintf("init_sprog: num SS=%d, num Chans=%d, num Events=%d, "
+> 		"Prog Name=%s, var Size=%d\n", pSP->numSS, pSP->numChans,
+> 		pSP->numEvents, pSP->pProgName, pSP->varSize);
+265c298
+< 	pSP->caSemId = semBCreate(SEM_Q_FIFO, SEM_FULL);
+---
+> 	pSP->caSemId = OSIsemBinaryCreate(OSIsem_q_fifo, OSIsem_full);
+268c301
+< 		logMsg("can't create caSemId\n", 0,0,0,0,0,0);
+---
+> 		epicsPrintf("can't create caSemId\n");
+272c305
+< 	pSP->task_is_deleted = FALSE;
+---
+> 	pSP->thread_is_deleted = FALSE;
+281c314
+< 	pSP->pEvents = (bitMask *)calloc(nWords,  sizeof(bitMask));
+---
+> 	pSP->pEvents = (bitMask *)calloc(nWords, sizeof(bitMask));
+282a316
+> 		pSP->pEvents[i] = 0;
+287d320
+< 		pSP->pEvents[i] = 0;
+303c336
+< LOCAL VOID init_sscb(pSeqProg, pSP)
+---
+> LOCAL void init_sscb(pSeqProg, pSP)
+328c361,363
+< 		pSS->taskId = 0;
+---
+> 		pSS->threadId = 0;
+> 		/* Initialize to start time rather than zero time! */
+> 		OSItimeGetCurrentTimeDouble(&pSS->timeEntered);
+331,332c366,367
+< 		logMsg("init_sscb: SS Name=%s, num States=%d, pSS=0x%x\n",
+< 		 pSS->pSSName, pSS->numStates, pSS, 0,0,0);
+---
+> 		epicsPrintf("init_sscb: SS Name=%s, num States=%d, pSS=0x%x\n",
+> 			pSS->pSSName, pSS->numStates, pSS);
+335c370
+< 		pSS->syncSemId = semBCreate(SEM_Q_FIFO, SEM_FULL);
+---
+> 		pSS->syncSemId = OSIsemBinaryCreate(OSIsem_q_fifo, OSIsem_full);
+338c373
+< 			logMsg("can't create syncSemId\n", 0,0,0,0,0,0);
+---
+> 			epicsPrintf("can't create syncSemId\n");
+346c381
+< 			 semBCreate(SEM_Q_FIFO, SEM_FULL);
+---
+> 			 OSIsemBinaryCreate(OSIsem_q_fifo, OSIsem_full);
+349c384
+< 				logMsg("can't create getSemId\n", 0,0,0,0,0,0);
+---
+> 				epicsPrintf("can't create getSemId\n");
+368,369c403,404
+< 		logMsg("init_sscb: State Name=%s, Event Mask=0x%x\n",
+< 		 pState->pStateName, *pState->pEventMask, 0,0,0,0);
+---
+> 		epicsPrintf("init_sscb: State Name=%s, Event Mask=0x%x\n",
+> 			pState->pStateName, *pState->pEventMask);
+375c410
+< 	logMsg("init_sscb: numSS=%d\n", pSP->numSS, 0,0,0,0,0);
+---
+> 	epicsPrintf("init_sscb: numSS=%d\n", pSP->numSS);
+383c418
+< LOCAL VOID init_chan(pSeqProg, pSP)
+---
+> LOCAL void init_chan(pSeqProg, pSP)
+399c434
+< 		logMsg("init_chan: pDB=0x%x\n", pDB, 0,0,0,0,0);
+---
+> 		epicsPrintf("init_chan: pDB=0x%x\n", pDB);
+424,429c459,465
+< 		logMsg(" Assigned Name=%s, VarName=%s, VarType=%s, count=%d\n",
+< 		 pDB->dbAsName, pDB->pVarName, pDB->pVarType, pDB->count, 0,0);
+< 		logMsg("   size=%d, dbOffset=%d\n", pDB->size, pDB->dbOffset,
+< 		 0,0,0,0);
+< 		logMsg("   efId=%d, monFlag=%d, eventNum=%d\n",
+< 		 pDB->efId, pDB->monFlag, pDB->eventNum, 0,0,0);
+---
+> 		epicsPrintf(" Assigned Name=%s, VarName=%s, VarType=%s, "
+> 			"count=%d\n", pDB->dbAsName, pDB->pVarName,
+> 			pDB->pVarType, pDB->count);
+> 		epicsPrintf("   size=%d, dbOffset=%d\n", pDB->size,
+> 			pDB->dbOffset);
+> 		epicsPrintf("   efId=%d, monFlag=%d, eventNum=%d\n",
+> 			pDB->efId, pDB->monFlag, pDB->eventNum);
+437c473
+< LOCAL VOID init_mac(pSP)
+---
+> LOCAL void init_mac(pSP)
+445c481
+< 	logMsg("init_mac: pMac=0x%x\n", pMac, 0,0,0,0,0);
+---
+> 	epicsPrintf("init_mac: pMac=0x%x\n", pMac);
+458c494
+< LOCAL VOID seqChanNameEval(pSP)
+---
+> LOCAL void seqChanNameEval(pSP)
+470,471c506,507
+< 		logMsg("seqChanNameEval: \"%s\" evaluated to \"%s\"\n",
+< 		  pDB->dbAsName, pDB->dbName, 0,0,0,0);
+---
+> 		epicsPrintf("seqChanNameEval: \"%s\" evaluated to \"%s\"\n",
+> 			pDB->dbAsName, pDB->dbName);
+476c512
+<  * selectDBtype -- returns types for DB put/getm element size, and db access
+---
+>  * selectDBtype -- returns types for DB put/get, element size, and db access
+479,482c515
+<  * DBR_TIME_* types for gets/monitors returns status and time stamp.
+<  * Note that type "int" is mapped into DBR_LONG, because DBR_INT is actually
+<  * 16 bits as defined in the database.  This could cause future problems
+<  * if the cpu architecture or compiler doesn't make this same assumption!
+---
+>  * pvTypeTIME_* types for gets/monitors return status and time stamp.
+492,493c525,526
+< 	"char",   DBR_CHAR,   DBR_TIME_CHAR,
+< 	sizeof (char),   OFFSET(struct dbr_time_char,   value)
+---
+> 	"char",		 pvTypeCHAR,	pvTypeTIME_CHAR,
+> 	sizeof (char),   OFFSET(pvTimeChar, value[0])
+497,498c530,531
+< 	"short",  DBR_SHORT,  DBR_TIME_SHORT,
+< 	sizeof (short),  OFFSET(struct dbr_time_short,  value)
+---
+> 	"short",	 pvTypeSHORT,	pvTypeTIME_SHORT,
+> 	sizeof (short),  OFFSET(pvTimeShort, value[0])
+502,503c535,536
+< 	"int",    DBR_LONG,   DBR_TIME_LONG,
+< 	sizeof (long),   OFFSET(struct dbr_time_long,   value)
+---
+> 	"int",		 pvTypeLONG,	pvTypeTIME_LONG,
+> 	sizeof (long),   OFFSET(pvTimeLong, value[0])
+507,508c540,541
+< 	"long",   DBR_LONG,   DBR_TIME_LONG,
+< 	sizeof (long),   OFFSET(struct dbr_time_long,   value)
+---
+> 	"long",		 pvTypeLONG,	pvTypeTIME_LONG,
+> 	sizeof (long),   OFFSET(pvTimeLong, value[0])
+512,513c545,546
+< 	"unsigned char",   DBR_CHAR,   DBR_TIME_CHAR,
+< 	sizeof (char),   OFFSET(struct dbr_time_char,   value)
+---
+> 	"unsigned char", pvTypeCHAR,	pvTypeTIME_CHAR,
+> 	sizeof (char),   OFFSET(pvTimeChar, value[0])
+517,518c550,551
+< 	"unsigned short",  DBR_SHORT,  DBR_TIME_SHORT,
+< 	sizeof (short),  OFFSET(struct dbr_time_short,  value)
+---
+> 	"unsigned short",pvTypeSHORT,	pvTypeTIME_SHORT,
+> 	sizeof (short),  OFFSET(pvTimeShort, value[0])
+522,523c555,556
+< 	"unsigned int",    DBR_LONG,   DBR_TIME_LONG,
+< 	sizeof (long),   OFFSET(struct dbr_time_long,   value)
+---
+> 	"unsigned int",  pvTypeLONG,	pvTypeTIME_LONG,
+> 	sizeof (long),   OFFSET(pvTimeLong, value[0])
+527,528c560,561
+< 	"unsigned long",   DBR_LONG,   DBR_TIME_LONG,
+< 	sizeof (long),   OFFSET(struct dbr_time_long,   value)
+---
+> 	"unsigned long", pvTypeLONG,	pvTypeTIME_LONG,
+> 	sizeof (long),   OFFSET(pvTimeLong, value[0])
+532,533c565,566
+< 	"float",  DBR_FLOAT,  DBR_TIME_FLOAT,
+< 	sizeof (float),  OFFSET(struct dbr_time_float,  value)
+---
+> 	"float",	 pvTypeFLOAT,	pvTypeTIME_FLOAT,
+> 	sizeof (float),  OFFSET(pvTimeFloat, value[0])
+537,538c570,571
+< 	"double", DBR_DOUBLE, DBR_TIME_DOUBLE,
+< 	sizeof (double), OFFSET(struct dbr_time_double, value)
+---
+> 	"double",	 pvTypeDOUBLE,	pvTypeTIME_DOUBLE,
+> 	sizeof (double), OFFSET(pvTimeDouble, value[0])
+542,543c575,576
+< 	"string", DBR_STRING, DBR_TIME_STRING,
+< 	MAX_STRING_SIZE, OFFSET(struct dbr_time_string, value[0])
+---
+> 	"string",	 pvTypeSTRING,	pvTypeTIME_STRING,
+> 	MAX_STRING_SIZE, OFFSET(pvTimeString, value[0])
+551c584
+< LOCAL VOID selectDBtype(pUserType, pGetType, pPutType, pSize, pOffset)
+---
+> LOCAL void selectDBtype(pUserType, pGetType, pPutType, pSize, pOffset)
+576c609
+< LOCAL VOID seq_logInit(pSP)
+---
+> LOCAL void seq_logInit(pSP)
+583c616
+< 	pSP->logSemId = semBCreate(SEM_Q_FIFO, SEM_FULL);
+---
+> 	pSP->logSemId = OSIsemBinaryCreate(OSIsem_q_fifo, OSIsem_full);
+586c619
+< 		logMsg("can't create logSemId\n", 0,0,0,0,0,0);
+---
+> 		epicsPrintf("can't create logSemId\n");
+588a622
+> #if 0 /* ### this is VxWorks specific */
+589a624
+> #endif
+604,605c639,640
+<  * Log a message to the console or a file with task name, date, & time of day.
+<  * The format looks like "mytask 12/13/93 10:07:43: Hello world!".
+---
+>  * Log a message to the console or a file with thread name, date, & time of day.
+>  * The format looks like "mythread 12/13/93 10:07:43: Hello world!".
+610c645
+< STATUS seq_log(pSP, fmt, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
+---
+> epicsStatus seq_log(pSP, fmt, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
+621,622c656,657
+< 	/* Enter taskname */
+< 	sprintf(pBfr, "%s ", taskName(taskIdSelf()) );
+---
+> 	/* Enter thread name */
+> 	sprintf(pBfr, "%s ", OSIthreadGetName(OSIthreadGetIdSelf()) );
+643c678
+< 	semTake(pSP->logSemId, WAIT_FOREVER); /* lock it */
+---
+> 	OSIsemTake(pSP->logSemId);
+646a682
+> 	OSIsemGive(pSP->logSemId);
+648d683
+< 	semGive(pSP->logSemId);
+651,652c686,688
+< 		logMsg("Log file error, fd=%d, error no.=%d\n", fd, errnoGet(), 
+< 		  0,0,0,0);
+---
+> #if 0 /* ### this is VxWorks specific */
+> 		epicsPrintf("Log file error, fd=%d, error no.=%d\n",
+> 			fd, errnoGet());
+653a690
+> #endif
+657c694,695
+< 	/* If this is an NSF file flush the buffer */
+---
+> 	/* If this is an NFS file flush the buffer */
+> #if 0 /* ### this is VxWorks specific */
+661a700
+> #endif
+
+Index: seq_prog.c
+===================================================================
+RCS file: /usr/local/epics/cvsroot/sequencer/src/seq_prog.c,v
+retrieving revision 1.1.1.1
+retrieving revision 1.4
+diff -r1.1.1.1 -r1.4
+20c20
+< #define		ANSI
+---
+> 
+22d21
+< #include	"lstLib.h"
+24,27c23,26
+< LOCAL	SEM_ID	seqProgListSemId;
+< LOCAL	int	seqProgListInited = FALSE;
+< LOCAL	LIST	seqProgList;
+< LOCAL	VOID	seqProgListInit();
+---
+> LOCAL	OSIsemId seqProgListSemId;
+> LOCAL	int	 seqProgListInited = FALSE;
+> LOCAL	ELLLIST	 seqProgList;
+> LOCAL	void	 seqProgListInit();
+31c30
+< 	NODE		node;
+---
+> 	ELLNODE		node;
+35c34
+< #define	seqListFirst(pList)	(PROG_NODE *)lstFirst((LIST *)pList)
+---
+> #define	seqListFirst(pList)	(PROG_NODE *)ellFirst((ELLLIST *)pList)
+37c36
+< #define	seqListNext(pNode)	(PROG_NODE *)lstNext((NODE *)pNode)
+---
+> #define	seqListNext(pNode)	(PROG_NODE *)ellNext((ELLNODE *)pNode)
+40c39
+<  * seqFindProg() - find a program in the state program list from task id.
+---
+>  * seqFindProg() - find a program in the state program list from thread id.
+42,43c41
+< SPROG *seqFindProg(taskId)
+< long		taskId;
+---
+> SPROG *seqFindProg(OSIthreadId threadId)
+50c48
+< 	if (!seqProgListInited || taskId == 0)
+---
+> 	if (!seqProgListInited || threadId == 0)
+53c51
+< 	semTake(seqProgListSemId, WAIT_FOREVER);
+---
+> 	OSIsemTake(seqProgListSemId);
+59c57
+< 		if (pSP->taskId == taskId)
+---
+> 		if (pSP->threadId == threadId)
+61c59
+< 			semGive(seqProgListSemId);
+---
+> 			OSIsemGive(seqProgListSemId);
+67c65
+< 			if (pSS->taskId == taskId)
+---
+> 			if (pSS->threadId == threadId)
+69c67
+< 				semGive(seqProgListSemId);
+---
+> 				OSIsemGive(seqProgListSemId);
+74c72
+< 	semGive(seqProgListSemId);
+---
+> 	OSIsemGive(seqProgListSemId);
+84,86c82,84
+< STATUS seqTraverseProg(pFunc, param)
+< VOID		(*pFunc)();	/* function to call */
+< VOID		*param;		/* any parameter */
+---
+> epicsStatus seqTraverseProg(pFunc, param)
+> void		(*pFunc)();	/* function to call */
+> void		*param;		/* any parameter */
+94c92
+< 	semTake(seqProgListSemId, WAIT_FOREVER);
+---
+> 	OSIsemTake(seqProgListSemId);
+102c100
+< 	semGive(seqProgListSemId);
+---
+> 	OSIsemGive(seqProgListSemId);
+110c108
+< STATUS seqAddProg(pSP)
+---
+> epicsStatus seqAddProg(pSP)
+118c116
+< 	semTake(seqProgListSemId, WAIT_FOREVER);
+---
+> 	OSIsemTake(seqProgListSemId);
+125c123
+< 			semGive(seqProgListSemId);
+---
+> 			OSIsemGive(seqProgListSemId);
+127c125
+< 			printf("Task %d already in list\n", pSP->taskId);
+---
+> 			printf("Task %d already in list\n", pSP->threadId);
+137c135
+< 		semGive(seqProgListSemId);
+---
+> 		OSIsemGive(seqProgListSemId);
+142,143c140,141
+< 	lstAdd((LIST *)&seqProgList, (NODE *)pNode);
+< 	semGive(seqProgListSemId);
+---
+> 	ellAdd((ELLLIST *)&seqProgList, (ELLNODE *)pNode);
+> 	OSIsemGive(seqProgListSemId);
+145c143
+< 	printf("Added task %d to list.\n", pSP->taskId);
+---
+> 	printf("Added thread %d to list.\n", pSP->threadId);
+155c153
+< STATUS seqDelProg(pSP)
+---
+> epicsStatus seqDelProg(pSP)
+163c161
+< 	semTake(seqProgListSemId, WAIT_FOREVER);
+---
+> 	OSIsemTake(seqProgListSemId);
+169,170c167,168
+< 			lstDelete((LIST *)&seqProgList, (NODE *)pNode);
+< 			semGive(seqProgListSemId);
+---
+> 			ellDelete((ELLLIST *)&seqProgList, (ELLNODE *)pNode);
+> 			OSIsemGive(seqProgListSemId);
+173c171
+< 			printf("Deleted task %d from list.\n", pSP->taskId);
+---
+> 			printf("Deleted thread %d from list.\n", pSP->threadId);
+179c177
+< 	semGive(seqProgListSemId);
+---
+> 	OSIsemGive(seqProgListSemId);
+186c184
+< LOCAL VOID seqProgListInit()
+---
+> LOCAL void seqProgListInit()
+189c187
+< 	lstInit(&seqProgList);
+---
+> 	ellInit(&seqProgList);
+192,193c190,191
+< 	seqProgListSemId = semBCreate(SEM_Q_PRIORITY, SEM_EMPTY);
+< 	semGive(seqProgListSemId);
+---
+> 	seqProgListSemId = OSIsemBinaryCreate(OSIsem_q_priority, OSIsem_empty);
+> 	OSIsemGive(seqProgListSemId);
+196d193
+< 
+
+Index: seq_qry.c
+===================================================================
+RCS file: /usr/local/epics/cvsroot/sequencer/src/seq_qry.c,v
+retrieving revision 1.1.1.1
+retrieving revision 1.6
+diff -r1.1.1.1 -r1.6
+26,28c26,27
+< 22jan97,wfl	Fix seqChanShow() not to list unassigned channels with "-"
+< 
+< 
+---
+> 22jan97,wfl	Fix seqChanShow() not to list unassigned channels with "-".
+> 17may99,wfl	Fixed missing declaration for debug output.
+32a32,34
+> #include	<string.h>
+> #include	<unistd.h>
+> 
+34,37d35
+< #include	"sysLib.h"
+< #include	"usrLib.h"
+< #include	"tickLib.h"
+< #include	"string.h"
+40,41c38,39
+< int	seqShow(int);
+< int	seqChanShow(int, char *);
+---
+> int	seqShow(OSIthreadId);
+> int	seqChanShow(OSIthreadId, char *);
+44,45c42,43
+< LOCAL	VOID printValue(char *, int, int);
+< LOCAL	SPROG *seqQryFind(int);
+---
+> LOCAL	void printValue(char *, int, int);
+> LOCAL	SPROG *seqQryFind(OSIthreadId);
+50c48
+<  * If a non-zero task id is specified then print the information about
+---
+>  * If a non-zero thread id is specified then print the information about
+53,54c51
+< int seqShow(tid)
+< int	tid;
+---
+> int seqShow(OSIthreadId tid)
+59,61c56,60
+< 	int		nss, status;
+< 	float		time;
+< 	char		file_name[100];
+---
+> 	int		nss;
+> 	double		timeNow, timeElapsed;
+> #ifdef	DEBUG
+> 	int n;
+> #endif
+63a63
+> 	/* ### need way of doing this
+69a70
+> 	*/
+76,78c77,79
+< 	printf("  initial task id=%lu=0x%lx\n", 
+< 		(unsigned long) pSP->taskId, (unsigned long) pSP->taskId);
+< 	printf("  task priority=%ld\n", pSP->taskPriority);
+---
+> 	printf("  initial thread id=%lu=0x%lx\n", 
+> 		(unsigned long) pSP->threadId, (unsigned long) pSP->threadId);
+> 	printf("  thread priority=%d\n", pSP->threadPriority);
+95a97
+> 	/* ### VxWorks only?
+98a101
+> 	*/
+107c110,112
+< 		printf("  task name=%s;  ", taskName(pSS->taskId));
+---
+> 		if (pSS->threadId != NULL)
+> 		    printf("  thread name=%s;  ",
+> 					       OSIthreadGetName(pSS->threadId));
+109,110c114,115
+< 		printf("  task id=%lu=0x%lx\n", 
+< 			(unsigned long) pSS->taskId, (unsigned long) pSS->taskId);
+---
+> 		printf("  thread id=%lu=0x%lx\n", 
+> 		  (unsigned long) pSS->threadId, (unsigned long) pSS->threadId);
+121c126,127
+< 		time = (tickGet() - pSS->timeEntered)/sysClkRateGet();
+---
+> 		OSItimeGetCurrentTimeDouble(&timeNow);
+> 		timeElapsed = timeNow - pSS->timeEntered;
+123c129
+< 		 time);
+---
+> 		 timeElapsed);
+128c134
+< 			printf("\tdelay[%2d]=%d", n, pSS->delay[n]);
+---
+> 			printf("\tdelay[%2d]=%f", n, pSS->delay[n]);
+142,144c148
+< int seqChanShow(tid, pStr)
+< int		tid;	/* task id or name */
+< char		*pStr;	/* optional pattern matching string */
+---
+> int seqChanShow(OSIthreadId tid, char *pStr)
+152c156,157
+< 	/* convert (possible) name to task id */
+---
+> 	/* convert (possible) name to thread id */
+> 	/* ### need to implement
+158a164
+> 	*/
+160c166
+< 	if (tid == NULL)
+---
+> 	if (tid == (OSIthreadId) 0)
+185c191
+< 				showAll = pDB->connected; /* TRUE if connected */
+---
+> 				showAll = pDB->connected;
+188d193
+< 							  /* TRUE if NOT connected */
+190c195
+< 				showAll = TRUE; /* Always TRUE */
+---
+> 				showAll = TRUE;
+193c198,199
+< 			match = (pStr[0] == 0) || (strstr(pDB->dbName, pStr) != NULL);
+---
+> 			match = (pStr[0] == 0) ||
+> 					(strstr(pDB->dbName, pStr) != NULL);
+235,236c241,244
+< 		/* Print time stamp in text format: "mm/dd/yy hh:mm:ss.nano-sec" */
+< 		tsStampToText(&pDB->timeStamp, TS_TEXT_MMDDYY, tsBfr);
+---
+> 		/* Print time stamp in text format: "mm/dd/yy hh:mm:ss.nsec" */
+> 		/* ### will get away with this for now... */
+> 		tsStampToText((TS_STAMP *)&pDB->timeStamp, TS_TEXT_MMDDYY,
+> 			tsBfr);
+254,255c262
+< int seqQueueShow( int tid)
+< /*tid  task id or name */
+---
+> int seqQueueShow(OSIthreadId tid)
+262c269,270
+< 	/* convert (possible) name to task id */
+---
+> 	/* convert (possible) name to thread id */
+> 	/* ### need to replace
+268a277
+> 	*/
+270c279
+< 	if (tid == NULL)
+---
+> 	if (tid == (OSIthreadId) 0)
+288,291c297,299
+< 			CHAN			*pDB = pEntry->pDB;
+< 			union db_access_val	*pAccess = &pEntry->value;
+< 			void			*pVal =
+< 						(char *)pAccess + pDB->dbOffset;
+---
+> 			CHAN	*pDB = pEntry->pDB;
+> 			pvValue	*pAccess = &pEntry->value;
+> 			void	*pVal = (char *)pAccess + pDB->dbOffset;
+298,299c306,309
+< 			printf("  Status = %d\n", pAccess->tchrval.status);
+< 			printf("  Severity = %d\n", pAccess->tchrval.severity);
+---
+> 			printf("  Status = %d\n",
+> 					pAccess->timeStringVal.status);
+> 			printf("  Severity = %d\n",
+> 					pAccess->timeStringVal.severity);
+302,304c312,315
+< 			   "mm/dd/yy hh:mm:ss.nano-sec" */
+< 			tsStampToText(&pAccess->tchrval.stamp,
+< 							TS_TEXT_MMDDYY, tsBfr);
+---
+> 			   "mm/dd/yy hh:mm:ss.nsec" */
+> 			/* ### will get away with this for now... */
+> 			tsStampToText((TS_STAMP *)&pAccess->timeStringVal.stamp,
+> 					TS_TEXT_MMDDYY, tsBfr);
+330c341,342
+< 		read(STD_IN, &bfr[i], 1);
+---
+> 		/* ### is this always 0 for VxWorks (STD_IN)? */
+> 		read(0, &bfr[i], 1);
+345c357
+< LOCAL VOID printValue(pVal, type, count)
+---
+> LOCAL void printValue(pVal, type, count)
+364c376
+< 	    case DBR_STRING:
+---
+> 	    case pvTypeSTRING:
+366c378
+< 		for (i = 0; i < count; i++, c += MAX_STRING_SIZE)
+---
+> 		for (i = 0; i < count; i++, c += sizeof(pvString))
+372c384
+< 	     case DBR_CHAR:
+---
+> 	     case pvTypeCHAR:
+380c392
+< 	    case DBR_SHORT:
+---
+> 	    case pvTypeSHORT:
+388c400
+< 	    case DBR_LONG:
+---
+> 	    case pvTypeLONG:
+396c408
+< 	    case DBR_FLOAT:
+---
+> 	    case pvTypeFLOAT:
+404c416
+< 	    case DBR_DOUBLE:
+---
+> 	    case pvTypeDOUBLE:
+417,419c429,430
+< /* Find a state program associated with a given task id */
+< LOCAL SPROG *seqQryFind(tid)
+< int		tid;
+---
+> /* Find a state program associated with a given thread id */
+> LOCAL SPROG *seqQryFind(OSIthreadId tid)
+422d432
+< 	extern SPROG	*seqFindProg();
+430c440
+< 	/* Find a state program that has this task id */
+---
+> 	/* Find a state program that has this thread id */
+434c444
+< 		printf("No state program exists for task id %d\n", tid);
+---
+> 		printf("No state program exists for thread id %d\n", tid);
+449c459,460
+< 	char		*progName, *ptaskName;;
+---
+> 	char		*progName;
+> 	const char	*pThreadName;
+457,458c468,469
+< 		if (pSS->taskId == 0)
+< 			ptaskName = "(no task)";
+---
+> 		if (pSS->threadId == 0)
+> 			pThreadName = "(no thread)";
+460c471
+< 			ptaskName = taskName(pSS->taskId);
+---
+> 			pThreadName = OSIthreadGetName(pSS->threadId);
+462,463c473,474
+< 		 progName, (unsigned long) pSS->taskId, 
+< 		 ptaskName, pSS->pSSName );
+---
+> 		 progName, (unsigned long) pSS->threadId, 
+> 		 pThreadName, pSS->pSSName );
+470c481
+< STATUS seqTraverseProg(VOID (*pFunc)(), VOID *param);
+---
+> epicsStatus seqTraverseProg(void (*pFunc)(), void *param);
+
+Index: seq_task.c
+===================================================================
+RCS file: /usr/local/epics/cvsroot/sequencer/src/seq_task.c,v
+retrieving revision 1.1.1.1
+retrieving revision 1.9
+diff -r1.1.1.1 -r1.9
+9c9
+< 	DESCRIPTION: Seq_tasks.c: Task creation and control for sequencer
+---
+> 	DESCRIPTION: Seq_task.c: Thread creation and control for sequencer
+20c20,21
+< 21may92,ajk	In sprog_delete() wait for loggin semaphore before suspending tasks.
+---
+> 21may92,ajk	In sprog_delete() wait for loggin semaphore before suspending
+> 		tasks.
+22c23
+< 18feb92,ajk	Changed to allow sharing of single CA task by all state programs. 
+---
+> 18feb92,ajk	Changed to allow sharing of single CA task by all state progs. 
+26c27
+< 24nov93,ajk	Changed implementation of event bits to support unlimited channels
+---
+> 24nov93,ajk	Changed implementation of event bits to support unlimited chans
+28c29
+< 19oct95,ajk/rmw Fixed bug which kept events from being cleared in old eventflag mode
+---
+> 19oct95,ajk/rmw Fixed bug which kept events from being cleared in old evflg mode
+30c31,34
+< ?????96,joh Fixed problem with delay calculations.
+---
+> ?????96,joh	Fixed problem with delay calculations.
+> 02may99,wfl	Replaced VxWorks dependencies with OSI.
+> 17may99,wfl	Changed interface to ss_entry() for single argument; used new
+> 		SEQFUNCPTR etc.
+33a38
+> #include	<limits.h>
+34a40
+> #include 	<unistd.h>
+36,37c42
+< #define		ANSI
+< #include	"seqCom.h"
+---
+> #define		DECLARE_PV_SYS
+39,43d43
+< #include	"taskwd.h"
+< #include	"logLib.h"
+< #include	"sysLib.h"
+< #include	"tickLib.h"
+< #include	"taskVarLib.h"
+46,50c46,50
+< LOCAL	VOID seq_waitConnect(SPROG *pSP, SSCB *pSS);
+< LOCAL	VOID ss_task_init(SPROG *, SSCB *);
+< LOCAL	VOID seq_clearDelay(SSCB *);
+< LOCAL	int seq_getTimeout(SSCB *);
+< LOCAL	long seq_cleanup(int tid, SPROG *pSP, SEM_ID cleanupSem);
+---
+> LOCAL	void seq_waitConnect(SPROG *pSP, SSCB *pSS);
+> LOCAL	void ss_thread_init(SPROG *, SSCB *);
+> LOCAL	void seq_clearDelay(SSCB *);
+> LOCAL	double seq_getTimeout(SSCB *);
+> LOCAL	long seq_cleanup(OSIthreadId tid, SPROG *pSP, OSIsemId cleanupSem);
+52c52
+< #define		TASK_NAME_SIZE 10
+---
+> #define		THREAD_NAME_SIZE 10
+55c55
+< STATUS seqAddProg(SPROG *pSP);
+---
+> epicsStatus seqAddProg(SPROG *pSP);
+59c59
+<  * sequencer() - Sequencer main task entry point.
+---
+>  * sequencer() - Sequencer main thread entry point.
+61c61
+< long sequencer (pSP, stack_size, pTaskName)
+---
+> long sequencer (pSP)
+63,64d62
+< long		stack_size;	/* stack size */
+< char		*pTaskName;	/* Parent task name */
+67,72c65,75
+< 	int		nss, task_id;
+< 	char		task_name[TASK_NAME_SIZE+10];
+< 	extern		VOID ss_entry();
+< 	extern		int seqAuxTaskId;
+< 
+< 	pSP->taskId = taskIdSelf(); /* my task id */
+---
+> 	int		nss;
+> 	OSIthreadId	thread_id;
+> 	const char	*pThreadName;
+> 	int		stackSize;
+> 	char		thread_name[THREAD_NAME_SIZE+10];
+> 	extern		void ss_entry();
+> 
+> 	/* Retrieve info about this thread */
+> 	pSP->threadId = OSIthreadGetIdSelf();
+> 	stackSize = OSIthreadGetStackSize(pSP->threadId);
+> 	pThreadName = OSIthreadGetName(pSP->threadId);
+74c77
+< 	pSS->taskId = pSP->taskId;
+---
+> 	pSS->threadId = pSP->threadId;
+79,80c82,85
+< 	/* Import Channel Access context from the auxillary seq. task */
+< 	ca_import(seqAuxTaskId);
+---
+> 	/* Import Channel Access context from the auxiliary seq. thread */
+> /* ### VxWorks-specific
+> 	ca_import(seqAuxThreadId);
+> */
+85,89c90,91
+< 	/* Additional state set task names are derived from the first ss */
+< 	if (strlen(pTaskName) > TASK_NAME_SIZE)
+< 		pTaskName[TASK_NAME_SIZE] = 0;
+< 
+< 	/* Create each additional state set task */
+---
+> 	/* Create each additional state set task (additional state set thread
+> 	   names are derived from the first ss) */
+92,93c94,96
+< 		/* Form task name from program name + state set number */
+< 		sprintf(task_name, "%s_%d", pTaskName, nss);
+---
+> 		/* Form thread name from program name + state set number */
+> 		sprintf(thread_name, "%.*s_%d",
+> 			THREAD_NAME_SIZE, pThreadName, nss);
+96,102c99,104
+< 		task_id = taskSpawn(
+< 		  task_name,				/* task name */
+< 		  pSP->taskPriority,	/* priority */
+< 		  SPAWN_OPTIONS,			/* task options */
+< 		  stack_size,				/* stack size */
+< 		  (FUNCPTR)ss_entry,			/* entry point */
+< 		  (int)pSP, (int)pSS, 0,0,0,0,0,0,0,0);	/* pass 2 parameters */
+---
+> 		thread_id = OSIthreadCreate(
+> 		  thread_name,				/* thread name */
+> 		  pSP->threadPriority,			/* priority */
+> 		  stackSize,				/* stack size */
+> 		  (THREADFUNC)ss_entry,			/* entry point */
+> 		  pSS);					/* parameter */
+104c106,107
+< 		seq_log(pSP, "Spawning task %d: \"%s\"\n", task_id, task_name);
+---
+> 		seq_log(pSP, "Spawning thread %d: \"%s\"\n",
+> 			thread_id, thread_name);
+108c111
+< 	ss_entry(pSP, pSP->pSS);
+---
+> 	ss_entry(pSP->pSS);
+116,117c119
+< VOID ss_entry(pSP, pSS)
+< SPROG	*pSP;
+---
+> void ss_entry(pSS)
+120c122,123
+< 	BOOL		ev_trig;
+---
+> 	SPROG		*pSP = pSS->sprog;
+> 	epicsBoolean	ev_trig;
+122c125
+< 	long		delay;
+---
+> 	double		delay;
+127,128c130,131
+< 	/* Initialize all ss tasks */
+< 	ss_task_init(pSP, pSS);
+---
+> 	/* Initialize all ss threads */
+> 	ss_thread_init(pSP, pSS);
+134c137
+< 	/* Initilaize state set to enter the first state */
+---
+> 	/* Initialize state set to enter the first state */
+156,158c159,162
+< 		/* Setting this semaphor here guarantees that a when() is always
+< 		 * executed at least once when a state is first entered. */
+< 		semGive(pSS->syncSemId);
+---
+> 		/* Setting this semaphore here guarantees that a when() is
+> 		 * always executed at least once when a state is first
+> 		 entered. */
+> 		OSIsemGive(pSS->syncSemId);
+164c168
+< 			/* Wake up on CA event, event flag, or expired time delay */
+---
+> 			/* Wake up on CA event, event flag, or expired delay */
+166,167c170,171
+< 			if (delay > 0)
+< 				semTake(pSS->syncSemId, delay);
+---
+> 			if (delay > 0.0)
+> 				(void) OSIsemTakeTimeout(pSS->syncSemId, delay);
+169,173c173,177
+< 			/* Call the event function to check for an event trigger.
+< 			 * The statement inside the when() statement is executed.
+< 			 * Note, we lock out CA events while doing this.
+< 			 */
+< 			semTake(pSP->caSemId, WAIT_FOREVER);
+---
+> 			/* Call the event function to check for an event
+> 			 * trigger. The statement inside the when() statement
+> 			 * is executed. Note, we lock out CA events while doing 
+> 			 * this. */
+> 			OSIsemTake(pSP->caSemId);
+180,181c184,185
+< 			{    /* Clear all event flags (old mode only) */
+< 			    register	int i;
+---
+> 			{
+> 			    register int i;
+184,185c188,189
+< 					pSP->pEvents[i] = pSP->pEvents[i] & !pSS->pMask[i];
+< 				
+---
+> 			    	pSP->pEvents[i] =
+> 					pSP->pEvents[i] & !pSS->pMask[i];
+188c192
+< 			semGive(pSP->caSemId);
+---
+> 			OSIsemGive(pSP->caSemId);
+206c210
+< 		ca_flush_io();
+---
+> 		pvSysFlush( pvSys );
+214,215c218,219
+< /* Initialize state-set tasks */
+< LOCAL VOID ss_task_init(pSP, pSS)
+---
+> /* Initialize state-set threads */
+> LOCAL void ss_thread_init(pSP, pSS)
+219,222c223,224
+< 	extern	int	seqAuxTaskId;
+< 
+< 	/* Get this task's id */
+< 	pSS->taskId = taskIdSelf();
+---
+> 	/* Get this thread's id */
+> 	pSS->threadId = OSIthreadGetIdSelf();
+224,226c226,229
+< 	/* Import Channel Access context from the auxillary seq. task */
+< 	if (pSP->taskId != pSS->taskId)
+< 		ca_import(seqAuxTaskId);
+---
+> #if 0 /* ### VxWorks-specific */
+> 	/* Import Channel Access context from the auxiliary seq. thread */
+> 	if (pSP->threadId != pSS->threadId)
+> 		ca_import(seqAuxThreadId);
+228,229c231,233
+< 	/* Register this task with the EPICS watchdog (no callback function) */
+< 	taskwdInsert(pSS->taskId, (VOIDFUNCPTR)0, (VOID *)0);
+---
+> 	/* Register this thread with the EPICS watchdog (no callback func) */
+> 	taskwdInsert(pSS->threadId, (SEQVOIDFUNCPTR)0, (void *)0);
+> #endif
+235c239
+< LOCAL VOID seq_waitConnect(SPROG *pSP, SSCB *pSS)
+---
+> LOCAL void seq_waitConnect(SPROG *pSP, SSCB *pSS)
+237,238c241,242
+< 	STATUS		status;
+< 	long		delay;
+---
+> 	epicsStatus	status;
+> 	double		delay;
+240c244
+< 		delay = 10 * sysClkRateGet(); /* 10, 20, 30, 40, 40,... sec */
+---
+> 	delay = 10.0; /* 10, 20, 30, 40, 40,... sec */
+243,244c247,248
+< 		status = semTake(pSS->syncSemId, delay);
+< 		if ((status != OK) && (pSP-> taskId == pSS->taskId))
+---
+> 		status = OSIsemTakeTimeout(pSS->syncSemId, delay);
+> 		if ((status != OK) && (pSP->threadId == pSS->threadId))
+246,247c250,251
+< 			logMsg("%d of %d assigned channels have connected\n",
+< 			 pSP->connCount, pSP->assignCount, 0,0,0,0);
+---
+> 			epicsPrintf("%d of %d assigned channels have conn"
+> 				"ected\n", pSP->connCount, pSP->assignCount);
+249,250c253,254
+< 		if (delay < 40 * sysClkRateGet())
+< 			delay = delay + 10 * sysClkRateGet();
+---
+> 		if (delay < 40.0)
+> 			delay += 10.0;
+256c260
+< LOCAL VOID seq_clearDelay(pSS)
+---
+> LOCAL void seq_clearDelay(pSS)
+261c265
+< 	pSS->timeEntered = tickGet(); /* record time we entered this state */
+---
+> 	OSItimeGetCurrentTimeDouble(&pSS->timeEntered);
+276,278c280,281
+<  * Returns number of tics to next expected timeout of a delay() call.
+<  * Returns INT_MAX if no delays pending 
+<  * An "int" is returned because this is what semTake() expects
+---
+>  * Returns number of seconds to next expected timeout of a delay() call.
+>  * Returns (double) INT_MAX if no delays pending 
+280c283
+< LOCAL int seq_getTimeout(pSS)
+---
+> LOCAL double seq_getTimeout(pSS)
+284c287
+< 	ULONG	cur, delay, delayMin, delayN;
+---
+> 	double	cur, delay, delayMin, delayN;
+287c290
+< 		return INT_MAX;
+---
+> 		return (double) INT_MAX;
+292,298c295,296
+< 	cur = tickGet();
+< 	if (cur >= pSS->timeEntered) {
+< 		delay = cur - pSS->timeEntered;
+< 	}
+< 	else {
+< 		delay = cur + (ULONG_MAX - pSS->timeEntered);
+< 	}
+---
+> 	OSItimeGetCurrentTimeDouble(&cur);
+> 	delay = cur - pSS->timeEntered;
+301c299
+< 	delayMin = ULONG_MAX;
+---
+> 	delayMin = (double) INT_MAX;
+307c305
+< 			continue;	/* skip if this delay entry already expired */
+---
+> 			continue; /* skip if this delay entry already expired */
+313c311
+< 			return 0;
+---
+> 			return 0.0;
+328c326
+< 		return INT_MAX;
+---
+> 		return (double) INT_MAX;
+336,345c334
+< 
+< 		/*
+< 		 * clip to the range of a valid delay in semTake()
+< 		 */
+< 		if (delay<INT_MAX) {
+< 			return delay;
+< 		}
+< 		else {
+< 			return INT_MAX;
+< 		}
+---
+> 		return (double) delay;
+348c337
+< 		return 0;
+---
+> 		return 0.0;
+353,355c342,344
+<  * Delete all state set tasks and do general clean-up.
+<  * General procedure is to spawn a task that does the following:
+<  * 1.  Suspend all state set tasks except self.
+---
+>  * Delete all state set threads and do general clean-up.
+>  * General procedure is to spawn a thread that does the following:
+>  * 1.  Suspend all state set threads except self.
+359c348
+<  * 5.  Delete all state set tasks except self.
+---
+>  * 5.  Delete all state set threads except self.
+363,365c352,355
+<  * This task is run whenever ANY task in the system is deleted.
+<  * Therefore, we have to check the task belongs to a state program.
+<  * Note:  We could do this without spawning a task, except for the condition
+---
+>  * This thread is run whenever ANY thread in the system is deleted.
+>  * Therefore, we have to check the thread belongs to a state program.
+>  * ### Next paragraph is VxWorks-specific
+>  * Note:  We could do this without spawning a thread, except for the condition
+370c360
+< int		tid; /* task being deleted */
+---
+> OSIthreadId	tid; /* thread being deleted */
+373,374c363,364
+< 	SEM_ID		cleanupSem;
+< 	int		status;
+---
+> 	OSIsemId	cleanupSem;
+> 	semTakeStatus	status;
+378c368
+< 		return -1; /* not a state program task */
+---
+> 		return -1; /* not a state program thread */
+380,381c370,371
+< 	/* Create a semaphore for cleanup task */
+< 	cleanupSem = semBCreate (SEM_Q_FIFO, SEM_EMPTY);
+---
+> 	/* Create a semaphore for cleanup thread */
+> 	cleanupSem = OSIsemBinaryCreate(OSIsem_q_fifo, OSIsem_empty);
+383,385c373,375
+< 	/* Spawn the cleanup task */
+< 	taskSpawn("tSeqCleanup", SPAWN_PRIORITY-1, VX_FP_TASK, 8000,
+< 	 (FUNCPTR)seq_cleanup, tid, (int)pSP, (int)cleanupSem, 0,0,0,0,0,0,0);
+---
+> 	/* Spawn the cleanup thread */
+> 	OSIthreadCreate("tSeqCleanup", THREAD_PRIORITY-1, 8000, (THREADFUNC)
+> 		seq_cleanup, NULL /* ### tid, (int)pSP, (int)cleanupSem */);
+387c377
+< 	/* Wait for cleanup task completion */
+---
+> 	/* Wait for cleanup thread completion */
+390,391c380,381
+< 		status = semTake(cleanupSem, WAIT_FOREVER);
+< 		if (status == OK)
+---
+> 		status = OSIsemTakeTimeout(cleanupSem, 10.0);
+> 		if (status == semTakeOK)
+393c383
+< 		logMsg("sprog_delete waiting for seq_cleanup\n", 0,0,0,0,0,0);
+---
+> 		epicsPrintf("sprog_delete waiting for seq_cleanup\n");
+395c385
+< 	semDelete(cleanupSem);
+---
+> 	OSIsemDestroy(cleanupSem);
+400c390
+< /* Cleanup task */
+---
+> /* Cleanup thread */
+402c392
+< STATUS seqDelProg(SPROG *pSP);
+---
+> epicsStatus seqDelProg(SPROG *pSP);
+404c394
+< LOCAL long seq_cleanup(int tid, SPROG *pSP, SEM_ID cleanupSem)
+---
+> LOCAL long seq_cleanup(OSIthreadId tid, SPROG *pSP, OSIsemId cleanupSem)
+410,411c400,401
+< 	logMsg("Delete %s: pSP=%d=0x%x, tid=0x%x\n", pSP->pProgName, pSP, pSP,
+< 	 tid, 0,0);
+---
+> 	epicsPrintf("Delete %s: pSP=%d=0x%x, tid=0x%x\n", pSP->pProgName,
+> 		pSP, pSP, tid);
+414,415c404,405
+< 	/* Wait for log semaphore (in case a task is doing a write) */
+< 	semTake(pSP->logSemId, 10 * sysClkRateGet());
+---
+> 	/* Wait for log semaphore (in case a thread is doing a write) */
+> 	OSIsemTakeTimeout(pSP->logSemId, 10.0);
+417c407
+< 	/* Remove tasks' watchdog & suspend all state set tasks except self */
+---
+> 	/* Remove thread's wdog & suspend all state set threads except self */
+419c409
+< 	logMsg("   Suspending state set tasks:\n", 0,0,0,0,0,0);
+---
+> 	epicsPrintf("   Suspending state set threads:\n");
+424c414
+< 		if (pSS->taskId == 0)
+---
+> 		if (pSS->threadId == 0)
+427c417
+< 		logMsg("      tid=0x%x\n", pSS->taskId, 0,0,0,0,0);
+---
+> 		epicsPrintf("      tid=0x%x\n", pSS->threadId);
+429,430c419,422
+< 		/* Remove the task from EPICS watchdog */
+< 		taskwdRemove(pSS->taskId);
+---
+> #if 0 /* ### VxWorks-specific */
+> 		/* Remove the thread from EPICS watchdog */
+> 		taskwdRemove(pSS->threadId);
+> #endif
+432,434c424,426
+< 		/* Suspend the task */
+< 		if (pSS->taskId != tid)
+< 			taskSuspend(pSS->taskId);
+---
+> 		/* Suspend the thread */
+> 		if (pSS->threadId != tid)
+> 			OSIthreadSuspend(pSS->threadId);
+438c430
+< 	semGive(pSP->logSemId);
+---
+> 	OSIsemGive(pSP->logSemId);
+440,441c432,433
+< 	/* Call user exit routine (only if task has run) */
+< 	if (pSP->pSS->taskId != 0)
+---
+> 	/* Call user exit routine (only if thread has run) */
+> 	if (pSP->pSS->threadId != 0)
+444c436
+< 		logMsg("   Call exit function\n", 0,0,0,0,0,0);
+---
+> 		epicsPrintf("   Call exit function\n");
+451c443
+< 	logMsg("   Disconnect all channels\n", 0,0,0,0,0,0);
+---
+> 	epicsPrintf("   Disconnect all channels\n");
+459c451
+< 	/* Cancel the CA context for each state set task (have to re-import
+---
+> 	/* Cancel the CA context for each state set thread (have to re-import
+461c453
+< 	   ca_static task variable) */
+---
+> 	   ca_static thread variable) */
+464c456
+< 		extern		int seqAuxTaskId;
+---
+> 		extern		OSIthreadId seqAuxThreadId;
+466c458
+< 		if (pSS->taskId == 0)
+---
+> 		if (pSS->threadId == 0)
+470c462
+< 		logMsg("   ca_import(0x%x)\n", seqAuxTaskId, 0,0,0,0,0);
+---
+> 		epicsPrintf("   ca_import(0x%x)\n", seqAuxThreadId);
+472c464
+< 		SEVCHK (ca_import(seqAuxTaskId),
+---
+> 		SEVCHK (ca_import(seqAuxThreadId),
+476c468
+< 		logMsg("   ca_import_cancel(0x%x)\n", pSS->taskId, 0,0,0,0,0);
+---
+> 		epicsPrintf("   ca_import_cancel(0x%x)\n", pSS->ThreadId);
+478c470
+< 		SEVCHK (ca_import_cancel(pSS->taskId),
+---
+> 		SEVCHK (ca_import_cancel(pSS->ThreadId),
+483a476
+> #if 0 /* ### this is VxWorks specific */
+484a478,480
+> #else
+> 	if ( (pSP->logFd > 0) )
+> #endif
+487c483
+< 		logMsg("Closing log fd=%d\n", pSP->logFd, 0,0,0,0,0);
+---
+> 		epicsPrintf("Closing log fd=%d\n", pSP->logFd);
+489a486
+> #if 0 /* ### this is VxWorks specific */
+490a488
+> #endif
+496c494
+< 	/* Delete state set tasks (except self) & delete their semaphores */
+---
+> 	/* Delete state set threads (except self) & delete their semaphores */
+500c498
+< 		if ( (pSS->taskId != tid) && (pSS->taskId != 0) )
+---
+> 		if ( (pSS->threadId != tid) && (pSS->threadId != 0) )
+503,504c501,502
+< 			logMsg("   delete ss task: tid=0x%x\n", pSS->taskId,
+< 			 0,0,0,0,0);
+---
+> 			epicsPrintf("   delete ss thread: tid=0x%x\n",
+> 				pSS->threadId);
+506c504
+< 			taskDelete(pSS->taskId);
+---
+> 			OSIthreadDestroy(pSS->threadId);
+510c508
+< 			semDelete(pSS->syncSemId);
+---
+> 			OSIsemDestroy(pSS->syncSemId);
+513c511
+< 			semDelete(pSS->getSemId);
+---
+> 			OSIsemDestroy(pSS->getSemId);
+517,518c515,516
+< 	semDelete(pSP->caSemId);
+< 	semDelete(pSP->logSemId);
+---
+> 	OSIsemDestroy(pSP->caSemId);
+> 	OSIsemDestroy(pSP->logSemId);
+521c519
+< 	taskDelay(sysClkRateGet() / 10);
+---
+> 	OSIthreadSleep(0.1);
+524c522
+< 	semGive(cleanupSem);
+---
+> 	OSIsemGive(cleanupSem);
+529c527
+< VOID seqFree(pSP)
+---
+> void seqFree(pSP)
+574c572
+<  * Sequencer auxillary task -- loops on ca_pend_event().
+---
+>  * Sequencer auxiliary thread -- loops on ca_pend_event().
+576c574
+< long seqAuxTask()
+---
+> void *seqAuxThread(char *pPvSysName)
+578c576,577
+< 	extern		int seqAuxTaskId;
+---
+> 	int		status;
+> 	extern		OSIthreadId seqAuxThreadId;
+580,584c579,582
+< 	/* Register this task with the EPICS watchdog */
+< 	taskwdInsert(taskIdSelf(),(VOIDFUNCPTR)0, (VOID *)0);
+< 	/* Set up so all state program tasks will use a common CA context */
+< 	ca_task_initialize();
+< 	seqAuxTaskId = taskIdSelf(); /* must follow ca_task_initialize() */
+---
+> #if 0 /* ### VxWorks-specific */
+> 	/* Register this thread with the EPICS watchdog */
+> 	taskwdInsert(OSIthreadGetIdSelf(),(SEQVOIDFUNCPTR)0, (void *)0);
+> #endif
+586c584,597
+< 	/* This loop allows CA to check for connect/disconnect on channels */
+---
+> 	/* All state program threads will use a common PV context */
+> 	status = pvSysCreate(pPvSysName, &pvSys);
+>         if (status != pvStatOK)
+>         {
+>                 epicsPrintf("seqAuxThread: pvSysCreate() %s failure\n",
+>                             pPvSysName);
+>                 return NULL;
+>         }
+> 
+> 	/* ### pass debug level at run-time */
+> 	pvSysSetDebug( pvSys, 0 );
+> 	seqAuxThreadId = OSIthreadGetIdSelf(); /* AFTER pvSysCreate() */
+> 
+> 	/* This loop allows for check for connect/disconnect on PVs */
+589c600
+< 		ca_pend_event(10.0); /* returns every 10 sec. */
+---
+> 		pvSysPend(pvSys, 10.0, TRUE); /* returns every 10 sec. */
+590a602,604
+> 
+> 	/* Return no result (never exit in any case) */
+> 	return NULL;
+
+Index: snc.y
+===================================================================
+RCS file: /usr/local/epics/cvsroot/sequencer/src/snc.y,v
+retrieving revision 1.1.1.1
+retrieving revision 1.2
+diff -r1.1.1.1 -r1.2
+105,106c105,106
+< |	pp_code program_name definitions state_set_list		{ program($4); }
+< |	pp_code program_name definitions state_set_list global_c{ program($4); }
+---
+> |	pp_codes program_name definitions state_set_list	{ program($4); }
+> |	pp_codes program_name definitions state_set_list global_c{ program($4); }
+386a387,391
+> pp_codes	/* one or more pp_code */
+> :	pp_code
+> |	pp_codes pp_code
+> ;
+> 
+388c393
+< :	escaped_c_list	{ global_c_stmt($1); }
+---
+> :	escaped_c_list		{ global_c_stmt($1); }
+
+Index: snc_lex.l
+===================================================================
+RCS file: /usr/local/epics/cvsroot/sequencer/src/snc_lex.l,v
+retrieving revision 1.1.1.1
+retrieving revision 1.2
+diff -r1.1.1.1 -r1.2
+39c39
+< #ifdef SOLARIS
+---
+> #if    defined(SOLARIS) || defined(linux)
+
+Index: snc_main.c
+===================================================================
+RCS file: /usr/local/epics/cvsroot/sequencer/src/snc_main.c,v
+retrieving revision 1.2
+retrieving revision 1.4
+diff -r1.2 -r1.4
+24a25
+> 29apr99,wfl	Removed unused vx_opt option.
+53d53
+< int		vx_opt = TRUE;		/* include vxWorks def's */
+213,216d212
+< 	case 'v':
+< 		vx_opt = opt_val;
+< 		break;
+< 
+284c280
+< 	fprintf(stderr, "  -l           - supress line numbering\n");
+---
+> 	fprintf(stderr, "  -l           - suppress line numbering\n");
+286,287c282
+< 	fprintf(stderr, "  -w           - supress compiler warnings\n");
+< 	fprintf(stderr, "  -v           - don't include VxWorks definitions\n");
+---
+> 	fprintf(stderr, "  -w           - suppress compiler warnings\n");
