@@ -1,0 +1,21 @@
+This directory contains simadsc (simadsc.*), a library providing a simulation
+of the control of an ADSC detector.
+
+This directory also contains header files (detcon_*.h) from the ADSC
+detcon_lib_th library.  When using the ADSC detcon_lib_th library (to control
+a real detector), the header files included with it should be used, not these.
+
+The ADSC detcon_lib_th header files here were copied from the following
+locations in the ADSC detector control software package:
+
+  src_std/detcon_lib_th/detcon_entry.h
+  src_std/incl/detcon_par.h
+  src_std/incl/detcon_state.h
+
+By default, simadsc does not write simulated images to disk.  However, it does
+support a rudimentary way to do so via the environment variable
+SIMADSC_XRAY_IMAGE.  If this variable is set to the full file name of an image
+(e.g. "/tmp/thaumatin.img"), simadsc, when asked to acquire an image, will
+read the image specified in SIMADSC_XRAY_IMAGE and write its contents to disk
+as the acquired image.  Setting SIMADSC_XRAY_IMAGE to the empty string or not
+setting it at all disables this functionality.

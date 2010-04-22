@@ -1,0 +1,375 @@
+<HTML>
+<HEAD>
+<TITLE>IPAC Driver Release Notes</TITLE>
+<META NAME="Author" CONTENT="Andrew Johnson">
+<META NAME="Description" CONTENT="Release Notes for the vxWorks/EPICS IPAC driver software">
+<META NAME="KeyWords" CONTENT="vxWorks, IPAC, EPICS">
+<META NAME="Version" CONTENT="$Id: ipacRelease.html 184 2010-04-19 15:48:34Z anj $">
+</HEAD>
+<BODY>
+
+<CENTER>
+<H2>IPAC Driver Release Notes</H2>
+<P><I>Andrew Johnson</I></P>
+</CENTER>
+
+<P>This document describes the changes which have been made to my vxWorks/EPICS
+IndustryPack driver as it has evolved since first release.  The earliest
+version appears at the bottom, with more recent releases above it.</P>
+
+<HR>
+
+<H2>Version 2.11</H2>
+
+<P>Changed:</P>
+<UL>
+
+<LI>Added support for the AVME-9668 board to the drvXy9660 driver. This board
+adds the ability to operate IP modules at 32MHz, using a register to select the
+speed. The driver will automatically detect a 9668 board and those modules
+which can operate at this clock frequency and will configure the board
+appropriately.</LI>
+
+<LI>Since Xycom VME seem to have dropped their IP carrier product line while
+Acromag are continuing to develop theirs, I have changed the error messages in
+the drvXy9660 driver to use the Acromag names, and added a command synonym
+<TT>ipacAddAvme96XX</TT>, although existing installations will continue to work
+with the old names.</LI>
+
+<LI>Modified most carrier drivers to compile without warnings on 64-bit
+systems.  Not that I'm really expecting anyone to <I>use</I> them on a 64-bit
+CPU, but who knows?</LI>
+
+<LI>Deleted the macros for <TT>uchar_t</TT> and <TT>ulong_t</TT> which are no
+longer used internally and which shouldn't really be used.  Neither should
+<TT>ushort_t</TT> but I've left that defined in drvIpac.h since it has always
+been used for several arguments to the carrier drivers and taking it out would
+guarantee to break any out-of-tree carriers.</LI>
+
+</UL>
+<HR>
+
+<H2>Version 2.10</H2>
+
+<P>Changed:</P>
+<UL>
+
+<LI>Added epicsShareFunc decoration to all externally visible functions to
+permit building DLLs on Windows systems.</LI>
+
+<LI>Added directory dependency information for parallel builds</LI>
+
+</UL>
+<HR>
+
+<H2>Version 2.9</H2>
+
+<P>Added:</P>
+<UL>
+
+<LI>Carrier driver for the Xycom XVME-9660 and XVME-9670 boards; this was
+actually a complete rewrite of Andy Foster's driver since his didn't support
+configuring the slot memory through the board registers, and I had to convert it
+to use devLib and provide command registration any way.</LI>
+
+<LI>Support for VITA's Format-2 ID Proms, as used by Hytec. Note that the CRC
+calculation for these 16-bit Proms has not been checked against any known
+correct IP modules (Hytec set their CRC values to zero, which this version
+assumes to mean don't check the CRC).</LI>
+
+</UL>
+
+<P>Changed:</P>
+<UL>
+
+<LI>Converted Ipac and the VIPC and TVME200 carrier drivers to use EPICS OSI
+calls instead of native vxWorks ones, and they will now be built on all IOC
+architectures, not just for vxWorks.  As a result this version can only be built
+as an EPICS driver support layer, but I don't know anyone who is still using it
+outside of EPICS (I haven't heard from UKIRT in years).  The MVME162 and ATC40
+carrier drivers are still built for vxWorks only, although they probably could
+be converted too if someone needs them (very unlikely).</LI>
+
+</UL>
+<HR>
+
+<H2>Version 2.8</H2>
+
+<P>Added:</P>
+<UL>
+
+<LI>Added a new routine ipacLatestCarrier which returns the carrier number of
+the most recently added carrier board.  This can be used in the vxWorks startup
+script to avoid any problems that might occur if a call to ipacAddCarrier
+(actually to its new carrier-specific routines) returns with a failure.  Such a
+failure would result in any succeeding carrier board receiving the carrier
+number expected by the failed one.</LI>
+
+<LI>Created a carrier driver for the Tews TVME-200, also sold by SBS as the
+VIPC-626 and possibly by XYCOM VME as the TVME-200; this board can also be used
+with the VIPC610 or VIPC616 drivers if the appropriate switch settings are
+made.  The <A HREF="drvIpac.html">drvIpac documentation</A> describes the
+additional capabilities that this driver provides which the older drivers do
+not.</LI>
+
+<LI>A new irqCmd is available, <TT>ipac_slotReset</TT> for use where a carrier
+board is capable of resetting an individual IP slot.  This command is supported
+by the new TVME-200 carrier driver.</LI>
+
+</UL>
+
+<P>Changed:</P>
+<UL>
+
+<LI>The behaviour of ipacAddCarrier has been changed so that it always
+increments its internal carrier number even when it returns with an error, and
+in that circumstance the Null carrier driver will be used for all subsequent
+operations on that carrier number.</LI>
+
+</UL>
+<HR>
+
+<H2>Version 2.7</H2>
+
+<P>Changed:</P>
+<UL>
+
+<LI>Modified the drvIpac/Makefile to build all carrier drivers on all
+architectures so one set of registrar() entries can be used on all vxWorks
+architectures, although some carrier drivers will only work on certain
+CPUs.</LI>
+
+</UL>
+<HR>
+
+<H2>Version 2.6</H2>
+
+<P>Changed:</P>
+<UL>
+
+<LI>Converted the carrier drivers to register their own ipacAddXXX routines in
+place of using ipacAddCarrier, so this can be done from the iocsh on EPICS Base
+R3.14.3 and higher.  Also added the necessary registrar routines to each
+carrier driver, and generate a proper library file libIpac.a for build
+purposes.</LI>
+
+</UL>
+<HR>
+
+<H2>Version 2.5</H2>
+
+<P>Changed:<UL>
+
+<LI>This version is intended for builds using EPICS Base R3.14.x, and has been
+tested against Base R3.14.2. There were a few minor changes to the code, but
+these were just to get it to build properly. The only supported operating
+system is still vxWorks - the EPICS OSI layer does not currently provide API
+equivalents for vxMemProbe() or intConnect(). There is a reasonable chance of
+porting drvIpac and some of the carrier drivers to run on RTEMS once the OSI
+layer is sufficiently functional, but other operating systems are not likely to
+be easy targets.</LI>
+
+</UL></P>
+
+<HR>
+
+<H2>Version 2.4</H2>
+
+<P>Added:<UL>
+
+<LI>Documentation for the <TT>ipac_statActive</TT> and <TT>ipac_statUnused</TT>
+irqCommands which were new in V2.2, but that I forgot to add to
+drvIpac.html.</LI>
+
+</UL></P>
+
+<HR>
+
+<H2>Version 2.3</H2>
+
+<P>Added:<UL>
+
+<LI>Recognition of high-speed (32&nbsp;MHz) IP modules in ipmCheck; these have
+an ID prom that starts 'IPAH' rather than the usual 'IPAC'.  Carrier drivers
+that can change a slot's clock speed in software must scan the ID proms for
+their slots at 8MHz and then switch any that can run at 32&nbsp;MHz.
+
+<BR><B>NB:</B> I don't actually know of any carriers that can do this; the IPIC
+chip on the MVME162/172 has an IP Clock Register, but this only controls cycle
+synchronization logic - the IP clock rate is set using jumpers on the CPU
+board (and appears to affect all the IP slots together).</LI>
+
+<LI>Added warning message to VIPC610 and VIPC616 drivers whenever a Level 7
+interrupt is enabled, as the connected ISR should not call <I>any</I> vxWorks
+routines.  Usually it is a mistake to use this, but unfortunately the boards
+are delivered with slot D IRQ0 wired for this level.  Also put an explanatory
+note in the carrier board documentation.</LI>
+
+<LI>Added a driver for the VIPC616-01 option, which isn't subject the the
+problems in the previous bullet point.</LI>
+
+<LI>Brought the index.html file for the ipac module home page into the software
+distribution and reorganized the links so they work even when viewed from the
+a local <TT>&lt;ipac&gt;/html</TT> install directory.</LI>
+
+<LI>New 'R' configuration parameter to the ipMv162 carrier driver which gives
+all slots a hardware reset pulse on startup.  If used, this must be the first
+character of the string.</LI>
+
+</UL></P>
+
+<P>Changed:<UL>
+
+<LI>Removed CANbus-specific comments from the IPAC Release Notes.</LI>
+
+</UL></P>
+
+<HR>
+
+
+<H2>Version 2.2</H2>
+
+<P>Added:<UL>
+
+<LI>Two new commands <TT>ipac_statActive</TT> and <TT>ipac_statUnused</TT> for
+irqCommand which a module or carrier driver can use to enable and disable LEDs
+showing the activity status of a particular slot.  Only the VIPC664 carrier
+driver (not provided with IPAC) supports these at present, other drivers will
+return the usual S_IPAC_notImplemented response.</LI>
+
+</UL></P>
+
+<P>Changed:<UL>
+
+<LI>Copyright and license terms.  IPAC (and drvTip810) is now licensed under
+the GNU Lesser General Public License (LGPL), which enables it to be used in
+commercial software, although any binary distribution containing it or a
+derivative of it must make the source code available under the LGPL terms.</LI>
+
+<LI>Various other small modifications to fix compiler warnings and such under
+EPICS Release 3.13.2.</LI>
+
+</UL></P>
+
+<HR>
+
+
+<H2>Version 2.1</H2>
+
+<P>Added:<UL>
+
+<LI>Jeff Hill's driver for the GreenSpring ATC40 ISAbus carrier board,
+including the changes to the main drvIpac software and the other carrier
+drivers which are necessary to support little-endian architectures.  These
+were:
+
+<UL>
+<LI>Make all accesses to the IP module registers &amp; ID-Prom use short
+(16-bit) read/writes, so the endian problem disappears.  Adjust various
+internal routines to allow for this.</LI>
+
+<LI>Provide a new function pointer (optional, may be NULL) in the carrier table
+which is called by ipmIntConnect.  Module drivers should use ipmIntConnect
+instead of vxWorks' intConnect routine to attach their interrupt routine.  This
+makes it possible to use identical module driver code on both VME and ISA bus,
+although the module driver may have to be modified as discussed above to
+resolve the endian issue.</LI>
+</UL></LI>
+
+<LI>Some <TT>printf()</TT>s in ipacAddCarrier so failures can be seen without
+having to look at the return value.</LI>
+
+<LI>SRCS.c entries to Makefile.Vx so <TT>gnumake depends</TT> works.</LI>
+
+</UL></P>
+
+<P>Bug fixed:<UL>
+
+<LI>Finally tested the MVME162 carrier driver myself - this also works on the
+MVME172.  Changed the checking of <TT>m=</TT> addresses to use unsigned
+arithmetic.</LI>
+
+</UL></P>
+
+<HR>
+
+
+<H2>Version 2.0</H2>
+
+<P>The software is now restructured as an EPICS R3.13.1 &lt;supporttop&gt;
+application.  CANbus (drvTip810) and other drivers can be built in separate
+application directories inside this &lt;supporttop&gt;.</P>
+
+<P>Added:<UL>
+
+<LI>Peregrine McGehee's GreenSpring Octal Serial Driver from CFHT.</LI>
+
+</UL></P>
+
+<P>Bug fixed:<UL>
+
+<LI>Gcc compilation warnings attended to.</LI>
+
+</UL></P><HR>
+
+
+<H2>Version 1.1c</H2>
+
+<P>Final release from the RGO.  CVS repository transferred to APS.</P>
+
+<P>No changes to drvIpac</P>
+
+<HR>
+
+
+<H2>Version 1.1b</H2>
+
+<P>Added:<UL>
+
+<LI>These release notes.</LI>
+
+</UL></P>
+
+<HR>
+
+
+<H2>Version 1.1a</H2>
+
+<P>Bugs fixed:<UL>
+
+<LI>VIPC616 carrier driver address parameter handling fixed, changes courtesy
+of Christoper Estes.</LI>
+
+</UL></P>
+
+<HR>
+
+
+<H2>Version 1.1</H2>
+
+<P>Added:<UL>
+
+<LI>IPAC Prom structure declared volatile to prevent gcc optimiser from
+generating long word accesses to it.  Only affected some carrier boards.</LI>
+
+<LI>Separate support for both the GreenSpring VIPC610 and VIPC610-01 carrier
+boards, which have different interrupt levels for the different slot
+interrupts.  From now on the correct carrier table <TT>vipc610</TT> or
+<TT>vipc610_01</TT> should be used. </LI>
+
+<LI>Support for the the GreenSpring VIPC616 carrier board, table name
+<TT>vipc616</TT>.</LI>
+
+<LI>HTML Documentation distributed in the release.</LI>
+
+</UL></P>
+
+<HR>
+
+
+<H2>Version 1.0</H2>
+
+<P>First full release.</P>
+
+</BODY>
+</HTML>

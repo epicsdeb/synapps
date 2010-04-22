@@ -1,0 +1,3071 @@
+### differences from startof WFL sequencer development to move from
+    kss/epcom/src (ignoring Makefile etc)
+
+Index: gen_ss_code.c
+===================================================================
+RCS file: /usr/local/cvsroot/kroot/kss/epcom/seq/gen_ss_code.c,v
+retrieving revision 1.1.1.1
+retrieving revision 1.9
+diff -r1.1.1.1 -r1.9
+5,6c5
+< 
+< 	%W%	%G%
+---
+>  	gen_ss_code.c,v 1.2 1995/06/27 15:25:43 wright Exp
+13a13,16
+> 09aug96,wfl	Supported pvGetQ().
+> 13aug96,wfl	Supported pvFreeQ().
+> 23jun97,wfl	Avoided SEGV if variable or event flag was undeclared.
+> 13jan98,wfl     Fixed handling of compound expressions, using E_COMMA.
+18,19c21,32
+< #include 	<dbDefs.h>
+< #include 	<seqCom.h>
+---
+> #include 	"dbDefs.h"
+> #include 	"seqCom.h"
+> 
+> void		gen_delay_func();
+> void		eval_delay();
+> void		gen_action_func();
+> void		gen_event_func();
+> void		eval_expr();
+> void		indent();
+> void		gen_ef_func();
+> void		gen_pv_func();
+> void		gen_exit_handler();
+41c54
+< gen_ss_code()
+---
+> void gen_ss_code()
+76c89
+< gen_delay_func(sp, ssp)
+---
+> void gen_delay_func(sp, ssp)
+81d93
+< 	int		eval_delay();
+85c97
+< 	printf("static D_%s_%s(ssId, pVar)\n", ssp->value, sp->value);
+---
+> 	printf("static void D_%s_%s(ssId, pVar)\n", ssp->value, sp->value);
+102c114
+< eval_delay(ep, sp)
+---
+> void eval_delay(ep, sp)
+111,112c123,124
+< 	fprintf("stderr, "eval_delay: type=%s\n", stype[ep->type]);
+< #endif	DEBUG
+---
+> 	fprintf(stderr, "eval_delay: type=%s\n", stype[ep->type]);
+> #endif	/*DEBUG*/
+131c143
+< gen_action_func(sp, ssp)
+---
+> void gen_action_func(sp, ssp)
+144c156,157
+< 	printf("static A_%s_%s(ssId, pVar, transNum)\n", ssp->value, sp->value);
+---
+> 	printf("static void A_%s_%s(ssId, pVar, transNum)\n",
+> 	 ssp->value, sp->value);
+181c194
+< gen_event_func(sp, ssp)
+---
+> void gen_event_func(sp, ssp)
+190c203
+< 	printf("static E_%s_%s(ssId, pVar, pTransNum, pNextState)\n",
+---
+> 	printf("static long E_%s_%s(ssId, pVar, pTransNum, pNextState)\n",
+228c241
+< state_block_index_from_name(ssp, state_name)
+---
+> int state_block_index_from_name(ssp, state_name)
+246c259
+< eval_expr(stmt_type, ep, sp, level)
+---
+> void eval_expr(stmt_type, ep, sp, level)
+253c266
+< 	int		nparams;
+---
+> 	int		nexprs;
+326c339
+< #endif	DEBUG
+---
+> #endif	/*DEBUG*/
+353c366
+< #endif	DEBUG
+---
+> #endif	/*DEBUG*/
+357c370,374
+< 		for (epf = ep->left, nparams = 0; epf != 0; epf = epf->next, nparams++)
+---
+> 		eval_expr(stmt_type, ep->left, sp, 0);
+> 		printf(") ");
+> 		break;
+> 	case E_COMMA:
+> 		for (epf = ep->left, nexprs = 0; epf != 0; epf = epf->next, nexprs++)
+359c376
+< 			if (nparams > 0)
+---
+> 			if (nexprs > 0)
+363d379
+< 		printf(") ");
+407c423
+< indent(level)
+---
+> void indent(level)
+415c431
+< 		F_PVGET, F_PVPUT, F_PVTIMESTAMP, F_PVASSIGN,
+---
+> 		F_PVGET, F_PVGETQ, F_PVFREEQ, F_PVPUT, F_PVTIMESTAMP, F_PVASSIGN,
+424c440
+< 		"pvGet", "pvPut", "pvTimeStamp", "pvAssign",
+---
+> 		"pvGet", "pvGetQ", "pvFreeQ", "pvPut", "pvTimeStamp", "pvAssign",
+454c470
+< special_func(stmt_type, ep, sp)
+---
+> int special_func(stmt_type, ep, sp)
+473c489
+< #endif	DEBUG
+---
+> #endif	/*DEBUG*/
+486c502
+< 		gen_ef_func(stmt_type, ep, sp, fname);
+---
+> 		gen_ef_func(stmt_type, ep, sp, fname, func_code);
+490a507,508
+> 	    case F_PVGETQ:
+> 	    case F_PVFREEQ:
+523c541,544
+< 		for (ep1 = ep->left; ep1 != 0; ep1 = ep1->next)
+---
+> 		ep1 = ep->left;
+> 		if (ep1 != 0 && ep1->type == E_COMMA)
+> 			ep1 = ep1->left;
+> 		for (; ep1 != 0; ep1 = ep1->next)
+538c559
+< gen_ef_func(stmt_type, ep, sp, fname, func_code)
+---
+> void gen_ef_func(stmt_type, ep, sp, fname, func_code)
+549a571,572
+> 	if (ep1 != 0 && ep1->type == E_COMMA)
+> 		ep1 = ep1->left;
+577c600
+< gen_pv_func(stmt_type, ep, sp, fname)
+---
+> void gen_pv_func(stmt_type, ep, sp, fname)
+588a612,613
+> 	if (ep1 != 0 && ep1->type == E_COMMA)
+> 		ep1 = ep1->left;
+624c649
+< #endif	DEBUG
+---
+> #endif	/*DEBUG*/
+626c651,654
+< 		index = cp->index;
+---
+> 		if (cp != 0)
+> 		{
+> 			index = cp->index;
+> 		}
+662c690
+< gen_exit_handler()
+---
+> void gen_exit_handler()
+668c696
+< 	printf("static exit_handler(ssId, pVar)\n");
+---
+> 	printf("static void exit_handler(ssId, pVar)\n");
+
+Index: gen_tables.c
+===================================================================
+RCS file: /usr/local/cvsroot/kroot/kss/epcom/seq/gen_tables.c,v
+retrieving revision 1.1.1.1
+retrieving revision 1.8
+diff -r1.1.1.1 -r1.8
+6c6,7
+< 	%W%	%G%
+---
+> 	gen_tables.c,v 1.2 1995/06/27 15:25:45 wright Exp
+> 
+14a16,20
+> 25may95,ajk	re-instated old event flag (-e) option.
+> 20jul95,ajk	Added unsigned types.
+> 22jul96,ajk	Added castS to action, event, delay, and exit functions.
+> 08aug96,wfl	Added emission of code for syncQ queues.
+> 11mar98,wfl	Corrected calculation of number of event words.
+20,21c26,39
+< #include	<dbDefs.h>
+< #include	<seqCom.h>
+---
+> #include	"dbDefs.h"
+> #include	"seqCom.h"
+> 
+> void		gen_db_blocks();
+> void		fill_db_block();
+> void		gen_state_blocks();
+> void		fill_state_block();
+> void		gen_prog_params();
+> void		gen_prog_table();
+> void		encode_options();
+> void		gen_ss_array();
+> void		eval_state_event_mask();
+> void		eval_event_mask();
+> void		eval_event_mask_subscr();
+37c55
+< gen_tables()
+---
+> void gen_tables()
+62c80
+< gen_db_blocks()
+---
+> void gen_db_blocks()
+77c95
+< #endif	DEBUG
+---
+> #endif	/*DEBUG*/
+98c116
+< fill_db_block(cp, elem_num)
+---
+> void fill_db_block(cp, elem_num)
+145c163
+< 	printf("  \"%s\", ", db_name);/* unexpanded db channel name */
+---
+> 	printf("  {\"%s\", ", db_name);/* unexpanded db channel name */
+170c188,194
+< 	printf("%d", mon_flag);
+---
+> 	printf("%d, ", mon_flag);
+> 
+> 	/* syncQ queue */
+> 	if (!vp->queued)
+> 	    printf("0, 0, 0");
+> 	else
+> 	    printf("%d, %d, %d", vp->queued, vp->maxQueueSize, vp->queueIndex);
+172c196
+< 	printf(",\n\n");
+---
+> 	printf("},\n\n");
+186a211,214
+> 	  case V_UCHAR:	return "unsigned char";
+> 	  case V_USHORT:return "unsigned short";
+> 	  case V_UINT:	return "unsigned int";
+> 	  case V_ULONG:	return "unsigned long";
+195c223
+< gen_state_blocks()
+---
+> void gen_state_blocks()
+206,207c234,235
+< 	/* Allocate an array for event mask bits */
+< 	numEventWords = (num_events + num_channels + NBITS - 1)/NBITS;
+---
+> 	/* Allocate an array for event mask bits (NB, bit zero is not used) */
+> 	numEventWords = (num_events + num_channels + NBITS)/NBITS;
+242c270
+< fill_state_block(sp, ss_name)
+---
+> void fill_state_block(sp, ss_name)
+247c275
+< 	printf("\t/* State \"%s\"*/\n", sp->value);
+---
+> 	printf("\t/* State \"%s\" */ {\n", sp->value);
+251c279
+< 	printf("\t/* action function */  A_%s_%s,\n", ss_name, sp->value);
+---
+> 	printf("\t/* action function */ (ACTION_FUNC) A_%s_%s,\n", ss_name, sp->value);
+253c281
+< 	printf("\t/* event function */   E_%s_%s,\n", ss_name, sp->value);
+---
+> 	printf("\t/* event function */  (EVENT_FUNC) E_%s_%s,\n", ss_name, sp->value);
+255c283
+< 	printf("\t/* delay function */   D_%s_%s,\n", ss_name, sp->value);
+---
+> 	printf("\t/* delay function */   (DELAY_FUNC) D_%s_%s,\n", ss_name, sp->value);
+257c285
+< 	printf("\t/* event mask array */ EM_%s_%s,\n\n", ss_name, sp->value);
+---
+> 	printf("\t/* event mask array */ EM_%s_%s},\n\n", ss_name, sp->value);
+263c291
+< gen_prog_params()
+---
+> void gen_prog_params()
+273c301
+< gen_prog_table()
+---
+> void gen_prog_table()
+274a303,304
+> 	extern int reent_opt;
+> 
+307c337,338
+< 	printf("\t/* exit handler */       exit_handler,\n");
+---
+> 	printf("\t/* exit handler */      (EXIT_FUNC) exit_handler,\n");
+> 	printf("\t/* numQueues */          NUM_QUEUES,\n");	/* number of syncQ queues */
+314c345
+< encode_options()
+---
+> void encode_options()
+317c348
+< 			 conn_opt, vx_opt;
+---
+> 			 newef_opt, conn_opt, vx_opt;
+325a357,358
+> 	if (newef_opt)
+> 		printf(" | OPT_NEWEF");
+335c368
+< gen_ss_array()
+---
+> void gen_ss_array()
+350c383
+< 		printf("\t/* State set \"%s\"*/\n", ssp->value);
+---
+> 		printf("\t/* State set \"%s\" */ {\n", ssp->value);
+354c387
+< 		printf("\t/* ptr to state block */ state_%s%,\n", ssp->value);
+---
+> 		printf("\t/* ptr to state block */ state_%s,\n", ssp->value);
+359c392
+< 		printf("\t/* error state */        %d,\n", find_error_state(ssp));
+---
+> 		printf("\t/* error state */        %d},\n", find_error_state(ssp));
+367c400
+< find_error_state(ssp)
+---
+> int find_error_state(ssp)
+381c414
+< eval_state_event_mask(sp, pEventWords, numEventWords)
+---
+> void eval_state_event_mask(sp, pEventWords, numEventWords)
+387d419
+< 	int		eval_event_mask(), eval_event_mask_subscr();
+413c445
+< #endif	DEBUG
+---
+> #endif	/*DEBUG*/
+419c451
+< eval_event_mask(ep, pEventWords)
+---
+> void eval_event_mask(ep, pEventWords)
+429a462
+> 	cp = vp->chan;
+437c470
+< #endif
+---
+> #endif	/*DEBUG*/
+441a475,488
+> 	/* value queued via syncQ? (pvgetQ() call; if array, all elements
+> 	   are assumed to refer to the same event flag) */
+> 	if (cp != NULL && vp->queued)
+> 	{
+> 		int ef_num = cp->num_elem == 0 ?
+> 					cp->ef_num : cp->ef_num_list[0];
+> #ifdef	DEBUG
+> 		fprintf(stderr, " eval_event_mask: %s, ef_num=%d\n",
+> 		 vp->name, ef_num);
+> #endif	/*DEBUG*/
+> 		bitSet(pEventWords, ef_num);
+> 		return;
+> 	}
+> 
+443d489
+< 	cp = vp->chan;
+449c495
+< #endif
+---
+> #endif	/*DEBUG*/
+460c506
+< eval_event_mask_subscr(ep, pEventWords)
+---
+> void eval_event_mask_subscr(ep, pEventWords)
+463a510,511
+> 	extern int	num_events;
+> 
+486c534
+< #endif
+---
+> #endif	/*DEBUG*/
+503c551
+< #endif
+---
+> #endif	/*DEBUG*/
+512c560
+< #endif
+---
+> #endif	/*DEBUG*/
+522c570
+< exprCount(ep)
+---
+> int exprCount(ep)
+
+Index: parse.c
+===================================================================
+RCS file: /usr/local/cvsroot/kroot/kss/epcom/seq/parse.c,v
+retrieving revision 1.1.1.1
+retrieving revision 1.4
+diff -r1.1.1.1 -r1.4
+7c7
+< 	%W%	%G%
+---
+> < 	parse.c,v 1.3 1995/10/19 16:30:16 wright Exp
+21a22
+> 08aug96,wfl	Added new syncq_stmt() routine.
+33c34
+< #endif	TRUE
+---
+> #endif	/*TRUE*/
+54a56,60
+> Chan	*build_db_struct();
+> void	alloc_db_lists();
+> void	addVar();
+> void	addChan();
+> 
+68c74
+< program_name(pname, pparam)
+---
+> void program_name(pname, pparam)
+75c81
+< #endif
+---
+> #endif	/*DEBUG*/
+80c86
+< decl_stmt(type, class, name, s_length1, s_length2, value)
+---
+> void decl_stmt(type, class, name, s_length1, s_length2, value)
+95c101
+< #endif
+---
+> #endif	/*DEBUG*/
+114c120
+< #endif
+---
+> #endif	/*DEBUG*/
+137c143
+< option_stmt(option, value)
+---
+> void option_stmt(option, value)
+142c148
+< 			reent_opt, warn_opt, vx_opt;
+---
+> 			reent_opt, warn_opt, vx_opt, newef_opt;
+154a161,164
+>  		case 'e':
+> 		newef_opt = value;
+> 		break;
+> 
+175c185
+< assign_single(name, db_name)
+---
+> void assign_single(name, db_name)
+186c196
+< #endif	DEBUG
+---
+> #endif	/*DEBUG*/
+205c215
+< 	cp = (Chan *)build_db_struct(vp);
+---
+> 	cp = build_db_struct(vp);
+217c227
+< assign_subscr(name, subscript, db_name)
+---
+> void assign_subscr(name, subscript, db_name)
+229c239
+< #endif	DEBUG
+---
+> #endif	/*DEBUG*/
+250c260
+< 		cp = (Chan *)build_db_struct(vp);
+---
+> 		cp = build_db_struct(vp);
+291c301
+< assign_list(name, db_name_list)
+---
+> void assign_list(name, db_name_list)
+302c312
+< #endif	DEBUG
+---
+> #endif	/*DEBUG*/
+328c338
+< 	cp = (Chan *)build_db_struct(vp);
+---
+> 	cp = build_db_struct(vp);
+341c351
+< #endif	DEBUG
+---
+> #endif	/*DEBUG*/
+349c359
+< #endif	DEBUG
+---
+> #endif	/*DEBUG*/
+355c365
+< build_db_struct(vp)
+---
+> Chan *build_db_struct(vp)
+377c387
+< 	return (int)cp;
+---
+> 	return cp;
+381c391
+< alloc_db_lists(cp, length)
+---
+> void alloc_db_lists(cp, length)
+406c416
+< monitor_stmt(name, subscript)
+---
+> void monitor_stmt(name, subscript)
+417c427
+< #endif	DEBUG
+---
+> #endif	/*DEBUG*/
+474c484
+< sync_stmt(name, subscript, ef_name)
+---
+> void sync_stmt(name, subscript, ef_name)
+487c497
+< #endif	DEBUG
+---
+> #endif	/*DEBUG*/
+542a553,647
+> 
+> /* Parsing "syncq" statement */
+> void syncq_stmt(name, subscript, ef_name, maxQueueSize)
+> char		*name;
+> char		*subscript;
+> char		*ef_name;
+> char		*maxQueueSize;
+> {
+> 	Chan		*cp;
+> 	Var		*vp;
+> 	Var		*efp;
+> 	extern int	line_num;
+> 	int		subNum;
+> 
+> #ifdef	DEBUG
+> 	fprintf(stderr, "syncq_stmt: name=%s, subNum=%s, ef_name=%s, "
+> 	    "maxQueueSize=%s\n", name, subscript, ef_name, maxQueueSize);
+> #endif	/*DEBUG*/
+> 
+> 	/* Find the variable and check it's assigned */
+> 	vp = (Var *)findVar(name);
+> 	if (vp == 0)
+> 	{
+> 		fprintf(stderr, "syncQ: variable %s not declared, line %d\n",
+> 		 name, line_num);
+> 		return;
+> 	}
+> 
+> 	cp = vp->chan;
+> 	if (cp == 0)
+> 	{
+> 		fprintf(stderr, "syncQ: variable %s not assigned, line %d\n",
+> 		 name, line_num);
+> 		return;
+> 	}
+> 
+> 	/* Check that the variable has not already been syncQ'd */
+> 	if (vp->queued)
+> 	{
+> 		fprintf(stderr, "syncQ: variable %s already syncQ'd, "
+> 		 "line %d\n", name, line_num);
+> 		return;
+> 	}
+> 
+> 	/* Find the event flag variable */
+> 	efp = (Var *)findVar(ef_name);
+> 	if (efp == 0 || efp->type != V_EVFLAG)
+> 	{
+> 		fprintf(stderr, "syncQ: e-f variable %s not declared, "
+> 		 "line %d\n", ef_name, line_num);
+> 		return;
+> 	}
+> 
+> 	/* Check that the event flag has not already been syncQ'd */
+> 	if (efp->queued)
+> 	{
+> 		fprintf(stderr, "syncQ: e-f variable %s already syncQ'd, "
+> 		 "line %d\n", ef_name, line_num);
+> 		return;
+> 	}
+> 
+> 	/* Note queued (for both variable and event flag) and set the
+> 	   maximum queue size (0 means default) */
+> 	vp->queued = efp->queued = TRUE;
+> 	vp->maxQueueSize = (maxQueueSize == NULL) ? 0 : atoi(maxQueueSize);
+> 
+> 	if (subscript == NULL)
+> 	{	/* no subscript */
+> 		if (cp->db_name != NULL)
+> 		{	/* 1 pv assigned to this variable */
+> 			cp->ef_var = efp;
+> 			return;
+> 		}
+> 
+> 		/* 1 pv per element in the array */
+> 		for (subNum = 0; subNum < cp->num_elem; subNum++)
+> 		{
+> 			cp->ef_var_list[subNum] = efp;
+> 		}
+> 		return;
+> 	}
+> 
+> 	/* subscript != NULL */
+> 	subNum = atoi(subscript);
+> 	if (subNum < 0 || subNum >= cp->num_elem)
+> 	{
+> 		fprintf(stderr,
+> 		 "syncQ: subscript %s[%d] out of range, line %d\n",
+> 		 name, subNum, line_num);
+> 		return;
+> 	}
+> 	cp->ef_var_list[subNum] = efp; /* sync to a specific element of the array */
+> 
+> 	return;
+> }
+543a649
+> 
+545c651
+< defn_c_stmt(c_list)
+---
+> void defn_c_stmt(c_list)
+550c656
+< #endif
+---
+> #endif	/*DEBUG*/
+560c666
+< global_c_stmt(c_list)
+---
+> void global_c_stmt(c_list)
+570c676
+< addVar(vp)
+---
+> void addVar(vp)
+599c705
+< addChan(cp)
+---
+> void addChan(cp)
+611c717
+< set_debug_print(opt)
+---
+> void set_debug_print(opt)
+618c724
+< program(prog_list)
+---
+> void program(prog_list)
+624c730
+< #endif	DEBUG
+---
+> #endif	/*DEBUG*/
+631c737
+< exit_code(ep)
+---
+> int exit_code(ep)
+652c758
+< #endif
+---
+> #endif	/*DEBUG*/
+659c765
+< #endif
+---
+> #endif	/*DEBUG*/
+700c806
+< #endif	DEBUG
+---
+> #endif	/*DEBUG*/
+705c811
+< pp_code(line, fname)
+---
+> void pp_code(line, fname)
+
+Index: parse.h
+===================================================================
+RCS file: /usr/local/cvsroot/kroot/kss/epcom/seq/parse.h,v
+retrieving revision 1.1.1.1
+retrieving revision 1.3
+diff -r1.1.1.1 -r1.3
+6c6
+< 	%W%	%G%
+---
+>  	parse.h,v 1.2 1995/06/27 15:25:50 wright Exp
+14a15,17
+> 20jul95,ajk	Added unsigned types (V_U...).
+> 08aug96,wfl	Added syncQ variables to var struct.
+> 
+45a49,52
+> 	int	queued;			/* whether queued via syncQ */
+> 	int	maxQueueSize;		/* max syncQ queue size */
+> 	int	queueIndex;		/* index in syncQ queue array */
+> 
+94c101
+< #define	VC_SIMPLE	0		/* simple (un-dimentioned) variable */
+---
+> #define	VC_SIMPLE	0		/* simple (un-dimensioned) variable */
+
+Index: phase2.c
+===================================================================
+RCS file: /usr/local/cvsroot/kroot/kss/epcom/seq/phase2.c,v
+retrieving revision 1.1.1.1
+retrieving revision 1.10
+diff -r1.1.1.1 -r1.10
+6c6,7
+< 	%W%	%G%
+---
+>  	phase2.c,v 1.2 1995/06/27 15:25:52 wright Exp
+> 
+16a18,21
+> 20jul95,ajk	Added unsigned types.
+> 11aug96,wfl	Supported syncQ queues.
+> 13jan98,wfl     Supported E_COMMA token (for compound expressions).
+> 01oct98,wfl	Supported setting initial value on declaration.
+22c27
+< #include 	<seqCom.h>
+---
+> #include 	"seqCom.h"
+25a31
+> int	num_queues = 0;		/* number of syncQ queues */
+29a36,48
+> void	gen_preamble();
+> void	gen_opt_defn();
+> void	reconcile_variables();
+> void	connect_variable();
+> void	reconcile_states();
+> void	gen_var_decl();
+> void	gen_defn_c_code();
+> void	gen_global_c_code();
+> void	assign_ef_bits();
+> void	assign_delay_ids();
+> void	assign_next_delay_id();
+> void	traverseExprTree();
+> 
+43c62
+< phase2()
+---
+> void phase2()
+49a69
+> 	num_queues = db_queue_count();
+51a72
+> 	num_queues = db_queue_count();
+86c107
+< gen_preamble()
+---
+> void gen_preamble()
+101a123
+> 	printf("#define NUM_QUEUES %d\n", num_queues);
+115d136
+< 	printf("extern struct seqChan seqChan[];\n");
+121c142
+< gen_opt_defn(opt, defn_name)
+---
+> void gen_opt_defn(opt, defn_name)
+136c157
+< reconcile_variables()
+---
+> void reconcile_variables()
+140d160
+< 	int			connect_variable();
+146c166
+< #endif	DEBUG
+---
+> #endif	/*DEBUG*/
+159c179
+< int connect_variable(ep)
+---
+> void connect_variable(ep)
+170c190
+< #endif
+---
+> #endif	/*DEBUG*/
+186a207
+> 
+191c212
+< reconcile_states()
+---
+> void reconcile_states()
+193c214,216
+< 	extern Expr	*ss_list;
+---
+> 
+> 	extern Expr		*ss_list;
+> 
+232c255
+< gen_var_decl()
+---
+> void gen_var_decl()
+260a284,295
+> 		  case V_UCHAR:
+> 			vstr = "unsigned char";
+> 			break;
+> 		  case V_UINT:
+> 			vstr = "unsigned int";
+> 			break;
+> 		  case V_ULONG:
+> 			vstr = "unsigned long";
+> 			break;
+> 		  case V_USHORT:
+> 			vstr = "unsigned short";
+> 			break;
+301a337,339
+> 		if (vp->value != NULL)
+> 			printf(" = %s", vp->value);
+> 
+310c348
+< gen_defn_c_code()
+---
+> void gen_defn_c_code()
+328c366
+< gen_global_c_code()
+---
+> void gen_global_c_code()
+348c386
+< db_chan_count()
+---
+> int db_chan_count()
+367a406,429
+> /* Sets vp->queueIndex for each syncQ'd variable, & returns number of
+>  * syncQ queues defined. 
+>  */
+> int db_queue_count()
+> {
+> 	extern	Var	*var_list;
+> 	int		nqueue;
+> 	Var		*vp;
+> 
+> 	nqueue = 0;
+> 	for (vp = var_list; vp != NULL; vp = vp->next)
+> 	{
+> 		if (vp->type != V_EVFLAG && vp->queued)
+> 		{
+> 			vp->queueIndex = nqueue;
+> 			nqueue++;
+> 		}
+> 	}
+> 
+> 	return nqueue;
+> }
+> 
+> 
+> 
+371c433
+< assign_ef_bits()
+---
+> void assign_ef_bits()
+416d477
+< 
+423c484
+< assign_delay_ids()
+---
+> void assign_delay_ids()
+428d488
+< 	int			assign_next_delay_id();
+432c492
+< #endif	DEBUG
+---
+> #endif	/*DEBUG*/
+452c512
+< assign_next_delay_id(ep, delay_id)
+---
+> void assign_next_delay_id(ep, delay_id)
+463c523
+< traverseExprTree(ep, type, value, funcp, argp)
+---
+> void traverseExprTree(ep, type, value, funcp, argp)
+500a561
+> 	case E_COMMA:
+
+Index: seq.h
+===================================================================
+RCS file: /usr/local/cvsroot/kroot/kss/epcom/seq/seq.h,v
+retrieving revision 1.1.1.1
+retrieving revision 1.3
+diff -r1.1.1.1 -r1.3
+45a46,47
+>    09aug96,wfl	Added syncQ queue support.
+> 
+74,76c76,78
+< 	int		count;		/* number of elements in array */
+< 	int		efId;		/* event flag id if synced */
+< 	int		eventNum;	/* event number */
+---
+> 	long		count;		/* number of elements in array */
+> 	long		efId;		/* event flag id if synced */
+> 	long		eventNum;	/* event number */
+77a80,83
+> 	int		queued;		/* TRUE if queued via syncQ */
+> #define MAX_QUEUE_SIZE 100		/* default max_queue_size */
+> 	int		maxQueueSize;	/* max syncQ queue size (0 => def) */
+> 	int		queueIndex;	/* syncQ queue index */
+81c87
+< 	int		index;		/* index in array of db channels */
+---
+> 	long		index;		/* index in array of db channels */
+89c95
+< 	int		dbCount;	/* actual count for db access */
+---
+> 	long		dbCount;	/* actual count for db access */
+100a107,116
+> /* Structure for syncQ queue entry */
+> struct	queue_entry
+> {
+> 	ELLNODE		node;		/* linked list node */
+> 	CHAN		*pDB;		/* ptr to db channel info */
+> 	union db_access_val value;	/* value, time stamp etc */
+> };
+> typedef struct queue_entry QENTRY;
+> 
+> 
+105,107c121,123
+< 	FUNCPTR		actionFunc;	/* ptr to action routine for this state */
+< 	FUNCPTR		eventFunc;	/* ptr to event routine for this state */
+< 	FUNCPTR		delayFunc;	/* ptr to delay setup routine for this state */
+---
+> 	ACTION_FUNC	actionFunc;	/* ptr to action routine for this state */
+> 	EVENT_FUNC	eventFunc;	/* ptr to event routine for this state */
+> 	DELAY_FUNC	delayFunc;	/* ptr to delay setup routine for this state */
+117,118c133,134
+< 	int		taskId;		/* task id */
+< 	int		taskPriority;	/* task priority */
+---
+> 	long		taskId;		/* task id */
+> 	long		taskPriority;	/* task priority */
+121c137
+< 	int		numStates;	/* number of states */
+---
+> 	long		numStates;	/* number of states */
+129c145
+< 	int		numDelays;	/* number of delays activated */
+---
+> 	long		numDelays;	/* number of delays activated */
+149c165
+< 	int		taskId;		/* task id (main task) */
+---
+> 	long		taskId;		/* task id (main task) */
+151c167
+< 	int		taskPriority;	/* task priority */
+---
+> 	long		taskPriority;	/* task priority */
+154,156c170,172
+< 	int		numChans;	/* number of db channels, incl. unassigned */
+< 	int		assignCount;	/* number of db channels assigned */
+< 	int		connCount;	/* number of channels connected */
+---
+> 	long		numChans;	/* number of db channels, incl. unassigned */
+> 	long		assignCount;	/* number of db channels assigned */
+> 	long		connCount;	/* number of channels connected */
+158c174
+< 	int		numSS;		/* number of state sets */
+---
+> 	long		numSS;		/* number of state sets */
+160c176
+< 	int		varSize;	/* # bytes in user variable area */
+---
+> 	long		varSize;	/* # bytes in user variable area */
+164,166c180,182
+< 	int		numEvents;	/* number of events */
+< 	int		options;	/* options (bit-encoded) */
+< 	FUNCPTR		exitFunc;	/* exit function */
+---
+> 	long		numEvents;	/* number of events */
+> 	long		options;	/* options (bit-encoded) */
+> 	EXIT_FUNC	exitFunc;	/* exit function */
+168c184,187
+< 	int		logFd;		/* logfile file descr. */
+---
+> 	long		logFd;		/* logfile file descr. */
+> 	int			numQueues;	/* number of syncQ queues */
+> 	ELLLIST		*pQueues;	/* ptr to syncQ queues */
+> 
+180,182c199,201
+< int	seqConnect(SPROG *);
+< VOID	seqEventHandler(struct event_handler_args);
+< VOID	seqConnHandler(struct connection_handler_args);
+---
+> long	seqConnect (SPROG *);
+> VOID	seqEventHandler (struct event_handler_args);
+> VOID	seqConnHandler (struct connection_handler_args);
+184,194c203,213
+< VOID	seqWakeup(SPROG *, int);
+< int	seq(struct seqProgram *, char *, int);
+< VOID	seqFree(SPROG *);
+< int	sequencer(SPROG *, int, char *);
+< VOID	ssEntry(SPROG *, SSCB *);
+< int	sprogDelete(int);
+< int	seqMacParse(char *, SPROG *);
+< char	*seqMacValGet(MACRO *, char *);
+< VOID	seqMacEval(char *, char *, int, MACRO *);
+< STATUS	seq_log();
+< SPROG	*seqFindProg(int);
+---
+> VOID	seqWakeup (SPROG *, long);
+> long	seq (struct seqProgram *, char *, long);
+> VOID	seqFree (SPROG *);
+> long	sequencer (SPROG *, long, char *);
+> VOID	ssEntry (SPROG *, SSCB *);
+> long	sprogDelete (long);
+> long	seqMacParse (char *, SPROG *);
+> char	*seqMacValGet (MACRO *, char *);
+> VOID	seqMacEval (char *, char *, long, MACRO *);
+> STATUS	seq_log ();
+> SPROG	*seqFindProg (long);
+196c215
+< #endif	INCLseqh
+---
+> #endif	/*INCLseqh*/
+
+Index: seq_ca.c
+===================================================================
+RCS file: /usr/local/cvsroot/kroot/kss/epcom/seq/seq_ca.c,v
+retrieving revision 1.1.1.1
+retrieving revision 1.8
+diff -r1.1.1.1 -r1.8
+1c1,3
+< /*	@(#)seq_ca.c	1.8	8/1/94
+---
+> /*
+> 	seq_ca.c,v 1.2 1995/06/27 15:25:54 wright Exp
+> 
+43a46,48
+>  * 17jan96,ajk	Removed ca_import_cancel(), which is now in channel access lib.
+>  * 17jan96,ajk	Many routines changed to use ANSI-style function headers.
+>  * 09aug96,wfl	Added support for syncQ queued values.
+47a53,55
+> #include	"string.h"
+> #include	"logLib.h"
+> #include	"taskVarLib.h"
+49c57,58
+< LOCAL VOID proc_db_events(union db_access_val *, CHAN *, int);
+---
+> LOCAL VOID proc_db_events(union db_access_val *, CHAN *, long);
+> LOCAL VOID proc_db_events_queued(union db_access_val * , CHAN *);
+56c65
+< #endif		DEBUG
+---
+> #endif		/*DEBUG*/
+60,61c69
+< seq_connect(pSP)
+< SPROG		*pSP;
+---
+> long seq_connect(SPROG *pSP)
+66d73
+< 	extern int	seqInitialTaskId;
+79,80c86,87
+< 		 pDB->pVarName, pDB->dbName);
+< #endif	DEBUG
+---
+> 		 pDB->pVarName, pDB->dbName, 0,0,0,0);
+> #endif	/*DEBUG*/
+119,120c126
+< VOID seq_event_handler(args)
+< struct	event_handler_args args;
+---
+> VOID seq_event_handler(struct event_handler_args args)
+133,134c139
+< VOID seq_callback_handler(args)
+< struct event_handler_args	args;
+---
+> VOID seq_callback_handler(struct event_handler_args args)
+144,147c149
+< LOCAL VOID proc_db_events(pAccess, pDB, complete_type)
+< union db_access_val	*pAccess;
+< CHAN			*pDB;
+< int			complete_type;
+---
+> LOCAL VOID proc_db_events(union db_access_val *pAccess, CHAN *pDB, long complete_type)
+151d152
+< 	int			i;
+154,155c155,164
+< 	logMsg("proc_db_events: var=%s, pv=%s\n", pDB->VarName, pDB->dbName);
+< #endif	DEBUG
+---
+> 	logMsg("proc_db_events: var=%s, pv=%s\n", pDB->VarName, pDB->dbName,
+> 	       0,0,0,0);
+> #endif	/*DEBUG*/
+> 
+> 	/* If monitor on var queued via syncQ, branch to alternative routine */
+> 	if (pDB->queued && complete_type == MON_COMPLETE)
+> 	{
+> 	    proc_db_events_queued(pAccess, pDB);
+> 	    return;
+> 	}
+158c167
+< 	pVal = (void *)pAccess + pDB->dbOffset; /* ptr to data in CA structure */
+---
+> 	pVal = (void *)((long)pAccess + pDB->dbOffset); /* ptr to data in CA structure */
+170a180,185
+> 	/* Indicate completed pvGet() */
+> 	if (complete_type == GET_COMPLETE)
+> 	{
+> 		pDB->getComplete = TRUE;
+> 	}
+> 
+178,181c193,211
+< 	/* Special processing for completed pvGet() */
+< 	if (complete_type == GET_COMPLETE)
+< 	{
+< 		pDB->getComplete = TRUE;
+---
+> 	/* Special processing for completed synchronous (-a) pvGet() */
+> 	if ( (complete_type == GET_COMPLETE) && ((pSP->options & OPT_ASYNC) == 0) )
+> 		semGive(pDB->getSemId);
+> 
+> 	return;
+> }
+> /* Common code for event and callback handling (queuing version) */
+> LOCAL VOID proc_db_events_queued(union db_access_val *pAccess , CHAN *pDB)
+> 
+> {
+> 	QENTRY			*pEntry;
+> 	SPROG			*pSP;
+> 	int			count;
+> 
+> 	/* Get ptr to the state program that owns this db entry */
+> 	pSP = pDB->sprog;
+> 
+> 	/* Determine number of items currently on the queue */
+> 	count = ellCount(&pSP->pQueues[pDB->queueIndex]);
+183,185c213,231
+< 		/* If syncronous pvGet then notify pending state set */
+< 		if (pDB->getSemId != NULL)
+< 			semGive(pDB->getSemId);
+---
+> #ifdef	DEBUG
+> 	logMsg("proc_db_events_queued: var=%s, pv=%s, count(max)=%d(%d), "
+> 	       "index=%d\n", pDB->pVarName, pDB->dbName, count,
+> 	       pDB->maxQueueSize, pDB->queueIndex, 0);
+> #endif	/*DEBUG*/
+> 
+> 	/* Allocate queue entry (re-use last one if queue has reached its
+> 	   maximum size) */
+> 	if ( count < pDB->maxQueueSize )
+> 	{
+> 		pEntry = (QENTRY *) calloc(sizeof(QENTRY), 1);
+> 		if (pEntry == NULL)
+> 		{
+> 			logMsg("proc_db_events_queued: %s queue memory "
+> 			       "allocation failure\n", (int)pDB->pVarName,
+> 			       0,0,0,0,0);
+> 			return;
+> 		}
+> 		ellAdd(&pSP->pQueues[pDB->queueIndex], (ELLNODE *) pEntry);
+186a233,253
+> 	else
+> 	{
+> 		pEntry = (QENTRY *) ellLast(&pSP->pQueues[pDB->queueIndex]);
+> 		if (pEntry == NULL)
+> 		{
+> 			logMsg("proc_db_events_queued: %s queue inconsistent "
+> 			       "failure\n", (int)pDB->pVarName, 0,0,0,0,0);
+> 			return;
+> 		}
+> 	}
+> 
+> 	/* Copy channel id, value and associated information into queue
+> 	   entry (NB, currently only copy _first_ value for arrays) */
+> 	pEntry->pDB = pDB;
+> 	bcopy((char *)pAccess, (char *)&pEntry->value, sizeof(pEntry->value));
+> 
+> 	/* Set the event flag associated with this channel */
+> #ifdef DEBUG
+> 	logMsg("setting event flag %d\n", pDB->efId, 0,0,0,0,0);
+> #endif /*DEBUG*/
+> 	seq_efSet((SS_ID)pSP->pSS, pDB->efId);
+192,193c259,261
+< seq_disconnect(pSP)
+< SPROG		*pSP;
+---
+> /*#define	DEBUG_DISCONNECT*/
+> 
+> long seq_disconnect(SPROG *pSP)
+199c267
+< 	SPROG		*pMySP; /* NULL if this task is not a sequencer task */
+---
+> 	SPROG		*pMySP; /* will be NULL if this task is not a sequencer task */
+209c277,281
+< 		ca_import(seqAuxTaskId); /* not a sequencer task */
+---
+> #ifdef	DEBUG_DISCONNECT
+> 		logMsg("seq_disconnect: ca_import\n", 0,0,0,0,0,0);
+> #endif	/*DEBUG_DISCONNECT*/
+> 		status = ca_import(seqAuxTaskId); /* not a sequencer task */
+> 		SEVCHK (status, "seq_disconnect: ca_import");
+212a285,289
+> #ifdef	DEBUG_DISCONNECT
+> 	logMsg("seq_disconnect: pSP = 0x%x, pDB = 0x%x\n",
+> 	 pSP, pDB, 0,0,0,0);
+> #endif	/*DEBUG_DISCONNECT*/
+> 
+217c294
+< #ifdef	DEBUG
+---
+> #ifdef	DEBUG_DISCONNECT
+219,221c296,298
+< 		 pDB->pVarName, pDB->dbName);
+< 		taskDelay(30);
+< #endif	DEBUG
+---
+> 		 pDB->pVarName, pDB->dbName, 0,0,0,0);
+> 		taskDelay(sysClkRateGet() / 10);
+> #endif	/*DEBUG_DISCONNECT*/
+224,230c301
+< 
+< 		if (status != ECA_NORMAL)
+< 		{
+< 			/* SEVCHK(status, "ca_clear_chan"); */
+< 			/* ca_task_exit(); */
+< 			/* return -1; */
+< 		}
+---
+> 		SEVCHK (status, "seq_disconnect: ca_clear_channel");
+244,245c315,319
+< logMsg("seq_disconnect: cancel import CA context\n");
+< 		ca_import_cancel(taskIdSelf());
+---
+> #ifdef	DEBUG_DISCONNECT
+> 		logMsg("seq_disconnect: ca_import_cancel\n", 0,0,0,0,0,0);
+> #endif	/*DEBUG_DISCONNECT*/
+> 		SEVCHK(ca_import_cancel(taskIdSelf()),
+> 			"seq_disconnect: ca_import_cancel() failed!");
+255,256c329
+< VOID seq_conn_handler(args)
+< struct connection_handler_args	args;
+---
+> VOID seq_conn_handler(struct connection_handler_args args)
+274,275c347,349
+< 		logMsg("%s disconnected from %s\n", pDB->VarName, pDB->dbName);
+< #endif	DEBUG
+---
+> 		logMsg("%s disconnected from %s\n", pDB->VarName, pDB->dbName,
+> 		       0,0,0,0);
+> #endif	/*DEBUG*/
+284,285c358,360
+< 		logMsg("%s connected to %s\n", pDB->VarName, pDB->dbName);
+< #endif	DEBUG
+---
+> 		logMsg("%s connected to %s\n", pDB->VarName, pDB->dbName,
+> 		       0,0,0,0);
+> #endif	/*DEBUG*/
+301,303c376
+< VOID seqWakeup(pSP, eventNum)
+< SPROG		*pSP;
+< int		eventNum;
+---
+> VOID seqWakeup(SPROG *pSP, long eventNum)
+319,390d391
+< }
+< #include "memLib.h"
+< #include "taskVarLib.h"
+< #include "taskLib.h"
+< /*******************************************************************************
+< * P A  T C H E D  5.02b -- allows call from taskDeleteHook routine -- ajk
+< * taskVarDelete - remove a task variable from a task
+< *
+< * This routine removes the specified task variable from the calling
+< * task's context.  The private value of that variable is lost.
+< *
+< * RETURNS
+< * OK, or
+< * ERROR if the calling task does not own the specified task variable.
+< *
+< * SEE ALSO: taskVarAdd(2), taskVarGet(2), taskVarSet(2)
+< */
+< 
+< LOCAL STATUS LtaskVarDelete (tid, pVar)
+<     int tid;	/* task id whose task variable is to be retrieved */
+<     int *pVar;	/* pointer to task variable to be removed from task */
+< 
+<     {
+<     FAST TASK_VAR **ppTaskVar;		/* ptr to ptr to next node */
+<     FAST TASK_VAR *pTaskVar;
+<     WIND_TCB *pTcb = (WIND_TCB *)tid;	/* P A T C H -- ajk 19feb93*/
+< 
+<     if (pTcb == NULL)			/* check that task is valid */
+< 	return (ERROR);
+< 
+<     /* find descriptor for specified task variable */
+< 
+<     for (ppTaskVar = &pTcb->pTaskVar;
+< 	 *ppTaskVar != NULL;
+< 	 ppTaskVar = &((*ppTaskVar)->next))
+< 	{
+< 	pTaskVar = *ppTaskVar;
+< 
+< 	if (pTaskVar->address == pVar)
+< 	    {
+< 	    /* if active task, replace background value */
+< 
+< 	    if (taskIdCurrent == pTcb)
+< 		*pVar = pTaskVar->value;
+< 
+< 	    *ppTaskVar = pTaskVar->next;/* delete variable from list */
+< 
+< 	    free ((char *)pTaskVar);	/* free storage of deleted cell */
+< 
+< 	    return (OK);
+< 	    }
+< 	}
+< 
+<     /* specified address is not a task variable for specified task */
+< 
+<     errnoSet (S_taskLib_TASK_VAR_NOT_FOUND);
+<     return (ERROR);
+<     }
+< /* Temporary routine to cancel ca_import() -- THIS SHOULD GO INTO CHANNEL ACCESS! */
+< ca_import_cancel(tid)
+< int		tid;
+< {
+< 	extern int	ca_static;
+< 	int		status;
+< 
+< 	status = LtaskVarDelete(tid, &ca_static);
+< 	if (status != OK)
+< 	{
+< 		logMsg("Seq: taskVarDelete failed for tid = 0x%x\n", tid);
+< 	}
+< 
+< 	return status;
+
+Index: seq_if.c
+===================================================================
+RCS file: /usr/local/cvsroot/kroot/kss/epcom/seq/seq_if.c,v
+retrieving revision 1.1.1.1
+retrieving revision 1.8
+diff -r1.1.1.1 -r1.8
+1c1,2
+< /*	@(#)seq_if.c	1.1	8/1/94
+---
+> /*	
+> 	seq_if.c,v 1.3 1995/10/10 01:56:49 wright Exp
+31a33,37
+>  * 20jul95,ajk	Fixed seq_pvPut() so count <= NELM in db.
+>  * 09aug96,wfl	Added seq_pvGetQ() to support syncQ.
+>  * 13aug96,wfl	Added seq_pvFreeQ() to free entries on syncQ queue.
+>  * 23jun96,wfl  Added task wakeup code to seq_efClear() (like seq_efSet()).
+> 
+33a40,41
+> #include 	<string.h>
+> 
+35a44,46
+> #include	"tickLib.h"
+> #include	"logLib.h"
+> #include	"sysLib.h"
+42a54,55
+> 	seq_pvGetQ()
+> 	seq_pvFreeQ()
+70,72c83
+< seq_pvGet(ssId, pvId)
+< SS_ID		ssId;
+< int		pvId;
+---
+> long seq_pvGet(SS_ID ssId, long pvId)
+92c103
+< 	if ( !(pSP->options & OPT_ASYNC) )
+---
+> 	if ((pSP->options & OPT_ASYNC) == 0)
+103c114,115
+< 			seq_callback_handler,	/* callback handler */
+---
+> 			seq_callback_handler
+> ,	/* callback handler */
+106,107c118,121
+< 	if ( (pSP->options & OPT_ASYNC) || (status != ECA_NORMAL) )
+< 		return status;
+---
+> 	if (status != ECA_NORMAL)
+> 	{
+> 		pDB->getComplete = TRUE;
+> 		SEVCHK(status, "pvGet");
+109c123,124
+< 	/* Synchronous pvGet() */
+---
+> 		return status;
+> 	}
+111a127,130
+> 	if ((pSP->options & OPT_ASYNC) != 0)
+> 	{	/* +a option: return immediately */
+> 		return ECA_NORMAL;
+> 	}
+113,116c132,138
+< 	/* Wait for completion (10s timeout) */	
+< 	sem_status = semTake(pSS->getSemId, 600);
+< 	if (sem_status == ERROR)
+< 		status = ECA_TIMEOUT;
+---
+> 	/* Synchronous (-a option): wait for completion (10s timeout) */	
+> 	sem_status = semTake(pSS->getSemId, 10*sysClkRateGet());
+> 	if (sem_status != OK)
+> 	{
+> 		logMsg ("semTake error=%d\n", sem_status, 0,0,0,0,0);
+> 		return ECA_TIMEOUT;
+> 	}
+118c140
+< 	return status;
+---
+> 	return ECA_NORMAL;
+124,126c146
+< seq_pvGetComplete(ssId, pvId)
+< SS_ID		ssId;
+< int		pvId;
+---
+> long seq_pvGetComplete(SS_ID ssId, long pvId)
+130d149
+< 	int		status;
+133c152
+< 	pDB = pSP->pChan;
+---
+> 	pDB = pSP->pChan + pvId;
+141,143c160
+< seq_pvPut(ssId, pvId)
+< SS_ID		ssId;
+< int		pvId;
+---
+> long seq_pvPut(SS_ID ssId, long pvId)
+147c164
+< 	int		status;
+---
+> 	int		status, count;
+152,153c169,171
+< 	logMsg("seq_pvPut: pv name=%s, pVar=0x%x\n", pDB->dbName, pDB->pVar);
+< #endif	DEBUG
+---
+> 	logMsg("seq_pvPut: pv name=%s, pVar=0x%x\n", pDB->dbName, pDB->pVar,
+> 	       0,0,0,0);
+> #endif	/*DEBUG*/
+158,159c176,180
+< 	status = ca_array_put(pDB->putType, pDB->count,
+< 	 pDB->chid, pDB->pVar);
+---
+> 	count = pDB->count;
+> 	if (count > pDB->dbCount)
+> 		count = pDB->dbCount; /* don't try to put more than db count */
+> 	status = ca_array_put(pDB->putType, count, pDB->chid, pDB->pVar);
+> 
+161c182
+< 	logMsg("seq_pvPut: status=%d\n", status);
+---
+> 	logMsg("seq_pvPut: status=%d\n", status, 0,0,0,0,0);
+167c188
+< 		seq_log(pSP, "  size=%d, count=%d\n", pDB->size, pDB->count);
+---
+> 		seq_log(pSP, "  size=%d, count=%d\n", pDB->size, count);
+169c190
+< #endif	DEBUG
+---
+> #endif	/*DEBUG*/
+177,180c198
+< seq_pvAssign(ssId, pvId, pvName)
+< SS_ID		ssId;
+< int		pvId;
+< char		*pvName;
+---
+> long seq_pvAssign(SS_ID ssId, long pvId, char *pvName)
+192c210
+< #endif	DEBUG
+---
+> #endif	/*DEBUG*/
+246,248c264
+< seq_pvMonitor(ssId, pvId)
+< SS_ID		ssId;
+< int		pvId;
+---
+> long seq_pvMonitor(SS_ID ssId, long pvId)
+260c276
+< #endif	DEBUG
+---
+> #endif	/*DEBUG*/
+262c278,282
+< 	if (pDB->monitored || !pDB->assigned)
+---
+> /*	if (pDB->monitored || !pDB->assigned)	*/
+> /*	WFL, 96/08/07, don't check monitored because it can get set TRUE */
+> /*	in the connection handler before this routine is executed; this */
+> /*	fix pending a proper fix */
+> 	if (!pDB->assigned)
+291,293c311
+< seq_pvStopMonitor(ssId, pvId)
+< SS_ID		ssId;
+< int		pvId;
+---
+> long seq_pvStopMonitor(SS_ID ssId, long pvId)
+319,320c337
+< seq_pvChannelCount(ssId)
+< SS_ID		ssId;
+---
+> long seq_pvChannelCount(SS_ID ssId)
+323d339
+< 	int		status;
+332,333c348
+< seq_pvConnectCount(ssId)
+< SS_ID		ssId;
+---
+> long seq_pvConnectCount(SS_ID ssId)
+336d350
+< 	int		status;
+345,346c359
+< seq_pvAssignCount(ssId)
+< SS_ID		ssId;
+---
+> long seq_pvAssignCount(SS_ID ssId)
+349d361
+< 	int		status;
+358,360c370
+< seq_pvConnected(ssId, pvId)
+< SS_ID		ssId;
+< int		pvId;
+---
+> long seq_pvConnected(SS_ID ssId, long pvId)
+364d373
+< 	int		status;
+374,376c383
+< seq_pvAssigned(ssId, pvId)
+< SS_ID		ssId;
+< int		pvId;
+---
+> long seq_pvAssigned(SS_ID ssId, long pvId)
+380d386
+< 	int		status;
+391,393c397
+< seq_pvCount(ssId, pvId)
+< SS_ID		ssId;
+< int		pvId;
+---
+> long seq_pvCount(SS_ID ssId, long pvId)
+397d400
+< 	int		status;
+407,409c410
+< seq_pvStatus(ssId, pvId)
+< SS_ID		ssId;
+< int		pvId;
+---
+> long seq_pvStatus(SS_ID ssId, long pvId)
+413d413
+< 	int		status;
+423,425c423
+< seq_pvSeverity(ssId, pvId)
+< SS_ID		ssId;
+< int		pvId;
+---
+> long seq_pvSeverity(SS_ID ssId, long pvId)
+429d426
+< 	int		status;
+439,441c436
+< int seq_pvIndex(ssId, pVar)
+< SS_ID		ssId;
+< void		*pVar;
+---
+> long seq_pvIndex(SS_ID ssId, long pvId)
+443,455c438
+< 	SPROG		*pSP;	/* ptr to state program */
+< 	CHAN		*pDB;	/* ptr to channel struct */
+< 	int		nChan;
+< 
+< 	pSP = ((SSCB *)ssId)->sprog;
+< 	pDB = pSP->pChan;
+< 
+< 	for (nChan = 0; nChan < pSP->numChans; nChan++, pDB++)
+< 	{
+< 		if (pDB->pVar == (char *)pVar)
+< 			return nChan;
+< 	}
+< 	return -1; /* error--not a DB variable */
+---
+> 	return pvId; /* index is same as pvId */
+461,463c444
+< TS_STAMP seq_pvTimeStamp(ssId, pvId)
+< SS_ID		ssId;
+< int		pvId;
+---
+> TS_STAMP seq_pvTimeStamp(SS_ID ssId, long pvId)
+467d447
+< 	int		status;
+477,479c457
+< VOID seq_efSet(ssId, ev_flag)
+< SS_ID		ssId;
+< int		ev_flag;	/* event flag */
+---
+> VOID seq_efSet(SS_ID ssId, long ev_flag)
+483d460
+< 	int		nss;
+489,491c466,469
+< 	logMsg("seq_efSet: pSP=0x%x, pSS=0x%x, ev_flag=0x%x\n", pSP, pSS, ev_flag);
+< 	taskDelay(10);
+< #endif	DEBUG
+---
+> 	logMsg("seq_efSet: pSP=0x%x, pSS=0x%x, ev_flag=0x%x\n", pSP, pSS,
+> 	 ev_flag, 0,0,0);
+> 	taskDelay(sysClkRateGet() / 5);
+> #endif	/*DEBUG*/
+507,509c485,486
+< int seq_efTest(ssId, ev_flag)
+< SS_ID		ssId;
+< int		ev_flag;	/* event flag */
+---
+> long seq_efTest(SS_ID ssId, long ev_flag)
+> /* event flag */
+520,521c497,498
+< 	 ev_flag, pSP->pEvents[0], isSet);
+< #endif	DEBUG
+---
+> 	 ev_flag, pSP->pEvents[0], isSet, 0,0,0,0);
+> #endif	/*DEBUG*/
+528,530c505
+< int seq_efClear(ssId, ev_flag)
+< SS_ID		ssId;
+< int		ev_flag;	/* event flag */
+---
+> long seq_efClear(SS_ID ssId, long ev_flag)
+539a515,517
+> 
+> 	/* Clear this bit (apply resource lock) */
+> 	semTake(pSP->caSemId, WAIT_FOREVER);
+540a519,524
+> 
+> 	/* Wake up state sets that are waiting for this event flag */
+> 	seqWakeup(pSP, ev_flag);
+> 
+> 	/* Unlock resource */
+> 	semGive(pSP->caSemId);
+547,549c531
+< int seq_efTestAndClear(ssId, ev_flag)
+< SS_ID		ssId;
+< int		ev_flag;	/* event flag */
+---
+> long seq_efTestAndClear(SS_ID ssId, long ev_flag)
+562,566c544,663
+< /*
+<  * seq_delay() - test for delay() time-out expired */
+< int seq_delay(ssId, delayId)
+< SS_ID		ssId;
+< int		delayId;
+---
+> 
+> /*
+>  * seq_pvGetQ() - Get queued DB value (looks like pvGet() but really more
+>  *		  like efTestAndClear()). Intended to be called only from
+>  *		  event code (does not apply resource lock).
+>  */
+> int seq_pvGetQ(SS_ID ssId, int pvId)
+> 
+> {
+> 	SPROG		*pSP;
+> 	SSCB		*pSS;
+> 	CHAN		*pDB;
+> 	int		ev_flag;
+> 	int		isSet;
+> 
+> 	pSS = (SSCB *)ssId;
+> 	pSP = pSS->sprog;
+> 	pDB = pSP->pChan + pvId;
+> 
+> 	/* Determine event flag number and whether set */
+> 	ev_flag = pDB->efId;
+> 	isSet = bitTest(pSP->pEvents, ev_flag);
+> 
+> #ifdef	DEBUG
+> 	logMsg("seq_pvGetQ: pv name=%s, isSet=%d\n", pDB->dbName, isSet,
+> 	 0,0,0,0);
+> #endif	/*DEBUG*/
+> 
+> 	/* If set, queue should be non empty */
+> 	if (isSet)
+> 	{
+> 		QENTRY			*pEntry;
+> 		union db_access_val	*pAccess;
+> 		void			*pVal;
+> 
+> 		/* Dequeue first entry */
+> 		pEntry = (QENTRY *) ellGet(&pSP->pQueues[pDB->queueIndex]);
+> 
+> 		/* If none, "impossible" */
+> 		if (pEntry == NULL)
+> 		{
+> 			logMsg("seq_pvGetQ: evflag set but queue empty "
+> 			 "(impossible)\n", 0,0,0,0,0,0);
+> 			isSet = FALSE;
+> 		}
+> 
+> 		/* Extract information from entry (code from seq_ca.c)
+> 		   (pDB changed to refer to channel for which monitor
+> 		   was posted) */
+> 		else
+> 		{
+> 			pDB = pEntry->pDB;
+> 			pAccess = &pEntry->value;
+> 	
+> 			/* Copy value returned into user variable */
+> 			/* For now, can only return _one_ array element */
+> 			pVal = (char *)pAccess + pDB->dbOffset;
+> 			bcopy(pVal, pDB->pVar, pDB->size * 1 );
+> 							/* was pDB->dbCount */
+> 	 
+> 			/* Copy status & severity */
+> 			pDB->status = pAccess->tchrval.status;
+> 			pDB->severity = pAccess->tchrval.severity;
+> 		 
+> 			/* Copy time stamp */
+> 			pDB->timeStamp = pAccess->tchrval.stamp;
+> 		}
+> 	}
+> 
+> 	/* If queue is now empty, clear the event flag */
+> 	if (ellCount(&pSP->pQueues[pDB->queueIndex]) == 0)
+> 	{
+> 		bitClear(pSP->pEvents, ev_flag);
+> 	}
+> 
+> 	/* return TRUE iff event flag was set on entry */
+> 	return isSet;
+> }
+> 
+> /*
+>  * seq_pvFreeQ() - Free elements on syncQ queue and clear event flag.
+>  *		   Intended to be called from action code.
+>  */
+> int seq_pvFreeQ(SS_ID	ssId, int	pvId)
+> {
+> 	SPROG		*pSP;
+> 	SSCB		*pSS;
+> 	CHAN		*pDB;
+> 	int		ev_flag;
+> 
+> 	pSS = (SSCB *)ssId;
+> 	pSP = pSS->sprog;
+> 	pDB = pSP->pChan + pvId;
+> 
+> 	/* Apply resource lock */
+> 	semTake(pSP->caSemId, WAIT_FOREVER);
+> 
+> #ifdef	DEBUG
+> 	logMsg("seq_pvFreeQ: pv name=%s, count=%d\n", pDB->dbName,
+> 		ellCount(&pSP->pQueues[pDB->queueIndex]), 0,0,0,0);
+> #endif	/*DEBUG*/
+> 
+> 	/* Determine event flag number */
+> 	ev_flag = pDB->efId;
+> 
+> 	/* Free queue elements */
+> 	ellFree(&pSP->pQueues[pDB->queueIndex]);
+> 
+> 	/* Clear event flag */
+> 	bitClear(pSP->pEvents, ev_flag);
+> 
+> 	/* Unlock resource */
+> 	semGive(pSP->caSemId);
+> 
+> 	return 0;
+> }
+> 
+> 
+> /* seq_delay() - test for delay() time-out expired */
+> long seq_delay(SS_ID ssId, long delayId)
+587c684
+<  * seq_delayInit() - initialize delay time on entering a state.
+---
+>  * seq_delayInit() - initialize delay time (in seconds) on entering a state.
+589,592c686
+< VOID seq_delayInit(ssId, delayId, delay)
+< SS_ID		ssId;
+< int		delayId;
+< float		delay;		/* delay in seconds */
+---
+> VOID seq_delayInit(SS_ID ssId, long delayId, float delay)
+600c694
+< 	pSS->delay[delayId] = delay * 60.0;
+---
+> 	pSS->delay[delayId] = delay * sysClkRateGet();
+607c701
+<  * seq_optGet: return the value of an option.
+---
+>  * seq_optGet: return the value of an option (e.g. "a").
+610,612c704
+< BOOL seq_optGet(ssId, opt)
+< SS_ID		ssId;
+< char		*opt; /* one of the snc options as a strign (e.g. "a") */
+---
+> long seq_optGet(SS_ID ssId, char *opt)
+621a714
+> 	    case 'e': return ( (pSP->options & OPT_NEWEF) != 0);
+
+Index: seq_mac.c
+===================================================================
+RCS file: /usr/local/cvsroot/kroot/kss/epcom/seq/seq_mac.c,v
+retrieving revision 1.1.1.1
+retrieving revision 1.3
+diff -r1.1.1.1 -r1.3
+6c6,8
+< 	@(#)seq_mac.c	1.7	8/1/94
+---
+> 
+>  	seq_mac.c,v 1.2 1995/06/27 15:25:56 wright Exp
+> 
+18a21,22
+> #include	"string.h"
+> #include	"sysLib.h"
+34c38
+< int	maxChar;
+---
+> long	maxChar;
+41,43c45,47
+< 	logMsg("seqMacEval: InStr=%s\n", pInStr);
+< 	taskDelay(30);
+< #endif
+---
+> 	logMsg("seqMacEval: InStr=%s\n", pInStr, 0,0,0,0,0);
+> 	taskDelay(sysClkRateGet()/2);
+> #endif	/*DEBUG*/
+63,65c67,69
+< 			logMsg("Macro name=%s\n", name);
+< 			taskDelay(30);
+< #endif
+---
+> 			logMsg("Macro name=%s\n", name, 0,0,0,0,0);
+> 			taskDelay(sysClkRateGet() / 2);
+> #endif	/*DEBUG*/
+74,75c78,79
+< 				logMsg("Value=%s\n", pValue);
+< #endif
+---
+> 				logMsg("Value=%s\n", pValue, 0,0,0,0,0);
+> #endif	/*DEBUG*/
+90,92c94,96
+< 	logMsg("OutStr=%s\n", pTmp);
+< 	taskDelay(30);
+< #endif
+---
+> 	logMsg("OutStr=%s\n", pTmp, 0,0,0,0,0);
+> 	taskDelay(sysClkRateGet() / 2);
+> #endif	/*DEBUG*/
+119,120c123,124
+< 	logMsg("seqMacValGet: name=%s", pName);
+< #endif	DEBUG
+---
+> 	logMsg("seqMacValGet: name=%s", pName, 0,0,0,0,0);
+> #endif	/*DEBUG*/
+128,129c132,133
+< 				logMsg(", value=%s\n", pMac->pValue);
+< #endif	DEBUG
+---
+> 				logMsg(", value=%s\n", pMac->pValue, 0,0,0,0,0);
+> #endif	/*DEBUG*/
+135,136c139,140
+< 	logMsg(", no value\n");
+< #endif	DEBUG
+---
+> 	logMsg(", no value\n", 0,0,0,0,0,0);
+> #endif	/*DEBUG*/
+145c149
+< int seqMacParse(pMacStr, pSP)
+---
+> long seqMacParse(pMacStr, pSP)
+149c153
+< 	int		nMac, nChar;
+---
+> 	int		nChar;
+172,174c176,178
+< 		logMsg("name=%s, nChar=%d\n", pName, nChar);
+< 		taskDelay(30);
+< #endif
+---
+> 		logMsg("name=%s, nChar=%d\n", pName, nChar, 0,0,0,0);
+> 		taskDelay(sysClkRateGet() / 2);
+> #endif	/*DEBUG*/
+215,217c219,221
+< 		logMsg("value=%s, nChar=%d\n", pValue, nChar);
+< 		taskDelay(30);
+< #endif
+---
+> 		logMsg("value=%s, nChar=%d\n", pValue, nChar, 0,0,0,0);
+> 		taskDelay(sysClkRateGet() / 2);
+> #endif	/*DEBUG*/
+293,295c297,299
+< 	logMsg("seqMacTblGet: name=%s\n", pName);
+< 	taskDelay(30);
+< #endif
+---
+> 	logMsg("seqMacTblGet: name=%s\n", pName, 0,0,0,0,0);
+> 	taskDelay(sysClkRateGet() / 2);
+> #endif	/*DEBUG*/
+
+Index: seq_main.c
+===================================================================
+RCS file: /usr/local/cvsroot/kroot/kss/epcom/seq/seq_main.c,v
+retrieving revision 1.1.1.1
+retrieving revision 1.8
+diff -r1.1.1.1 -r1.8
+7c7,8
+< 	@(#)seq_main.c	1.18	8/1/94
+---
+>  	seq_main.c,v 1.2 1995/06/27 15:25:58 wright Exp
+> 
+45a47,53
+> 19jul95,ajk	Added unsigned types (unsigned char, short, int, long).
+> 20jul95,ajk	Added priority specification at run time. 
+> 03aug95,ajk	Fixed problem with +r option: user variable space (pSP->pVar)
+> 		was not being allocated.
+> 03jun96,ajk	Now compiles with -wall and -pedantic switches.
+> 09aug96,wfl	Added initialization of syncQ queues.
+> 17may99,wfl     Moved misplaced event array initialization.
+48a57,58
+> #include 	<string.h>
+> 
+50a61,67
+> #include	"taskLib.h"
+> #include	"taskHookLib.h"
+> #include	"logLib.h"
+> #include	"errnoLib.h"
+> #include	"usrLib.h"
+> #include	"sysLib.h"
+> 
+54c71
+< #endif		DEBUG
+---
+> #endif		/*DEBUG*/
+58d74
+< LOCAL	SPROG *alloc_task_area(struct seqProgram *);
+66,67d81
+< LOCAL	int countStates(struct seqProgram *);
+< LOCAL	int roundUp(int);
+88c102
+< int seq(pSeqProg, macro_def, stack_size)
+---
+> long seq (pSeqProg, macro_def, stack_size)
+91c105
+< int			stack_size;	/* optional stack size (bytes) */
+---
+> long			stack_size;	/* optional stack size (bytes) */
+94d107
+< 	extern		sequencer();	/* Sequencer task entry point */
+110c123,124
+< 			taskDelay(5); /* wait for task to init. ch'l access */
+---
+> 			/* wait for task to init. ch'l access */
+> 		    taskDelay(sysClkRateGet() / 10);
+112,113c126,127
+< 	logMsg("task seqAux spawned, tid=0x%x\n", seqAuxTaskId);
+< #endif	DEBUG
+---
+> 	logMsg("task seqAux spawned, tid=0x%x\n", seqAuxTaskId, 0,0,0,0,0);
+> #endif	/*DEBUG*/
+132,134c146,149
+< 		logMsg("Illegal magic number in state program.\n");
+< 		logMsg(" - Possible mismatch between SNC & SEQ versions\n");
+< 		logMsg(" - Re-compile your program?\n");
+---
+> 		logMsg("Illegal magic number in state program.\n", 0,0,0,0,0,0);
+> 		logMsg(" - Possible mismatch between SNC & SEQ versions\n",
+> 		 0,0,0,0,0,0);
+> 		logMsg(" - Re-compile your program?\n", 0,0,0,0,0,0);
+159c174
+< 		sscanf(pValue, "%d", &stack_size);
+---
+> 		sscanf(pValue, "%ld", &stack_size);
+173,176c188,205
+< 	logMsg("Spawing task %s, stack_size=%d\n", ptask_name, stack_size);
+< #endif
+< 	tid = taskSpawn(ptask_name, SPAWN_PRIORITY, SPAWN_OPTIONS,
+< 	 stack_size, sequencer, (int)pSP, stack_size, (int)ptask_name, 0,0,0,0,0,0,0);
+---
+> 	logMsg("Spawning task %s, stack_size=%d\n", ptask_name, stack_size,
+> 	 0,0,0,0);
+> #endif	/*DEBUG*/
+> 	/* Specify task priority */
+> 	pSP->taskPriority = SPAWN_PRIORITY;
+> 	pValue = seqMacValGet(pSP->pMacros, "priority");
+> 	if (pValue != NULL && strlen(pValue) > 0)
+> 	{
+> 		sscanf(pValue, "%ld", &(pSP->taskPriority));
+> 	}
+> 	if (pSP->taskPriority < SPAWN_PRIORITY)
+> 		pSP->taskPriority = SPAWN_PRIORITY;
+> 	if (pSP->taskPriority > 255)
+> 		pSP->taskPriority = 255;
+> 
+> 	tid = taskSpawn(ptask_name, pSP->taskPriority, SPAWN_OPTIONS,
+> 	 stack_size, (FUNCPTR)sequencer, (int)pSP, stack_size, (int)ptask_name,
+> 	 0,0,0,0,0,0,0);
+208,219d236
+< 
+< /* Count the total number of states in a state program */
+< LOCAL int countStates(pSeqProg)
+< struct seqProgram	*pSeqProg;
+< {
+< 	struct seqSS	*pSeqSS;
+< 	int		nstates, nss;
+< 
+< 	nstates = 0;
+< 	for (nss = 0, pSeqSS = pSeqProg->pSS; nss < pSeqProg->numSS; nss++, pSeqSS++)
+< 		nstates += pSeqSS->numStates;
+< }
+228,231d244
+< 	SSCB		*pSS;
+< 	STATE		*pState;
+< 	CHAN		*pDB;
+< 	char		*pVar;
+240c253
+< 	pSP->exitFunc = pSeqProg->exitFunc;
+---
+> 	pSP->exitFunc = (EXIT_FUNC)pSeqProg->exitFunc;
+241a255,257
+> 	/* Allocate user variable area if reentrant option (+r) is set */
+> 	if ((pSP->options & OPT_REENT) != 0)
+> 		pSP->pVar = (char *)calloc(pSP->varSize, 1);
+244,246c260,263
+< 	logMsg("init_sprog: num SS=%d, num Chans=%d, num Events=%d, Prog Name=%s, var Size=%d\n",
+< 	 pSP->numSS, pSP->numChans, pSP->numEvents, pSP->pProgName, pSP->varSize);
+< #endif	DEBUG
+---
+> 	logMsg("init_sprog: num SS=%d, num Chans=%d, num Events=%d, "
+> 	 "Prog Name=%s, var Size=%d\n", pSP->numSS, pSP->numChans,
+> 	 pSP->numEvents, pSP->pProgName, pSP->varSize, 0);
+> #endif	/*DEBUG*/
+252c269
+< 		logMsg("can't create caSemId\n");
+---
+> 		logMsg("can't create caSemId\n", 0,0,0,0,0,0);
+268a286,298
+> 	/* Allocate and initialize syncQ queues */
+> 	pSP->numQueues = pSeqProg->numQueues;
+> 	pSP->pQueues = NULL;
+> 
+> 	if (pSP->numQueues > 0 )
+> 	{
+> 		pSP->pQueues = (ELLLIST *)calloc(pSP->numQueues,
+> 						 sizeof(ELLLIST));
+> 		for (i = 0; i < pSP->numQueues; i++)
+> 			ellInit(&pSP->pQueues[i]);
+> 	}
+> 
+> 
+280c310
+< 	int		nss, i, nstates;
+---
+> 	int		nss, nstates;
+303,304c333,334
+< 		 pSS->pSSName, pSS->numStates, pSS);
+< #endif	DEBUG
+---
+> 		 pSS->pSSName, pSS->numStates, pSS, 0,0,0);
+> #endif	/*DEBUG*/
+309c339
+< 			logMsg("can't create syncSemId\n");
+---
+> 			logMsg("can't create syncSemId\n", 0,0,0,0,0,0);
+313,314c343,344
+< 		/* Create a binary semaphore for pvGet() synconizing */
+< 		if (!pSP->options & OPT_ASYNC)
+---
+> 		/* Create a binary semaphore for synchronous pvGet() (-a) */
+> 		if ((pSP->options & OPT_ASYNC) == 0)
+320c350
+< 				logMsg("can't create getSemId\n");
+---
+> 				logMsg("can't create getSemId\n", 0,0,0,0,0,0);
+334,336c364,366
+< 			pState->actionFunc = pSeqState->actionFunc;
+< 			pState->eventFunc = pSeqState->eventFunc;
+< 			pState->delayFunc = pSeqState->delayFunc;
+---
+> 			pState->actionFunc = (ACTION_FUNC)pSeqState->actionFunc;
+> 			pState->eventFunc = (EVENT_FUNC)pSeqState->eventFunc;
+> 			pState->delayFunc = (DELAY_FUNC)pSeqState->delayFunc;
+340,341c370,371
+< 		 pState->pStateName, *pState->pEventMask);
+< #endif	DEBUG
+---
+> 		 pState->pStateName, *pState->pEventMask, 0,0,0,0);
+> #endif	/*DEBUG*/
+346,347c376,377
+< 	logMsg("init_sscb: numSS=%d\n", pSP->numSS);
+< #endif	DEBUG
+---
+> 	logMsg("init_sscb: numSS=%d\n", pSP->numSS, 0,0,0,0,0);
+> #endif	/*DEBUG*/
+370,371c400,401
+< 		logMsg("init_chan: pDB=0x%x\n", pDB);
+< #endif	DEBUG
+---
+> 		logMsg("init_chan: pDB=0x%x\n", pDB, 0,0,0,0,0);
+> #endif	/*DEBUG*/
+380a411,414
+> 		pDB->queued = pSeqChan->queued;
+> 		pDB->maxQueueSize = pSeqChan->maxQueueSize ?
+> 				    pSeqChan->maxQueueSize : MAX_QUEUE_SIZE;
+> 		pDB->queueIndex = pSeqChan->queueIndex;
+388c422
+< 		if (pSP->options & OPT_REENT)
+---
+> 		if ((pSP->options & OPT_REENT) != 0)
+392,393c426,428
+< 		 pDB->dbAsName, pDB->pVarName, pDB->pVarType, pDB->count);
+< 		logMsg("   size=%d, dbOffset=%d\n", pDB->size, pDB->dbOffset);
+---
+> 		 pDB->dbAsName, pDB->pVarName, pDB->pVarType, pDB->count, 0,0);
+> 		logMsg("   size=%d, dbOffset=%d\n", pDB->size, pDB->dbOffset,
+> 		 0,0,0,0);
+395,396c430,431
+< 		 pDB->efId, pDB->monFlag, pDB->eventNum);
+< #endif	DEBUG
+---
+> 		 pDB->efId, pDB->monFlag, pDB->eventNum, 0,0,0);
+> #endif	/*DEBUG*/
+411,412c446,447
+< 	logMsg("init_mac: pMac=0x%x\n", pMac);
+< #endif
+---
+> 	logMsg("init_mac: pMac=0x%x\n", pMac, 0,0,0,0,0);
+> #endif	/*DEBUG*/
+437,438c472,473
+< 		  pDB->dbAsName, pDB->dbName);
+< #endif	DEBUG
+---
+> 		  pDB->dbAsName, pDB->dbName, 0,0,0,0);
+> #endif	/*DEBUG*/
+456a492
+> 	{
+458c494,495
+< 	sizeof (char),   OFFSET(struct dbr_time_char,   value),
+---
+> 	sizeof (char),   OFFSET(struct dbr_time_char,   value)
+> 	},
+459a497
+> 	{
+461c499,500
+< 	sizeof (short),  OFFSET(struct dbr_time_short,  value),
+---
+> 	sizeof (short),  OFFSET(struct dbr_time_short,  value)
+> 	},
+462a502
+> 	{
+464c504,505
+< 	sizeof (long),   OFFSET(struct dbr_time_long,   value),
+---
+> 	sizeof (long),   OFFSET(struct dbr_time_long,   value)
+> 	},
+465a507
+> 	{
+467c509,510
+< 	sizeof (long),   OFFSET(struct dbr_time_long,   value),
+---
+> 	sizeof (long),   OFFSET(struct dbr_time_long,   value)
+> 	},
+468a512,532
+> 	{
+> 	"unsigned char",   DBR_CHAR,   DBR_TIME_CHAR,
+> 	sizeof (char),   OFFSET(struct dbr_time_char,   value)
+> 	},
+> 
+> 	{
+> 	"unsigned short",  DBR_SHORT,  DBR_TIME_SHORT,
+> 	sizeof (short),  OFFSET(struct dbr_time_short,  value)
+> 	},
+> 
+> 	{
+> 	"unsigned int",    DBR_LONG,   DBR_TIME_LONG,
+> 	sizeof (long),   OFFSET(struct dbr_time_long,   value)
+> 	},
+> 
+> 	{
+> 	"unsigned long",   DBR_LONG,   DBR_TIME_LONG,
+> 	sizeof (long),   OFFSET(struct dbr_time_long,   value)
+> 	},
+> 
+> 	{
+470c534,535
+< 	sizeof (float),  OFFSET(struct dbr_time_float,  value),
+---
+> 	sizeof (float),  OFFSET(struct dbr_time_float,  value)
+> 	},
+471a537
+> 	{
+473c539,540
+< 	sizeof (double), OFFSET(struct dbr_time_double, value),
+---
+> 	sizeof (double), OFFSET(struct dbr_time_double, value)
+> 	},
+474a542
+> 	{
+476c544,545
+< 	MAX_STRING_SIZE, OFFSET(struct dbr_time_string, value[0]),
+---
+> 	MAX_STRING_SIZE, OFFSET(struct dbr_time_string, value[0])
+> 	},
+477a547
+> 	{
+478a549
+> 	}
+516c587
+< 		logMsg("can't create logSemId\n");
+---
+> 		logMsg("can't create logSemId\n", 0,0,0,0,0,0);
+581c652,653
+< 		logMsg("Log file error, fd=%d, error no.=%d\n", fd, errnoGet());
+---
+> 		logMsg("Log file error, fd=%d, error no.=%d\n", fd, errnoGet(), 
+> 		  0,0,0,0);
+597c669
+< STATUS seq_seqLog(ssId, fmt, arg1,arg2, arg3, arg4, arg5, arg6, arg7, arg8)
+---
+> long seq_seqLog(ssId, fmt, arg1,arg2, arg3, arg4, arg5, arg6, arg7, arg8)
+
+Index: seq_prog.c
+===================================================================
+RCS file: /usr/local/cvsroot/kroot/kss/epcom/seq/seq_prog.c,v
+retrieving revision 1.1.1.1
+retrieving revision 1.2
+diff -r1.1.1.1 -r1.2
+4a5,6
+> 	seq_prog.c,v 1.2 1995/06/27 15:26:00 wright Exp
+> 
+6d7
+< 	@(#)seq_prog.c	1.8	8/1/94
+18c19
+< #define	DEBUG
+---
+> /*#define	DEBUG*/
+42c43
+< int		taskId;
+---
+> long		taskId;
+127c128
+< #endif
+---
+> #endif /*DEBUG*/
+145c146
+< #endif
+---
+> #endif /*DEBUG*/
+173c174
+< #endif
+---
+> #endif /*DEBUG*/
+
+Index: seq_qry.c
+===================================================================
+RCS file: /usr/local/cvsroot/kroot/kss/epcom/seq/seq_qry.c,v
+retrieving revision 1.1.1.1
+retrieving revision 1.5
+diff -r1.1.1.1 -r1.5
+4a5
+> 	seq_qry.c,v 1.2 1995/06/27 15:26:02 wright Exp
+6d6
+< 	@(#)seq_qry.c	1.12	8/1/94
+24a25,28
+> 12aug96,wfl	Add syncQ queue reporting.
+> 22jan97,wfl	Fix seqChanShow() not to list unassigned channels with "-"
+> 
+> 
+27c31
+< #define	DEBUG	1
+---
+> /*#define	DEBUG	1*/
+29a34,37
+> #include	"sysLib.h"
+> #include	"usrLib.h"
+> #include	"tickLib.h"
+> #include	"string.h"
+30a39
+> /* User functions */
+32a42
+> 
+36c46
+< LOCAL	seqShowAll();
+---
+> LOCAL	void seqShowAll();
+49,50c59
+< 	CHAN		*pDB;
+< 	int		nss, nst, nch, status, n;
+---
+> 	int		nss, status;
+67,73c76,87
+< 	printf("  initial task id=%d=0x%x\n", pSP->taskId, pSP->taskId);
+< 	printf("  task priority=%d\n", pSP->taskPriority);
+< 	printf("  number of state sets=%d\n", pSP->numSS);
+< 	printf("  number of channels=%d\n", pSP->numChans);
+< 	printf("  number of channels assigned=%d\n", pSP->assignCount);
+< 	printf("  number of channels connected=%d\n", pSP->connCount);
+< 	printf("  options: async=%d, debug=%d, reent=%d, conn=%d\n",
+---
+> 	printf("  initial task id=%lu=0x%lx\n", 
+> 		(unsigned long) pSP->taskId, (unsigned long) pSP->taskId);
+> 	printf("  task priority=%ld\n", pSP->taskPriority);
+> 	printf("  number of state sets=%ld\n", pSP->numSS);
+> 	printf("  number of syncQ queues=%d\n", pSP->numQueues);
+> 	if (pSP->numQueues > 0)
+> 		printf("  queue array address=%d=0x%x\n",
+> 		  (int)pSP->pQueues, (unsigned int)pSP->pQueues);
+> 	printf("  number of channels=%ld\n", pSP->numChans);
+> 	printf("  number of channels assigned=%ld\n", pSP->assignCount);
+> 	printf("  number of channels connected=%ld\n", pSP->connCount);
+> 	printf("  options: async=%d, debug=%d,  newef=%d, reent=%d, conn=%d\n",
+75,76c89,95
+< 	 ((pSP->options & OPT_REENT) != 0), ((pSP->options & OPT_CONN) != 0) );
+< 	printf("  log file fd=%d\n", pSP->logFd);
+---
+> 	 ((pSP->options & OPT_NEWEF) != 0), ((pSP->options & OPT_REENT) != 0),
+> 	 ((pSP->options & OPT_CONN) != 0) );
+> 	if ((pSP->options & OPT_REENT) != 0)
+> 		printf("  user variables: address=%lu=0x%lx, length=%ld=0x%lx bytes\n",
+> 		 (unsigned long)pSP->pVar, (unsigned long)pSP->pVar, 
+> 		 pSP->varSize, pSP->varSize);
+> 	printf("  log file fd=%ld\n", pSP->logFd);
+90c109,110
+< 		printf("  task id=%d=0x%x\n", pSS->taskId, pSS->taskId);
+---
+> 		printf("  task id=%lu=0x%lx\n", 
+> 			(unsigned long) pSS->taskId, (unsigned long) pSS->taskId);
+101c121
+< 		time = (tickGet() - pSS->timeEntered)/60.0;
+---
+> 		time = (tickGet() - pSS->timeEntered)/sysClkRateGet();
+113c133
+< #endif	DEBUG
+---
+> #endif	/*DEBUG*/
+129d148
+< 	float		time;
+145c164
+< 	printf("Number of channels=%d\n", pSP->numChans);
+---
+> 	printf("Number of channels=%ld\n", pSP->numChans);
+168c187,188
+< 				showAll = !pDB->connected; /* TRUE if NOT connected */
+---
+> 				showAll = pDB->assigned && (!pDB->connected);
+> 							  /* TRUE if NOT connected */
+181c201
+< 		printf("\n#%d of %d:\n", nch+1, pSP->numChans);
+---
+> 		printf("\n#%d of %ld:\n", nch+1, pSP->numChans);
+185c205,206
+< 		printf("    address = %d = 0x%x\n", pDB->pVar, pDB->pVar);
+---
+> 		printf("    address = %lu = 0x%lx\n", 
+> 			(unsigned long)pDB->pVar, (unsigned long)pDB->pVar);
+187c208
+< 		printf("    count = %d\n", pDB->count);
+---
+> 		printf("    count = %ld\n", pDB->count);
+229a251,319
+> /*
+>  * seqQueueShow() - Show syncQ queue information for a state program.
+>  */
+> int seqQueueShow( int tid)
+> /*tid  task id or name */
+> {
+> 	SPROG		*pSP;
+> 	ELLLIST		*pQueue;
+> 	int		nque, n;
+> 	char		tsBfr[50];
+> 
+> 	/* convert (possible) name to task id */
+> 	if (tid != 0)
+> 	{
+> 		tid = taskIdFigure(tid);
+> 		if (tid == ERROR)
+> 			return 0;
+> 	}
+> 	pSP = seqQryFind(tid);
+> 	if (tid == NULL)
+> 		return 0;
+> 
+> 	printf("State Program: \"%s\"\n", pSP->pProgName);
+> 	printf("Number of queues = %d\n", pSP->numQueues);
+> 
+> 	pQueue = pSP->pQueues;
+> 	for (nque = 0; nque < pSP->numQueues; )
+> 	{
+> 		QENTRY	*pEntry;
+> 		int i;
+> 
+> 		printf("\nQueue #%d of %d:\n", nque+1, pSP->numQueues);
+> 		printf("Number of entries = %d\n", ellCount(pQueue));
+> 		for (pEntry = (QENTRY *) ellFirst(pQueue), i = 1;
+> 		     pEntry != NULL;
+> 		     pEntry = (QENTRY *) ellNext(pEntry), i++)
+> 		{
+> 			CHAN			*pDB = pEntry->pDB;
+> 			union db_access_val	*pAccess = &pEntry->value;
+> 			void			*pVal =
+> 						(char *)pAccess + pDB->dbOffset;
+> 
+> 			printf("\nEntry #%d: channel name: \"%s\"\n",
+> 							    i, pDB->dbName);
+> 			printf("  Variable name: \"%s\"\n", pDB->pVarName);
+> 			printValue(pVal, pDB->putType, 1);
+> 							/* was pDB->count */
+> 			printf("  Status = %d\n", pAccess->tchrval.status);
+> 			printf("  Severity = %d\n", pAccess->tchrval.severity);
+> 
+> 			/* Print time stamp in text format:
+> 			   "mm/dd/yy hh:mm:ss.nano-sec" */
+> 			tsStampToText(&pAccess->tchrval.stamp,
+> 							TS_TEXT_MMDDYY, tsBfr);
+> 			if (tsBfr[2] == '/') /* valid t-s? */
+> 				printf("  Time stamp = %s\n", tsBfr);
+> 		}
+> 
+> 		n = wait_rtn();
+> 		if (n == 0)
+> 			return 0;
+> 		nque += n;
+> 		if (nque < 0)
+> 			nque = 0;
+> 		pQueue = pSP->pQueues + nque;
+> 	}
+> 
+> 	return 0;
+> }
+302c392
+< 			printf(" %d", *l);
+---
+> 			printf(" %ld", *l);
+354c444
+< LOCAL seqShowSP(pSP)
+---
+> LOCAL void seqShowSP(pSP)
+371,372c461,463
+< 		printf("%-16s %-10d %-16s %-16s\n",
+< 		 progName, pSS->taskId, ptaskName, pSS->pSSName );
+---
+> 		printf("%-16s %-10lu %-16s %-16s\n",
+> 		 progName, (unsigned long) pSS->taskId, 
+> 		 ptaskName, pSS->pSSName );
+377a469,471
+> /* The seqTraverseProg function is in seq_prog.c */
+> STATUS seqTraverseProg(VOID (*pFunc)(), VOID *param);
+> 
+379c473
+< LOCAL seqShowAll()
+---
+> LOCAL void seqShowAll()
+381d474
+< 	SPROG		*pSP;
+387c480
+< 	return 0;
+---
+> 	return;
+
+Index: seq_task.c
+===================================================================
+RCS file: /usr/local/cvsroot/kroot/kss/epcom/seq/seq_task.c,v
+retrieving revision 1.1.1.1
+retrieving revision 1.6
+diff -r1.1.1.1 -r1.6
+6a7
+> 	seq_task.c,v 1.3 1995/10/19 16:30:18 wright Exp
+8d8
+< 	@(#)seq_task.c	1.14	8/1/94
+27a28,30
+> 19oct95,ajk/rmw Fixed bug which kept events from being cleared in old eventflag mode
+> 20jul95,ajk	Add user-specified task priority to taskSpwan().
+> ?????96,joh Fixed problem with delay calculations.
+29c32,35
+< #define		DEBUG
+---
+> /*#define		DEBUG*/
+> 
+> #include 	<string.h>
+> 
+33c39,43
+< #include	<taskwd.h>
+---
+> #include	"taskwd.h"
+> #include	"logLib.h"
+> #include	"sysLib.h"
+> #include	"tickLib.h"
+> #include	"taskVarLib.h"
+35a46
+> LOCAL	VOID seq_waitConnect(SPROG *pSP, SSCB *pSS);
+38c49,50
+< LOCAL	long seq_getTimeout(SSCB *);
+---
+> LOCAL	int seq_getTimeout(SSCB *);
+> LOCAL	long seq_cleanup(int tid, SPROG *pSP, SEM_ID cleanupSem);
+42,44c54,58
+< #define	MAX_DELAY	(10000000) /* max delay time pending for events */
+< 
+< /*
+---
+> 
+> STATUS seqAddProg(SPROG *pSP);
+> long seq_connect(SPROG *pSP);
+> long seq_disconnect(SPROG *pSP);
+> /*
+46,47c60,61
+<  *  */
+< sequencer(pSP, stack_size, pTaskName)
+---
+>  */
+> long sequencer (pSP, stack_size, pTaskName)
+49c63
+< int		stack_size;	/* stack size */
+---
+> long		stack_size;	/* stack size */
+53,54c67
+< 	STATE		*pST;
+< 	int		nss, task_id, i;
+---
+> 	int		nss, task_id;
+85c98
+< 		  SPAWN_PRIORITY+pSS->taskPriority,	/* priority */
+---
+> 		  pSP->taskPriority,	/* priority */
+95a109,110
+> 
+> 	return 0;
+109d123
+< 	LOCAL		VOID seq_waitConnect();
+117c131
+< 	if (pSP->options & OPT_CONN)
+---
+> 	if ((pSP->options & OPT_CONN) != 0)
+163a178,187
+> 		        /* Clear all event flags (old ef mode only) */
+> 			if ( ev_trig && ((pSP->options & OPT_NEWEF) == 0) )
+> 			{    /* Clear all event flags (old mode only) */
+> 			    register	int i;
+> 
+> 			    for (i = 0; i < nWords; i++)
+> 					pSP->pEvents[i] = pSP->pEvents[i] & !pSS->pMask[i];
+> 				
+> 			}
+> 
+211,213c235
+< LOCAL VOID seq_waitConnect(pSP, pSS)
+< SPROG	*pSP;
+< SSCB	*pSS;
+---
+> LOCAL VOID seq_waitConnect(SPROG *pSP, SSCB *pSS)
+218c240
+< 	delay = 600; /* 10, 20, 30, 40, 40,... sec */
+---
+> 		delay = 10 * sysClkRateGet(); /* 10, 20, 30, 40, 40,... sec */
+225c247
+< 			 pSP->connCount, pSP->assignCount);
+---
+> 			 pSP->connCount, pSP->assignCount, 0,0,0,0);
+227,228c249,250
+< 		if (delay < 2400)
+< 			delay = delay + 600;
+---
+> 		if (delay < 40 * sysClkRateGet())
+> 			delay = delay + 10 * sysClkRateGet();
+255,256c277,280
+<  * Returns MAX_DELAY if no delays pending */
+< LOCAL long seq_getTimeout(pSS)
+---
+>  * Returns INT_MAX if no delays pending 
+>  * An "int" is returned because this is what semTake() expects
+>  */
+> LOCAL int seq_getTimeout(pSS)
+259,260c283,284
+< 	int		ndelay;
+< 	long		delay, delayMin, delayN;
+---
+> 	int	ndelay, delayMinInit;
+> 	ULONG	cur, delay, delayMin, delayN;
+263c287
+< 		return MAX_DELAY;
+---
+> 		return INT_MAX;
+265c289,298
+< 	delay = tickGet() - pSS->timeEntered; /* actual delay since state entered */
+---
+> 	/*
+> 	 * calculate the delay since this state was entered
+> 	 */
+> 	cur = tickGet();
+> 	if (cur >= pSS->timeEntered) {
+> 		delay = cur - pSS->timeEntered;
+> 	}
+> 	else {
+> 		delay = cur + (ULONG_MAX - pSS->timeEntered);
+> 	}
+267c300,301
+< 	delayMin = MAX_DELAY; /* start with largest possible delay */
+---
+> 	delayMinInit = 0;
+> 	delayMin = ULONG_MAX;
+281,282c315,317
+< 		else if (delayN < delayMin)
+< 		{
+---
+> 
+> 		if (delayN<=delayMin) {
+> 			delayMinInit=1;
+286,288d320
+< 	delay = delayMin - delay;
+< 	if (delay < 0)
+< 		delay = 0;
+290c322,349
+< 	return delay;
+---
+> 	/*
+> 	 * If there is no unexpired delay in the list
+> 	 * then wait forever until there is a PV state
+> 	 * change
+> 	 */
+> 	if (!delayMinInit) {
+> 		return INT_MAX;
+> 	}
+> 
+> 	/*
+> 	 * unexpired delay _is_ in the list
+> 	 */
+> 	if (delayMin>delay) {
+> 		delay = delayMin - delay;
+> 
+> 		/*
+> 		 * clip to the range of a valid delay in semTake()
+> 		 */
+> 		if (delay<INT_MAX) {
+> 			return delay;
+> 		}
+> 		else {
+> 			return INT_MAX;
+> 		}
+> 	}
+> 	else {
+> 		return 0;
+> 	}
+291a351
+> 
+309c369
+< sprog_delete(tid)
+---
+> long sprog_delete(tid)
+313d372
+< 	extern		int seq_cleanup();
+314a374
+> 	int		status;
+324,325c384,385
+< 	taskSpawn("seqCleanup", SPAWN_PRIORITY-1, VX_FP_TASK, 2000, seq_cleanup,
+< 	 tid, (int)pSP, (int)cleanupSem, 0,0,0,0,0,0,0);
+---
+> 	taskSpawn("tSeqCleanup", SPAWN_PRIORITY-1, VX_FP_TASK, 8000,
+> 	 (FUNCPTR)seq_cleanup, tid, (int)pSP, (int)cleanupSem, 0,0,0,0,0,0,0);
+328c388,394
+< 	semTake(cleanupSem, WAIT_FOREVER);
+---
+> 	for (;;)
+> 	{
+> 		status = semTake(cleanupSem, WAIT_FOREVER);
+> 		if (status == OK)
+> 			break;
+> 		logMsg("sprog_delete waiting for seq_cleanup\n", 0,0,0,0,0,0);
+> 	}
+335,338c401,404
+< seq_cleanup(tid, pSP, cleanupSem)
+< int		tid;
+< SPROG		*pSP;
+< SEM_ID		cleanupSem; /* indicate cleanup is finished */
+---
+> /*#define	DEBUG_CLEANUP*/
+> STATUS seqDelProg(SPROG *pSP);
+> 
+> LOCAL long seq_cleanup(int tid, SPROG *pSP, SEM_ID cleanupSem)
+340c406
+< 	int		nss, tid_ss;
+---
+> 	int		nss;
+343,344c409,412
+< 	logMsg("Delete %s: pSP=%d=0x%x, tid=%d\n",
+< 	 pSP->pProgName, pSP, pSP, tid);
+---
+> #ifdef	DEBUG_CLEANUP
+> 	logMsg("Delete %s: pSP=%d=0x%x, tid=0x%x\n", pSP->pProgName, pSP, pSP,
+> 	 tid, 0,0);
+> #endif	/*DEBUG_CLEANUP*/
+347c415
+< 	semTake(pSP->logSemId, 600);
+---
+> 	semTake(pSP->logSemId, 10 * sysClkRateGet());
+350,352c418,420
+< #ifdef	DEBUG
+< 	logMsg("   Suspending state set tasks:\n");
+< #endif	DEBUG
+---
+> #ifdef	DEBUG_CLEANUP
+> 	logMsg("   Suspending state set tasks:\n", 0,0,0,0,0,0);
+> #endif	/*DEBUG_CLEANUP*/
+356,357c424,428
+< 		tid_ss = pSS->taskId;
+< 
+---
+> 		if (pSS->taskId == 0)
+> 			continue;
+> #ifdef	DEBUG_CLEANUP
+> 		logMsg("      tid=0x%x\n", pSS->taskId, 0,0,0,0,0);
+> #endif	/*DEBUG_CLEANUP*/
+359c430
+< 		taskwdRemove(tid_ss);
+---
+> 		taskwdRemove(pSS->taskId);
+361,367c432,434
+< 		if (tid_ss != taskIdSelf() )
+< 		{
+< #ifdef	DEBUG
+< 			logMsg("    suspend task: tid=%d\n", tid_ss);
+< #endif	DEBUG
+< 			taskSuspend(tid_ss);
+< 		}
+---
+> 		/* Suspend the task */
+> 		if (pSS->taskId != tid)
+> 			taskSuspend(pSS->taskId);
+376,378c443,445
+< #ifdef	DEBUG
+< 		logMsg("   Call exit function\n");
+< #endif	DEBUG
+---
+> #ifdef	DEBUG_CLEANUP
+> 		logMsg("   Call exit function\n", 0,0,0,0,0,0);
+> #endif	/*DEBUG_CLEANUP*/
+382a450,453
+> #ifdef	DEBUG_CLEANUP
+> 	logMsg("   Disconnect all channels\n", 0,0,0,0,0,0);
+> #endif	/*DEBUG_CLEANUP*/
+> 
+385c456,461
+< 	/* Cancel the CA context for each state set task */
+---
+> 	/* Owing to persistent problems with ca_import() and ca_import_cancel(),
+> 	   temporarily suppress them altogether (WFL, 13-Oct-97) */
+> #if 0
+> 	/* Cancel the CA context for each state set task (have to re-import
+> 	   the context each time because ca_import_cancel() deletes the
+> 	   ca_static task variable) */
+388c464,479
+< 		ca_import_cancel(pSS->taskId);
+---
+> 		extern		int seqAuxTaskId;
+> 
+> 		if (pSS->taskId == 0)
+> 			continue;
+> 
+> #ifdef	DEBUG_CLEANUP
+> 		logMsg("   ca_import(0x%x)\n", seqAuxTaskId, 0,0,0,0,0);
+> #endif	/*DEBUG_CLEANUP*/
+> 		SEVCHK (ca_import(seqAuxTaskId),
+> 			"seq_cleanup:ca_import() failed")
+> 
+> #ifdef	DEBUG_CLEANUP
+> 		logMsg("   ca_import_cancel(0x%x)\n", pSS->taskId, 0,0,0,0,0);
+> #endif	/*DEBUG_CLEANUP*/
+> 		SEVCHK (ca_import_cancel(pSS->taskId),
+> 			"seq_cleanup:ca_import_cancel() failed")
+389a481
+> #endif
+392c484
+< 	if (pSP->logFd > 0 && pSP->logFd != ioGlobalStdGet(1))
+---
+> 	if ( (pSP->logFd > 0) && (pSP->logFd != ioGlobalStdGet(1)) )
+394,396c486,488
+< #ifdef	DEBUG
+< 		logMsg("Closing log fd=%d\n", pSP->logFd);
+< #endif	DEBUG
+---
+> #ifdef	DEBUG_CLEANUP
+> 		logMsg("Closing log fd=%d\n", pSP->logFd, 0,0,0,0,0);
+> #endif	/*DEBUG_CLEANUP*/
+408,409c500
+< 		tid_ss = pSS->taskId;
+< 		if ( (tid != tid_ss) && (tid_ss != 0) )
+---
+> 		if ( (pSS->taskId != tid) && (pSS->taskId != 0) )
+411,414c502,506
+< #ifdef	DEBUG
+< 			logMsg("   delete ss task: tid=%d\n", tid_ss);
+< #endif	DEBUG
+< 			taskDelete(tid_ss);
+---
+> #ifdef	DEBUG_CLEANUP
+> 			logMsg("   delete ss task: tid=0x%x\n", pSS->taskId,
+> 			 0,0,0,0,0);
+> #endif	/*DEBUG_CLEANUP*/
+> 			taskDelete(pSS->taskId);
+429c521
+< 	taskDelay(5);
+---
+> 	taskDelay(sysClkRateGet() / 10);
+484c576
+< seqAuxTask()
+---
+> long seqAuxTask()
+487a580,581
+> 	/* Register this task with the EPICS watchdog */
+> 	taskwdInsert(taskIdSelf(),(VOIDFUNCPTR)0, (VOID *)0);
+
+Index: snc.y
+===================================================================
+RCS file: /usr/local/cvsroot/kroot/kss/epcom/seq/snc.y,v
+retrieving revision 1.1.1.1
+retrieving revision 1.7
+diff -r1.1.1.1 -r1.7
+6,7c6
+< 
+< 	%W%	%G%
+---
+> 	snc.y,v 1.2 1995/06/27 15:26:07 wright Exp
+15a15,20
+> 20jul95,ajk	Added "unsigned" types (see UNSIGNED token).
+> 11jul96,ajk	Added character constants (CHAR_CONST).
+> 08aug96,wfl	Added new "syncQ" statement.
+> 23jun97,wfl	Permitted pre-processor "#" lines between states. 
+> 13jan98,wfl     Added "down a level" handling of compound expressions
+> 09jun98,wfl     Permitted pre-processor "#" lines between state-sets
+44c49
+< #endif	TRUE
+---
+> #endif
+59a65
+> %token	<pchar>	CHAR_CONST
+66,67c72,74
+< %token	MONITOR ASSIGN TO WHEN CHAR SHORT INT LONG FLOAT DOUBLE STRING_DECL
+< %token	EVFLAG SYNC
+---
+> %token	MONITOR ASSIGN TO WHEN
+> %token	UNSIGNED CHAR SHORT INT LONG FLOAT DOUBLE STRING_DECL
+> %token	EVFLAG SYNC SYNCQ
+70c77
+< %token	PLUS MINUS SLASH GT GE EQ LE LT NE NOT BIT_OR BIT_AND
+---
+> %token	PLUS MINUS SLASH GT GE EQ LE LT NE NOT BIT_OR BIT_XOR BIT_AND
+118a126
+> |	syncq_stmt
+180a189,192
+> |	UNSIGNED CHAR	{ $$ = V_UCHAR; }
+> |	UNSIGNED SHORT	{ $$ = V_USHORT; }
+> |	UNSIGNED INT	{ $$ = V_UINT; }
+> |	UNSIGNED LONG	{ $$ = V_ULONG; }
+193a206,215
+> syncq_stmt	/* syncQ <variable> <event flag> [<max queue size>] */
+> :	SYNCQ NAME NAME SEMI_COLON	{ syncq_stmt($2, NULL, $3, NULL); }
+> |	SYNCQ NAME subscript NAME SEMI_COLON
+> 					{ syncq_stmt($2, $3,   $4, NULL); }
+> |	SYNCQ NAME NAME NUMBER SEMI_COLON
+> 					{ syncq_stmt($2, NULL, $3, $4);   }
+> |	SYNCQ NAME subscript NAME NUMBER SEMI_COLON
+> 					{ syncq_stmt($2, $3,   $4, $5);   }
+> ;
+> 
+213c235
+< 
+---
+> |	pp_code				{ $$ = 0; }
+225a248
+> |	pp_code				{ $$ = 0; }
+237a261
+> |	pp_code				{ $$ = 0; }
+242c266
+< :	compound_expr			{ $$ = $1; }
+---
+> :	compound_expr			{ $$ = expression(E_COMMA, "", $1, 0); }
+250a275
+> |	CHAR_CONST			{ $$ = expression(E_CONST, $1, 0, 0); }
+274a300
+> |	COMPLEMENT	{ $$ = "~"; }
+292a319
+> |	BIT_XOR		{ $$ = "^"; }
+294d320
+< |	COMPLEMENT	{ $$ = "^"; }
+
+Index: snc_lex.l
+===================================================================
+RCS file: /usr/local/cvsroot/kroot/kss/epcom/seq/snc_lex.l,v
+retrieving revision 1.1.1.1
+retrieving revision 1.7
+diff -r1.1.1.1 -r1.7
+7c7
+< 	@(#)snc_lex.l	1.10	8/1/94
+---
+> 	snc_lex.l,v 1.2 1995/06/27 15:26:09 wright Exp
+22a23,27
+> 20jul95,ajk	Added unsigned types.
+> 11jul96,ajk	Added character constants
+> 08aug96,wfl	Added SYNCQ token.
+> 23jun97,wfl	Added ^L as white-space char; permitted '"x" "y"' syntax.
+> 01oct98,wfl     Replaced FPNUM with version from Sun lex manual ("E" support)
+33a39,43
+> #ifdef SOLARIS
+> extern		char *strdup(const char *s);	/* not present in string.h */
+> #else
+> extern		char *strdup(char *s);	/* not present in string.h */
+> #endif
+58a69,72
+> /* FPNUM was:
+> FPNUM   (([0-9]+)(\.[0-9]*)?)|(\.[0-9]+)
+>    replaced 01-Oct-98 */
+> 
+60c74,76
+< FPNUM	(([0-9]+)(\.[0-9]*)?)|(\.[0-9]+)
+---
+> DIG     [0-9]
+> EXP     [DEde][-+]?{DIG}+
+> FPNUM   {DIG}+({EXP})?|{DIG}+\.{DIG}*({EXP})?|{DIG}*\.{DIG}+({EXP})?
+62a79
+> CCONST	\'.\'
+88a106
+> <STR>\"[\n\t\ ]*\" /* ignored */ ;
+144a163
+> <SNL>"unsigned"	RETURN(UNSIGNED);
+157a177
+> <SNL>"syncQ"	RETURN(SYNCQ);
+202a223
+> <SNL>"^"	RETURN(BIT_XOR);
+204c225
+< <SNL>"^"	RETURN(COMPLEMENT);
+---
+> <SNL>"~"	RETURN(COMPLEMENT);
+231c252,256
+< <SNL>[\t\ ]*	/* no action */ ;
+---
+> <SNL>{CCONST} {
+> 		yylval.pchar = strdup(yytext);
+> 		RETURN(CHAR_CONST);
+> }
+> <SNL>[\f\t\ ]*	/* no action */ ;
+
+Index: snc_main.c
+===================================================================
+RCS file: /usr/local/cvsroot/kroot/kss/epcom/seq/snc_main.c,v
+retrieving revision 1.1.1.1
+retrieving revision 1.2
+diff -r1.1.1.1 -r1.2
+6c6,8
+< 	%W%	%G%
+---
+> 	snc_main.c,v 1.2 1995/06/27 15:26:11 wright Exp
+> 		
+> 
+20a23
+> 26jun95,ajk	Due to popular demand, reinstated event flag (-e) option.
+40a44
+> int		newef_opt = TRUE;	/* new event flag mode */
+45a50,55
+> void		get_args();
+> void		get_options();
+> void		get_in_file();
+> void		get_out_file();
+> void		print_usage();
+> 
+65c75
+< main(argc, argv)
+---
+> void main(argc, argv)
+118c128
+< get_args(argc, argv)
+---
+> void get_args(argc, argv)
+126,136c136
+< 		fprintf(stderr, "%s\n", sncVersion);
+< 		fprintf(stderr, "usage: snc <options> <infile>\n");
+< 		fprintf(stderr, "options:\n");
+< 		fprintf(stderr, "  +a - do async. pvGet\n");
+< 		fprintf(stderr, "  -c - don't wait for all connects\n");
+< 		fprintf(stderr, "  +d - turn on debug run-time option\n");
+< 		fprintf(stderr, "  -l - supress line numbering\n");
+< 		fprintf(stderr, "  +r - make reentrant at run-time\n");
+< 		fprintf(stderr, "  -w - supress compiler warnings\n");
+< 		fprintf(stderr, "  -v - don't include VxWorks definitions\n");
+< 		fprintf(stderr, "example:\n snc +a -c vacuum.st\n");
+---
+> 		print_usage();
+139a140,142
+> 	strcpy(in_file,"");
+> 	strcpy(out_file,"");
+> 
+143,145c146,147
+< 		if (*s == '+' || *s == '-')
+< 			get_options(s);
+< 		else
+---
+> 		if (*s != '+' && *s != '-')
+> 		{
+146a149,164
+> 		}
+> 		else if (*s == '-' && *(s+1) == 'o')
+> 		{
+> 			argc--; argv++; s = *argv;
+> 			get_out_file(s);
+> 		}
+> 		else
+> 		{
+> 			get_options(s);
+> 		}
+> 	}
+> 
+> 	if (strcmp(in_file,"") == 0)
+> 	{
+> 		print_usage();
+> 		exit(1);
+150c168
+< get_options(s)
+---
+> void get_options(s)
+173a192,195
+> 	case 'e':
+> 		newef_opt = opt_val;
+> 		break;
+> 
+191c213
+< 		fprintf(stderr, "Unknown option: \"%s\"\n", s);
+---
+> 		fprintf(stderr, "Unknown option ignored: \"%s\"\n", s);
+196c218
+< get_in_file (s)
+---
+> void get_in_file(s)
+200a223,228
+> 	if (strcmp(in_file,"") != 0)
+> 	{
+> 		print_usage();
+> 		exit(1);
+> 	}
+> 
+202a231,236
+> 
+> 	if (strcmp(out_file,"") != 0)
+> 	{
+> 		return;
+> 	}
+> 
+220a255,285
+> 
+> void get_out_file(s)
+> char		*s;
+> {
+> 	if (s == NULL)
+> 	{
+> 		print_usage();
+> 		exit(1);
+> 	}
+> 	
+> 	strcpy(out_file,s);
+> 	return;
+> }
+> 
+> void print_usage()
+> {
+> 	fprintf(stderr, "%s\n", sncVersion);
+> 	fprintf(stderr, "usage: snc <options> <infile>\n");
+> 	fprintf(stderr, "options:\n");
+> 	fprintf(stderr, "  -o <outfile> - override name of output file\n");
+> 	fprintf(stderr, "  +a           - do async. pvGet\n");
+> 	fprintf(stderr, "  -c           - don't wait for all connects\n");
+> 	fprintf(stderr, "  +d           - turn on debug run-time option\n");
+> 	fprintf(stderr, "  -e           - don't use new event flag mode\n");
+> 	fprintf(stderr, "  -l           - supress line numbering\n");
+> 	fprintf(stderr, "  +r           - make reentrant at run-time\n");
+> 	fprintf(stderr, "  -w           - supress compiler warnings\n");
+> 	fprintf(stderr, "  -v           - don't include VxWorks definitions\n");
+> 	fprintf(stderr, "example:\n snc +a -c vacuum.st\n");
+> }
+> 
+237c302
+< snc_err(err_txt)
+---
+> void snc_err(err_txt)
+257c322
+< yyerror(err)
+---
+> void yyerror(err)
+280c345
+< print_line_num(line_num, src_file)
+---
+> void print_line_num(line_num, src_file)

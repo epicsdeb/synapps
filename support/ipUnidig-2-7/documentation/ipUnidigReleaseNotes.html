@@ -1,0 +1,93 @@
+<html>
+
+<head>
+<title>ipUnidig Release Notes</title>
+</head>
+
+<body>
+
+<h1 align="center">ipUnidig Release Notes</h1>
+
+<h2 align="center">Release 2-7 (March 30, 2010)</h2>
+<ul>
+   <li>drvIpUnidig.cc - New version of driver based on asynPortDriver, replaces drvIpUnidig.c.
+</ul>
+
+<h2 align="center">Release 2-6 (December 19, 2008)</h2>
+<ul>
+   <li>drvIpUnidig.c - fixed bug in report function; fixed bug that led to records
+   being processed on every poll until first interrupt.
+</ul>
+
+<h2 align="center">Release 2-5 (October 18, 2007)</h2>
+<ul>
+   <li>Fixed soft reboot problem by adding epicsAtExit call to disable interrupts.</li>
+   <li>Removed vxWorks dependencies so it will work on any system with devLib and drvIpac.</li>
+   <li>Added support for SBS IP-OPTOIO-8 (Eric Norum).</li>
+   <li>Now works on RTEMS.</li>
+</ul>
+
+<h2 align="center">Release 2-4 (Sept. 5, 2006)</h2>
+<ul>
+   <li>Ron Sluiter fixed a bug in initIpUnidig() of drvIpUnidig.c.
+       The BSP was not enabling interrupts for whatever level
+       the IP carrier was configured for unless some other
+       IRQ handler, with the same IRQ level, had already
+       enabled interrupts.</li>
+  <li>Kurt Goetze added new medm adl files: IpUnidig_all.adl, IpUnidig_help.adl,
+      IpUnidig_top.adl </li>
+</ul>
+<p></p>
+
+
+
+<h2 align="center">Release 2-3 (March 23, 2005)</h2>
+<p>Major re-write:</p>
+<ul>
+  <li>Converted from MPF to ASYN.</li>
+  <li>Converted from specialized device support to generic device support from ASYN.</li>
+  <li>Converted from C++ to C</li>
+</ul>
+<p></p>
+
+<h2 align="center">Release 2-2 (March 3, 2004)</h2>
+<p>Minor changes:</p>
+<ul>
+  <li>Docs updated, renamed, and moved to documentation directory</li>
+  <li>Bug in ipUnidig.cc fixed for maxClients</li>
+  <li>Added IpUnidig.adl</li>
+</ul>
+<p></p>
+
+<h2 align="center">Release 2-1 (November 3, 2003)</h2>
+<p>Major re-write:</p>
+<ul>
+  <li>Converted to EPICS R3.14.</li>
+</ul>
+<p></p>
+
+<h2 align="center">Release 1-2 (April 2, 2003)</h2>
+<p align="left">Added full support for interrupts on the IP-Unidig-I models.&nbsp; For each input bit the hardware can be programmed to generate
+interrupts on rising or falling transitions, or neither.&nbsp; The interrupt
+service routine software is written to allow alternating which transition
+generates interrupts, so that it is also possible to generate interrupts on both
+rising and falling transitions.&nbsp; Wrote IpUnidig class so that other device
+support can attach to interrupts on specific input lines and get callbacks
+at interrupt level when a transition occurs.</p>
+<p></p>
+
+<h2 align="center">Release 1-1 (June 20, 2001)</h2>
+<p>Initial release.</p>
+<p></p>
+
+<hr>
+
+<address>
+    Suggestions and Comments to: <br>
+    <a href="mailto:rivers@cars.uchicago.edu">Mark Rivers </a>: (rivers@cars.uchicago.edu) <br>
+    Last modified: March 23, 2005
+</address>
+
+</body>
+
+</html>

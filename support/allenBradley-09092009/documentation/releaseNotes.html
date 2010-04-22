@@ -1,0 +1,154 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+    "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <title>EPICS: AllenBradley Driver and Device Support Release Notes </title>
+</head>
+
+<body>
+<h1>EPICS: Allen Bradley<br>
+Driver and Device Support<br>
+Release Notes<br>
+Release 2-3</h1>
+<address>
+  Marty Kraimer
+</address>
+<address>
+  Argonne National Laboratory - Advanced Photon Source
+</address>
+<br>
+Updated: August 2009
+
+<h2>R2-3</h2>
+<p>Minor changes for 3.14.11 and to fix compiler warnings.</p>
+
+<h2>Release Notes January 2004</h2>
+
+<p>This release requires base 3.14.5 or later. The following changes have
+been made since the last release.</p>
+<ul>
+  <li>module_types.h
+    <p>This is no longer used. If you used module_types.c to change the
+    AB_xxx definitions you will now have to use the abConfigVme command.</p>
+  </li>
+  <li>Building applications
+    <p>Only the 3.14 configure rules for building applications is supported.
+    This greatly simplifies building. The allenBradley.html manual gives
+    details.</p>
+  </li>
+</ul>
+
+<h2>Release Notes August 2003</h2>
+
+<p>This is the first release that works only with the 3.14 releases of EPICS
+base. It requires release 3.14.3 or later.</p>
+
+<h2>Release Notes April 2003</h2>
+<ul>
+  <li>License is an EPICS open source license.</li>
+  <li>1771DCM
+    <ul>
+      <li>Field DCMT has a new option PLCMultislot. See the EPICS
+        allenBradley documentation for details.</li>
+      <li>get_float failed on a powerPC. Now fixed.</li>
+    </ul>
+  </li>
+  <li>1771IFE - ab1771IFERecord posted monitors on OUTM even when output
+    message did not change. Now fixed.</li>
+  <li>1771IX - ab1771IXRecord posted monitors on OUTM even when output
+    message did not change. Now fixed.</li>
+  <li>drvAb
+    <ul>
+      <li>Changed method of deciding if interrupt is from command or from a
+        block transfer completion.</li>
+      <li>Improved debug messages. ab_debug=1 should now display a message
+        whenever something fails, e.g. times out, etc.</li>
+    </ul>
+  </li>
+</ul>
+
+<h2>Release Notes March 2002</h2>
+<ul>
+  <li>ab1771NRecord
+    <ul>
+      <li>If an error occurs when communicating with the 1771NSeries I/O
+        module, the module is reinitialized.</li>
+      <li>Many fatal errors are now just abError.</li>
+    </ul>
+  </li>
+  <li>devAB1771IXE - Old IXE support
+    <ul>
+      <li>This now uses menuConvert.h to find the thermocouple type</li>
+    </ul>
+  </li>
+</ul>
+
+<h2>Release Notes July 2001</h2>
+<ul>
+  <li>1771DCM - put_short did not work.</li>
+  <li>ab_reboot_hook - Only delete task if link is initialized.</li>
+</ul>
+
+<h2>Release Notes August 2000</h2>
+<ul>
+  <li>32 bit digital output modules were not addressed correctly if 1 slot
+    addressing is used.</li>
+  <li>ab_reset did not work if "smart" records were active, i.e. records that
+    issued block transfer requests</li>
+  <li>ab_reset_link now accepts two argumants</li>
+  <br>
+  ab_reset_link(firstLink,lastLink)</ul>
+
+<h2>Release Notes July 2000</h2>
+<ul>
+  <li>ab1771NRecord - Module is not initialized until first time record is
+    processed. This alows outputs output setpoints to be restored before the
+    module is initialized.</li>
+  <li>1771DCM - The longin and longout records now retrieve data as short
+    rather than unsigned short.</li>
+  <br>
+  Updated: december 1999</ul>
+
+<h2>Release Notes December 1999</h2>
+<ul>
+  <li>Changed ab_reboot_hook so that a busy loop waits for the AB scanner to
+    stop talking. Previously this was a taskDelay which allowed active tasks
+    to run.</li>
+  <li>Changed ab_intr to allenBradleyIntHandler and made it global. When
+    veclist is executed it is now obvious which interrupt vectors are used by
+    allenBradley.</li>
+</ul>
+
+<h2>Release Notes August 1999</h2>
+<ul>
+  <li>Changed &lt;top&gt;/config so that it uses files are very simple</li>
+  <li>Moved from unbundled to modules/bus</li>
+  <li>Made release notes a separate document</li>
+</ul>
+
+<h2>Release Notes January 1999</h2>
+<ul>
+  <li>PROMS - Allen Bradley has not yet fixed a problem with the 6008-SXxR
+    proms. At APS we are using version 1.1 proms. We make copies of these and
+    replace the proms in each new scanner.</li>
+  <li>Special support is now provided for the 1771-IFE module.</li>
+  <li>drvAb now automatically retrys failed block transfer requests (10
+    retrys before failure).
+    <ul>
+      <li>ab1791Record no longer has fields RTRY and NTRY.</li>
+      <li>Each special record type that issues block transfer requests
+        includes field LOCA (Loss of Communication Alarm).</li>
+    </ul>
+  </li>
+  <li>Rules for one slot and half slot addressing are completly different.
+    The abConfigScanListAscii allows the user to define the logical
+    addressing for each rack. The old rules will still work if the user does
+    not specify the logical addressing or lies and says that a rack isd using
+    2 slot addressing even if it isn't. Users are strongly encouraged,
+    however, to switch to the new rules.</li>
+  <li>The source is now distributed as a completely separate &lt;top&gt;
+    level application.</li>
+</ul>
+</body>
+</html>

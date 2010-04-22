@@ -1,0 +1,132 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=iso-8859-1">
+	<TITLE>opticsReleaseNotes</TITLE>
+	<META NAME="GENERATOR" CONTENT="StarOffice 7  (Solaris Sparc)">
+	<META NAME="CREATED" CONTENT="20060828;8592600">
+	<META NAME="CHANGED" CONTENT="20060828;9000600">
+</HEAD>
+<BODY LANG="en-US" BGCOLOR="#ffffff" DIR="LTR">
+<H1 ALIGN=CENTER>optics Release Notes</H1>
+
+<H2 ALIGN=CENTER>Release 2-7</H2>
+<ul>
+<li>SGM.db had some empty links that were specified as "0", which produced link errors.
+<li>table_setup_PNC.adl showed origin in wrong position (at M1, instead of M0).
+<li>Added database and MEDM displays for a multilayer monochromator.
+<li>2slit.db, 2postMirror.db - Added DMOV PV, implemented using local gate PV.
+<li>Added fb_epid.db and fb_epid.adl: user-reconfigurable software feedback
+	using the epid record, and related documentation fb_epid/*.
+<li>Added sncqxbpm.st, qxbpm.db, qxbpm.req, qxbpm*.adl -  Support for the Oxford
+	4-channel X-ray Beam Position Monitor, and related documentation qxbpm.html.
+<li>xia-slit.db - Modified for update slit support
+<li>seqPVmacros.h - format changes
+<li>tableRecord.c - commented out unused variables
+</ul>
+
+<H2 ALIGN=CENTER>Release 2-6-1</H2>
+<ul>
+<li>Added support for a multilayer monochromator
+<li>XIA_shutter.db  - user command was sometimes overwritten by a poll and dropped
+</ul>
+
+<H2 ALIGN=CENTER>Release 2-6</H2>
+<UL>
+<li>New support for XIA PF4 filter/shutter: rewritten to use asyn records
+instead of stringin/out records with stringParm device support.  Also waitTime
+calc (for serial record) was in milliseconds, but the serial record was
+replaced by an asyn record, whose timeout is specified in seconds.
+Database converted to vdct.
+<li>Oxford 4-channel x-ray beam position monitor
+<li>New support for an ASRP optical table
+<li>optics/opticsApp/Db/2slit.db: deleted gate-related  PV's
+<li>optics/opticsApp/Db/table.db: Fixed problems that were causing motor
+records to be put into alarm: tweakVal records had UDF==1; calcout record had
+empty CALC expression.
+</ul>
+
+<H2 ALIGN=CENTER>Release 2-5-3</H2>
+<UL>
+	<LI><P STYLE="margin-bottom: 0in">Fixed problems in table.db that
+	caused the table to put motors into alarm.</P>
+</UL>
+
+<H2 ALIGN=CENTER>Release 2-5-2</H2>
+<UL>
+	<LI><P STYLE="margin-bottom: 0in">Added MEDM display files for XIA PF4
+	filter, and fixed it to compile for vxWorks</p>
+	<li>xia_slit.st was not honoring limits written to the hardware.
+	<li>2slit.db converted to vdct
+</UL>
+
+<H2 ALIGN=CENTER>Release 2-5-1</H2>
+<UL>
+	<LI><P STYLE="margin-bottom: 0in">Added CoarseFineMotor database and
+	MEDM display files 
+	</P>
+	<LI><P STYLE="margin-bottom: 0in">fixed minor problems with xia_slit
+	MEDM display.</P>
+	<LI><P STYLE="margin-bottom: 0in">Added support for XIA PF4 dual
+	filters.</P>
+	<LI><P STYLE="margin-bottom: 0in">Added support for Io (ionization-chamber) calculation.</P>
+	</UL>
+<H2 ALIGN=CENTER>Release 2-5</H2>
+<UL>
+	<LI><P STYLE="margin-bottom: 0in">Added diffractometer support
+	(orientation matrix) 
+	</P>
+	<LI><P STYLE="margin-bottom: 0in">Added some documentation for
+	slits, mirrors, filters, spherical grating monochromator,
+	high-energy-resolution monochromator. 
+	</P>
+	<LI><P>Ported xia slit to EPICS 3.14, and improved its behavior when
+	driven by ca_put_callback(). 
+	</P>
+</UL>
+<H2 ALIGN=CENTER>Release 2-4</H2>
+<UL>
+	<LI><P STYLE="margin-bottom: 0in">Added table of fixed points
+	(points about which an optical table rotates) to table database,
+	request file, and medm displays 
+	</P>
+	<LI><P>The save_restore include file, table_settings.req, now
+	requires the additional macro argument 'Q'. This is the same macro
+	argument required by table.db. 
+	</P>
+</UL>
+<H2 ALIGN=CENTER>Release 2-3</H2>
+<P ALIGN=LEFT>This is the first release of the synApps optics module.
+Version numbering for this module begins with 2.3 because this module
+was split from version 2.2 of the std module, and I wanted to retain
+the CVS histories of module contents.</P>
+<P>This version is intended to build with EPICS base 3.14.5, mpf
+2.4.2, and std 2.3. Differences from software as previously released
+in std 2.2: 
+</P>
+<UL>
+	<LI><P STYLE="margin-bottom: 0in">Converted to EPICS 3.14 
+	</P>
+	<LI><P STYLE="margin-bottom: 0in">Docs updated and moved to
+	optics/documentation 
+	</P>
+	<LI><P STYLE="margin-bottom: 0in">SGM.db - removed forward links
+	pointing nowhere (gdct artifacts). 
+	</P>
+	<LI><P STYLE="margin-bottom: 0in">kohzuSeq.db - added debug PV
+	$(P)KohzuCtlDebug. Fixed long-standing bug: if the theta motor was
+	moved by a very small amount (by external client not working through
+	kohzuCtl) this software would sometimes ignore the notification it
+	received from EPICS. 
+	</P>
+	<LI><P>hrSeq.db - added debug PV $(P)HR$(N)CtlDebug. Fixed
+	long-standing bug: if a theta motor was moved by a very small amount
+	(by external client not working through hrCtl) this software would
+	sometimes ignore the notification it received from EPICS. 
+	</P>
+</UL>
+<ADDRESS>Suggestions and Comments to: <BR><A HREF="mailto:mooney@aps.anl.gov">Tim
+Mooney </A>: (mooney@aps.anl.gov) 
+</ADDRESS>
+</BODY>
+</HTML>

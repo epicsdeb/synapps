@@ -1,0 +1,23 @@
+record(longin,"$(P)$(H)$(SIG)_MSW") {
+	field(DTYP,"asynUInt32Digital")
+	field(INP,"@asynMask($(PORT),$(ADDR_MSW),0xffff)")
+	field(FLNK,"$(P)$(H)$(SIG)_LSW")
+}
+record(longin,"$(P)$(H)$(SIG)_LSW") {
+	field(DTYP,"asynUInt32Digital")
+	field(INP,"@asynMask($(PORT),$(ADDR_LSW),0xffff)")
+	field(FLNK,"$(P)$(H)$(SIG)")
+}
+record(calc,"$(P)$(H)$(SIG)") {
+	field(INPA,"$(P)$(H)$(SIG)_MSW NPP")
+	field(INPB,"$(P)$(H)$(SIG)_LSW NPP")
+	field(CALC,"a*65536+b")
+}
+record(scalcout,"$(P)$(H)$(SIG)_autoRead") {
+	field(INBB,"$(P)$(H)ReadRateON.SCAN CP")
+	field(INCC,"$(P)$(H)ReadRateOFF.SCAN CP")
+	field(DD,"Passive")
+	field(CALC,"bb")
+	field(CALC,"bb==''?dd:bb")
+	field(OUT,"$(P)$(H)$(SIG)_MSW.SCAN CA")
+}

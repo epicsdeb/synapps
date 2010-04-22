@@ -1,0 +1,65 @@
+#------------------------------------------------------------------------------
+# Linux startup file
+#------------------------------------------------------------------------------
+
+#------------------------------------------------------------------------------
+# Define environment variables
+< envPaths
+epicsEnvSet(STARTUP,".")
+epicsEnvSet(IOCDB,"../../delaygenApp/Db")
+
+#------------------------------------------------------------------------------
+# Register all support components
+dbLoadDatabase("../../dbd/iocdelaygenApp.dbd")
+iocdelaygenApp_registerRecordDeviceDriver(pdbbase)
+
+#------------------------------------------------------------------------------
+# Asyn support
+
+## Serial communications
+drvAsynSerialPortConfigure("D0", "/dev/ttyS2", 0, 0, 0)
+asynSetOption("D0", -1, "baud",    "19200")
+asynSetOption("D0", -1, "bits",    "8")
+asynSetOption("D0", -1, "parity",  "none")
+asynSetOption("D0", -1, "stop",    "1")
+asynSetOption("D0", -1, "clocal",  "Y")
+asynSetOption("D0", -1, "crtscts", "N")
+
+## Interpose interface for NI GPIB-RS232 converter
+#   nigpibInterfaceConfig(ioport,addr,conv,timeout)
+#       ioport  - Asyn port name (i.e. "L2")
+#       addr    - GPIB device address (valid when conv=1)
+#       bsiz    - NI GPIB-RS232 read buffer size (in bytes)
+#       timeout - Communication timeout (default 3s)
+#
+#nigpibInterposeConfig("D0",23,60,0);
+
+## Asyn record support
+dbLoadRecords("$(ASYN)/db/asynRecord.db","P=delaygen:,R=asynD0,PORT=D0,ADDR=0,OMAX=0,IMAX=0")
+
+## Device specific configuration
+#< colby.cmd
+#< dg645.cmd
+#< dg535.cmd
+#< gigabaudics.cmd
+#< drvAsynCoherentSDG.cmd
+
+#------------------------------------------------------------------------------
+# Configure auto save/restore
+< save_restore.cmd
+
+#------------------------------------------------------------------------------
+# Start IOC
+iocInit()
+
+#------------------------------------------------------------------------------
+# Start autosave
+
+# Monitor every five seconds
+#create_monitor_set("auto_positions.req",5,"P=delaygen:")
+
+# Monitor every ten seconds
+#create_monitor_set("auto_settings.req",10,"P=delaygen:")
+
+#
+#------------------------------------------------------------------------------

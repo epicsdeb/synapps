@@ -1,8 +1,0 @@
-dbLoadRecords("../../db/userCalcs10.db","P=ebrick:")
-dbLoadRecords("../../db/userCalcOuts10.db","P=ebrick:")
-dbLoadRecords("../../db/userStringCalcs10.db","P=ebrick:")
-dbLoadRecords("../../db/userTransforms10.db","P=ebrick:")
-dbLoadRecords("../../db/yySseq.db","P=ebrick:,S=Sseq1")
-dbLoadRecords("../../db/yySseq.db","P=ebrick:,S=Sseq2")
-dbLoadRecords("../../db/yySseq.db","P=ebrick:,S=Sseq3")
-dbLoadRecords("../../db/userAve10.db","P=ebrick:")

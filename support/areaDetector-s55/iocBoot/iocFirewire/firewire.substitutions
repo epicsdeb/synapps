@@ -1,0 +1,78 @@
+# Note.  These substutitions are mostly generic.
+# However the PINI and PINI_ABS fields should be changed to only be
+# YES for the features the camera actually supports in device or absolute
+# mode, otherwise error messages will appear on startup.
+# One would normally set either PINI or PINI_ABS to YES (but not both) because
+# if they are both YES the results are unpredictable, depending
+# on which happens last.
+
+file "$(AREA_DETECTOR)/ADApp/Db/firewireFeature.template" 
+{ 
+pattern
+{     P,     R,   PORT,     FEATURE,     N, PINI, PINI_ABS, DESC}
+
+{13FW1:, cam1:,    FW1,  BRIGHTNESS,     0,  YES,       NO, "Brightness"}
+{13FW1:, cam1:,    FW1,    EXPOSURE,     1,  YES,       NO, "Exposure"}
+{13FW1:, cam1:,    FW1,   SHARPNESS,     2,   NO,       NO, "Sharpness"}
+{13FW1:, cam1:,    FW1,      WHITEB,     3,  YES,       NO, "White balance"}
+{13FW1:, cam1:,    FW1,         HUE,     4,  YES,       NO, "Hue"}
+{13FW1:, cam1:,    FW1,  SATURATION,     5,   NO,       NO, "Saturation"}
+{13FW1:, cam1:,    FW1,       GAMMA,     6,   NO,       NO, "Gamma"}
+{13FW1:, cam1:,    FW1,     SHUTTER,     7,   NO,      YES, "Shutter time"}
+{13FW1:, cam1:,    FW1,        GAIN,     8,  YES,       NO, "Gain"}
+{13FW1:, cam1:,    FW1,        IRIS,     9,   NO,       NO, "Iris"}
+{13FW1:, cam1:,    FW1,       FOCUS,    10,   NO,       NO, "Focus"}
+{13FW1:, cam1:,    FW1,        TEMP,    11,   NO,       NO, "Temperature"}
+{13FW1:, cam1:,    FW1,     TRIGGER,    12,   NO,       NO, "Trigger"}
+{13FW1:, cam1:,    FW1,     TRIGDLY,    13,   NO,       NO, "Trigger delay"}
+{13FW1:, cam1:,    FW1,      WHITES,    14,   NO,       NO, "White shading"}
+{13FW1:, cam1:,    FW1,   FRAMERATE,    15,   NO,       NO, "Frame rate"}
+{13FW1:, cam1:,    FW1,        ZOOM,    16,   NO,       NO, "Zoom"}
+{13FW1:, cam1:,    FW1,         PAN,    17,  YES,       NO, "Pan"}
+{13FW1:, cam1:,    FW1,        TILT,    18,  YES,       NO, "Tilt"}
+{13FW1:, cam1:,    FW1,      FILTER,    19,  YES,       NO, "Optical filter"}
+{13FW1:, cam1:,    FW1,    CAPTSIZE,    20,   NO,       NO, "Capture size"}
+{13FW1:, cam1:,    FW1,     QUALITY,    21,   NO,       NO, "Capture quality"}
+}
+
+file "$(AREA_DETECTOR)/ADApp/Db/firewireWhiteBalance.template" 
+{ 
+pattern
+{     P,     R,   PORT,     FEATURE,     N, PINI, PINI_ABS, DESC}
+
+{13FW1:, cam1:,    FW1,      WHITEB,     3,  YES,       NO, "White balance"}
+}
+
+file "$(AREA_DETECTOR)/ADApp/Db/firewireVideoModes.template" 
+{ 
+pattern
+{     P,     R,   PORT,    N}
+
+{13FW1:, cam1:,    FW1,  0}
+{13FW1:, cam1:,    FW1,  1}
+{13FW1:, cam1:,    FW1,  2}
+{13FW1:, cam1:,    FW1,  3}
+{13FW1:, cam1:,    FW1,  4}
+{13FW1:, cam1:,    FW1,  5}
+{13FW1:, cam1:,    FW1,  6}
+{13FW1:, cam1:,    FW1,  7}
+}
+
+
+file "$(AREA_DETECTOR)/ADApp/Db/firewireColorCodes.template" 
+{ 
+pattern
+{     P,     R,   PORT,    N}
+
+{13FW1:, cam1:,    FW1,  0}
+{13FW1:, cam1:,    FW1,  1}
+{13FW1:, cam1:,    FW1,  2}
+{13FW1:, cam1:,    FW1,  3}
+{13FW1:, cam1:,    FW1,  4}
+{13FW1:, cam1:,    FW1,  5}
+{13FW1:, cam1:,    FW1,  6}
+{13FW1:, cam1:,    FW1,  7}
+{13FW1:, cam1:,    FW1,  8}
+{13FW1:, cam1:,    FW1,  9}
+{13FW1:, cam1:,    FW1, 10}
+}

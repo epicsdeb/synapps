@@ -1,0 +1,65 @@
+# Status polling rate (and data readout speed in normal/mca mode)
+record(ao, "$(P)PollTime") {
+    field(PINI, "YES")
+    field(DTYP, "asynFloat64")
+    field(OUT, "$(IO)DxpPollTime")
+    field(VAL, "0.01")
+    field(PREC, "3")
+    field(EGU, "s")
+}
+
+record(ai, "$(P)PollTime_RBV") {
+    field(DTYP, "asynFloat64")
+    field(INP, "$(IO)DxpPollTime")
+    field(PREC, "3")
+    field(EGU, "s")
+    field(SCAN, "I/O Intr")
+}
+
+record(bo, "$(P)SaveSystem") {
+    field(DESC, "save system information")
+    field(SCAN, "Passive")
+    field(DTYP, "asynInt32")
+    field(OUT,  "$(IO)DxpSaveSystem")
+    field(ZNAM, "Done")
+    field(ONAM, "Save")
+}
+
+record(bi, "$(P)SaveSystem_RBV") {
+    field(DTYP, "asynInt32")
+    field(INP, "$(IO)DxpSaveSystem")
+    field(ZNAM, "Done")
+    field(ONAM, "Save")
+    field(SCAN, "I/O Intr")
+}
+
+record(waveform, "$(P)SaveSystemFile")
+{
+    field(PINI, "YES")
+    field(DTYP, "asynOctetWrite")
+    field(INP,  "$(IO)DxpSaveSystemFile")
+    field(FTVL, "UCHAR")
+    field(NELM, "256")
+}
+
+# These records are for waiting for IDL or other clients
+record(bo,"$(P)EnableClientWait") {
+    field(ZNAM,"Disable")
+    field(ONAM,"Enable")
+}
+
+record(bo,"$(P)SetClientWait") {
+    field(DISV,"0")
+    field(SDIS,"$(P)EnableClientWait NPP NMS")
+    field(OMSL,"closed_loop")
+    field(DOL,"1")
+    field(OUT,"$(P)ClientWait PP MS")
+}
+
+record(busy,"$(P)ClientWait") {
+}
+
+# These records are not used, but they must exist for the IDL EPICS_MED class
+record(ao,"$(P)Dwell") {}
+record(bo,"$(P)ChannelAdvance") {}
+record(ao,"$(P)Prescale") {}

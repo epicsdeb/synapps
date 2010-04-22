@@ -1,0 +1,475 @@
+grecord(dfanout,"$(P)LS331:$(Q):Init") {
+	field(SCAN,"1 second")
+	field(OUTA,"$(P)LS331:$(Q):Input_sel.PROC  PP NMS")
+	field(OUTB,"$(P)LS331:$(Q):Units_sel.PROC  PP NMS")
+	field(OUTC,"$(P)LS331:$(Q):HeatRg.PROC  PP NMS")
+	field(OUTD,"$(P)LS331:$(Q):Gain_set.PROC  PP NMS")
+	field(OUTE,"$(P)LS331:$(Q):Rset_set.PROC  PP NMS")
+	field(OUTF,"$(P)LS331:$(Q):Rate_set.PROC  PP NMS")
+	field(OUTG,"$(P)LS331:$(Q):RampR_set.PROC  PP NMS")
+	field(OUTH,"$(P)LS331:$(Q):InitB.PROC  PP NMS")
+}
+
+grecord(dfanout,"$(P)LS331:$(Q):InitB") {
+	field(SCAN,"Passive")
+	field(OUTA,"$(P)LS331:$(Q):Ramp_on.PROC  PP NMS")
+	field(OUTB,"$(P)LS331:$(Q):wr_SP.PROC  PP NMS")
+	field(OUTC,"$(P)LS331:$(Q):read.PROC  PP NMS")
+	field(OUTD,"$(P)LS331:$(Q):readPID.PROC  PP NMS")
+	field(OUTE,"$(P)LS331:$(Q):Init.SCAN CA NMS")
+}
+
+record(ao, "$(P)LS331:$(Q):Rset_set") {
+  field(DTYP, "Soft Channel")
+  field(FLNK, "$(P)LS331:$(Q):setRset.VAL  PP MS")
+  field(PREC, "0")
+}
+
+record(ao, "$(P)LS331:$(Q):Rate_set") {
+  field(DTYP, "Soft Channel")
+  field(FLNK, "$(P)LS331:$(Q):setRate.VAL  PP MS")
+  field(PREC, "0")
+}
+
+record(ao, "$(P)LS331:$(Q):RampR_set") {
+  field(DTYP, "Soft Channel")
+  field(FLNK, "$(P)LS331:$(Q):setRamp.VAL  PP MS")
+  field(PREC, "1")
+}
+
+record(ao, "$(P)LS331:$(Q):wr_SP") {
+  field(DTYP, "Soft Channel")
+  field(FLNK, "$(P)LS331:$(Q):SP_scalc.VAL  PP MS")
+  field(PREC, "3")
+}
+
+record(ao, "$(P)LS331:$(Q):Gain_set") {
+  field(DTYP, "Soft Channel")
+  field(FLNK, "$(P)LS331:$(Q):setGain.VAL  PP MS")
+  field(PREC, "0")
+}
+
+record(mbbi, "$(P)LS331:$(Q):Rg_rdbk") {
+  field(DTYP, "Soft Channel")
+  field(INP, "$(P)LS331:$(Q):Range.VAL  NPP MS")
+  field(ZRST, "OFF")
+  field(ONST, "100 mA")
+  field(TWST, "300 mA")
+  field(THST, "1 A")
+}
+
+record(mbbi, "$(P)LS331:$(Q):Ramp_state") {
+  field(DTYP, "Soft Channel")
+  field(INP, "$(P)LS331:$(Q):Ramp_scalc.VAL  NPP MS")
+  field(ZRST, "OFF")
+  field(ONST, "ON")
+}
+
+record(mbbo, "$(P)LS331:$(Q):Input_sel") {
+  field(DTYP, "Soft Channel")
+  field(FLNK, "$(P)LS331:$(Q):SetCtl.VAL  NPP MS")
+  field(ZRVL, "0")
+  field(ONVL, "1")
+  field(TWVL, "0")
+  field(THVL, "0")
+  field(ZRST, "A")
+  field(ONST, "B")
+}
+
+record(mbbo, "$(P)LS331:$(Q):Units_sel") {
+  field(DTYP, "Soft Channel")
+  field(FLNK, "$(P)LS331:$(Q):SetCtl.VAL  NPP MS")
+  field(ZRVL, "1")
+  field(ONVL, "2")
+  field(TWVL, "0")
+  field(THVL, "0")
+  field(ZRST, "K")
+  field(ONST, "C")
+}
+
+record(mbbo, "$(P)LS331:$(Q):HeatRg") {
+  field(DTYP, "Soft Channel")
+  field(FLNK, "$(P)LS331:$(Q):SetHeat.VAL  PP MS")
+  field(ZRVL, "0")
+  field(ONVL, "1")
+  field(TWVL, "2")
+  field(THVL, "3")
+  field(FRVL, "0")
+  field(FVVL, "0")
+  field(ZRST, "OFF")
+  field(ONST, "100 mA")
+  field(TWST, "300 mA")
+  field(THST, "1 A")
+}
+
+record(mbbo, "$(P)LS331:$(Q):Ramp_on") {
+  field(DTYP, "Soft Channel")
+  field(FLNK, "$(P)LS331:$(Q):setRamp.PROC  PP MS")
+  field(ZRVL, "0")
+  field(ONVL, "1")
+  field(TWVL, "0")
+  field(THVL, "0")
+  field(ZRST, "OFF")
+  field(ONST, "ON")
+}
+
+record(seq, "$(P)LS331:$(Q):readPID") {
+  field(PREC, "1")
+  field(DLY1, ".05")
+  field(LNK1, "$(P)LS331:$(Q):rd_Gain.PROC  PP MS")
+  field(DLY2, ".05")
+  field(LNK2, "$(P)LS331:$(Q):rd_Rset.PROC  PP MS")
+  field(DLY3, ".05")
+  field(LNK3, "$(P)LS331:$(Q):rd_Rate.PROC  PP MS")
+  field(DLY4, ".05")
+  field(LNK4, "$(P)LS331:$(Q):rd_Ramp.PROC  PP MS")
+}
+
+record(seq, "$(P)LS331:$(Q):read") {
+  field(PREC, "1")
+  field(DLY1, ".05")
+  field(LNK1, "$(P)LS331:$(Q):readCtl.PROC  PP MS")
+  field(DLY2, ".05")
+  field(LNK2, "$(P)LS331:$(Q):rd_rdat_scalc.PROC  PP MS")
+  field(DLY3, ".05")
+  field(LNK3, "$(P)LS331:$(Q):rd_SplA_scalc.PROC  PP MS")
+  field(DLY4, ".05")
+  field(LNK4, "$(P)LS331:$(Q):rd_SplB_scalc.PROC  PP MS")
+  field(DLY5, ".05")
+  field(LNK5, "$(P)LS331:$(Q):rd_Heater.PROC  PP MS")
+  field(DLY6, ".05")
+  field(LNK6, "$(P)LS331:$(Q):readSP.PROC  PP MS")
+}
+
+record(stringout, "$(P)LS331:$(Q):rd_Rset") {
+  field(DTYP, "Soft Channel")
+  field(FLNK, "0")
+  field(VAL, "RSET?")
+  field(OUT, "$(P)LS331:$(Q):wr_rd_Rset.AOUT  PP MS")
+}
+
+record(stringout, "$(P)LS331:$(Q):rd_Rate") {
+  field(DTYP, "Soft Channel")
+  field(FLNK, "0")
+  field(VAL, "RATE?")
+  field(OUT, "$(P)LS331:$(Q):wr_rd_Rate.AOUT  PP MS")
+}
+
+record(stringout, "$(P)LS331:$(Q):rd_Ramp") {
+  field(DTYP, "Soft Channel")
+  field(FLNK, "0")
+  field(VAL, "RAMP?")
+  field(OUT, "$(P)LS331:$(Q):wr_rd_Ramp.AOUT  PP MS")
+}
+
+record(stringout, "$(P)LS331:$(Q):readSP") {
+  field(DTYP, "Soft Channel")
+  field(FLNK, "0")
+  field(VAL, "SETP?")
+  field(OUT, "$(P)LS331:$(Q):rd_SP.AOUT  PP MS")
+}
+
+record(stringout, "$(P)LS331:$(Q):rd_Gain") {
+  field(DTYP, "Soft Channel")
+  field(FLNK, "0")
+  field(VAL, "GAIN?")
+  field(OUT, "$(P)LS331:$(Q):wr_rd_Gain.AOUT  PP MS")
+}
+
+record(asyn, "$(P)LS331:$(Q):wr_rd_Rset") {
+  field(FLNK, "$(P)LS331:$(Q):I.VAL  PP MS")
+  field(PORT, "$(PORT)")
+}
+
+record(asyn, "$(P)LS331:$(Q):wr_rd_Rate") {
+  field(FLNK, "$(P)LS331:$(Q):D.VAL  PP MS")
+  field(PORT, "$(PORT)")
+}
+
+record(asyn, "$(P)LS331:$(Q):wr_rd_Gain") {
+  field(FLNK, "$(P)LS331:$(Q):P.VAL  PP MS")
+  field(PORT, "$(PORT)")
+}
+
+record(asyn, "$(P)LS331:$(Q):rd_Ctl") {
+  field(FLNK, "$(P)LS331:$(Q):Control.VAL  PP MS")
+  field(PORT, "$(PORT)")
+}
+
+record(asyn, "$(P)LS331:$(Q):rd_CtlParms") {
+  field(FLNK, "$(P)LS331:$(Q):CtlInput.PROC  PP MS")
+  field(PORT, "$(PORT)")
+}
+
+record(asyn, "$(P)LS331:$(Q):rd_Heater") {
+  field(FLNK, "$(P)LS331:$(Q):Heater.VAL  PP MS")
+  field(PORT, "$(PORT)")
+  field(AOUT, "HTR?")
+}
+
+record(asyn, "$(P)LS331:$(Q):write_SP") {
+  field(PORT, "$(PORT)")
+}
+
+record(asyn, "$(P)LS331:$(Q):rd_SP") {
+  field(FLNK, "$(P)LS331:$(Q):SP.VAL  PP MS")
+  field(PORT, "$(PORT)")
+}
+
+record(asyn, "$(P)LS331:$(Q):rd_Spl_a") {
+  field(FLNK, "$(P)LS331:$(Q):SampleA.VAL  PP MS")
+  field(PORT, "$(PORT)")
+}
+
+record(asyn, "$(P)LS331:$(Q):rd_Spl_b") {
+  field(FLNK, "$(P)LS331:$(Q):SampleB.VAL  PP MS")
+  field(PORT, "$(PORT)")
+}
+
+record(asyn, "$(P)LS331:$(Q):serial") {
+  field(PORT, "$(PORT)")
+}
+
+record(asyn, "$(P)LS331:$(Q):wr_rd_Htr") {
+  field(FLNK, "$(P)LS331:$(Q):Range.VAL  PP MS")
+  field(PORT, "$(PORT)")
+}
+
+record(asyn, "$(P)LS331:$(Q):wr_rd_Ramp") {
+  field(FLNK, "$(P)LS331:$(Q):Ramp_scalc.VAL  PP MS")
+  field(PORT, "$(PORT)")
+}
+
+record(scalcout, "$(P)LS331:$(Q):setRset") {
+  field(DESC, "Format string for PID input")
+  field(CALC, "$P('RSET %d;RSET?',A)")
+  field(INPA, "$(P)LS331:$(Q):Rset_set.VAL  NPP MS")
+  field(OUT, "$(P)LS331:$(Q):wr_rd_Rset.AOUT  PP MS")
+  field(PREC, "1")
+}
+
+record(scalcout, "$(P)LS331:$(Q):setRate") {
+  field(DESC, "Format string for PID input")
+  field(CALC, "$P('RATE %d;RATE?',A)")
+  field(INPA, "$(P)LS331:$(Q):Rate_set.VAL  NPP MS")
+  field(OUT, "$(P)LS331:$(Q):wr_rd_Rate.AOUT  PP MS")
+  field(PREC, "1")
+}
+
+record(scalcout, "$(P)LS331:$(Q):setGain") {
+  field(DESC, "Format string for PID input")
+  field(CALC, "$P('GAIN %d;GAIN?',A)")
+  field(INPA, "$(P)LS331:$(Q):Gain_set.VAL  NPP MS")
+  field(OUT, "$(P)LS331:$(Q):wr_rd_Gain.AOUT  PP MS")
+  field(PREC, "1")
+}
+
+record(scalcout, "$(P)LS331:$(Q):Ramp_scalc") {
+  field(FLNK, "$(P)LS331:$(Q):RampR.PROC  PP MS")
+  field(CALC, "INT(AA)")
+  field(INAA, "$(P)LS331:$(Q):wr_rd_Ramp.AINP  NPP MS")
+  field(PREC, "1")
+}
+record(scalcout, "$(P)LS331:$(Q):RampR") {
+  field(FLNK, "$(P)LS331:$(Q):Ramp_state.PROC  PP MS")
+  field(CALC, "SSCANF(AA,'%s')[2,10]")
+  field(INAA, "$(P)LS331:$(Q):wr_rd_Ramp.AINP  NPP MS")
+  field(PREC, "1")
+}
+
+record(scalcout, "$(P)LS331:$(Q):P") {
+  field(CALC, "INT(AA)")
+  field(INAA, "$(P)LS331:$(Q):wr_rd_Gain.AINP  NPP MS")
+  field(PREC, "0")
+}
+
+record(scalcout, "$(P)LS331:$(Q):I") {
+  field(CALC, "INT(AA)")
+  field(INAA, "$(P)LS331:$(Q):wr_rd_Rset.AINP  NPP MS")
+  field(PREC, "0")
+}
+
+record(scalcout, "$(P)LS331:$(Q):D") {
+  field(CALC, "INT(AA)")
+  field(INAA, "$(P)LS331:$(Q):wr_rd_Rate.AINP  NPP MS")
+  field(PREC, "0")
+}
+
+record(scalcout, "$(P)LS331:$(Q):Control") {
+  field(DESC, "Format string for Ctl query")
+  field(CALC, "DBL(AA)")
+  field(INAA, "$(P)LS331:$(Q):rd_Ctl.AINP  NPP MS")
+  field(INEE, "0")
+  field(PREC, "3")
+}
+
+record(scalcout, "$(P)LS331:$(Q):Heater") {
+  field(DESC, "Format string for Ctl query")
+  field(CALC, "DBL(AA)")
+  field(INAA, "$(P)LS331:$(Q):rd_Heater.AINP  NPP MS")
+  field(INEE, "0")
+  field(PREC, "0")
+}
+
+record(scalcout, "$(P)LS331:$(Q):Range") {
+  field(DESC, "Format string for Ctl query")
+  field(FLNK, "$(P)LS331:$(Q):Rg_rdbk.PROC  PP MS")
+  field(CALC, "INT(AA)")
+  field(INAA, "$(P)LS331:$(Q):wr_rd_Htr.AINP  NPP MS")
+  field(INEE, "0")
+  field(PREC, "2")
+}
+
+record(scalcout, "$(P)LS331:$(Q):SP") {
+  field(DESC, "Format string for Ctl query")
+  field(CALC, "DBL(AA)")
+  field(INAA, "$(P)LS331:$(Q):rd_SP.AINP  NPP MS")
+  field(INEE, "0")
+  field(PREC, "3")
+}
+
+record(scalcout, "$(P)LS331:$(Q):SP_scalc") {
+  field(DESC, "Format string for Ctl query")
+  field(FLNK, "$(P)LS331:$(Q):readSP.PROC  PP MS")
+  field(CALC, "$P('SETP 1,%6.3f',A)")
+  field(INPA, "$(P)LS331:$(Q):wr_SP.VAL  NPP MS")
+  field(INEE, "0")
+  field(OUT, "$(P)LS331:$(Q):write_SP.AOUT  PP MS")
+  field(PREC, "3")
+}
+
+record(scalcout, "$(P)LS331:$(Q):SampleA") {
+  field(DESC, "Convt str fror SplA query")
+  field(CALC, "DBL(AA)")
+  field(INAA, "$(P)LS331:$(Q):rd_Spl_a.AINP  PP MS")
+  field(INEE, "0")
+  field(PREC, "3")
+}
+
+record(scalcout, "$(P)LS331:$(Q):SampleB") {
+  field(DESC, "Convrt str from SplB query")
+  field(CALC, "DBL(AA)")
+  field(INAA, "$(P)LS331:$(Q):rd_Spl_b.AINP  PP MS")
+  field(INEE, "0")
+  field(PREC, "3")
+}
+
+record(scalcout, "$(P)LS331:$(Q):CtlInput") {
+  field(DESC, "Parse string for Ctl Input")
+  field(FLNK, "$(P)LS331:$(Q):CtlUnits.PROC  PP MS")
+  field(CALC, "SSCANF(AA,'%s')[0,0]")
+  field(INAA, "$(P)LS331:$(Q):rd_CtlParms.AINP  NPP MS")
+  field(PREC, "1")
+  field(AA, "A")
+}
+
+record(scalcout, "$(P)LS331:$(Q):CtlUnits") {
+  field(DESC, "Parse string for Ctl Unit")
+  field(FLNK, "$(P)LS331:$(Q):CtlUnits_str.PROC  PP MS")
+  field(CALC, "INT(SSCANF(AA,'%s')[2,2])")
+  field(INAA, "$(P)LS331:$(Q):rd_CtlParms.AINP  NPP MS")
+  field(PREC, "1")
+  field(AA, "A,2")
+}
+
+record(scalcout, "$(P)LS331:$(Q):CtlUnits_str") {
+  field(DESC, "Make Ctl Input string")
+  field(CALC, "A=1?BB:CC")
+  field(INPA, "$(P)LS331:$(Q):CtlUnits.VAL  NPP MS")
+  field(PREC, "1")
+  field(A, "1")
+  field(BB, "K")
+  field(CC, "C")
+}
+
+record(scalcout, "$(P)LS331:$(Q):SetCtl") {
+  field(DESC, "Format string for Ctl Set")
+  field(FLNK, "$(P)LS331:$(Q):read.PROC  PP MS")
+  field(CALC, "AA+(B?FF:EE)+','+STR(C)[0,0]+DD")
+  field(INAA, "")
+  field(INBB, "$(P)LS331:$(Q):Input_sel.VAL  PP MS")
+  field(INPB, "$(P)LS331:$(Q):Input_sel.VAL  PP MS")
+  field(INPC, "$(P)LS331:$(Q):Units_sel.RVAL  PP MS")
+  field(INDD, "")
+  field(OUT, "$(P)LS331:$(Q):rd_CtlParms.AOUT  PP MS")
+  field(PREC, "1")
+  field(AA, "CSET 1,")
+  field(BB, "A")
+  field(B, "0")
+  field(C, "1")
+  field(DD, ",0,1;CSET?")
+  field(EE, "A")
+  field(FF, "B")
+}
+
+record(scalcout, "$(P)LS331:$(Q):readCtl") {
+  field(DESC, "Format string for Ctl query")
+  field(CALC, "AA")
+  field(INAA, "0")
+  field(OUT, "$(P)LS331:$(Q):rd_CtlParms.AOUT  PP MS")
+  field(PREC, "1")
+  field(AA, "CSET?")
+}
+
+record(scalcout, "$(P)LS331:$(Q):SetHeat") {
+  field(CALC, "AA+BB+CC")
+  field(INAA, "0")
+  field(INBB, "$(P)LS331:$(Q):HeatRg.RVAL  NPP MS")
+  field(OUT, "$(P)LS331:$(Q):wr_rd_Htr.AOUT  PP MS")
+  field(PREC, "1")
+  field(AA, "RANGE ")
+  field(BB, "0")
+  field(CC, ";RANGE?")
+}
+
+record(scalcout, "$(P)LS331:$(Q):rd_SplA_scalc") {
+  field(DESC, "Format str for A query")
+  field(CALC, "AA+BB")
+  field(INAA, "$(P)LS331:$(Q):CtlUnits_str.SVAL  PP MS")
+  field(INBB, "0")
+  field(OUT, "$(P)LS331:$(Q):rd_Spl_a.AOUT  PP MS")
+  field(PREC, "1")
+  field(AA, "K")
+  field(BB, "RDG? A")
+}
+
+record(scalcout, "$(P)LS331:$(Q):rd_SplB_scalc") {
+  field(DESC, "Format str for B query")
+  field(CALC, "AA+BB")
+  field(INAA, "$(P)LS331:$(Q):CtlUnits_str.SVAL  PP MS")
+  field(INBB, "0")
+  field(OUT, "$(P)LS331:$(Q):rd_Spl_b.AOUT  PP MS")
+  field(PREC, "1")
+  field(AA, "K")
+  field(BB, "RDG? B")
+}
+
+record(scalcout, "$(P)LS331:$(Q):rd_rdat_scalc") {
+  field(DESC, "Format str for rd query")
+  field(CALC, "A=2?EE+BB+CC:DD+BB+CC")
+  field(INPA, "$(P)LS331:$(Q):CtlUnits.VAL  NPP MS")
+  field(INBB, "0")
+  field(INCC, "$(P)LS331:$(Q):CtlInput.SVAL  NPP MS")
+  field(INDD, "0")
+  field(INEE, "0")
+  field(OUT, "$(P)LS331:$(Q):rd_Ctl.AOUT  PP MS")
+  field(PREC, "1")
+  field(A, "1")
+  field(BB, "RDG? ")
+  field(DD, "K")
+  field(EE, "C")
+}
+
+record(scalcout, "$(P)LS331:$(Q):setRamp") {
+  field(DESC, "Format string for PID input")
+  field(CALC, "AA+$P('%d',A)+','+$P('%5.1f',B)+BB")
+  field(INPA, "$(P)LS331:$(Q):Ramp_on.RVAL  NPP MS")
+  field(INPB, "$(P)LS331:$(Q):RampR_set.VAL  NPP MS")
+  field(OUT, "$(P)LS331:$(Q):wr_rd_Ramp.AOUT  PP MS")
+  field(PREC, "1")
+  field(AA, "RAMP 1,")
+  field(BB, ";RAMP?")
+  field(CC, "0")
+}
+
+

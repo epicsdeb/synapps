@@ -1,0 +1,63 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>modbus: Modbus Support - Release Notes</title>
+  <meta content="text/html; charset=ISO-8859-1" http-equiv="Content-Type" />
+</head>
+<body>
+  <div style="text-align: center">
+    <h1>
+      modbus: Modbus Support - Release Notes</h1>
+  </div>
+  <div style="text-align: center">
+    <h2>
+      Release 2-0</h2>
+    <h2>
+      November 26, 2009</h2>
+  </div>
+  <ul>
+    <li>Moved the slave address handling from the asynInterpose layer to the Modbus driver
+      layer. This was done because handing it in the the interpose layer only allowed
+      1 slave address per asyn serial port or IP port. This did not allow a single serial
+      port to be used with multiple Modbus devices on an RS-485 bus, for example. <b>NOTE:
+        This requires all startup command scripts to be changed, because the syntax of the
+        modbusInterposeConfig and drvModbusAsynConfigure commands has changed.</b> Thanks
+      to Yves Lussignol from CEA in France for making these changes.</li>
+  </ul>
+  <div style="text-align: center">
+    <h2>
+      Release 1-3</h2>
+    <h2>
+      September 19, 2008</h2>
+  </div>
+  <ul>
+    <li>Changed modbusInterpose.c to replace pasynOctet->writeRaw() and pasynOctet->readRaw()
+      with pasynOctet->write() and pasynOctet->read(), because the raw routines have been
+      removed in asyn R4-10.</li>
+    <li>Changed the driver to use the asynStandardInterfaces interfaces added to asyn
+      in R4-10.</li>
+  </ul>
+  <div style="text-align: center">
+    <h2>
+      Release 1-2</h2>
+    <h2>
+      September 6, 2007</h2>
+  </div>
+  <ul>
+    <li>Fixed bug in computing byteCount in WRITE_MULTIPLE_COILS function code.</li>
+  </ul>
+  <p>
+    There is a known limitation with using serial interfaces. It is not currently possible
+    to have multiple Modbus servers connected to a single serial port. This is a limitation
+    of the asynInterposeInterface architecture used. It is fixed in release 2-0.</p>
+  <div style="text-align: center">
+    <h2>
+      Release 1-1</h2>
+    <h2>
+      April 30, 2007</h2>
+  </div>
+  <p>
+    Initial release of modbus module.</p>
+</body>
+</html>

@@ -1,0 +1,627 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN"><HTML>
+<HEAD>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=ISO-8859-1">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+<META NAME="GENERATOR" CONTENT="Adobe FrameMaker 5.5/HTML Export Filter">
+<LINK REL="STYLESHEET" HREF="Manual.css" CHARSET="ISO-8859-1" TYPE="text/css">
+<TITLE>
+ Chapter 7:  Examples of State Programs
+</TITLE>
+
+</HEAD>
+<BODY BGCOLOR="#ffffff">
+<H1 CLASS="LOCALTITLE">
+<A NAME="pgfId-691616"></A><A NAME="98107"></A><A NAME="37461"></A><A NAME="27591"></A><A NAME="76561"></A>Examples of State Programs</H1>
+<P CLASS="BODY">
+<A NAME="pgfId-700759"></A>&nbsp;</P>
+<P CLASS="BODY">
+<A NAME="pgfId-700775"></A>&nbsp;</P>
+<P CLASS="BODY">
+<A NAME="pgfId-700785"></A>&nbsp;</P>
+<P CLASS="BODY">
+<A NAME="pgfId-700790"></A>&nbsp;</P>
+<P CLASS="BODY">
+<A NAME="pgfId-700795"></A>&nbsp;</P>
+<P CLASS="BODY">
+<A NAME="pgfId-701030"></A>&nbsp;</P>
+<P CLASS="BODY">
+<A NAME="pgfId-701031"></A>&nbsp;</P>
+<P CLASS="BODY">
+<A NAME="pgfId-700800"></A>&nbsp;</P>
+<DIV>
+<H2 CLASS="HEADING1">
+<A NAME="pgfId-692514"></A>Entry and exit action example<DIV>
+<IMG SRC="Manual-10.gif">
+</DIV>
+</H2>
+<P CLASS="BODY">
+<A NAME="pgfId-692515"></A>The following state program illustrates entry and exit actions.</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692516"></A>program snctest</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692517"></A>float v;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692518"></A>assign v to &quot;grw:xxxExample&quot;; monitor v;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692520"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692521"></A>ss ss1 {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692523"></A>	state low {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692525"></A>		entry {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692527"></A>			printf(&quot;Will do this on entry&quot;);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692528"></A>		}</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692529"></A>		entry {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692531"></A>			printf(&quot;Another thing to do on entry&quot;);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692532"></A>		}</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692533"></A>		when (v&gt;5.0) {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692535"></A>			printf(&quot;now changing to high&#92;n&quot;);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692536"></A>		} state high</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692537"></A>		when (delay(.1)) { } state low</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692538"></A>		exit {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692540"></A>			printf(&quot;Something to do on exit&quot;);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692541"></A>		}</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692542"></A>	}</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692543"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692544"></A>	state high {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692546"></A>		when (v&lt;=5.0) {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692548"></A>			printf(&quot;changing to low&#92;n&quot;);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692549"></A>		} state low</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692550"></A>		when(delay(.1)) { } state high</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692551"></A>	}</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692552"></A>}</P>
+</DIV>
+<DIV>
+<H2 CLASS="HEADING1">
+<A NAME="pgfId-692554"></A>Dynamic assignment example<DIV>
+<IMG SRC="Manual-10.gif">
+</DIV>
+</H2>
+<P CLASS="BODY">
+<A NAME="pgfId-692555"></A>The following segment of a state program illustrates dynamic assignment of database variables to database channels. We have left out error checking for simplicity.</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692556"></A>program dynamic</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692557"></A>option			-c; /* don't wait for db connections */</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692558"></A>string			sysName;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692559"></A>assign			sysName to &quot;&quot;;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692560"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692561"></A>long			setpoint[5];</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692562"></A>assign			setpoint to {}; /* don't need all five strings */</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692563"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692564"></A>int			i;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692565"></A>char			str[30];</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692566"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692567"></A>ss dyn {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692568"></A>	state init {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692569"></A>		when () {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692570"></A>			sprintf (str, &quot;MySys:%s&quot;, &quot;name&quot;);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692571"></A>			pvAssign (sysName, str);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692572"></A>			for (i = 0; i &lt; 5; i++) {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692573"></A>				sprintf (str, &quot;MySys:SP%d&#92;n&quot;, i);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692574"></A>				pvAssign (setpoint[i], str);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692575"></A>				pvMonitor (setpoint[i]);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692576"></A>			}</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692577"></A>		} state process</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692578"></A>	}</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692579"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692580"></A>	state process {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692581"></A>		...</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692582"></A>	}</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692583"></A>}</P>
+</DIV>
+<DIV>
+<H2 CLASS="HEADING1">
+<A NAME="pgfId-702068"></A><A NAME="31830"></A>Complex example<DIV>
+<IMG SRC="Manual-10.gif">
+</DIV>
+</H2>
+<P CLASS="BODY">
+<A NAME="pgfId-692585"></A><EM CLASS="Emphasis">
+This example needs updating.</EM>
+</P>
+<P CLASS="BODY">
+<A NAME="pgfId-702128"></A>The following state program contains most of the concepts presented in the previous sections. It consists of four state sets: (1) <EM CLASS="Key-word">
+level_det</EM>
+, (2) <EM CLASS="Key-word">
+generate_voltage</EM>
+, (3) <EM CLASS="Key-word">
+test_status</EM>
+, and (4) <EM CLASS="Key-word">
+periodic_read</EM>
+. The state set <EM CLASS="Key-word">
+level_det</EM>
+ is similar to the example in <A HREF="Manual-3.html#33354" CLASS="XRef">See A Complete State Program</A>. It generates a triangle waveform in one state set and detects the level in another. Other state sets detect and print alarm status and demonstrate asynchronous <EM CLASS="Key-word">
+pvGet</EM>
+ and <EM CLASS="Key-word">
+pvPut</EM>
+ operation. The program demonstrates several other concepts, including access to run-time parameters with macro substitution and <EM CLASS="Key-word">
+macValueGet</EM>
+, use of arrays, escaped C code, and VxWorks input-output.</P>
+<DIV>
+<H4 CLASS="UHEADING3">
+<A NAME="pgfId-692589"></A>Preamble</H4>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692590"></A>/* File example.st: State program example. */</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692591"></A>program example (&quot;unit=ajk, stack=11000&quot;)</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692592"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692593"></A>/*=================== declarations =========================*/</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692594"></A>float			ao1;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692595"></A>assign 			ao1 to &quot;{unit}:ao1&quot;;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692596"></A>monitor			ao1;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692597"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692598"></A>float			ao2;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692599"></A>assign 			ao2 to &quot;{unit}:ao1&quot;;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692600"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692601"></A>float			wf1[2000];</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692602"></A>assign 			wf1 to &quot;{unit}:wf1.FVAL&quot;;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692603"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692604"></A>short			bi1;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692605"></A>assign 			bi1 to &quot;{unit}:bi1&quot;;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692606"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692607"></A>float			delta;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692608"></A>short			prev_status;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692609"></A>short			ch_status;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692610"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692611"></A>evflag			ef1;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692612"></A>evflag			ef2;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692613"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692614"></A>option			+r;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692615"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692616"></A>int			fd;			/* file descriptor for logging */</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-702120"></A>char			*pmac;			/* used to access program macros */</P>
+</DIV>
+<DIV>
+<H4 CLASS="UHEADING3">
+<A NAME="pgfId-692617"></A>level_det state set</H4>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692618"></A>/*=================== State Sets ===========================*/</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692619"></A>/* State set level_det detects level &gt; 5v &amp; &lt; 3v */</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692620"></A>ss level_det {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692621"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692622"></A>	state start {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692623"></A>		when() {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692624"></A>			fd = -1;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692625"></A>			/* Use parameter to define logging file */</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692626"></A>			pmac = macValueGet(&quot;output&quot;);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692627"></A>			if (pmac == 0 || pmac[0] == 0)</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692628"></A>			{</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692629"></A>				printf(&quot;No macro defined for &#92;&quot;output&#92;&quot;&#92;n&quot;);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692631"></A>				fd = 1;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692632"></A>			}</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692633"></A>			else</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692634"></A>			{</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692635"></A>				fd = open(pmac, (O_CREAT | O_WRONLY), 0664);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692636"></A>				if (fd == ERROR)</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692637"></A>				{</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692638"></A>					printf(&quot;Can't open %s&#92;n&quot;, pmac);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692639"></A>					exit (-1);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692640"></A>				}</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692641"></A>			}</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692642"></A>			fdprintf(fd, &quot;Starting state program&#92;n&quot;);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692643"></A>		} state init</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692644"></A>	}</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692645"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692646"></A>	state init {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692647"></A>		/* Initialize */</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692648"></A>		when (pvConnectCount() == pvChannelCount() ) {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692649"></A>			fdprintf(fd, &quot;All channels connectedly&quot;);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692650"></A>			bi1 = FALSE;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692651"></A>			ao2 = -1.0;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692652"></A>			pvPut(bi1);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692653"></A>			pvPut(ao2);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692654"></A>			efClear(ef2);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692655"></A>			efSet(ef1);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692656"></A>		} state low</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692657"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692658"></A>		when (delay(5.0)) {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692659"></A>			fdprintf(fd, &quot;...waiting&#92;n&quot;);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692660"></A>		} state init</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692661"></A>	}</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692662"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692663"></A>	state low {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692664"></A>		when (ao1 &gt; 5.0) {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692665"></A>			fdprintf(fd, &quot;High&#92;n&quot;);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692666"></A>			bi1 = TRUE;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692667"></A>			pvPut(bi1);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692668"></A>		} state high</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692669"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692670"></A>		when (pvConnectCount() &lt; pvChannelCount() ) {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692671"></A>			fdprintf(fd, &quot;Connection lost&#92;n&quot;);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692672"></A>			efClear(ef1);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692673"></A>			efSet(ef2);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692674"></A>		} state init</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692675"></A>	}</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692676"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692677"></A>	state high {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692678"></A>		when (ao1 &lt; 3.0) {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692679"></A>			fdprintf(fd, &quot;Low&#92;n&quot;);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692680"></A>			bi1 = FALSE;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692681"></A>			pvPut(bi1);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692682"></A>		} state low</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692683"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692684"></A>		when (pvConnectCount() &lt; pvChannelCount() ) {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692685"></A>			efSet(ef2);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692686"></A>		} state init</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692687"></A>	}</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692688"></A>}</P>
+</DIV>
+<DIV>
+<H4 CLASS="UHEADING3">
+<A NAME="pgfId-692689"></A>generate_voltage state set</H4>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692690"></A>/* Generate a ramp up/down */</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692691"></A>ss generate_voltage {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692692"></A>	state init {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692693"></A>		when (efTestAndClear(ef1)) {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692694"></A>			printf(&quot;start ramp&#92;n&quot;);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692695"></A>			fdprintf(fd, &quot;start ramp&#92;n&quot;);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692696"></A>			delta = 0.2;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692697"></A>		} state ramp</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692698"></A>	}</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692699"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692700"></A>	state ramp {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692701"></A>		when (delay(0.1)) {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692702"></A>			if (		(delta &gt; 0.0 &amp;&amp; ao2 &gt;= 11.0)												||</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692703"></A>					(delta &lt; 0.0 &amp;&amp; ao2 &lt;= -11.0) )</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692704"></A>				delta = -delta;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692705"></A>			ao2 += delta;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692706"></A>			pvPut(ao2);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692707"></A>		} state ramp</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692708"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692709"></A>		when (efTestAndClear(ef2)) {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692710"></A>		} state init</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692711"></A>	}</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692712"></A>}</P>
+</DIV>
+<DIV>
+<H4 CLASS="UHEADING3">
+<A NAME="pgfId-692713"></A>test_status state set</H4>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692714"></A>/* Check for channel status; print exceptions */</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692715"></A>ss test_status {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692716"></A>	state init {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692717"></A>		when (efTestAndClear(ef1)) {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692718"></A>			printf(&quot;start test_status&#92;n&quot;);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692719"></A>			fdprintf(fd, &quot;start test_status&#92;n&quot;);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692720"></A>			prev_status = pvStatus(ao1);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692721"></A>		} state status_check</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692722"></A>	}</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692723"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692724"></A>	state status_check {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692725"></A>		when ((ch_status = pvStatus(ao1)) != prev_status) {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692726"></A>			print_status(fd, ao1, ch_status, pvSeverity(ao1));</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692727"></A>			prev_status = ch_status;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692728"></A>		} state status_check</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692729"></A>	}</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692730"></A>}</P>
+</DIV>
+<DIV>
+<H4 CLASS="UHEADING3">
+<A NAME="pgfId-692731"></A>periodic_read state set</H4>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692732"></A>/* Periodically write/read a waveform channel. This uses<BR>
+	pvGetComplete() to allow asynchronous pvGet(). */</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692733"></A>ss periodic_read {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692734"></A>	state init {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692735"></A>		when (efTestAndClear(ef1)) {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692736"></A>			wf1[0] = 2.5;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692737"></A>			wf1[1] = -2.5;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692738"></A>			pvPut(wf1);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692739"></A>		} state read_chan</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692740"></A>	}</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692741"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692742"></A>	state read_chan {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692743"></A>		when (delay(5.)) {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692744"></A>			wf1[0] += 2.5;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692745"></A>			wf1[1] += -2.5;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692746"></A>			pvPut(wf1);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692747"></A>			pvGet(wf1);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692748"></A>		} state wait_read</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692749"></A>	}</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692750"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692751"></A>	state wait_read {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692752"></A>		when (pvGetComplete(wf1)) {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692753"></A>			fdprintf(fd, &quot;periodic read: &quot;);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692754"></A>			print_status(fd, wf1[0], pvStatus(wf1), pvSeverity(wf1));</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692755"></A>		} state read_chan</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692756"></A>	}</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692757"></A>}</P>
+</DIV>
+<DIV>
+<H4 CLASS="UHEADING3">
+<A NAME="pgfId-692758"></A>exit procedure</H4>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692759"></A>/* Exit procedure - close the log file */</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692760"></A>exit {</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692761"></A>	printf(&quot;close fd=%d&#92;n&quot;, fd);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692762"></A>	if ((fd &gt; 0) &amp;&amp; (fd != ioGlobalStdGet(1)) )</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692763"></A>		close(fd);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692764"></A>	fd = -1;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692765"></A>}</P>
+</DIV>
+<DIV>
+<H4 CLASS="UHEADING3">
+<A NAME="pgfId-692766"></A>C functions</H4>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692767"></A>/*==================== End of state sets =====================*/</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692768"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692769"></A>%{</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692770"></A>/*	This C function prints out the status, severity,</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692771"></A>	and value for a channel. Note: fd is passed as a<BR>
+	parameter to allow reentrant code to be generated */</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692772"></A>print_status(int fd, float value, int status, int severity)</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692773"></A>{</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692774"></A>	char			*pstr;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692775"></A>&nbsp;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692776"></A>	switch (status)</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692777"></A> 	{</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692778"></A>		case NO_ALARM:								pstr = &quot;no alarm&quot;;											break;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692779"></A>		case HIHI_ALARM:								pstr = &quot;high-high alarm&quot;;											break;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692780"></A>		case HIGH_ALARM:								pstr = &quot;high alarm&quot;;											break;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692781"></A>		case LOLO_ALARM:								pstr = &quot;low-low alarm&quot;;											break;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692782"></A>		case LOW_ALARM:								pstr = &quot;low alarm&quot;;											break;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692783"></A>		case STATE_ALARM:								pstr = &quot;state alarm&quot;;											break;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692784"></A>		case COS_ALARM:								pstr = &quot;cos alarm&quot;;											break;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692785"></A>		case READ_ALARM:								pstr = &quot;read alarm&quot;;											break;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692786"></A>		case WRITE_ALARM:								pstr = &quot;write alarm&quot;;											break;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692787"></A>		default:								pstr = &quot;other alarm&quot;;											break;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692788"></A>	}</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692789"></A>	fprintf (fd, &quot;Alarm condition: &#92;&quot;%s&#92;&quot;&quot;, pstr);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692790"></A>	if (severity == MINOR_ALARM)</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692791"></A>		pstr = &quot;minor&quot;;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692792"></A>	else if (severity == MAJOR_ALARM)</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692793"></A>		pstr = &quot;major&quot;;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692794"></A>	else</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692795"></A>		pstr = &quot;none&quot;;</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692796"></A>	fdprintf (fd, &quot;, severity: &#92;&quot;%s&#92;&quot;, value=%g&#92;n&quot;, pstr, value);</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692797"></A>}</P>
+<P CLASS="PROGRAM">
+<A NAME="pgfId-692798"></A>}%</P>
+</DIV>
+</DIV>
+</BODY>
+</HTML>

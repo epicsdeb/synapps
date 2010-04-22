@@ -1,0 +1,12 @@
+record(longin,"$(P)$(H)$(SIG)") {
+	field(DTYP,"asynUInt32Digital")
+	field(INP,"@asynMask($(PORT),$(ADDR),0xffff)")
+}
+record(scalcout,"$(P)$(H)$(SIG)_autoRead") {
+	field(INBB,"$(P)$(H)ReadRateON.SCAN CP")
+	field(INCC,"$(P)$(H)ReadRateOFF.SCAN CP")
+	field(DD,"Passive")
+	field(CALC,"bb")
+	field(CALC,"bb==''?dd:bb")
+	field(OUT,"$(P)$(H)$(SIG).SCAN CA")
+}

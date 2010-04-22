@@ -1,0 +1,82 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>dac128V.html</title>
+  <meta content="text/html; charset=ISO-8859-1" http-equiv="Content-Type" />
+</head>
+<body>
+  <div style="text-align: center">
+    <h1>
+      dac128V</h1>
+    <h2>
+      Mark Rivers</h2>
+    <h2>
+      Release 2-6</h2>
+  </div>
+  <p>
+    This file describes support for the Systran DAC128V, an 8 channel, 12-bit D/A converter
+    in the Industry Pack form factor. This support is a simple C++ driver derived from
+    <a href="http://www.aps.anl.gov/epics/modules/soft/asyn/R4-13/asynPortDriver.html">
+      asynPortDriver</a>, which is part of <a href="http://www.aps.anl.gov/epics/modules/soft/asyn/">
+        asyn</a>. It uses the standard asyn device support for ao records. It supports
+    both the asynInt32 and asynFloat64 interfaces. The asynInt32 interface is used for
+    ao records. The asynFloat64 is provided for use with the fast feedback in the <a
+      href="http://cars9.uchicago.edu/software/epics/epidRecord.html">EPID record</a>,
+    which is part of the <a href="http://www.aps.anl.gov/bcda/synApps/std/std.html">std</a>
+    module in <a href="http://www.aps.anl.gov/bcda/synApps/">synApps</a>. It uses the
+    <a href="https://svn.aps.anl.gov/trac/epics/ipac">ipac module</a> for Industry Pack
+    communication.</p>
+  <p>
+    Several databases are provided in the Db directory, as well as medm screens in the
+    op/adl directory.</p>
+  <h2 style="text-align: center">
+    Hardware Configuration</h2>
+  <p>
+    The minimum and maximum voltage of the DAC128V IP module are set by jumpers. The
+    minimum voltage choices are -10V, -5V or 0V, and the maximum voltage choices are
+    0V, +5V and +10V.</p>
+  <p>
+    NOTE: The factory configuration is minimum and maximum both set to 0V, so the DAC
+    won't put out any voltage! You MUST change the jumpers before installing the module.</p>
+  <p>
+    CAUTION: The modules always initializes (after VME reset or power-on) to the midpoint
+    of the minimum and maximum voltages that are jumper selected. Thus, if the range
+    is -10V to +10V then it will come up at 0V, while if the range is 0 to +5V it will
+    come up at 2.5V. If you are connecting the device to something that should not have
+    voltage applied at reset (such as a heater, or DC motor amplifier, etc.) then always
+    select either -10V to +10V or -5V to +5V range, so that it will power up at 0V.</p>
+  <p>
+    NOTE: The module can supply up to 20mA over its full output voltage if it is connected
+    to an external 15V power supply. If you use the internal VME 12V supply, which is
+    the factory default configuration, then the following are true:</p>
+  <ul>
+    <li>The module accurately outputs -10V to +10V into a high impedance.</li>
+    <li>The module can supply 20mA up to about +9V with good output voltage accuracy.
+      Above +9V the output is not accurate when supplying more than 1mA or so. I have
+      found that when programming 10V output into a 1 kOhm load (10 mA output) the actual
+      voltage is 9.3-9.6V.</li>
+  </ul>
+  <h2 style="text-align: center">
+    Startup Script</h2>
+  <p>
+    The following lines should go in your startup script to initialize the dac128V asyn
+    server.</p>
+  <pre># Initialize Systran DAC
+# initDAC128V(char *portName, int carrier, int slot)
+# portName  = name to give this asyn port
+# carrier     = IPAC carrier number (0, 1, etc.)
+# slot        = IPAC slot (0,1,2,3, etc.)
+initDAC128V("DAC1", 0, 3)
+</pre>
+  <p>
+    <br />
+  </p>
+  <address>
+    Suggestions and Comments to:
+    <br />
+    <a href="mailto:rivers@cars.uchicago.edu">Mark Rivers </a>: (rivers@cars.uchicago.edu)
+    <br />
+  </address>
+</body>
+</html>

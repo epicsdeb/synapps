@@ -1,0 +1,42 @@
+Omega DP41 Setup Info
+---------------------------
+
+- StreamDevice RS232 support written by Mark Rivers
+
+- EPICS Files: Omega_DP41.db, Omega_DP41.proto, Omega_DP41.adl, Omega_DP41_settings.adl,
+               Omega_DP41_settings.req, Omega_DP41.substitutions
+
+- Omega DP41 Settings (set from front panel):
+   BAUD:    9600
+   SERCNF:  0,0
+   DAT FT:  0,0,1,0,0,0,0,0
+   BUS FT:  0,0,1,0,1,0,0,1
+
+- Omega_DP41.substitutions (create this file in your ioc directory):
+  file "$(IP)/ipApp/Db/Omega_DP41.db"
+  {
+  pattern
+  {P,      PORT,         R,        SCAN,       LOPR,   HOPR,  PREC, EGU,  CONFIG_SCAN}
+  {xxx:,   serial1,   DP41:1:,    "2 second",    0,    200,     2,    PSI, "Passive"}
+
+- In serial.cmd:
+  tyGSAsynInit("serial1",  0, 0, 9600,'N',2,7,'N',"\r","\r") /* Omega DP41 */
+
+  # OMEGA DP41 Panel Meter
+  dbLoadTemplate("Omega_DP41.substitutions")
+
+- RS-232 connection:
+  RJ12  db9
+  ----  ----
+   3     2
+   4     3
+   5     5
+
+- Note:
+  From Mark's notes regarding the serial setup:
+  
+#          . . .         Omega meters.  They are nominally
+# 8 data bits and 1 stop bit.  However, they actually always
+# set bit 7(MSB)=1, which results in non-printable ASCII.
+# Work around this problem by setting the Moxa terminal server
+# to 7 data bits and 2 stop bits. 

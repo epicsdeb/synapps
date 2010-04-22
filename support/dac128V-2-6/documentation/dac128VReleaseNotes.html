@@ -1,0 +1,110 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>dac128VReleaseNotes.html</title>
+</head>
+<body>
+  <h1 style="text-align: center">
+    dac128V Release Notes</h1>
+  <h2 style="text-align: center">
+    Release 2-6<br />
+    April 13, 2010</h2>
+  <ul>
+    <li>Changes in parameter handling to support asyn R4-13.</li>
+    <li>Updated very obsolete dac128VDoc.html file from old MPF driver version to new
+      asyn version.</li>
+  </ul>
+  <h2 style="text-align: center">
+    Release 2-5<br />
+    January 2010</h2>
+  <ul>
+    <li>Converted driver from C to C++ and made it inherit from asynPortDriver base class.
+      Now implements drvUser interface, required for std:devEpidFast.</li>
+    <li>Added DAC_positions.req, DAC_settings.req</li>
+  </ul>
+  <h2 style="text-align: center">
+    Release 2-4<br />
+    3-Feb-2009 (actually tagged in 2008 but date is unknown)</h2>
+  <p>
+    Very minor changes:</p>
+  <ul>
+    <li>Numbered related display buttons in topDAC8.adl</li>
+    <li>Added DESC to singleDAC_settings.req </li>
+  </ul>
+  <h2 style="text-align: center">
+    Release 2-3<br />
+    23-Mar-2005</h2>
+  <p>
+    Major changes:</p>
+  <ul>
+    <li>Converted from MPF to asyn</li>
+    <li>Converted from specialized device support to generic asyn device support</li>
+  </ul>
+  <h2 style="text-align: center">
+    Release 2-2<br />
+    04-Mar-2004?</h2>
+  <p>
+    Added medm display files:</p>
+  <dl>
+    <dt>8_DACs.adl</dt>
+    <dd>
+      display eight DAC channels</dd>
+    <dt>singleDAC.adl</dt>
+    <dd>
+      display one DAC channel
+    </dd>
+    <dt>topDAC8.adl</dt>
+    <dd>
+      callups for eight singleDAC.adl displays</dd>
+  </dl>
+  <p>
+  </p>
+  <h2 style="text-align: center">
+    Release 2-1<br />
+    03-Nov-2003</h2>
+  <p>
+    Conversion to EPICS 3.14.</p>
+  <ul>
+    <li>Added registration commands for iocsh</li>
+    <li>Converted from vxWorks to OSI system calls.</li>
+    <li>Converted to calling ipac functions directly, rather than through mpf class that
+      had been provided in 3.13.</li>
+    <li>Added a hash table for dac128V module names, so that pointers no longer need to
+      be passed to the shell when using the ip330 and quadEM feedback. Pointers cannot
+      be passed to iocsh.</li>
+    <li>These changes above required a change in syntax of the initDAC128V command in
+      the startup script. See the <a href="dac128VDoc.html">documentation</a> for details.</li>
+  </ul>
+  <p>
+  </p>
+  <h2 style="text-align: center">
+    Release 1-4<br />
+    26-May-2003</h2>
+  <p>
+    Added call to bind() in devAoDAC128V.cc. This is needed by mpf1-10.</p>
+  <p>
+  </p>
+  <h2 style="text-align: center">
+    Release 1-3<br />
+    14-Oct-2002</h2>
+  <p>
+    Fixed bug in device support initialization. It was returning 0, rather than 2 (MPF_NoConvert).
+    This could cause the initial value of the .VAL field to be corrupted.</p>
+  <p>
+    Updated documentation.</p>
+  <p>
+  </p>
+  <h2 style="text-align: center">
+    Release 1-2</h2>
+  <p>
+    First release under CVS source/release control. There were earlier releases without
+    official tags.</p>
+  <p>
+    May 17, 2000. Added <code>getValue()</code> method, needed by Ip300PID class.
+  </p>
+  <address>
+    Suggestions and Comments to:
+    <br />
+    <a href="mailto:rivers@cars.uchicago.edu">Mark Rivers </a>: (rivers@cars.uchicago.edu)
+  </address>
+</body>
+</html>
