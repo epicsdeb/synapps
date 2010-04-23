@@ -117,7 +117,7 @@ $(basedir)/configure/rules.d/seqsnc.make
 	sed -i -e '/^# snc executable/,/#----/d' \
 $(basedir)/configure/rules.d/seqsnc.make
 	# append new defintion
-	echo 'SNC = $$(call PATH_FILTER, $$(TOOLS)/snc$$(HOSTEXE))' >> \
+	echo 'SNC ?= $$(call PATH_FILTER, $$(TOOLS)/snc$$(HOSTEXE))' >> \
 $(basedir)/configure/rules.d/seqsnc.make
 
 	# Executables for /usr/bin
