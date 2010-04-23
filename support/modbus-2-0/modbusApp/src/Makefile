@@ -30,7 +30,7 @@ LIB_LIBS += $(EPICS_BASE_IOC_LIBS)
 #=============================
 # build an ioc application
 
-PROD_IOC = modbusApp
+#PROD_IOC = modbusApp
 
 # <name>_registerRecordDeviceDriver.cpp will be created from <name>.dbd
 PROD_SRCS_DEFAULT += modbus_registerRecordDeviceDriver.cpp modbusMain.cpp

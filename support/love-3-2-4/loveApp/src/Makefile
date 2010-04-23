@@ -26,12 +26,12 @@ love_LIBS += $(EPICS_BASE_IOC_LIBS)
 
 #=============================================================================
 # Build an ioc application <name>
-PROD_IOC = loveApp
+#PROD_IOC = loveApp
 
 #-----------------------------------------------------------------------------
 # <name>.dbd and <name>VX.dbd will be created and installed
 DBD += loveApp.dbd
-DBD += loveAppVX.dbd
+#DBD += loveAppVX.dbd
 
 #-----------------------------------------------------------------------------
 # <name>_registerRecordDeviceDriver.cpp will be created from <name>.dbd

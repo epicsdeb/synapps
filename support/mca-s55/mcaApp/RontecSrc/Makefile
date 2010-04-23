@@ -23,7 +23,7 @@ mcaRontec_LIBS += asyn
 mcaRontec_LIBS += $(EPICS_BASE_IOC_LIBS)
 
 #==================================
-PROD_IOC += mcaRontecApp
+#PROD_IOC += mcaRontecApp
 
 ## <name>_registerRecordDeviceDriver.cpp will be created from <name>.dbd
 mcaRontecApp_SRCS_DEFAULT += mcaRontec_registerRecordDeviceDriver.cpp mcaRontecMain.cpp

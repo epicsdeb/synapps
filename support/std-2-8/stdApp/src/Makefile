@@ -73,7 +73,12 @@ std_LIBS += $(EPICS_BASE_IOC_LIBS)
 #=============================
 # build an ioc application for testing
 
-PROD_IOC = stdApp
+# Since this app is in the same directory as the std library
+# it will not link with the appropriate -L../../lib/xxx entry
+# since this directory has not been created yet.
+# However, since this app isn't packaged I'll just ignore it
+# MAD 04/10
+#PROD_IOC = stdApp
 
 # <name>_registerRecordDeviceDriver.cpp will be created from <name>.dbd
 stdApp_SRCS_DEFAULT += std_registerRecordDeviceDriver.cpp

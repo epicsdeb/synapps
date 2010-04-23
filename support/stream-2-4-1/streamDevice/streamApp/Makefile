@@ -13,7 +13,7 @@ include $(TOP)/configure/CONFIG
 
 #HOST_OPT = NO
 
-PROD = streamApp
+#PROD = streamApp
 DBD  = streamApp.dbd
 
 streamApp_DBD += base.dbd

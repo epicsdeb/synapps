@@ -13,7 +13,7 @@ LIBRARY_IOC += ip
 DBD += ipSupport.dbd
 DBD += ipVXSupport.dbd
 DBD += ip.dbd
-DBD += ipVX.dbd
+#DBD += ipVX.dbd
 
 ip_SRCS += devXxStrParm.c
 ip_SRCS += devXxEurotherm.c
@@ -38,7 +38,7 @@ ip_LIBS += $(EPICS_BASE_IOC_LIBS)
 #=============================
 # build an ioc application for testing
 
-PROD_IOC = ipApp
+#PROD_IOC = ipApp
 
 # <name>_registerRecordDeviceDriver.cpp will be created from <name>.dbd
 ipApp_SRCS_DEFAULT += ip_registerRecordDeviceDriver.cpp ipMain.cpp
