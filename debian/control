@@ -3,7 +3,7 @@ Section: devel
 Priority: extra
 Maintainer: Michael Davidsaver <mdavidsaver@bnl.gov>
 Build-Depends: debhelper (>= 7), cdbs, rtems-debhelper,
-               epics-dev (>= 3.14.10-10), epics-dev (<< 3.14.11),
+               epics-dev (>= 3.14.10-10), epics-dev (<< 3.14.12),
                rtems-epics-mvme2100,
                rtems-epics-mvme2307,
                rtems-epics-mvme3100,
@@ -24,7 +24,7 @@ Description: Documentation for synapps components
  .
  This package contains reference documentation for synApps.
 
-Package: libsynapps5.4.1
+Package: libsynapps5.5
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Conflicts: epics-synapps-libs, epics-synapps-dev (<= 5.4.1-2)
@@ -41,7 +41,7 @@ Description: Shared libraries for IOCs using synApps modules
 Package: epics-synapps
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
-         libsynapps5.4.1 (= ${binary:Version})
+         libsynapps5.5 (= ${binary:Version})
 Conflicts: epics-synapps-doc (<= 5.4.1-2)
 Suggests: epics-synapps-doc
 Description: Files for running IOCs using synApps modules
