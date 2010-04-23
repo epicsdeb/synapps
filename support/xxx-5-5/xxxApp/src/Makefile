@@ -139,7 +139,7 @@ xxx_Common_LIBS += Acs acsTech80 Aerotech Attocube Faulhaber Ims KohzuMotor Mcle
 xxx_Common_LIBS += Micos MicroMo NewFocus Newport Oriel PI PIJena Parker SmartMotor
 xxx_Common_LIBS += ThorLabs softMotor motorSimSupport motor
 #xxx_Common_LIBS += ADBase NDPlugin netCDF
-xxx_Common_LIBS += simDetector NDPlugin netCDF ADBase
+#xxx_Common_LIBS += simDetector NDPlugin netCDF ADBase
 xxx_Common_LIBS += asyn
 xxx_Common_LIBS += stream streamSynApps
 xxx_Common_LIBS += seqDev seq pv
@@ -180,8 +180,8 @@ xxx_LIBS_WIN32    += $(xxx_Common_LIBS)
 xxx_SYS_LIBS_Linux += usb
 
 # This is needed (and provided) by areaDetector on Linux and WIN32
-xxx_LIBS_WIN32        += PvAPI ImageLib
-xxx_LIBS_Linux        += PvAPI ImageLib
+#xxx_LIBS_WIN32        += PvAPI ImageLib
+#xxx_LIBS_Linux        += PvAPI ImageLib
 
 # This is needed by dxp on cygwin and WIN32
 xxx_SYS_LIBS_cygwin32 += DLPORTIO PlxApi setupapi
@@ -202,14 +202,14 @@ xxx_LIBS_cygwin32 += libtiff jpeg libNeXus.dll
 
 
 # To use versions of these libraries supplied with areaDetector use this line
-xxx_LIBS_Linux        += NeXus mfhdf df hdf5 mxml
+#xxx_LIBS_Linux        += NeXus mfhdf df hdf5 mxml
 # To use system versions of these libraries use this line
 #xxx_SYS_LIBS_Linux    += NeXus mfhdf df hdf5 mxml
 
 # To use versions of these libraries supplied with areaDetector use this line
-xxx_LIBS_Linux        += tiff jpeg z
+#xxx_LIBS_Linux        += tiff jpeg z
 # To use system versions of these libraries use this line
-#xxx_SYS_LIBS_Linux    += tiff jpeg z
+xxx_SYS_LIBS_Linux    += tiff jpeg z
 
 #===========================
 
