@@ -52,7 +52,7 @@ ENVIRON += LINUX_USB_INSTALLED LINUX_TIFF_INSTALLED
 # Tier 1
 
 MODS += vxStats
-vxStats_VER = 1-7-2g
+vxStats_VER = 1-7-2h
 
 MODS += seq
 seq_NAME = SNCSEQ
@@ -60,52 +60,52 @@ seq_VER = 2-0-12
 
 MODS += allenBradley
 allenBradley_NAME = ALLEN_BRADLEY
-allenBradley_VER = 2-1
+allenBradley_VER = 09092009
 
 MODS += ipac
-ipac_VER = 2-10
+ipac_VER = 2-11
 
 MODS += sscan
-sscan_VER = 2-6-4
+sscan_VER = 2-6-6
 
 MODS += autosave
-autosave_VER = 4-5
+autosave_VER = 4-6
 
 # Tier 2
 
 MODS += asyn
-asyn_VER = 4-10
+asyn_VER = 4-13
 asyn_DEPS = seq ipac
 
 MODS += calc
-calc_VER = 2-7
+calc_VER = 2-8
 calc_DEPS = sscan
 
 # Tier 3
 
 MODS += busy
-busy_VER = 1-2
+busy_VER = 1-3
 busy_DEPS = asyn
 
 MODS += motor
-motor_VER = 6-4-3
+motor_VER = 6-5
 motor_DEPS = asyn seq ipac
 motor_CPPFLAGS = -DDEBUG
 
 MODS += std
-std_VER = 2-7
+std_VER = 2-8
 std_DEPS = asyn seq
 
 MODS += dac128V
-dac128V_VER = 2-4
+dac128V_VER = 2-6
 dac128V_DEPS = asyn ipac
 
 MODS += ip330
-ip330_VER = 2-5
+ip330_VER = 2-6
 ip330_DEPS = asyn ipac
 
 MODS += ipUnidig
-ipUnidig_VER = 2-6
+ipUnidig_VER = 2-7
 ipUnidig_DEPS = asyn ipac
 
 MODS += love
@@ -113,63 +113,67 @@ love_VER = 3-2-4
 love_DEPS = asyn ipac
 
 MODS += ip
-ip_VER = 2-9
+ip_VER = 2-10
 ip_DEPS = asyn ipac seq
 
-MODS += ccd
+#MODS += ccd
 ccd_VER = 1-10
 ccd_DEPS = busy asyn seq autosave
 ccd_CPPFLAGS = -DDEBUG
 
 MODS += optics
-optics_VER = 2-6-1
+optics_VER = 2-7
 optics_DEPS = asyn seq
 
 MODS += stream
-stream_VER = 2-4
+stream_VER = 2-4-1
 stream_DEPS = asyn calc sscan
 
 MODS += modbus
-modbus_VER = 1-3
+modbus_VER = 2-0
 modbus_DEPS = asyn
 
 MODS += vac
-vac_VER = 1-2
+vac_VER = 1-3
 vac_DEPS = asyn ipac
 
 # Tier 4
 
 MODS += delaygen
-delaygen_VER = 1-0-3
+delaygen_VER = 1-0-5
 delaygen_DEPS = asyn seq std autosave
 
 MODS += camac
-camac_VER = 2-5
+camac_VER = 2-6
 camac_DEPS = motor std
 
 MODS += mca
-mca_VER = 6-11
+mca_VER = s55
 mca_DEPS = seq asyn std busy autosave calc sscan
 
 MODS += vme
-vme_VER = 2-6
+vme_VER = 2-7
 vme_DEPS = std seq
 
-MODS += pilatus
+#MODS += pilatus
 pilatus_VER = 1-6
 pilatus_DEPS = asyn busy calc sscan seq stream autosave
 
 # Tier 5
 
-MODS += dxp
-dxp_VER = 2-9
-dxp_DEPS = asyn calc seq sscan camac mca busy autosave
+#MODS += areaDetector
+areaDetector_VER = s55
+areaDetector_DEPS = asyn calc busy sscan mca autosave
+
+#MODS += dxp
+dxp_VER = s55
+dxp_DEPS = asyn calc seq sscan camac mca busy autosave areaDetector
 
 MODS += xxx
-xxx_VER = 5-4
+xxx_VER = 5-5
 xxx_DEPS += asyn calc seq sscan camac mca busy autosave motor std
-xxx_DEPS += dac128V ip330 ipUnidig love ccd optics stream delaygen
-xxx_DEPS += mca pilatus
+xxx_DEPS += dac128V ip330 ipUnidig love optics stream delaygen
+xxx_DEPS += mca
 
 #MODS += 
 #_VER = 
@@ -214,8 +218,10 @@ $(1)_NAME ?= $(shell echo -n "$(1)" | tr '[:lower:]' '[:upper:]')
 
 $(1)_SONUM ?= $$(shell echo -n "$$($(1)_VER)" | tr '-' '.')
 
+$(1)_DIR ?= $(1)-$$($(1)_VER)
+
 # Specific makefile variables to be pass to the named module.
-$(1)_ENV ?= $$(foreach ee,$$($(1)_DEPS),$$($$(ee)_NAME)=$$(SUPPORT)/$$(ee)/$$($$(ee)_VER)) \
+$(1)_ENV ?= $$(foreach ee,$$($(1)_DEPS),$$($$(ee)_NAME)=$$(SUPPORT)/$$($$(ee)_DIR)) \
 SHRLIB_VERSION=$$($(1)_SONUM) \
 CMD_CPPFLAGS=$$($(1)_CPPFLAGS)
 
@@ -224,7 +230,7 @@ build-$(1): $$($(1)_DEPS:%=build-%) single-$(1)
 
 # Build module only
 single-$(1):
-	$$(MAKE) -C $(1)/$$($(1)_VER) $$(E) $$($(1)_ENV)
+	$$(MAKE) -C $$($(1)_DIR) $$(E) $$($(1)_ENV)
 
 build-all += build-$(1)
 
@@ -243,14 +249,14 @@ info-all += info-$(1)
 
 # Use module realclean rule to remove 'O.*' subdirectories (ie O.linux-x86).
 realclean-$(1):
-	$$(MAKE) -C $(1)/$$($(1)_VER) $(E) $$($(1)_ENV) realclean
+	$$(MAKE) -C $$($(1)_DIR) $(E) $$($(1)_ENV) distclean
 
 # Delete module install directories
 $(1)_CLEAN ?= bin db dbd include lib html templates
 fullclean-$(1):
 	$$(call FORCERM,$$($(1)_CLEAN),$(1))
 
-clean-$(1): realclean-$(1) fullclean-$(1)
+clean-$(1): realclean-$(1) #fullclean-$(1)
 
 clean-all += clean-$(1)
 
