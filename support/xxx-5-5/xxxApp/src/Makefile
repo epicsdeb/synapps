@@ -29,7 +29,7 @@ include $(TOP)/configure/CONFIG
 #=============================
 # build an ioc application
 
-PROD_IOC = xxx
+PROD_Linux = xxx
 
 # Note that the order in which .dbd files are added to a list variable
 # doesn't matter, but the order of libraries does.
