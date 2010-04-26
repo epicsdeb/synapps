@@ -39,7 +39,8 @@ build/edm-synapps:: convert-edl-stamp
 
 convert-edl-stamp:
 	install -d $(CURDIR)/op
-	install -m 644 -t $(CURDIR)/op support/all_adl/*.adl
+
+	find support -name '*.adl' -a -not -name '*test*' | xargs cp -f -t $(CURDIR)/op
 
 	rm -f support/edlskip
 	for ff in op/*.adl; do \
@@ -119,7 +120,7 @@ install/epics-synapps-dev::
 	rm -f $(CURDIR)/debian/tmp/usr/epics/base/configure/RELEASE*
 	install -d $(basedir)/configure/rules.d
 
-	install -m 644 support/seq/*/configure/RULES_BUILD \
+	install -m 644 support/seq*/configure/RULES_BUILD \
 $(basedir)/configure/rules.d/seqsnc.make
 
 	# Location of 'snc' executable changes
