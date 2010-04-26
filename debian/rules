@@ -90,6 +90,17 @@ common-install-arch::
 	rm -f $(basedir)/bin/*/showBurtDiff
 	rm -f $(basedir)/bin/*/XPSGatheringMain
 
+install/epics-synapps::
+	for dd in support/*/iocBoot/ioc*; do \
+		cp -r $$dd debian/epics-synapps/usr/epics/base/iocBoot/ ;\
+	done
+
+install/epics-synapps-doc::
+	for dd in support/*; do \
+		[ -d $$dd/documentation ] || continue ;\
+		cp -r $$dd/documentation \
+debian/epics-synapps-doc/usr/share/doc/epics-synapps/`basename $$dd` ;\
+	done
 
 install/epics-synapps-dev::
 	# We will fetch these ourselves
