@@ -95,6 +95,7 @@ install/epics-synapps::
 	for dd in support/*/iocBoot/ioc*; do \
 		cp -r $$dd debian/epics-synapps/usr/epics/base/iocBoot/ ;\
 	done
+	find debian/epics-synapps/usr/epics/base/iocBoot -type f -exec chmod -x {} \;
 
 install/epics-synapps-doc::
 	for dd in support/*; do \
