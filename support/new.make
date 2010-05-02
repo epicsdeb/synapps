@@ -22,6 +22,8 @@ LINUX_USB_INSTALLED=YES
 LINUX_TIFF_INSTALLED=YES
 ENVIRON += LINUX_USB_INSTALLED LINUX_TIFF_INSTALLED
 
+SONUM = s55
+
 #Note: SNCSEQ will create configure/RULES_BUILD with the additional
 #      rules required to handle .st files.
 
@@ -216,7 +218,7 @@ define build-mod
 # Default to all caps.  'motor' becomes 'MOTOR'.
 $(1)_NAME ?= $(shell echo -n "$(1)" | tr '[:lower:]' '[:upper:]')
 
-$(1)_SONUM ?= $$(shell echo -n "$$($(1)_VER)" | tr '-' '.')
+$(1)_SONUM ?= $$(SONUM)
 
 $(1)_DIR ?= $(1)-$$($(1)_VER)
 
