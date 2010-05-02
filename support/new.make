@@ -175,7 +175,7 @@ MODS += xxx
 xxx_VER = 5-5
 xxx_DEPS += asyn calc seq sscan camac mca busy autosave motor std
 xxx_DEPS += dac128V ip330 ipUnidig love optics stream delaygen
-xxx_DEPS += mca
+xxx_DEPS += mca ip
 
 #MODS += 
 #_VER = 
