@@ -40,6 +40,11 @@ build/edm-synapps:: convert-edl-stamp
 convert-edl-stamp:
 	install -d $(CURDIR)/op
 
+	# remove duplicate adl files
+	rm -f support/ip-*/ipApp/op/adl/LoveController.adl
+	rm -f support/optics-*/documentation/fb_epid/source/fb_epid.adl
+	rm -f support/std-*/stdApp/op/adl/arrayPlot.adl
+
 	find support -name '*.adl' -a -not -name '*test*' | xargs cp -f -t $(CURDIR)/op
 
 	rm -f support/edlskip
