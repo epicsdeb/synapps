@@ -45,7 +45,9 @@ Modification Log:
 #include	<epicsVersion.h>
 
 #ifdef HAS_IOOPS_H
-#include	<basicIoOps.h>
+#  include <basicIoOps.h>
+#elif defined (__rtems__) && (defined(_ARCH_PPC) || defined(__PPC__) || defined(__PPC))
+#  include <libcpu/io.h>
 #endif
 
 typedef unsigned int uint32;
