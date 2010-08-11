@@ -17,7 +17,7 @@
 * someone, it's your problem.                                  *
 *                                                              *
 ***************************************************************/
-
+#include <stdio.h>
 #include "StreamFormatConverter.h"
 #include "StreamError.h"
 #if defined(__vxworks) || defined(vxWorks) || defined(_WIN32) || defined(__rtems__)
@@ -37,6 +37,18 @@ static ulong sum(const uchar* data, ulong len, ulong sum)
     while (len--)
     {
         sum += *data++;
+    }
+    return sum;
+}
+
+static ulong mba(const uchar* data, ulong len, ulong sum)
+{
+    int i = len/2;
+    unsigned inchar;
+    while (i--)
+    {
+        sscanf((const char *)data+(2*i), "%2X", &inchar);
+        sum += inchar;
     }
     return sum;
 }
@@ -492,7 +504,8 @@ static checksum checksumMap[] =
     {"crc32r",  crc_0x04C11DB7_r, 0xFFFFFFFF, 0xFFFFFFFF, 4}, // 0xCBF43926
     {"jamcrc",  crc_0x04C11DB7_r, 0xFFFFFFFF, 0x00000000, 4}, // 0x340BC6D9
     {"adler32", adler32,          0x00000001, 0x00000000, 4}, // 0x091E01DE
-    {"hexsum8", hexsum,           0x00,       0x00,       1}  // 0x2D
+    {"hexsum8", hexsum,           0x00,       0x00,       1}, // 0x2D
+    {"mba",     mba,              0xFF,       0xFF,       1}
 };
 
 static ulong mask[5] = {0, 0xFF, 0xFFFF, 0xFFFFFF, 0xFFFFFFFF};
