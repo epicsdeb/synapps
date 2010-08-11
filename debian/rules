@@ -60,10 +60,20 @@ convert-edl-stamp:
 
 	touch $@
 
+build/epics-synapps-util:: build-mdautils
+
+build-mdautils:
+	tar -xzf support/sscan-*/sscanApp/src/mdautils-src.tar.gz
+
+	$(MAKE) -C mdautils-src
+
+	touch $@
+
 clean::
 	rm -rf op
-	rm -f convert-edl-stamp support/edlskip
+	rm -f convert-edl-stamp build-mdautils support/edlskip
 	rm -f adltemp
+	rm -rf mdautils-src
 
 devdir=debian/tmp/usr
 
