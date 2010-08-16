@@ -1963,14 +1963,14 @@ get_enum_strs(struct dbAddr *paddr, struct dbr_enumStrs *pes)
 
 	if (paddr->pfield == (void *) &psscan->cmnd) {
 		memset(pes->strs, '\0', sizeof(pes->strs));
-		strncpy(pes->strs[0], "0-Clear msg", sizeof("0-Clear msg"));
-		strncpy(pes->strs[1], "1-Check limits", sizeof("1-Check limits"));
-		strncpy(pes->strs[2], "2-Preview scan", sizeof("2-Preview scan"));
-		strncpy(pes->strs[3], "3-Clear all PV's", sizeof("3-Clear all PV's"));
-		strncpy(pes->strs[4], "4-Clear positioner PV's, etc", sizeof("4-Clear positioner PV's, etc"));
-		strncpy(pes->strs[5], "5-Clear positioner PV's", sizeof("5-Clear positioner PV's"));
-		strncpy(pes->strs[6], "6-Clear pos&rdbk PV's, etc", sizeof("6-Clear pos&rdbk PV's, etc"));
-		strncpy(pes->strs[7], "7-Clear pos&rdbk PV's", sizeof("7-Clear pos&rdbk PV's"));
+		strcpy(pes->strs[0], "0-Clear msg");
+		strcpy(pes->strs[1], "1-Check limits");
+		strcpy(pes->strs[2], "2-Preview scan");
+		strcpy(pes->strs[3], "3-Clear all PV's");
+		strcpy(pes->strs[4], "4-Clear pos PV's, etc");
+		strcpy(pes->strs[5], "5-Clear pos PV's");
+		strcpy(pes->strs[6], "6-Clear p&r PV's, etc");
+		strcpy(pes->strs[7], "7-Clear pos&rdbk PV's");
 		pes->no_str = 8;
 	} else {
 		strcpy(pes->strs[0], "No string");
