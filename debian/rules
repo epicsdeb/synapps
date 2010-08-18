@@ -5,7 +5,7 @@ include /usr/share/cdbs/1/rules/debhelper.mk
 include /usr/share/cdbs/1/class/makefile.mk
 include /usr/share/cdbs/1/rules/utils.mk
 
-EPICS_HOST_ARCH:=$(shell /usr/epics/base/startup/EpicsHostArch)
+EPICS_HOST_ARCH:=$(shell /usr/lib/epics/startup/EpicsHostArch)
 
 RTEMS_TARGETS=RTEMS-mvme2100 RTEMS-mvme2307  RTEMS-mvme3100 RTEMS-mvme5500
 DEBUG_TAGETS=$(EPICS_HOST_ARCH)-debug
@@ -23,7 +23,7 @@ DEB_BUILDDIR=$(CURDIR)/support
 
 DEB_MAKE_CLEAN_TARGET = clean
 DEB_MAKE_BUILD_TARGET = all
-DEB_MAKE_INSTALL_TARGET = all INSTALL_LOCATION=$(CURDIR)/debian/tmp/usr/epics/base
+DEB_MAKE_INSTALL_TARGET = all INSTALL_LOCATION=$(CURDIR)/debian/tmp/usr/lib/epics
 DEB_MAKE_CHECK_TARGET =
 
 DEB_INSTALL_DOCS_ALL = support/README support/LICENSE
@@ -77,7 +77,7 @@ clean::
 
 devdir=debian/tmp/usr
 
-basedir=$(devdir)/epics/base
+basedir=$(devdir)/lib/epics
 hostbin=$(basedir)/bin/$(EPICS_HOST_ARCH)
 hostlib=$(basedir)/lib/$(EPICS_HOST_ARCH)
 
@@ -108,9 +108,9 @@ common-install-arch::
 
 install/epics-synapps::
 	for dd in support/*/iocBoot/ioc*; do \
-		cp -r $$dd debian/epics-synapps/usr/epics/base/iocBoot/ ;\
+		cp -r $$dd debian/epics-synapps/usr/lib/epics/iocBoot/ ;\
 	done
-	find debian/epics-synapps/usr/epics/base/iocBoot -type f -exec chmod -x {} \;
+	find debian/epics-synapps/usr/lib/epics/iocBoot -type f -exec chmod -x {} \;
 
 install/epics-synapps-doc::
 	for dd in support/*; do \
@@ -122,7 +122,7 @@ debian/epics-synapps-doc/usr/share/doc/epics-synapps/`basename $$dd` ;\
 install/epics-synapps-dev::
 	# We will fetch these ourselves
 	# since many are not install anyway
-	rm -rf $(CURDIR)/debian/tmp/usr/epics/base/db/*
+	rm -rf $(CURDIR)/debian/tmp/usr/lib/epics/db/*
 
 	# find all .db files
 	find support -name '*.db' -exec install -m 644 {} $(basedir)/db/ \;
@@ -132,8 +132,8 @@ install/epics-synapps-dev::
 	# find all autosave request files
 	find support -name '*.req' -exec install -m 644 {} $(basedir)/as/req/ \;
 
-	rm -f $(CURDIR)/debian/tmp/usr/epics/base/configure/RULES_BUILD
-	rm -f $(CURDIR)/debian/tmp/usr/epics/base/configure/RELEASE*
+	rm -f $(CURDIR)/debian/tmp/usr/lib/epics/configure/RULES_BUILD
+	rm -f $(CURDIR)/debian/tmp/usr/lib/epics/configure/RELEASE*
 	install -d $(basedir)/configure/rules.d
 
 	install -m 644 support/seq*/configure/RULES_BUILD \
@@ -161,7 +161,7 @@ install/libsynapps5.5::
 	# put sonamed libraries in /usr/lib
 	mv -t $(devdir)/lib $(hostlib)/*.so.*
 
-	# put symlinks in /usr/epics/base/lib/$EPICS_HOST_ARCH/
+	# put symlinks in /usr/lib/epics/lib/$EPICS_HOST_ARCH/
 	for sonm in $(devdir)/lib/*.so.*; do \
 		lnam=`basename $$sonm|cut -f '1,2' -d '.'`; \
 		rm -f $(hostlib)/$${lnam}; \

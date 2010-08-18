@@ -2,7 +2,7 @@
 
 # Basic site configuration here.
 
-EPICS_BASE = /usr/epics/base
+EPICS_BASE = /usr/lib/epics
 
 CROSS_COMPILER_TARGET_ARCHS += RTEMS-mvme3100
 
