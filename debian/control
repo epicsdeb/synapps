@@ -45,7 +45,7 @@ Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
          libsynapps5.5 (= ${binary:Version})
 Conflicts: epics-synapps-doc (<= 5.4.1-2)
-Suggests: epics-synapps-doc
+Suggests: epics-synapps-doc, epics-synapps-util
 Description: Files for running IOCs using synApps modules
  synApps is a collection of software tools that help to create a control system
  for beamlines.  It contains beamline-control and data-acquisition components
@@ -57,7 +57,8 @@ Description: Files for running IOCs using synApps modules
 Package: epics-synapps-dev
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
-         epics-synapps (= ${binary:Version})
+         epics-synapps (= ${binary:Version}),
+         epics-dev
 Suggests: epics-synapps-doc
 Description: For building IOCs which use synApps modules
  synApps is a collection of software tools that help to create a control system
