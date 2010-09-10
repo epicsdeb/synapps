@@ -2,9 +2,10 @@
 FILENAME...	drvSoloist.h
 USAGE... This file contains Aerotech Soloist driver "include" information.
 
-Version:	1.0
-Modified By:	cbonnell
-Last Modified:	2009/07/07 03:06:56 PM
+Version:        $Revision: 11153 $
+Modified By:    $Author: sluiter $
+Last Modified:  $Date: 2010-06-09 14:40:42 -0500 (Wed, 09 Jun 2010) $
+HeadURL:        $URL: https://subversion.xor.aps.anl.gov/synApps/motor/tags/R6-5-1/motorApp/AerotechSrc/drvSoloist.h $
 */
 
 /*

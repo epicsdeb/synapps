@@ -1,10 +1,10 @@
 #FILENAME...     Makefile
 #USAGE...        Makefile for motor application example with Asyn
 
-#Version:        $Revision: 9857 $
+#Version:        $Revision: 10825 $
 #Modified By:    $Author: sluiter $
-#Last Modified:  $Date: 2009-12-09 10:21:24 -0600 (Wed, 09 Dec 2009) $
-#HeadURL:        $URL: https://subversion.xor.aps.anl.gov/synApps/motor/tags/R6-5/motorExApp/WithAsyn/Makefile $
+#Last Modified:  $Date: 2010-04-28 13:27:35 -0500 (Wed, 28 Apr 2010) $
+#HeadURL:        $URL: https://subversion.xor.aps.anl.gov/synApps/motor/tags/R6-5-1/motorExApp/WithAsyn/Makefile $
 
 # "#!" marks lines that can be uncommented.
 
@@ -41,13 +41,11 @@ ifdef SNCSEQ
 WithAsyn_DBD += devSequencer.dbd
 endif
 
-ifeq ($(OS_CLASS), vxWorks)
 DBD += WithAsynVx.dbd
 WithAsynVx_DBD += $(COMMONDBDS)
 #!WithAsynVx_DBD += drvGsIP488.dbd
 ifdef IPAC
 WithAsynVx_DBD += MiscVx.dbd
-endif
 endif
 
 WithAsyn_SRCS   += WithAsyn_registerRecordDeviceDriver.cpp

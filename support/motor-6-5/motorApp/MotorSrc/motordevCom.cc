@@ -3,10 +3,10 @@ FILENAME: motordevCom.cc
 USAGE... This file contains device functions that are common to all motor
     record device support modules.
 
-Version:        $Revision: 10194 $
-Modified By:    $Author: nkrees $
-Last Modified:  $Date: 2010-03-08 15:05:22 -0600 (Mon, 08 Mar 2010) $
-HeadURL:        $URL: https://subversion.xor.aps.anl.gov/synApps/motor/tags/R6-5/motorApp/MotorSrc/motordevCom.cc $
+Version:        $Revision: 11154 $
+Modified By:    $Author: sluiter $
+Last Modified:  $Date: 2010-06-09 14:41:35 -0500 (Wed, 09 Jun 2010) $
+HeadURL:        $URL: https://subversion.xor.aps.anl.gov/synApps/motor/tags/R6-5-1/motorApp/MotorSrc/motordevCom.cc $
 */
 
 /*
@@ -56,6 +56,8 @@ HeadURL:        $URL: https://subversion.xor.aps.anl.gov/synApps/motor/tags/R6-5
  *                   LOAD_POS can be executed.
  * .11  02/14/08 rls Post RVEL changes.
  * .12  03/08/10 rls Always send positive encoder ratio values.
+ * .13  06/09/10 rls Set RA_PROBLEM instead of CNTRL_COMM_ERR when a NULL
+ *                   motor_state[] ptr is detected in motor_end_trans_com().
  */
 
 
@@ -479,12 +481,12 @@ epicsShareFunc RTN_STATUS motor_end_trans_com(struct motorRecord *mr, struct dri
         msta_field msta;
 
         /* If the controller does not exits, then set "done moving"
-         * and communication error TRUE.
+         * and the Hardware Problem bit TRUE.
          */
         mr->dmov = TRUE;
         db_post_events(mr, &mr->dmov, DBE_VAL_LOG);
         msta.All = mr->msta;
-        msta.Bits.CNTRL_COMM_ERR = 1;
+        msta.Bits.RA_PROBLEM = 1;
         mr->msta = msta.All;
         return(rc = ERROR);
     }

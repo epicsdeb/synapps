@@ -2,10 +2,10 @@
 FILENAME...     motorRecord.cc
 USAGE...        Motor Record Support.
 
-Version:        $Revision: 10799 $
+Version:        $Revision: 10830 $
 Modified By:    $Author: sluiter $
-Last Modified:  $Date: 2010-04-21 13:24:59 -0500 (Wed, 21 Apr 2010) $
-HeadURL:        $URL: https://subversion.xor.aps.anl.gov/synApps/motor/tags/R6-5/motorApp/MotorSrc/motorRecord.cc $
+Last Modified:  $Date: 2010-04-29 09:21:17 -0500 (Thu, 29 Apr 2010) $
+HeadURL:        $URL: https://subversion.xor.aps.anl.gov/synApps/motor/tags/R6-5-1/motorApp/MotorSrc/motorRecord.cc $
 */
 
 /*
@@ -143,7 +143,7 @@ HeadURL:        $URL: https://subversion.xor.aps.anl.gov/synApps/motor/tags/R6-5
  *
  */                                                        
 
-#define VERSION 6.5
+#define VERSION 6.51
 
 #include    <stdlib.h>
 #include    <string.h>

@@ -2,10 +2,10 @@
 FILENAME...     drvEnsembleAsyn.h
 USAGE... This file contains Aerotech Ensemble Asyn driver "include" information.
 
-Version:        $Revision$
-Modified By:    $Author$
-Last Modified:  $Date$
-HeadURL:        $URL$
+Version:        $Revision: 11153 $
+Modified By:    $Author: sluiter $
+Last Modified:  $Date: 2010-06-09 14:40:42 -0500 (Wed, 09 Jun 2010) $
+HeadURL:        $URL: https://subversion.xor.aps.anl.gov/synApps/motor/tags/R6-5-1/motorApp/AerotechSrc/drvEnsembleAsyn.h $
 */
 
 /*
@@ -124,6 +124,30 @@ typedef union
 #endif
     } Bits;
 } Axis_Status;
+
+/* LimitLevelMask parameter bitmap */
+typedef union
+{
+    epicsUInt32 All;
+    struct
+    {
+#ifdef MSB_First
+        unsigned int na5                  :27;
+        unsigned int EOTswitch            :1;
+        unsigned int LIF481mode           :1;
+        unsigned int CWEOTSWstate         :1;
+        unsigned int CCWEOTSWstate        :1;
+        unsigned int HomeSWstate          :1;
+#else
+        unsigned int HomeSWstate          :1;
+        unsigned int CCWEOTSWstate        :1;
+        unsigned int CWEOTSWstate         :1;
+        unsigned int LIF481mode           :1;
+        unsigned int EOTswitch            :1;
+        unsigned int na5                  :27;
+#endif
+    } Bits;
+} Switch_Level;
 
 #ifdef __cplusplus
 extern "C" {
