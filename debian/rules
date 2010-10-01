@@ -58,6 +58,10 @@ convert-edl-stamp:
 		fi \
 	done
 
+	# the medm composite widget doesn't get correctly converted
+	# to an edm embedded window widget.
+	sed -i -e 's|"[^c]*composite file |"|g' op/*.edl
+
 	touch $@
 
 build/epics-synapps-util:: build-mdautils
