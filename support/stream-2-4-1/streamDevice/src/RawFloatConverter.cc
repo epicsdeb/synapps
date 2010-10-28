@@ -21,31 +21,15 @@
 #include "StreamFormatConverter.h"
 #include "StreamError.h"
 
-#if defined(__vxworks) || defined(vxWorks) 
-#include <vxWorks.h>
-#define __BYTE_ORDER _BYTE_ORDER 
-#define __LITTLE_ENDIAN _LITTLE_ENDIAN
-#define __BIG_ENDIAN _BIG_ENDIAN 
-#elif defined(_WIN32)
-// Assume that win32 is always little endian
-#define __LITTLE_ENDIAN 1234
-#define __BIG_ENDIAN 4321
-#define __BYTE_ORDER __LITTLE_ENDIAN
-#else
-// Let's hope all other architectures have sys/param.h
-#include <sys/param.h>
-/* begin tmm added */
-#if defined(_BIG_ENDIAN) || defined(__BIG_ENDIAN__)
-#define __BYTE_ORDER __BIG_ENDIAN
-#endif
-#if defined(_LITTLE_ENDIAN) || defined(__LITTLE_ENDIAN__)
-#define __BYTE_ORDER __LITTLE_ENDIAN
-#endif
-/* end tmm added */
-#endif
+#include <epicsEndian.h>
 
-#ifndef __BYTE_ORDER
-#error define __BYTE_ORDER as __LITTLE_ENDIAN or __BIG_ENDIAN
+#if !defined(__BYTE_ORDER) || !defined(__LITTLE_ENDIAN) || !defined(__BIG_ENDIAN)
+#undef __BYTE_ORDER
+#undef __LITTLE_ENDIAN
+#undef __BIG_ENDIAN
+#define __BYTE_ORDER EPICS_BYTE_ORDER
+#define __LITTLE_ENDIAN EPICS_ENDIAN_LITTLE
+#define __BIG_ENDIAN EPICS_ENDIAN_BIG
 #endif
 
 #if (__BYTE_ORDER == __LITTLE_ENDIAN || __BYTE_ORDER == __BIG_ENDIAN)
