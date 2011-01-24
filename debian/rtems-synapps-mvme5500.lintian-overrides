@@ -1,3 +1,6 @@
-rtems-synapps-mvme5500: executable-not-elf-or-script
 rtems-synapps-mvme5500: unstripped-binary-or-object
+# End user decides when to strip
 rtems-synapps-mvme5500: statically-linked-binary
+# RTEMS does not support shared libraries
+rtems-synapps-mvme5500: arch-independent-package-contains-binary-or-object
+# Target binaries are independent of host arch

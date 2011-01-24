@@ -85,7 +85,7 @@ basedir=$(devdir)/lib/epics
 hostbin=$(basedir)/bin/$(EPICS_HOST_ARCH)
 hostlib=$(basedir)/lib/$(EPICS_HOST_ARCH)
 
-common-install-arch::
+common-install-indep common-install-arch::
 	# remove unneeded testing stuff
 	rm -f $(basedir)/bin/*/*test*
 	rm -f $(basedir)/bin/*/*demo*
@@ -109,6 +109,10 @@ common-install-arch::
 	rm -f $(basedir)/bin/*/rdb*
 	rm -f $(basedir)/bin/*/showBurtDiff
 	rm -f $(basedir)/bin/*/XPSGatheringMain
+
+	# Not host executables
+	chmod -x $(basedir)/bin/RTEMS-*/*.elf
+	chmod -x $(basedir)/bin/RTEMS-*/*.boot
 
 install/epics-synapps::
 	for dd in support/*/iocBoot/ioc*; do \
@@ -184,5 +188,5 @@ install/medm-synapps::
 	install -d $(basedir)/op/adl
 	install -m 644 -t $(basedir)/op/adl op/*.adl
 
-common-binary-fixup-arch::
+common-binary-fixup-indep::
 	dh_rtems
