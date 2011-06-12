@@ -1,0 +1,49 @@
+
+collect.sh
+
+Downloads all constituent source tars.  Used to prepare for a new
+source release.
+
+$ ./collect.sh <SRCVER> ../output/dir
+
+wget of each tar.  Then renamed synapps_<VER>.orig-name.tar.*
+
+
+
+unpack.sh
+
+Unpack a set of tars in the appropriate way.  Use after running
+collect.sh
+
+
+Constructing new release
+
+Download updated parts
+
+$ cd synapps/parts
+$ ../synapps-<OLDVER>/debian/scripts/collect.sh <NEWVER> ../
+
+Change source dir name
+
+$ cd ..
+$ mv synapps-<OLDVER> synapps-<NEWER>
+$ cd synapps-<NEWER>
+
+Unpack updated parts
+
+$ git checkout upstream
+$ ./unpack.sh ../synapps_<VER>.orig-*.tar.*
+$ git commit -m 'Version <VER>' -a
+
+Update packaging
+
+$ git checkout master
+$ gbp-pq import
+$ gbp-pq rebase
+
+... fix conflicts
+
+$ gbp-pq export
+$ git co -m 'update patches'
+$ git merge -s ours origin/master
+

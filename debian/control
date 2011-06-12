@@ -1,0 +1,167 @@
+Source: synapps
+Section: devel
+Priority: extra
+Maintainer: Michael Davidsaver <mdavidsaver@bnl.gov>
+Build-Depends: debhelper (>= 7.0.50~), epics-debhelper (>= 6~),
+               epics-dev (>= 3.14.11-2), epics-dev (<< 3.14.12),
+               rtems-epics-mvme2100,
+               rtems-epics-mvme2307,
+               rtems-epics-mvme3100,
+               rtems-epics-mvme5500,
+               adl2edl, tofrodos,
+               libusb-dev, libpcre3-dev, libtiff4-dev,
+Build-Conflicts: epics-synapps-dev (<= 5.4.1-7)
+X-Rtems-Depends: rtems, rtems-libbspext, rtems-cexp, rtems-epics
+Standards-Version: 3.8.0
+Homepage: http://www.aps.anl.gov/bcda/synApps/index.php
+
+Package: epics-synapps-doc
+Section: doc
+Architecture: all
+Depends: ${misc:Depends},
+Description: Documentation for synapps components
+ synApps is a collection of software tools that help to create a control system
+ for beamlines.  It contains beamline-control and data-acquisition components
+ for an EPICS based control system.  synApps is distributed under the EPICS
+ Open license. 
+ .
+ This package contains reference documentation for synApps.
+
+Package: libsynapps20110610
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Conflicts: epics-synapps-libs, epics-synapps-dev (<= 5.4.1-2)
+Provides: epics-synapps-libs
+Replaces: epics-synapps-libs
+Description: Shared libraries for IOCs using synApps modules
+ synApps is a collection of software tools that help to create a control system
+ for beamlines.  It contains beamline-control and data-acquisition components
+ for an EPICS based control system.  synApps is distributed under the EPICS
+ Open license. 
+ .
+ This package contains shared libraries
+
+Package: epics-synapps
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Conflicts: epics-synapps-doc (<= 5.4.1-2)
+Suggests: epics-synapps-doc, epics-synapps-util
+Description: Files for running IOCs using synApps modules
+ synApps is a collection of software tools that help to create a control system
+ for beamlines.  It contains beamline-control and data-acquisition components
+ for an EPICS based control system.  synApps is distributed under the EPICS
+ Open license. 
+ .
+ This package contains files which may be used to run IOCs using
+ synApps modules
+
+Package: epics-synapps-dev
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends},
+         epics-synapps (= ${source:Version}),
+         epics-dev
+Suggests: epics-synapps-doc
+Description: For building IOCs which use synApps modules
+ synApps is a collection of software tools that help to create a control system
+ for beamlines.  It contains beamline-control and data-acquisition components
+ for an EPICS based control system.  synApps is distributed under the EPICS
+ Open license. 
+ .
+ This package contains support for the host system including headers
+
+Package: epics-synapps-util
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends},
+         libsynapps20110610 (= ${binary:Version})
+Suggests: epics-synapps-doc
+Conflicts: epics-synapps (<< 20110610-1~),
+Description: For building IOCs which use synApps modules
+ synApps is a collection of software tools that help to create a control system
+ for beamlines.  It contains beamline-control and data-acquisition components
+ for an EPICS based control system.  synApps is distributed under the EPICS
+ Open license. 
+ .
+ This package contains several utility programs including the MDA file converter
+
+Package: edm-synapps
+Section: contrib/devel
+Architecture: all
+Depends: edm, ${misc:Depends},
+Description: All EDM display panels from synapps
+ synApps is a collection of software tools that help to create a control system
+ for beamlines.  It contains beamline-control and data-acquisition components
+ for an EPICS based control system.  synApps is distributed under the EPICS
+ Open license. 
+ .
+ This package contains EDM display panels.  These are automatically converted
+ from the MEDM panels which are distributed with synapps.
+
+Package: medm-synapps
+Architecture: all
+Depends: adl2edl, ${misc:Depends},
+Description: All MEDM display panels from synapps
+ synApps is a collection of software tools that help to create a control system
+ for beamlines.  It contains beamline-control and data-acquisition components
+ for an EPICS based control system.  synApps is distributed under the EPICS
+ Open license. 
+ .
+ This package contains the original MEDM display panels which are distributed
+ with synapps.
+ .
+ These will be useful for those wishing to rerun the conversion.
+
+Package: rtems-synapps-mvme2100
+Architecture: all
+Depends: ${rtems:Depends}, epics-synapps-dev (= ${binary:Version})
+Conflicts: epics-synapps-mvme2100
+Provides: epics-synapps-mvme2100
+Replaces: epics-synapps-mvme2100
+Description: synApps built for the mvme2100
+ synApps is a collection of software tools that help to create a control system
+ for beamlines.  It contains beamline-control and data-acquisition components
+ for an EPICS based control system.  synApps is distributed under the EPICS
+ Open license. 
+ .
+ This package contains support for the MVME2100 PowerPC based VME SBC.
+
+Package: rtems-synapps-mvme2307
+Architecture: all
+Depends: ${rtems:Depends}, epics-synapps-dev (= ${binary:Version})
+Conflicts: epics-synapps-mvme2307
+Provides: epics-synapps-mvme2307
+Replaces: epics-synapps-mvme2307
+Description: synApps built for the mvme2307
+ synApps is a collection of software tools that help to create a control system
+ for beamlines.  It contains beamline-control and data-acquisition components
+ for an EPICS based control system.  synApps is distributed under the EPICS
+ Open license. 
+ .
+ This package contains support for the MVME2307 PowerPC based VME SBC.
+
+Package: rtems-synapps-mvme3100
+Architecture: all
+Depends: ${rtems:Depends}, epics-synapps-dev (= ${binary:Version})
+Conflicts: epics-synapps-mvme3100
+Provides: epics-synapps-mvme3100
+Replaces: epics-synapps-mvme3100
+Description: synApps built for the mvme3100
+ synApps is a collection of software tools that help to create a control system
+ for beamlines.  It contains beamline-control and data-acquisition components
+ for an EPICS based control system.  synApps is distributed under the EPICS
+ Open license. 
+ .
+ This package contains support for the MVME3100 PowerPC based VME SBC.
+
+Package: rtems-synapps-mvme5500
+Architecture: all
+Depends: ${rtems:Depends}, epics-synapps-dev (= ${binary:Version})
+Conflicts: epics-synapps-mvme5500
+Provides: epics-synapps-mvme5500
+Replaces: epics-synapps-mvme5500
+Description: synApps built for the mvme5500
+ synApps is a collection of software tools that help to create a control system
+ for beamlines.  It contains beamline-control and data-acquisition components
+ for an EPICS based control system.  synApps is distributed under the EPICS
+ Open license. 
+ .
+ This package contains support for the MVME5500 PowerPC based VME SBC.
