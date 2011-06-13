@@ -1,0 +1,168 @@
+From: Michael Davidsaver <mdavidsaver@bnl.gov>
+Date: Sun, 12 Jun 2011 10:46:02 -0400
+Subject: [PATCH] stream: snapshot missing configure/
+
+---
+ stream/configure/CONFIG            |   13 +++++++++++++
+ stream/configure/CONFIG_APP        |   21 +++++++++++++++++++++
+ stream/configure/Makefile          |   15 +++++++++++++++
+ stream/configure/RELEASE           |   19 +++++++++++++++++++
+ stream/configure/RELEASE.win32-x86 |   18 ++++++++++++++++++
+ stream/configure/RULES             |    5 +++++
+ stream/configure/RULES_DIRS        |    2 ++
+ stream/configure/RULES_TOP         |    3 +++
+ 8 files changed, 96 insertions(+), 0 deletions(-)
+ create mode 100644 stream/configure/CONFIG
+ create mode 100644 stream/configure/CONFIG_APP
+ create mode 100644 stream/configure/Makefile
+ create mode 100644 stream/configure/RELEASE
+ create mode 100644 stream/configure/RELEASE.win32-x86
+ create mode 100644 stream/configure/RULES
+ create mode 100644 stream/configure/RULES_DIRS
+ create mode 100644 stream/configure/RULES_TOP
+
+diff --git a/stream/configure/CONFIG b/stream/configure/CONFIG
+new file mode 100644
+index 0000000..3654e5f
+--- /dev/null
++++ b/stream/configure/CONFIG
+@@ -0,0 +1,13 @@
++#CONFIG
++include $(TOP)/configure/CONFIG_APP
++# Add any changes to make definitions here
++
++#CROSS_COMPILER_TARGET_ARCHS = vxWorks-68040 vxWorks-ppc604
++
++# Use this when your IOC and the host use different paths
++# to access the application. Typically this will be 
++# used with the Microsoft FTP server or with NFS mounts. Use
++# is indicated by failure of the cdCommands script on
++# vxWorks. You must rebuild in the iocBoot directory 
++# before this takes effect.
++#IOCS_APPL_TOP = <the top of the application as seen by the IOC>
+diff --git a/stream/configure/CONFIG_APP b/stream/configure/CONFIG_APP
+new file mode 100644
+index 0000000..b1f4ba1
+--- /dev/null
++++ b/stream/configure/CONFIG_APP
+@@ -0,0 +1,21 @@
++# CONFIG_APP
++
++include $(TOP)/configure/RELEASE
++-include $(TOP)/configure/RELEASE.$(EPICS_HOST_ARCH)
++-include $(TOP)/configure/RELEASE.Common.$(T_A)
++-include $(TOP)/configure/RELEASE.$(EPICS_HOST_ARCH).$(T_A)
++
++CONFIG=$(EPICS_BASE)/configure
++include $(CONFIG)/CONFIG
++
++INSTALL_LOCATION = $(TOP)
++ifdef INSTALL_LOCATION_APP
++INSTALL_LOCATION = $(INSTALL_LOCATION_APP)
++endif
++
++ifdef T_A
++-include $(TOP)/configure/O.$(T_A)/CONFIG_APP_INCLUDE
++endif
++
++# dbst based database optimization (default: NO)
++DB_OPT = NO
+diff --git a/stream/configure/Makefile b/stream/configure/Makefile
+new file mode 100644
+index 0000000..0317746
+--- /dev/null
++++ b/stream/configure/Makefile
+@@ -0,0 +1,15 @@
++# Makefile
++
++TOP=..
++
++include $(TOP)/configure/CONFIG
++
++# Set the following to NO to disable consistency checking of
++# the support applications defined in $(TOP)/configure/RELEASE
++CHECK_RELEASE = YES
++
++TARGETS = $(CONFIG_TARGETS)
++CONFIGS += $(subst ../,,$(wildcard $(CONFIG_INSTALLS)))
++
++include $(TOP)/configure/RULES
++
+diff --git a/stream/configure/RELEASE b/stream/configure/RELEASE
+new file mode 100644
+index 0000000..3a08766
+--- /dev/null
++++ b/stream/configure/RELEASE
+@@ -0,0 +1,19 @@
++#RELEASE Location of external products
++# Run "gnumake clean uninstall install" in the application
++# top directory each time this file is changed.
++#
++# NOTE: The build does not check dependancies on files
++# external to this application. Thus you should run
++# "gnumake clean uninstall install" in the top directory
++# each time EPICS_BASE, SNCSEQ, or any other external
++# module defined in the RELEASE file is rebuilt.
++
++SUPPORT=/home/oxygen/MOONEY/distrib/synApps_5_5/support
++ASYN=/home/oxygen/MOONEY/distrib/synApps_5_5/support/asyn-4-13
++CALC=/home/oxygen/MOONEY/distrib/synApps_5_5/support/calc-2-8
++SSCAN=/home/oxygen/MOONEY/distrib/synApps_5_5/support/sscan-2-6-6
++
++# EPICS_BASE usually appears last so other apps can override stuff:
++EPICS_BASE=/home/oxygen/MOONEY/epics/base-3.14.11
++
++TEMPLATE_TOP=$(EPICS_BASE)/templates/makeBaseApp/top
+diff --git a/stream/configure/RELEASE.win32-x86 b/stream/configure/RELEASE.win32-x86
+new file mode 100644
+index 0000000..860bac5
+--- /dev/null
++++ b/stream/configure/RELEASE.win32-x86
+@@ -0,0 +1,18 @@
++#RELEASE Location of external products
++# Run "gnumake clean uninstall install" in the application
++# top directory each time this file is changed.
++#
++# NOTE: The build does not check dependancies on files
++# external to this application. Thus you should run
++# "gnumake clean uninstall install" in the top directory
++# each time EPICS_BASE, SNCSEQ, or any other external
++# module defined in the RELEASE file is rebuilt.
++
++SUPPORT=J:/epics/devel
++ASYN=J:/epics/devel/asyn/4-13
++CALC=J:/epics/devel/calc/2-8
++SSCAN=J:/epics/devel/sscan/2-6-6
++# EPICS_BASE usually appears last so other apps can override stuff:
++EPICS_BASE=H:/epics/base-3.14.11
++
++TEMPLATE_TOP=$(EPICS_BASE)/templates/makeBaseApp/top
+diff --git a/stream/configure/RULES b/stream/configure/RULES
+new file mode 100644
+index 0000000..ffee54a
+--- /dev/null
++++ b/stream/configure/RULES
+@@ -0,0 +1,5 @@
++#CONFIG
++include $(EPICS_BASE)/configure/RULES
++
++# Library should be rebuilt because LIBOBJS may have changed.
++$(LIBNAME): ../Makefile
+diff --git a/stream/configure/RULES_DIRS b/stream/configure/RULES_DIRS
+new file mode 100644
+index 0000000..804faee
+--- /dev/null
++++ b/stream/configure/RULES_DIRS
+@@ -0,0 +1,2 @@
++#RULES_DIRS
++include $(EPICS_BASE)/configure/RULES_DIRS
+diff --git a/stream/configure/RULES_TOP b/stream/configure/RULES_TOP
+new file mode 100644
+index 0000000..0620f08
+--- /dev/null
++++ b/stream/configure/RULES_TOP
+@@ -0,0 +1,3 @@
++#RULES_TOP
++include $(EPICS_BASE)/configure/RULES_TOP
++
+-- 

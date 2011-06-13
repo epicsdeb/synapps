@@ -1,0 +1,31 @@
+From: Michael Davidsaver <mdavidsaver@bnl.gov>
+Date: Sun, 12 Jun 2011 00:41:59 -0400
+Subject: [PATCH] mca: SIS does not build on RTEMS
+
+---
+ mca/mcaApp/SISSrc/Makefile |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/mca/mcaApp/SISSrc/Makefile b/mca/mcaApp/SISSrc/Makefile
+index 7678592..61062c1 100644
+--- a/mca/mcaApp/SISSrc/Makefile
++++ b/mca/mcaApp/SISSrc/Makefile
+@@ -13,7 +13,7 @@ DBD += mcaSIS3820Support.dbd
+ # Build the library for ARCHs with VME capability.
+ # This is vxWorks, RTEMS and Linux (with PCI/VME bridge)
+ LIBRARY_IOC_vxWorks += mcaSIS
+-LIBRARY_IOC_RTEMS += mcaSIS
++#LIBRARY_IOC_RTEMS += mcaSIS
+ # If your version of Linux has support for VME devLib uncomment following line
+ #LIBRARY_IOC_Linux += mcaSIS
+ 
+@@ -32,7 +32,7 @@ mcaSIS_LIBS += $(EPICS_BASE_IOC_LIBS)
+ 
+ #==================================
+ PROD_IOC_vxWorks += mcaSISTest
+-PROD_IOC_RTEMS += mcaSISTest
++#PROD_IOC_RTEMS += mcaSISTest
+ # If your version of Linux has support for VME devLib uncomment following line
+ #PROD_IOC_Linux += mcaSISTest
+ 
+-- 
