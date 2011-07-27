@@ -1,0 +1,27 @@
+#RELEASE Location of external products
+# Run "gnumake clean uninstall install" in the application
+# top directory each time this file is changed.
+#
+# NOTE: The build does not check dependancies on files
+# external to this application. Thus you should run
+# "gnumake clean uninstall install" in the top directory
+# each time EPICS_BASE, SNCSEQ, or any other external
+# module defined in the RELEASE file is rebuilt.
+TEMPLATE_TOP=$(TOP)/../../../../base-3.14.6/templates/makeBaseApp/top
+
+# If you don't want to install into $(TOP) then
+# define INSTALL_LOCATION_APP here
+#INSTALL_LOCATION_APP=<fullpathname>
+
+# Include synApps components
+#   To build using the gateway, comment-out the first two lines and
+#   comment-in the third line and the reference to base (at bottom)
+#SUPPORT=/APSshare/epics/synApps_5_2_test/support
+#include $(SUPPORT)/config/MASTER_RELEASE
+SUPPORT=/home/oxygen/DKLINE/EPICS/synApps/support
+
+ASYN=$(SUPPORT)/asyn/4-3
+IPAC=$(SUPPORT)/ipac/2-8
+
+# EPICS_BASE usually appears last so other apps can override stuff:
+EPICS_BASE=/home/oxygen/DKLINE/EPICS/base

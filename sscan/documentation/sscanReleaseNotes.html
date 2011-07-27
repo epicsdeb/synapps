@@ -1,0 +1,333 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type"
+content="text/html; charset=iso-8859-1">
+<title>sscanReleaseNotes</title>
+</head>
+
+<body bgcolor="#FFFFFF">
+
+<h1 align="center">sscan Release Notes</h1>
+
+<h2 align="center">Release 2-6-6 - March 30, 2010</h2>
+<ul>
+<li>Previously, a monitor on the file_subdir PV could leave savaData in the
+STATUS_ACTIVE_FS_ERROR state, if the PV hadn't actually changed.  As a result,
+saveData booted up into the error state when the file_subdir PV was blank.
+<li>scan_settings.req - added ATIME and COPYTO; deleted AAWAIT
+<li>sscanRecord.c - fixes for 64-bit arch
+<li>saveData.c - defend against saveData_init() being called more than once.
+</ul>
+
+
+<h2 align="center">Release 2-6-5</h2>
+<ul>
+<li>Check all chid's before using them.
+<li>Modified saveData so that, when it finds the filename it would like to use
+(e.g., base_0001.mda) already in use, it writes, e.g., base_0001_01.mda,
+instead of base_0001.mda_01, as it used to do.
+</ul>
+
+
+<h2 align="center">Release 2-6-4</h2>
+<ul>
+<li>In 2.6.3, saveData crashed under tornado 2.2, because a vxWorks XDR
+structure changed.  Now we define an old and a new structure, and identify the
+correct structure by its size.
+</ul>
+
+<h2 align="center">Release 2-6-3</h2>
+<ul>
+<li>scanDetPlot.adl - added count
+<li> don't build busy record (split out into separate module) but retain a copy
+here for a while, since the busy module has new different version
+<li>saveData.c - don't include nfsDrv.h (which is renamed in tornado 2.2.2); instead, define nfsMount, nfsUnmount by hand.
+<li>sscanRecord.c - handle DBRprecision definition in EPICS 3.14.10; scanOnce() arg cast
+</ul>
+
+
+<h2 align="center">Release 2-6-2</h2>
+<ul>
+
+<li>Removed race conditions affecting callback counters, and added mutex to
+protect them.  Changed timing of when to renew positioner links from
+now-last_scan_start to now-last_scan_end.
+
+<li>display_fields.adl uses new link-help displays from std R2.6
+
+</ul>
+
+<h2 align="center">Release 2-6-1</h2>
+<ul>
+
+<li>The sscan record didn't correctly handle reads or writes to PnPA, for n>1.
+As a result, table scans did not work with positioners 2-4.
+
+<li>saveData didn't fail correctly when it could not find the [basename] section
+in its initialization file, and when it failed to connect to the basename PV.
+Instead, it aborted its initialization, and failed to connect to sscan records.
+
+</ul>
+
+<h2 align="center">Release 2-6</h2>
+<ul>
+<li>The sscan record can now post current-data arrays during a scan.  While
+ATIME >= 0.1, ALL arrays will be posted when a new data point has been acquired
+and ATIME seconds have elapsed since the last array posting.  New sets of array
+PV's have been added for this purpose, since the old array PV's must contain the
+previous scan's data to avoid breaking data-storage clients.  The new PV's are
+PnCA (positioners, e.g., P1CA), and DnnCA (detectors, e.g., D01CA).  During a
+scan, arrays are posted with the attribute DBE_VALUE; at end of scan, they are
+posted with DBE_LOG as well.
+
+<P>Unfortunately, posting current-data arrays during a scan results unavoidably
+in the posting of the previous-data arrays, PnRA and DnnDA.  Clients that
+monitor these PV's can regain their old behavior by specifying the mask DBE_LOG
+in their ca_add_event() or ca_create_subscription() call.
+
+<li>The MEDM display scanDetPlot.adl now uses the new current-data PV's to
+display data.  (These PV's also get end-of-scan data.)  The MEDM display
+scanDetPlotRT.adl has been renamed scanDetPlotFromScalars.adl.
+
+<li>Previously, the sscan record repeated final data values out to the ends of
+arrays, when a scan was finished, to aid display clients that don't know how to
+plot only a PV-specified number of data points.  Now this treatment can be done
+also during a scan, as controlled by the PV COPYTO.
+</ul>
+<h2 align="center">Release 2-5-7</h2>
+<ul>
+
+<li>Allow end user to specify the base name of data files written by saveData.
+Previously, the ioc prefix (modified to avoid characters illegal in file names
+on the supported operating systems) was used as the base file name.  Now, if
+saveData.req contains the section [basename], and the PV named in that section
+exists, and the string value of that PV is not the empty string, then saveData
+will use the string value, instead of the ioc prefix, as the base file name
+(onto which the scan number and the string ".mda" will be appended).
+<li> Previously, saveData's init file could not usefully specify PV names
+containing the characters '-', '[', ']', '<', '>', or ';', even though these
+are legal characters for a PV name.
+<li> New documentation files: saveData.req and scanParmRecord.html
+<li> Busy record now pays attention to it's UDF and alarm fields, executes its
+its DOL link only if that link is not CONSTANT.
+<li>If recDynLink encounters a link structure that thinks it has an instance on
+queue, but the queue is in fact empty, then the link structure is corrected.
+<li>saveData's stack size increased.to epicsThreadStackBig.
+</ul>
+
+<h2 align="center">Release 2-5-6</h2>
+<ul>
+<li>scan.db database separated into standardScans.db and saveData.db.
+<li>Added standardScans_settings.req and sscanRecord_settings.req.  This
+allows a script to more easily write a new auto_settings.req file, since
+the request file has the same name as the database it supports.  Also, this
+makes it easy to load more than one copy of standardScans.db.
+<li>Win32-specific .dbd file is no longer needed, since Mark Rivers added
+saveDataWin32.c, which contains stub functions for commands that could not be
+built for Win32.
+<li>saveData now checks all data-file writes for errors, and retries until
+file is successfully written, or user-specified number of retries has been
+done.  User also specifies the time between retries.  The new PV's were added
+to scan_saveData.adl
+<li>In sscan module 2.5.3, saveData was writing scan-dimensions to the wrong
+file offset, under certain circumstances.  This is fixed.
+<li>recDynLink now calls epicsAtExit, so it can avoid making CA calls after
+CA has been shut down.
+<li>recDynLink handles null and empty PV names more gracefully.
+<li>sscan record now has a CMND-field value for clearing positioner drive
+and readback PV's, and the default medm display file uses this value for
+it's "CLEAR" button.
+</ul>
+
+<h2 align="center">Release 2-5-3</h2>
+
+<ul>
+<li>Added sscanApp/op/python directory, with the following programs:
+<dl>
+<dt>addMDA.py<dd>Front end for adding MDA files, uses readMDA, opMDA, and writeMDA
+from mda.py
+<dt>mda.py<dd>Python API for MDA files.  Supports reading, writing, and arithmetic
+operations for up to 4-dimensional MDA files
+<dt>mdaAsc.py<dd>Uses mda.py to render a 1-dimensional MDA file as ascii text.
+<dt>opMDA.py<dd>Front end for operating on MDA files, uses readMDA, opMDA, and writeMDA
+from mda.py
+</dl>
+
+<li>Fixed problems in the communication between the sscan record and saveData
+that caused corrupted data files to be written:
+<ul>
+
+<li>The basic problem was that saveData was getting bufferred data arrays, but
+an unbuffered copy of the sscan record's CPT field.  The sscan record now
+maintains the field BCPT (bufferred CPT) which is posted when data array buffers
+are switched.
+
+<li>A second problem was that saveData was not able to put AWAIT=1 quickly
+enough to stop a very fast scan in time to ensure integrity of the data file.
+saveData now writes '1' to the sscan record's AAWAIT field on init, and
+writes '0' if it ever exits (not a supported operation at this time).  As a
+consequence, AAWAIT no longer occurs in the autosave-request file
+scan_settings.req.
+
+<li>A remaining problem, thus far seen only on cygwin, is that multidimensional
+scans can get saveData into trouble because CA monitors sometimes are received
+by saveData in a different order than they were posted by the sscan records.
+Currently, neither the sscan record nor saveData defend against this.
+
+</ul>
+
+<li>Added Dohn Arms' 'mdautils' software in the sscanApp/src
+directory.  This software can convert an MDA file to ascii, print info
+about an MDA file, and read an MDA file into C data structures.
+
+<li>Fixed a race condition in the sscan record that was responsible for hanging scans
+at the last point (and maybe other things as well).
+
+<li> the sscan record no longer renews PV links when a scan starts if the new scan
+follows the previous scan by less than sscanRecordLookupTime.
+
+<li>If retrace or after-scan fails because recDynLinkPutCallback returns an error, skip
+the action rather than hang.
+
+<li>If the sscan record attempts to connect to a PV while an earlier connection attempt
+is still in progress, it now waits and retries.
+
+<li>recDynLinkQsize is now exported for use by the ioc shell.
+
+<li>recDynLink used to crash if one of its callback functions received an
+event_handler_args structure with a status element whose value was not ==
+ECA_NORMAL.  Now it declines to process the event or to pass it on to the client.
+
+<li>saveData used to check directory permissions by attempting to create a file
+whose name was illegal (contained ':') on some operating systems.
+
+<li>rewrote sscanRecord.html
+
+</ul>
+
+<h2 align="center">Release 2-5-2</h2>
+
+<ul>
+<li>sscanRecord checks parameters more closely, allows before-scan and after-scan
+links to write to selected PV's of their own sscan record.
+
+<li>New after-scan action: Move to center of mass of peak (this choice has
+problems with multiple positioners, since they won't, in general, have the
+same peak position).
+
+<li>In previous versions, recDynLink would deadlock if asked to clear the link
+to a PV while an action for that PV was still on queue.  This is fixed.
+
+<li>saveData zeros unused points in its XDR buffer, because XDR doesn't manage
+this well.
+
+</ul>
+
+<h2 align="center">Release 2-4</h2>
+
+This version is intended to build with EPICS base 3.14.7.
+
+<ul>
+<li>The sscan record and saveData now take advantage of the sscan record's
+double buffered data arrays, and allow a scan to proceed while the previous
+scan's data is being written to disk. (AWAIT, AAWAIT fields)
+
+<li>saveData now runs on Solaris and Linux ioc's.
+
+<li>Array valued detectors are now supported in all scan modes.  Arrays
+are read at the end of the scan.  If processing is required to get array
+PV's ready, the sscan record can trigger that processing with the A1PV,
+A1CD fields (just like detector triggers, but executed after the scan is
+done, and just before array PV's are acquired).
+
+<li>The new field DSTATE shows the state of the sscan record's data arrays.
+When DSTATE==POSTED, the sscan record can begin a new scan.
+
+<li>Previously, the before-scan and after-scan links always waited for
+completion.  Now the user decides, by setting BSWAIT and ASWAIT.
+
+<li>If scan fails limit checks, the scan hangs until user aborts.  Previously,
+the scan would appear to complete.
+
+<li>new medm displays for scans are simpler, less cluttered, and have
+documentation callups.
+
+<li>In saveData.req (the file in the ioc directory that tells saveData what
+scans to monitor, etc), the handshake PV is now ignored.  saveData now
+uses scanX.AWAIT to handshake with scanX.
+
+<li>saveData no longer allocates local storage for unused sscan-record 
+detectors.  Once a sscan-detector PV is specified, storage is allocated
+and never released.
+
+<li>Modified the scanparm record to support multi-dimensional, multiple-
+positioner scans: Added two output links to the scanparmRecord: OLOAD, and OGO.  If LOAD
+is nonzero, it's written to OLOAD; if GO is nonzero, it's written to OGO.
+
+<li>Added scanParms2Pos.db, scanParms2Pos.adl -- scan parameters for a 1D
+scan with two positioners.
+
+<li>The scanparm record now uses long int, rather than short int, for the
+number of data points (fields MP and NP).
+
+<li>sscanRecord.dbd and scanparmRecord.dbd now include sscanMenu.dbd, to ensure
+that menus are consistent.  Sometime in the past, the scanparm record wasn't
+updated when sscanRecord menu fields were modified.  In particular,
+scanParm*.db and alignParms.db used to specify "Relative" positioning, while
+the sscan record accepted only "RELATIVE" or "ABSOLUTE".
+
+<li>The sscan record now issues recDynLinkGetCallback() for each positioner and
+detector PV, and waits for the callback before using the PV value that was cached
+by recDynLink. 
+
+<li>Added recDynLinkGetCallback() to recDynLink library.  Also fixed some bugs.  
+
+<li><a href="cvsLog.txt">cvs log</a>
+
+</ul>
+
+<h2 align="center">Release 2-3</h2>
+
+<p align="left">This is the first release of the synApps sscan module.
+Version numbering for this module begins with 2.3 because this module
+was split from version 2.2 of the std module, and I wanted to retain
+the CVS histories of module contents.</p>
+
+This version is intended to build with EPICS base 3.14.5.
+
+Differences from software as previously released in std 2.2:
+<ul>
+<li><p>Converted to EPICS 3.14.  Currently saveData runs on vxWorks only. 
+<li><p>Docs updated and moved to sscan/documentation
+<li><p>saveData - added iocsh support; changed number
+of data points from short to long int, to support
+very large scans.  The data file format is unchanged, however,
+because the number of points was already being written as a four-byte
+quantity.
+<li><p>sscanRecord - Number of points in a scan is essentially limited only by
+available memory.  save-restored value of NPTS is now checked against MPTS.
+Array mode (ACQT="1D ARRAY") was broken.  (The change from ACQM="ARRAYS" to
+ACQT="1D ARRAY" wasn't done correctly.)
+<p>Previously, the sscan record's response to an abort request (.EXSC=0) while
+no scan was in progress (.BUSY==0) was to return nonzero from special(), and
+EPICS tolerated this without comment.  Now it signals an error to the client.
+But we don't (always?) want this action to be regarded as an error.  For now,
+the scan database just declines to abort a sscan record that isn't busy, but
+clients writing directly to the sscan record directly can still get this
+error message.
+<li><p>recDynLink - Fixed memory leak (epicsMutex created but not destroyed).
+Switched communication with link tasks from ring buffer to message queue.
+recDynOut was calling ca_pend_event, which used to flush the ca buffer, but
+evidently no longer does; replaced with ca_flush_io.
+<li><p>saveData_settings.req - new file.
+<li><p>scan_settings.req - added fields ACQT and ACQM.
+</ul>
+<address>
+    Suggestions and Comments to: <br>
+    <a href="mailto:mooney@aps.anl.gov">Tim Mooney </a>:
+    (mooney@aps.anl.gov) <br>
+    Last modified: May 26, 2008
+</address>
+</body>
+</html>

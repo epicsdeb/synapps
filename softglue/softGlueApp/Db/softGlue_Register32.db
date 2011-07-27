@@ -1,0 +1,28 @@
+record(longout,"$(P)$(H)$(SIG)") {
+	field(PINI,"YES")
+	field(DTYP,"Soft Channel")
+	field(OUT,"$(P)$(H)$(SIG)calc.A PP")
+}
+record(calcout,"$(P)$(H)$(SIG)calc") {
+	field(CALC,"$(CALC=A)")
+	field(OUT,"$(P)$(H)$(SIG)calcMSW.A PP")
+}
+record(calcout,"$(P)$(H)$(SIG)calcMSW") {
+	field(CALC,"floor(a/65536)")
+	field(OUT,"$(P)$(H)$(SIG)_MSW PP")
+	field(FLNK,"$(P)$(H)$(SIG)calcLSW")
+}
+record(longout,"$(P)$(H)$(SIG)_MSW") {
+	field(DTYP,"asynUInt32Digital")
+	field(OUT,"@asynMask($(PORT),$(ADDR_MSW),0xffff)")
+}
+
+record(calcout,"$(P)$(H)$(SIG)calcLSW") {
+	field(INPA,"$(P)$(H)$(SIG)calc")
+	field(CALC,"A%65536")
+	field(OUT,"$(P)$(H)$(SIG)_LSW PP")
+}
+record(longout,"$(P)$(H)$(SIG)_LSW") {
+	field(DTYP,"asynUInt32Digital")
+	field(OUT,"@asynMask($(PORT),$(ADDR_LSW),0xffff)")
+}

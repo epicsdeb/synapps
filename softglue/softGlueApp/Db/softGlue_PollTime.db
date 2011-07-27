@@ -1,0 +1,18 @@
+record(dfanout,"$(P)$(H)$(NAM)") {
+	field(DOL,"1000")
+	field(OUTA,"$(P)$(H)$(NAM)_1 PP")
+	field(OUTB,"$(P)$(H)$(NAM)_2 PP")
+	field(OUTC,"$(P)$(H)$(NAM)_3 PP")
+}
+record(longout,"$(P)$(H)$(NAM)_1") {
+	field(DTYP,"asynUInt32Digital")
+	field(OUT,"@asynMask($(PORT1),0,0)POLLTIME")
+}
+record(longout,"$(P)$(H)$(NAM)_2") {
+	field(DTYP,"asynUInt32Digital")
+	field(OUT,"@asynMask($(PORT2),0,0)POLLTIME")
+}
+record(longout,"$(P)$(H)$(NAM)_3") {
+	field(DTYP,"asynUInt32Digital")
+	field(OUT,"@asynMask($(PORT3),0,0)POLLTIME")
+}

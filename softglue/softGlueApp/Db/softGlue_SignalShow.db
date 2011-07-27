@@ -1,0 +1,29 @@
+# Initialize to "2@" so that blank signals don't blink continuously on startup.
+# Note that $(P)$(H)SignalBlink is scan disabled when the first character is
+# '2', otherwise all _SigShow records would process at SignalBlink's SCAN rate
+# when nobody is pressing the "=" button (setting _Show to 1).
+record(stringout,"$(P)$(H)SignalToShow") {
+	field(VAL,"2@")
+	field(UDF,"0")
+	field(OUT,"$(P)$(H)EnableSignalBlink.AA PP")
+}
+record(scalcout,"$(P)$(H)EnableSignalBlink") {
+	field(CALC,"AA[0,1]")
+}
+record(calcout,"$(P)$(H)SignalBlink") {
+	field(SDIS,"$(P)$(H)EnableSignalBlink CP")
+	field(DISV,"2")
+	field(INPA,"$(P)$(H)SignalBlink NPP")
+	field(SCAN,".5 second")
+	field(CALC,"A?0:1")
+}
+record(stringout,"$(P)$(H)NullSigName") {
+	field(VAL,"2@")
+	field(UDF,"0")
+}
+record(event,"$(P)$(H)ReadRate") {
+	field(VAL,"$(READEVENT)")
+	field(SCAN,".2 second")
+	field(UDF,"0")
+}
+

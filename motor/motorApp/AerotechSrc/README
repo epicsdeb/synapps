@@ -1,0 +1,101 @@
+CONFIGURATION NOTES
+===================
+
+
+- Database definition (*.dbd) requirements.
+<App>DBD += devAerotech.dbd
+
+- Startup command file (st.cmd) requirements.
+("#"  is used to denote st.cmd comment lines.)
+("#!" is used to denote st.cmd command lines.)
+
+Configure an asyn communications port driver for the Ensemble.  This can be
+either RS-232 or ethernet. For example,
+
+#!EnsemblePort = "Serial"
+#!drvAsynSerialPortConfigure(EnsemblePort,"/tyGS0/Mod0/1",0,0,0)
+
+#!EnsemblePort = "tcp1"
+#!drvAsynIPPortConfigure(EnsemblePort,"xx.xx.xx.xx:8000", 0, 0, 0)
+
+See asyn documentation for details.
+
+# Aerotech Ensemble digital servo controller
+#     (1) maximum number of controllers in system
+#!EnsembleAsynSetup(1)
+
+# The Ensemble driver does not set end of string (EOS).
+#!asynOctetSetInputEos(EnsemblePort,0,"\n")
+#!asynOctetSetOutputEos(EnsemblePort,0,"\n")
+
+#     (1) Controller number being configured
+#     (2) ASYN port name
+#     (3) ASYN address (GPIB only)
+#     (4) Number of axes this controller supports
+#     (5) Time to poll (msec) when an axis is in motion
+#     (6) Time to poll (msec) when an axis is idle. 0 for no polling
+#!EnsembleAsynConfig(0, EnsemblePort, 0, 1, 100, 1000)
+
+# Asyn-based Motor Record support
+#   (1) Asyn port
+#   (2) Driver name
+#   (3) Controller index
+#   (4) Max. number of axes
+#!drvAsynMotorConfigure("AeroE1","motorEnsemble",0,1)
+
+
+DESIGN NOTES
+============
+
+- The EPICS driver neither reads nor writes the Ensemble's soft limits.  It is
+recommended that the Ensemble soft limits be disabled and the user rely on the
+EPICS motor record soft limits.
+
+- Since the Ensemble network connection requires period communication from the
+host to prevent the Ensemble from closing the network socket, the Ensemble
+support based on the old device driver architecture will be removed after R5-6.
+The asyn motor architecture supports continuous, periodic updates; the old
+architecture does not.
+
+- This driver assumes that the EOT limit switches have been configured
+correctly.  If the PosScaleFactor parameter is positive, then a positive move
+is a move in the direction of the CW EOT limit switch and a negative move is a
+move in the direction of the CCW EOT limit switch.  If the PosScaleFactor
+parameter is negative, then a positive move is a move in the direction of the
+CCW EOT limit switch and a negative move is a move in the direction of the CW
+EOT limit switch
+
+
+ENSEMBLE CONFIGURATION NOTES
+============================
+
+- In the Controller->Communication->AsciiCmdEnable parameter,
+check the following items (everything else is unchecked);
+
+    * RS232 Port 1
+    * Ethernet Socket 1
+    * Always Send EOS
+
+- Set the "Idle Polling" parameter of the EnsembleAsynConfig() call <=
+Controller->Communication->Ethernet->Sockets->InetSock1ActiveTimeSec Parameter.
+
+This will prevent the Ensemble from closing the socket.  In addition, the time
+between the call to drvAsynIPPortConfigure() and the call to
+EnsembleAsynConfig() in the st.cmd file must be less than the
+InetSock1ActiveTimeSec Parameter.  If this is not done a socket timeout will
+occur during IOC initialization and prevent EPICS from making a communication
+connection.
+
+
+DRIVER LIMITATIONS
+------------------
+
+The driver reads the controllers configuration information only at boot-up
+(iocInit). If any of the following Ensemble parameters are changed, EPICS
+must be rebooted.
+
+- CfgFbkPosType
+- PosScaleFactor
+- HomeOffset
+- HomeDirection
+- LimitLevelMask

@@ -1,0 +1,33 @@
+file "softGlue_Input.db"
+{
+pattern {SIG   ADDR}
+{Shift-1_LOAD		0x801010}
+{Shift-1_CLOCK		0x801018}
+{Shift-1_D			0x801020}
+{Shift-2_LOAD		0x801050}
+{Shift-2_CLOCK		0x801058}
+{Shift-2_D			0x801060}
+}
+
+
+file "softGlue_Output.db"
+{
+pattern {SIG   ADDR}
+{Shift-1_Q			0x801038}
+{Shift-2_Q			0x801078}
+}
+
+
+file "softGlue_Register32.db"
+{
+pattern {SIG		ADDR_MSW	ADDR_LSW 	CALC}
+{Shift-1_LOADVAL	0x801008	0x801000	A}
+{Shift-2_LOADVAL	0x801048	0x801040	A}
+}
+
+file "softGlue_InRegister32.db"
+{
+pattern {SIG     	ADDR_MSW	ADDR_LSW}
+{Shift-1_READVAL	0x801030	0x801028}
+{Shift-2_READVAL	0x801070	0x801068}
+}
