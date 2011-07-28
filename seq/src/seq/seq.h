@@ -72,6 +72,9 @@
 #include	"errlog.h"
 #include	"taskwd.h"
 #include	"pv.h"
+#include	"shareLib.h"
+#define SEQ_UGLY_WINDOWS_HACK
+#define epicsExportSharedSymbols
 #include	"seqCom.h"
 #include	"seqPvt.h"
 #endif	/*INCLseqh*/

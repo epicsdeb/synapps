@@ -1,4 +1,4 @@
-/* pvNew.cc,v 1.2 2000/04/14 21:53:29 jba Exp
+/* $Id: pvNew.cc,v 1.2 2000-04-14 21:53:29 jba Exp $
  *
  * Routine to create a system object for a named message system
  * (will eventually load dynamically)

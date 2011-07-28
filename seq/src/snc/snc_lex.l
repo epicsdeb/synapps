@@ -39,8 +39,6 @@
  */
 
 #include	<string.h>
-#include	<stdlib.h>
-#include	<unistd.h>
 
 #ifndef	TRUE
 #define	TRUE	1

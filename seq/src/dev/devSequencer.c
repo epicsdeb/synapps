@@ -1,4 +1,4 @@
-/* devSequencer.c,v 1.4 2003/08/07 14:34:37 mrk Exp
+/* $Id: devSequencer.c,v 1.4 2003-08-07 14:34:37 mrk Exp $
  *
  * Device support to permit database access to sequencer internals
  *
@@ -188,15 +188,15 @@ LOCAL seqShowScanPvt* seqShowScanPvtInit(struct link* pLink)
         and replace null characeter to point end of string.
         And assign to sperated strings */
      while(argN<3) {
-         if(*(inpStr+i) == 0) break;
+         if(*(inpStr+i) == NULL) break;
          inpArg[argN++] = inpStr+i;
          while(i<80) {
              tempChar = inpStr + (i++);
              if((*tempChar < '0' || *tempChar > '9') &&
                 (*tempChar < 'a' || *tempChar > 'z') &&
                 (*tempChar < 'A' || *tempChar > 'Z') ) {
-                     if(*tempChar == 0) i-=1;
-                     *tempChar = 0;
+                     if(*tempChar == NULL) i-=1;
+                     *tempChar = NULL;
                       break;
              }
          }
@@ -424,10 +424,7 @@ LOCAL long siGetIoInitInfo(int cmd, struct stringinRecord *pRec, IOSCANPVT *ppvt
 }
 
 /*
- * devSequencer.c,v
- * Revision 1.4  2003/08/07 14:34:37  mrk
- * version obtained from Kukhee Kim,
- *
+ * $Log: not supported by cvs2svn $
  *
  * Revision 1.2  2003/05/23 18:44:22 KHKIM
  * change to support I/O interrupt mode

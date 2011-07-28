@@ -38,6 +38,7 @@
 #ifndef	INCLseqComh
 #define	INCLseqComh
 
+#ifndef SEQ_UGLY_WINDOWS_HACK
 #include	<stdio.h>	/* standard i/o defs */
 #include	<stdlib.h>	/* standard library defs */
 
@@ -45,6 +46,8 @@
 #include	"pvAlarm.h"	/* status and severity defs */
 #include	"epicsThread.h"	/* time stamp defs */
 #include	"epicsTime.h"	/* time stamp defs */
+#include        "epicsExport.h" /* for Registrar routine */
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -67,7 +70,7 @@ extern "C" {
 #define OPT_DOEXITTOSELF        (1<<2)  /* Do exit{} even if to same state */
 
 /* Macros to handle set & clear event bits */
-typedef epicsUInt32     bitMask;
+typedef unsigned long   bitMask;
 #define NBITS           (8*sizeof(bitMask))
 				/* # bits in bitMask word */
 

@@ -1,4 +1,4 @@
-/* pv.cc,v 1.4 2001/02/16 21:45:16 norume Exp
+/* $Id: pv.cc,v 1.4 2001-02-16 21:45:16 norume Exp $
  *
  * Implementation of EPICS sequencer message system-independent library (pv)
  * (NB, "pv" = "process variable").
@@ -436,10 +436,7 @@ epicsShareFunc char * epicsShareAPI Strdcpy( char *dst, const char *src ) {
 }
 
 /*
- * pv.cc,v
- * Revision 1.4  2001/02/16 21:45:16  norume
- * Many 3.14-related changes.
- *
+ * $Log: not supported by cvs2svn $
  * Revision 1.3  2001/02/16 18:45:39  mrk
  * changes for latest version of 3.14
  *

@@ -396,12 +396,11 @@ char		*pVal;
 int		count, type;
 {
 	int		i;
-	pvChar		*c;
-	pvShort		*s;
-	pvLong		*l;
-	pvFloat		*f;
-	pvDouble	*d;
-	pvString	*r;
+	char		*c;
+	short		*s;
+	long		*l;
+	float		*f;
+	double		*d;
 
 	printf("  Value =");
 	for (i = 0; i < count; i++)
@@ -409,15 +408,15 @@ int		count, type;
 	  switch (type)
 	  {
 	    case pvTypeSTRING:
-	    	r = (pvString *)pVal;
-		for (i = 0; i < count; i++, r++)
+		c = (char *)pVal;
+		for (i = 0; i < count; i++, c += sizeof(pvString))
 		{
-			printf(" %s", *r);
+			printf(" %s", c);
 		}
 		break;
 
 	     case pvTypeCHAR:
-		c = (pvChar *)pVal;
+		c = (char *)pVal;
 		for (i = 0; i < count; i++, c++)
 		{
 			printf(" %d", *c);
@@ -425,7 +424,7 @@ int		count, type;
 		break;
 
 	    case pvTypeSHORT:
-		s = (pvShort *)pVal;
+		s = (short *)pVal;
 		for (i = 0; i < count; i++, s++)
 		{
 			printf(" %d", *s);
@@ -433,15 +432,15 @@ int		count, type;
 		break;
 
 	    case pvTypeLONG:
-		l = (pvLong *)pVal;
+		l = (long *)pVal;
 		for (i = 0; i < count; i++, l++)
 		{
-			printf(" %d", *l);
+			printf(" %ld", *l);
 		}
 		break;
 
 	    case pvTypeFLOAT:
-		f = (pvFloat *)pVal;
+		f = (float *)pVal;
 		for (i = 0; i < count; i++, f++)
 		{
 			printf(" %g", *f);
@@ -449,7 +448,7 @@ int		count, type;
 		break;
 
 	    case pvTypeDOUBLE:
-		d = (pvDouble *)pVal;
+		d = (double *)pVal;
 		for (i = 0; i < count; i++, d++)
 		{
 			printf(" %g", *d);
@@ -476,7 +475,7 @@ LOCAL SPROG *seqQryFind(epicsThreadId tid)
 	pSP = seqFindProg(tid);
 	if (pSP == NULL)
 	{
-		printf("No state program exists for thread id %p\n", tid);
+		printf("No state program exists for thread id %d\n", (int)tid);
 		return NULL;
 	}
 

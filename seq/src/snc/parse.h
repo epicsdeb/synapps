@@ -83,6 +83,10 @@ struct	db_chan				/* DB channel assignment info */
 typedef	struct	db_chan Chan;
 /* Note: Only one of db_name or db_name_list can have a non-zero value */
 
+Expr		*expression(), *link_expr();
+Var		*findVar();
+Chan		*findChan();
+
 /* Linked list allocation definitions */
 #define	allocExpr()		(Expr *)calloc(1, sizeof(Expr));
 #define	allocVar()		(Var *)calloc(1, sizeof(Var));
@@ -141,11 +145,5 @@ typedef	struct	db_chan Chan;
 #define E_ENTRY         26              /* entry statement */
 #define E_EXIT          27              /* exit statement */
 #define E_OPTION        28              /* state option statement */
-
-Var *findVar(char *name);
-Expr *link_expr(
-	Expr	*ep1,	/* beginning of 1-st structure or list */
-	Expr	*ep2	/* beginning 2-nd (append it to 1-st) */
-);
-
 #endif	/*INCLparseh*/
+

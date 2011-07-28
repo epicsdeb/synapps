@@ -212,7 +212,7 @@ LOCAL void proc_db_events(pvValue *pValue, pvType type, CHAN *pDB,
 	}
 	else
 	{
-	    pVal = (void *)((char *)pValue + pDB->dbOffset); /* ptr to data */
+	    pVal = (void *)((long)pValue + pDB->dbOffset); /* ptr to data */
 	    memcpy(pDB->pVar, pVal, pDB->size * pDB->dbCount);
 	}
 

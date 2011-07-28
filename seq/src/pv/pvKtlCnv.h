@@ -1,4 +1,4 @@
-/* pvKtlCnv.h,v 1.1.1.1 2000/04/04 03:22:15 wlupton Exp
+/* $Id: pvKtlCnv.h,v 1.1.1.1 2000-04-04 03:22:15 wlupton Exp $
  *
  * Definitions for EPICS sequencer KTL type conversion (pvKtlCnv)
  *
@@ -40,10 +40,7 @@ private:
 };
 
 /*
- * pvKtlCnv.h,v
- * Revision 1.1.1.1  2000/04/04 03:22:15  wlupton
- * first commit of seq-2-0-0
- *
+ * $Log: not supported by cvs2svn $
  * Revision 1.1  2000/03/06 19:21:04  wlupton
  * misc error reporting and type conversion mods
  *

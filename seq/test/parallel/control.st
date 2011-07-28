@@ -1,4 +1,4 @@
-/* control.st,v 1.1.1.1 2000/04/04 03:23:14 wlupton Exp
+/* $Id: control.st,v 1.1.1.1 2000-04-04 03:23:14 wlupton Exp $
  *
  * Demo KTL EPICS sequence; illustrates and tests parallel control
  */

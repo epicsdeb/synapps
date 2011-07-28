@@ -1,4 +1,4 @@
-/* demo.st,v 1.1.1.2 2000/04/25 19:15:14 wlupton Exp
+/* $Id: demo.st,v 1.1.1.2 2000-04-25 19:15:14 wlupton Exp $
  *
  * Demo EPICS sequence
  */
@@ -36,11 +36,7 @@ program demo( PVSYS ",debug=1" )
 option  +r;
 
 /* control variables and transition points for light control */
-#if 0
-/* trying to assign a long variable now gives a compiler error on 64 bit systems */
 long    light;
-#endif
-int     light;
 assign  light    to LIGHT;
 
 double  lightOn;

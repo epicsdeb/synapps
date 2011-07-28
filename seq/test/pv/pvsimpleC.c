@@ -1,4 +1,4 @@
-/* pvsimpleC.c,v 1.1.1.1 2000/04/04 03:23:09 wlupton Exp
+/* $Id: pvsimpleC.c,v 1.1.1.1 2000-04-04 03:23:09 wlupton Exp $
  *
  * Very simple C program to demonstrate pv classes
  */
