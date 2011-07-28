@@ -3,7 +3,7 @@
 	Copyright, 1989-93, The Regents of the University of California.
 		         Los Alamos National Laboratory
 
- 	proto.h,v 1.2 2001/03/21 15:06:10 mrk Exp
+ 	$Id: proto.h,v 1.2 2001-03-21 15:06:10 mrk Exp $
 	DESCRIPTION: Function prototypes for state notation language parser
 	ENVIRONMENT: UNIX
 	HISTORY:

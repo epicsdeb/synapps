@@ -1,4 +1,4 @@
-/* pvCa.h,v 1.4 2001/10/15 21:41:42 jhill Exp
+/* $Id: pvCa.h,v 1.4 2001-10-15 21:41:42 jhill Exp $
  *
  * Definitions for EPICS sequencer CA library (pvCa)
  *
@@ -68,10 +68,7 @@ private:
 #endif /* INCLpvCah */
 
 /*
- * pvCa.h,v
- * Revision 1.4  2001/10/15 21:41:42  jhill
- * fixed to match R3.14 CA client lib
- *
+ * $Log: not supported by cvs2svn $
  * Revision 1.3  2001/07/05 14:42:16  mrk
  * ca changed client contect
  *

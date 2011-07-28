@@ -1,4 +1,4 @@
-/* pv.h,v 1.3 2001/02/16 18:45:39 mrk Exp
+/* $Id: pv.h,v 1.3 2001-02-16 18:45:39 mrk Exp $
  *
  * Definitions for EPICS sequencer message system-independent library (pv)
  * (NB, "pv" = "process variable").
@@ -13,8 +13,7 @@
 #ifndef INCLpvh
 #define INCLpvh
 
-#include "shareLib.h"		/* reset share lib defines */
-#include "epicsTypes.h"		/* for thread ids */
+#include "shareLib.h" /* reset share lib defines */
 #include "epicsThread.h"	/* for thread ids */
 #include "epicsMutex.h"		/* for locks */
 #include "epicsTime.h"		/* for time stamps */
@@ -61,12 +60,12 @@ typedef enum {
 /*
  * Value-related types (c.f. db_access.h)
  */
-typedef epicsInt8    pvChar;
-typedef epicsInt16   pvShort;
-typedef epicsInt32   pvLong;
-typedef epicsFloat32 pvFloat;
-typedef epicsFloat64 pvDouble;
-typedef char         pvString[256]; /* use sizeof( pvString ) */
+typedef char   pvChar;
+typedef short  pvShort;
+typedef long   pvLong;
+typedef float  pvFloat;
+typedef double pvDouble;
+typedef char   pvString[256]; /* use sizeof( pvString ) */
 
 #define PV_TIME_XXX(_type) \
     typedef struct { \
@@ -347,10 +346,7 @@ epicsShareFunc char * epicsShareAPI Strdcpy( char *dst, const char *src );
 #endif /* INCLpvh */
 
 /*
- * pv.h,v
- * Revision 1.3  2001/02/16 18:45:39  mrk
- * changes for latest version of 3.14
- *
+ * $Log: not supported by cvs2svn $
  * Revision 1.2  2000/04/14 21:53:28  jba
  * Changes for win32 build.
  *

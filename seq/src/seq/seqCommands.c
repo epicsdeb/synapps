@@ -1,5 +1,5 @@
 /*
- * seqCommands.c,v 1.12 2005/01/20 16:49:06 anj Exp
+ * $Id: seqCommands.c,v 1.12 2005-01-20 16:49:06 anj Exp $
  *
  * DESCRIPTION: EPICS sequencer commands
  *

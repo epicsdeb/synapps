@@ -47,7 +47,6 @@
 #include	<stdio.h>
 #include	<ctype.h>
 #include	"parse.h"
-#include	"parsedefs.h"
 
 #ifndef	TRUE
 #define	TRUE	1
@@ -200,9 +199,9 @@ local_decl_stmt	/* local variable declarations (not yet arrays... but easy
 		   in escaped C code */
 		/* ### this is not working yet; don't use it */
 :	type NAME SEMI_COLON
-			{ $$ = expression(E_TEXT, "", (Expr *)"int i;", 0); }
+			{ $$ = expression(E_TEXT, "", "int i;", 0); }
 |	type NAME EQUAL NUMBER SEMI_COLON
-			{ $$ = expression(E_TEXT, "", (Expr *)"int i=0;", 0); }
+			{ $$ = expression(E_TEXT, "", "int i=0;", 0); }
 ;
 
 type		/* types for variables defined in SNL */
@@ -283,9 +282,9 @@ state_option_list /* A list of options for a single state */
 
 state_option /* An option for a state */
 :	OPTION PLUS NAME SEMI_COLON	
-                { $$ = expression(E_OPTION,"stateoption",(Expr *)$3,(Expr *)"+"); }
+                { $$ = expression(E_OPTION,"stateoption",$3,"+"); }
 |	OPTION MINUS NAME SEMI_COLON	
-		{ $$ = expression(E_OPTION,"stateoption",(Expr *)$3,(Expr *)"-"); }
+		{ $$ = expression(E_OPTION,"stateoption",$3,"-"); }
 |       error	{ snc_err("state option specifier"); }
 ;
 
@@ -430,7 +429,7 @@ statement
 |	else_stmt			{ $$ = $1; }
 |	while_stmt			{ $$ = $1; }
 |	for_stmt			{ $$ = $1; }
-|	C_STMT				{ $$ = expression(E_TEXT, "", (Expr *)$1, 0); }
+|	C_STMT				{ $$ = expression(E_TEXT, "", $1, 0); }
 |	pp_code				{ $$ = 0; }
 /* |	error 				{ snc_err("action statement"); } */
 ;
@@ -454,9 +453,9 @@ for_stmt
 ;
 
 pp_code		/* pre-processor code (e.g. # 1 "test.st") */
-:	PP_SYMBOL NUMBER STRING CR		{ pp_code($2, $3); }
-|	PP_SYMBOL NUMBER CR			{ pp_code($2, 0); }
-|	PP_SYMBOL NUMBER STRING NUMBER CR	{ pp_code($2, $3); }
+:	PP_SYMBOL NUMBER STRING CR		{ pp_code($2, $3, ""); }
+|	PP_SYMBOL NUMBER CR		{ pp_code($2, 0, ""); }
+|	PP_SYMBOL NUMBER STRING NUMBER CR	{ pp_code($2, $3, $4); }
 |	PP_SYMBOL STRING CR	{ /* Silently consume #pragma lines */ } 
 ;
 
@@ -470,8 +469,8 @@ global_c
 ;
 
 escaped_c_list
-:	C_STMT			{ $$ = expression(E_TEXT, "", (Expr *)$1, 0); }
-|	escaped_c_list C_STMT	{ $$ = link_expr($1, expression(E_TEXT, "", (Expr *)$2, 0)); }
+:	C_STMT			{ $$ = expression(E_TEXT, "", $1, 0); }
+|	escaped_c_list C_STMT	{ $$ = link_expr($1, expression(E_TEXT, "", $2, 0)); }
 ;
 %%
 #include	"snc_lex.c"
