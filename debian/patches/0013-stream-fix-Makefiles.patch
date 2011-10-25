@@ -17,7 +17,7 @@ stream/doc from being cleaned
  5 files changed, 9 insertions(+), 6 deletions(-)
 
 diff --git a/stream/Makefile b/stream/Makefile
-index 5f04e39..e523df7 100644
+index 247c705..efe17bb 100644
 --- a/stream/Makefile
 +++ b/stream/Makefile
 @@ -1,4 +1,4 @@
@@ -25,8 +25,8 @@ index 5f04e39..e523df7 100644
 +TOP = .
  
  DIRS = src
- 
-@@ -18,4 +18,7 @@ endif
+ streamApp_DEPEND_DIRS  = src
+@@ -21,4 +21,7 @@ endif
  
  DIRS += streamApp
  
@@ -48,7 +48,7 @@ index 0317746..60466fe 100644
  include $(TOP)/configure/CONFIG
  
 diff --git a/stream/src/Makefile b/stream/src/Makefile
-index 363285c..b83ccc7 100644
+index 4cd912f..7662882 100644
 --- a/stream/src/Makefile
 +++ b/stream/src/Makefile
 @@ -18,7 +18,7 @@
@@ -61,7 +61,7 @@ index 363285c..b83ccc7 100644
  # Look if we have EPICS R3.13 or R3.14
  ifeq ($(wildcard $(TOP)/configure),)
 diff --git a/stream/srcSynApps/Makefile b/stream/srcSynApps/Makefile
-index f089b82..ce4e96b 100644
+index 4fec9f9..c16f995 100644
 --- a/stream/srcSynApps/Makefile
 +++ b/stream/srcSynApps/Makefile
 @@ -1,4 +1,4 @@
@@ -71,7 +71,7 @@ index f089b82..ce4e96b 100644
  include $(TOP)/configure/CONFIG
  
 diff --git a/stream/streamApp/Makefile b/stream/streamApp/Makefile
-index 829974d..d51e505 100644
+index 8ee34ec..15f6b9f 100644
 --- a/stream/streamApp/Makefile
 +++ b/stream/streamApp/Makefile
 @@ -1,4 +1,4 @@
