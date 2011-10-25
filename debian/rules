@@ -20,7 +20,7 @@ dh_auto_configure override_dh_auto_test:
 
 override_dh_auto_clean:
 	make -C mdautils clean
-	rm -rf op
+	rm -rf op opi
 	rm -f adltemp edlskip
 	dh_auto_clean -- -f debian/rules2
 
@@ -33,10 +33,16 @@ ifneq (,$(findstring edm-synapps, $(shell dh_listpackages)))
 	rm -f optics/documentation/fb_epid/source/fb_epid.adl
 	rm -f std/stdApp/op/adl/arrayPlot.adl
 
+	rm -rf $(CURDIR)/opi
+	install -d $(CURDIR)/opi
+
+	find $(MODS) -name '*.opi' -a -not -name '*test*' -a -not -path './debian*' -a -not -path './opi' \
+	 | xargs cp -f -t $(CURDIR)/opi
+
 	rm -rf $(CURDIR)/op
 	install -d $(CURDIR)/op
 
-	find $(MODS) -name '*.adl' -a -not -name '*test*' -a -not -path './debian*' \
+	find $(MODS) -name '*.adl' -a -not -name '*test*' -a -not -path './debian*' -a -not -path './op' \
 	 | xargs cp -f -t $(CURDIR)/op
 
 	rm -f edlskip
