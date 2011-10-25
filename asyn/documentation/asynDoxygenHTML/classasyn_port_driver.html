@@ -200,6 +200,24 @@ Inheritance diagram for asynPortDriver:</div>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">virtual asynStatus&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classasyn_port_driver.html#afa380d26215c47e6c37c5faacc303ce">setUIntDigitalParam</a> (int list, int index, epicsUInt32 value, epicsUInt32 mask)</td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Sets the value for a UInt32Digital in the parameter library.  <a href="#afa380d26215c47e6c37c5faacc303ce"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual asynStatus&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classasyn_port_driver.html#f55b818f0aea250ac1549ec587c42242">setUInt32DigitalInterrupt</a> (int index, epicsUInt32 mask, interruptReason reason)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Sets the interrupt mask and reason in the parameter library Calls <a class="el" href="classparam_list.html#30ca684031570cacd8a5ff1f118524f9" title="Sets the value of the UInt32Interrupt in the parameter library.">paramList::setUInt32Interrupt</a> (0, index, mask, reason) i.e.  <a href="#f55b818f0aea250ac1549ec587c42242"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual asynStatus&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classasyn_port_driver.html#00b91d104b3e6fb42eaec02cb896460c">setUInt32DigitalInterrupt</a> (int list, int index, epicsUInt32 mask, interruptReason reason)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Sets the interrupt mask and reason in the parameter library Calls <a class="el" href="classparam_list.html#30ca684031570cacd8a5ff1f118524f9" title="Sets the value of the UInt32Interrupt in the parameter library.">paramList::setUInt32Interrupt</a> (index, mask, reason) for the parameter list indexed by list.  <a href="#00b91d104b3e6fb42eaec02cb896460c"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual asynStatus&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classasyn_port_driver.html#b0ce68f015266cc3f880776ebb951489">clearUInt32DigitalInterrupt</a> (int index, epicsUInt32 mask)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Clears the interrupt mask in the parameter library Calls <a class="el" href="classparam_list.html#9cb7ad5429ddbd7ff63cf1e99d72ad03" title="Clears the UInt32Interrupt in the parameter library.">paramList::clearUInt32Interrupt</a> (0, index, mask) i.e.  <a href="#b0ce68f015266cc3f880776ebb951489"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual asynStatus&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classasyn_port_driver.html#3dd9873f2494ecf2fae0d8aadd9bcc8c">clearUInt32DigitalInterrupt</a> (int list, int index, epicsUInt32 mask)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Clears the interrupt mask in the parameter library Calls <a class="el" href="classparam_list.html#9cb7ad5429ddbd7ff63cf1e99d72ad03" title="Clears the UInt32Interrupt in the parameter library.">paramList::clearUInt32Interrupt</a> (index, mask) for the parameter list indexed by list.  <a href="#3dd9873f2494ecf2fae0d8aadd9bcc8c"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual asynStatus&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classasyn_port_driver.html#bd3e17870fe8bc61fcd61a4a98c64e0a">getUInt32DigitalInterrupt</a> (int index, epicsUInt32 *mask, interruptReason reason)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Gets the interrupt mask and reason in the parameter library Calls <a class="el" href="classparam_list.html#2b40b46c0399af6c7bba3a545b5c3452" title="Returns the UInt32Interrupt from the parameter library.">paramList::getUInt32Interrupt</a> (0, index, mask, reason) i.e.  <a href="#bd3e17870fe8bc61fcd61a4a98c64e0a"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual asynStatus&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classasyn_port_driver.html#70bc3d00a470114a376290dc08ef651b">getUInt32DigitalInterrupt</a> (int list, int index, epicsUInt32 *mask, interruptReason reason)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Gets the interrupt mask and reason in the parameter library Calls <a class="el" href="classparam_list.html#2b40b46c0399af6c7bba3a545b5c3452" title="Returns the UInt32Interrupt from the parameter library.">paramList::getUInt32Interrupt</a> (index, mask, reason) for the parameter list indexed by list.  <a href="#70bc3d00a470114a376290dc08ef651b"></a><br></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">virtual asynStatus&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classasyn_port_driver.html#0f23380aa837eb840490a28e8711369c">setDoubleParam</a> (int index, double value)</td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Sets the value for a double in the parameter library.  <a href="#0f23380aa837eb840490a28e8711369c"></a><br></td></tr>
@@ -507,6 +525,87 @@ Called when asyn clients call pasynUInt32Digital-&gt;clearInterrupt().
 The base class implementation simply sets the value in the parameter library. Derived classes will reimplement this function if they need to perform an action when an clearInterrupt is called. <dl compact><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"><tt>[in]</tt>&nbsp;</td><td valign="top"><em>pasynUser</em>&nbsp;</td><td>pasynUser structure that encodes the reason and address. </td></tr>
+    <tr><td valign="top"><tt>[in]</tt>&nbsp;</td><td valign="top"><em>mask</em>&nbsp;</td><td>Interrupt mask. </td></tr>
+  </table>
+</dl>
+
+</div>
+</div><p>
+<a class="anchor" name="3dd9873f2494ecf2fae0d8aadd9bcc8c"></a><!-- doxytag: member="asynPortDriver::clearUInt32DigitalInterrupt" ref="3dd9873f2494ecf2fae0d8aadd9bcc8c" args="(int list, int index, epicsUInt32 mask)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">asynStatus asynPortDriver::clearUInt32DigitalInterrupt           </td>
+          <td>(</td>
+          <td class="paramtype">int&nbsp;</td>
+          <td class="paramname"> <em>list</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&nbsp;</td>
+          <td class="paramname"> <em>index</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">epicsUInt32&nbsp;</td>
+          <td class="paramname"> <em>mask</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td><code> [virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Clears the interrupt mask in the parameter library Calls <a class="el" href="classparam_list.html#9cb7ad5429ddbd7ff63cf1e99d72ad03" title="Clears the UInt32Interrupt in the parameter library.">paramList::clearUInt32Interrupt</a> (index, mask) for the parameter list indexed by list. 
+<p>
+<dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"><tt>[in]</tt>&nbsp;</td><td valign="top"><em>list</em>&nbsp;</td><td>The parameter list number. Must be &lt; maxAddr passed to <a class="el" href="classasyn_port_driver.html#cf77e873fc4fdbd8d07154ef80dc38b8" title="Constructor for the asynPortDriver class.">asynPortDriver::asynPortDriver</a>. </td></tr>
+    <tr><td valign="top"><tt>[in]</tt>&nbsp;</td><td valign="top"><em>index</em>&nbsp;</td><td>The parameter number </td></tr>
+    <tr><td valign="top"><tt>[in]</tt>&nbsp;</td><td valign="top"><em>mask</em>&nbsp;</td><td>Interrupt mask. </td></tr>
+  </table>
+</dl>
+
+</div>
+</div><p>
+<a class="anchor" name="b0ce68f015266cc3f880776ebb951489"></a><!-- doxytag: member="asynPortDriver::clearUInt32DigitalInterrupt" ref="b0ce68f015266cc3f880776ebb951489" args="(int index, epicsUInt32 mask)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">asynStatus asynPortDriver::clearUInt32DigitalInterrupt           </td>
+          <td>(</td>
+          <td class="paramtype">int&nbsp;</td>
+          <td class="paramname"> <em>index</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">epicsUInt32&nbsp;</td>
+          <td class="paramname"> <em>mask</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td><code> [virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Clears the interrupt mask in the parameter library Calls <a class="el" href="classparam_list.html#9cb7ad5429ddbd7ff63cf1e99d72ad03" title="Clears the UInt32Interrupt in the parameter library.">paramList::clearUInt32Interrupt</a> (0, index, mask) i.e. 
+<p>
+for parameter list 0. <dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"><tt>[in]</tt>&nbsp;</td><td valign="top"><em>index</em>&nbsp;</td><td>The parameter number </td></tr>
     <tr><td valign="top"><tt>[in]</tt>&nbsp;</td><td valign="top"><em>mask</em>&nbsp;</td><td>Interrupt mask. </td></tr>
   </table>
 </dl>
@@ -1623,6 +1722,101 @@ Calls getStringParam(0, index, maxChars, value) i.e. for parameter list 0. <dl c
 
 </div>
 </div><p>
+<a class="anchor" name="70bc3d00a470114a376290dc08ef651b"></a><!-- doxytag: member="asynPortDriver::getUInt32DigitalInterrupt" ref="70bc3d00a470114a376290dc08ef651b" args="(int list, int index, epicsUInt32 *mask, interruptReason reason)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">asynStatus asynPortDriver::getUInt32DigitalInterrupt           </td>
+          <td>(</td>
+          <td class="paramtype">int&nbsp;</td>
+          <td class="paramname"> <em>list</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&nbsp;</td>
+          <td class="paramname"> <em>index</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">epicsUInt32 *&nbsp;</td>
+          <td class="paramname"> <em>mask</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">interruptReason&nbsp;</td>
+          <td class="paramname"> <em>reason</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td><code> [virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Gets the interrupt mask and reason in the parameter library Calls <a class="el" href="classparam_list.html#2b40b46c0399af6c7bba3a545b5c3452" title="Returns the UInt32Interrupt from the parameter library.">paramList::getUInt32Interrupt</a> (index, mask, reason) for the parameter list indexed by list. 
+<p>
+<dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"><tt>[in]</tt>&nbsp;</td><td valign="top"><em>list</em>&nbsp;</td><td>The parameter list number. Must be &lt; maxAddr passed to <a class="el" href="classasyn_port_driver.html#cf77e873fc4fdbd8d07154ef80dc38b8" title="Constructor for the asynPortDriver class.">asynPortDriver::asynPortDriver</a>. </td></tr>
+    <tr><td valign="top"><tt>[in]</tt>&nbsp;</td><td valign="top"><em>index</em>&nbsp;</td><td>The parameter number </td></tr>
+    <tr><td valign="top"><tt>[in]</tt>&nbsp;</td><td valign="top"><em>mask</em>&nbsp;</td><td>Interrupt mask. </td></tr>
+    <tr><td valign="top"><tt>[in]</tt>&nbsp;</td><td valign="top"><em>reason</em>&nbsp;</td><td>Interrupt reason. </td></tr>
+  </table>
+</dl>
+
+</div>
+</div><p>
+<a class="anchor" name="bd3e17870fe8bc61fcd61a4a98c64e0a"></a><!-- doxytag: member="asynPortDriver::getUInt32DigitalInterrupt" ref="bd3e17870fe8bc61fcd61a4a98c64e0a" args="(int index, epicsUInt32 *mask, interruptReason reason)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">asynStatus asynPortDriver::getUInt32DigitalInterrupt           </td>
+          <td>(</td>
+          <td class="paramtype">int&nbsp;</td>
+          <td class="paramname"> <em>index</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">epicsUInt32 *&nbsp;</td>
+          <td class="paramname"> <em>mask</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">interruptReason&nbsp;</td>
+          <td class="paramname"> <em>reason</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td><code> [virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Gets the interrupt mask and reason in the parameter library Calls <a class="el" href="classparam_list.html#2b40b46c0399af6c7bba3a545b5c3452" title="Returns the UInt32Interrupt from the parameter library.">paramList::getUInt32Interrupt</a> (0, index, mask, reason) i.e. 
+<p>
+for parameter list 0. <dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"><tt>[in]</tt>&nbsp;</td><td valign="top"><em>index</em>&nbsp;</td><td>The parameter number </td></tr>
+    <tr><td valign="top"><tt>[in]</tt>&nbsp;</td><td valign="top"><em>mask</em>&nbsp;</td><td>Interrupt mask. </td></tr>
+    <tr><td valign="top"><tt>[in]</tt>&nbsp;</td><td valign="top"><em>reason</em>&nbsp;</td><td>Interrupt reason. </td></tr>
+  </table>
+</dl>
+
+</div>
+</div><p>
 <a class="anchor" name="decd22e066b5f281c9201aabef4ba164"></a><!-- doxytag: member="asynPortDriver::getUIntDigitalParam" ref="decd22e066b5f281c9201aabef4ba164" args="(int list, int index, epicsUInt32 *value, epicsUInt32 mask)" -->
 <div class="memitem">
 <div class="memproto">
@@ -2672,6 +2866,101 @@ Calls setStringParam(0, index, value) i.e. for parameter list 0. <dl compact><dt
 
 </div>
 </div><p>
+<a class="anchor" name="00b91d104b3e6fb42eaec02cb896460c"></a><!-- doxytag: member="asynPortDriver::setUInt32DigitalInterrupt" ref="00b91d104b3e6fb42eaec02cb896460c" args="(int list, int index, epicsUInt32 mask, interruptReason reason)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">asynStatus asynPortDriver::setUInt32DigitalInterrupt           </td>
+          <td>(</td>
+          <td class="paramtype">int&nbsp;</td>
+          <td class="paramname"> <em>list</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&nbsp;</td>
+          <td class="paramname"> <em>index</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">epicsUInt32&nbsp;</td>
+          <td class="paramname"> <em>mask</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">interruptReason&nbsp;</td>
+          <td class="paramname"> <em>reason</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td><code> [virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Sets the interrupt mask and reason in the parameter library Calls <a class="el" href="classparam_list.html#30ca684031570cacd8a5ff1f118524f9" title="Sets the value of the UInt32Interrupt in the parameter library.">paramList::setUInt32Interrupt</a> (index, mask, reason) for the parameter list indexed by list. 
+<p>
+<dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"><tt>[in]</tt>&nbsp;</td><td valign="top"><em>list</em>&nbsp;</td><td>The parameter list number. Must be &lt; maxAddr passed to <a class="el" href="classasyn_port_driver.html#cf77e873fc4fdbd8d07154ef80dc38b8" title="Constructor for the asynPortDriver class.">asynPortDriver::asynPortDriver</a>. </td></tr>
+    <tr><td valign="top"><tt>[in]</tt>&nbsp;</td><td valign="top"><em>index</em>&nbsp;</td><td>The parameter number </td></tr>
+    <tr><td valign="top"><tt>[in]</tt>&nbsp;</td><td valign="top"><em>mask</em>&nbsp;</td><td>Interrupt mask. </td></tr>
+    <tr><td valign="top"><tt>[in]</tt>&nbsp;</td><td valign="top"><em>reason</em>&nbsp;</td><td>Interrupt reason. </td></tr>
+  </table>
+</dl>
+
+</div>
+</div><p>
+<a class="anchor" name="f55b818f0aea250ac1549ec587c42242"></a><!-- doxytag: member="asynPortDriver::setUInt32DigitalInterrupt" ref="f55b818f0aea250ac1549ec587c42242" args="(int index, epicsUInt32 mask, interruptReason reason)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">asynStatus asynPortDriver::setUInt32DigitalInterrupt           </td>
+          <td>(</td>
+          <td class="paramtype">int&nbsp;</td>
+          <td class="paramname"> <em>index</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">epicsUInt32&nbsp;</td>
+          <td class="paramname"> <em>mask</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">interruptReason&nbsp;</td>
+          <td class="paramname"> <em>reason</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td><code> [virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Sets the interrupt mask and reason in the parameter library Calls <a class="el" href="classparam_list.html#30ca684031570cacd8a5ff1f118524f9" title="Sets the value of the UInt32Interrupt in the parameter library.">paramList::setUInt32Interrupt</a> (0, index, mask, reason) i.e. 
+<p>
+for parameter list 0. <dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"><tt>[in]</tt>&nbsp;</td><td valign="top"><em>index</em>&nbsp;</td><td>The parameter number </td></tr>
+    <tr><td valign="top"><tt>[in]</tt>&nbsp;</td><td valign="top"><em>mask</em>&nbsp;</td><td>Interrupt mask. </td></tr>
+    <tr><td valign="top"><tt>[in]</tt>&nbsp;</td><td valign="top"><em>reason</em>&nbsp;</td><td>Interrupt reason. </td></tr>
+  </table>
+</dl>
+
+</div>
+</div><p>
 <a class="anchor" name="afa380d26215c47e6c37c5faacc303ce"></a><!-- doxytag: member="asynPortDriver::setUIntDigitalParam" ref="afa380d26215c47e6c37c5faacc303ce" args="(int list, int index, epicsUInt32 value, epicsUInt32 mask)" -->
 <div class="memitem">
 <div class="memproto">
@@ -3288,9 +3577,9 @@ The name of this asyn port.
 </div>
 </div><p>
 <hr>The documentation for this class was generated from the following files:<ul>
-<li>/home/epics/devel/asynR4-16/asyn/miscellaneous/<a class="el" href="asyn_port_driver_8h-source.html">asynPortDriver.h</a><li>/home/epics/devel/asynR4-16/asyn/miscellaneous/<a class="el" href="asyn_port_driver_8cpp.html">asynPortDriver.cpp</a></ul>
+<li>/home/epics/devel/asynR4-17/asyn/miscellaneous/<a class="el" href="asyn_port_driver_8h-source.html">asynPortDriver.h</a><li>/home/epics/devel/asynR4-17/asyn/miscellaneous/<a class="el" href="asyn_port_driver_8cpp.html">asynPortDriver.cpp</a></ul>
 </div>
-<hr size="1"><address style="text-align: right;"><small>Generated on Sat Jan 15 11:46:44 2011 for asyn by&nbsp;
+<hr size="1"><address style="text-align: right;"><small>Generated on Wed Aug 3 10:34:41 2011 for asyn by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.5.7.1 </small></address>
 </body>
