@@ -163,7 +163,8 @@ long epicsShareAPI recDynLinkAddInput(recDynLink *precDynLink,char *pvname,
 	msgQCmd		cmd;
 
 	if (recDynLinkDebug > 10)
-            printf("recDynLinkAddInput: precDynLink=%p\n", (void *)precDynLink);
+            printf("recDynLinkAddInput: precDynLink=%p, pvname='%s'\n",
+				(void *)precDynLink, pvname);
 	if (precDynLink==NULL) {
 		printf("recDynLinkAddInput: precDynLink is NULL.\n");
 		return(-1);
@@ -215,7 +216,8 @@ long epicsShareAPI recDynLinkAddOutput(recDynLink *precDynLink,char *pvname,
 	msgQCmd		cmd;
     
 	if (recDynLinkDebug > 10) 
-            printf("recDynLinkAddOutput: precDynLink=%p\n", (void *)precDynLink);
+            printf("recDynLinkAddOutput: precDynLink=%p, pvname='%s'\n",
+				(void *)precDynLink, pvname);
 	if (precDynLink==NULL) {
 		printf("recDynLinkAddInput: precDynLink is NULL.\n");
 		return(-1);
@@ -798,7 +800,7 @@ LOCAL void recDynLinkInp(void)
 				continue;
 			} else {
 				if (recDynLinkDebug > 5) 
-					printf(", pvname=%s\n", pdynLinkPvt->pvname);
+					printf(", pvname='%s'\n", pdynLinkPvt->pvname);
 			}
 			switch (cmd.cmd) {
 			case (cmdSearch) :
@@ -905,7 +907,7 @@ LOCAL void recDynLinkOut(void)
 				continue;
 			} else {
 				if (recDynLinkDebug > 10) 
-					printf(", pvname=%s\n", pdynLinkPvt->pvname);
+					printf(", pvname='%s'\n", pdynLinkPvt->pvname);
 			}
 			switch (cmd.cmd) {
 			case (cmdSearch):

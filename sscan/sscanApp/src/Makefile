@@ -5,6 +5,8 @@ include $(TOP)/configure/CONFIG
 #  ADD MACRO DEFINITIONS AFTER THIS LINE
 #=============================
 
+# Cygwin rpc is in tirpc
+USR_INCLUDES_cygwin32 += -I/usr/include/tirpc
 
 #PROD_HOST += caExample
 #caExample_SRCS	+= caExample.c
@@ -19,7 +21,6 @@ Com_DIR          = $(EPICS_BASE_LIB)
 
 DBDINC += scanparmRecord
 DBDINC += sscanRecord
-#DBDINC += busyRecord
 
 # <name>.dbd will be created from <name>Include.dbd
 DBD += sscan.dbd
@@ -34,7 +35,6 @@ LIBRARY_IOC += sscan
 
 sscan_SRCS += sscanRecord.c
 sscan_SRCS += scanparmRecord.c
-#sscan_SRCS += busyRecord.c
 sscan_SRCS += recDynLink.c
 sscan_SRCS += req_file.c
 
@@ -48,7 +48,7 @@ sscan_SRCS += saveData.c
 sscan_SRCS_vxWorks += xdr_stdio.c
 endif
 
-sscan_SYS_LIBS_cygwin32 += rpc
+sscan_SYS_LIBS_cygwin32 += $(CYGWIN_RPC_LIB)
 sscan_LIBS += $(EPICS_BASE_IOC_LIBS)
 
 include $(TOP)/configure/RULES

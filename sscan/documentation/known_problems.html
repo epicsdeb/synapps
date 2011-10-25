@@ -9,6 +9,18 @@
 <body>
 <img src="http://www.aps.anl.gov/bcda/Images/logo101.gif" alt=
 "EPICS" hspace="5" height="101" width="101" align="right">
+
+<h1>sscan 2-6-6</h1>
+<ul>
+<li>On Linux, Solaris, and probably other non-real-time operating systems,
+saveData can write corrupted data files for 2D and higher scans, because
+monitored DATA fields from sscan records can be received out of order.
+This bug affects 2.6.6 and all earlier releases of the sscan module.
+<li>scans with any fly-mode positioners and no detector triggers fail to
+launch fly-mode positioners to the end point.
+</ul>
+
+
 <h1>sscan 2-6-4</h1>
 <ul>
 <li>saveData did not check all chids before using them, leading to the

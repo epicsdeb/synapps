@@ -196,7 +196,7 @@ extern STATUS nfsUnmount(char *localName);
 
 #define DESC_SIZE 30
 #define EGU_SIZE 16
-#define PREFIX_SIZE 10
+#define PREFIX_SIZE PVNAME_STRINGSZ/2
 #define BASENAME_SIZE 20
 
 #include "req_file.h"
@@ -225,6 +225,9 @@ volatile int saveData_MessagePolicy = 0;
 #define Debug1(d,s,p) ;
 #define Debug2(d,s,p1,p2) ;
 #define Debug3(d,s,p1,p2,p3) ;
+#define Debug4(d,s,p1,p2,p3,p4) ;
+#define Debug5(d,s,p1,p2,p3,p4,p5) ;
+#define Debug6(d,s,p1,p2,p3,p4,p5,p6) ;
 #define DebugMsg0(d,s) ;
 #define DebugMsg1(d,s,p) ;
 #define DebugMsg2(d,s,p1,p2) ;
@@ -234,6 +237,9 @@ volatile int saveData_MessagePolicy = 0;
 #define Debug1(d,s,p)     {if (d<=debug_saveData) {printf(s,p);}}
 #define Debug2(d,s,p1,p2) {if (d<=debug_saveData) {printf(s,p1,p2);}}
 #define Debug3(d,s,p1,p2,p3) {if (d<=debug_saveData) {printf(s,p1,p2,p3);}}
+#define Debug4(d,s,p1,p2,p3,p4) {if (d<=debug_saveData) {printf(s,p1,p2,p3,p4);}}
+#define Debug5(d,s,p1,p2,p3,p4,p5) {if (d<=debug_saveData) {printf(s,p1,p2,p3,p4,p5);}}
+#define Debug6(d,s,p1,p2,p3,p4,p5,p6) {if (d<=debug_saveData) {printf(s,p1,p2,p3,p4,p5,p6);}}
 #define DebugMsg0(d,s)       {if (d<=debug_saveDataMsg) {printf(s);}}
 #define DebugMsg1(d,s,p)     {if (d<=debug_saveDataMsg) {printf(s,p);}}
 #define DebugMsg2(d,s,p1,p2) {if (d<=debug_saveDataMsg) {printf(s,p1,p2);}}
@@ -669,7 +675,7 @@ LOCAL int          nb_extraPV=0;
 
 LOCAL int connectScan(char* name, char* handShake, char* autoHandShake);
 LOCAL int disconnectScan(SCAN* pscan);
-LOCAL int monitorScan(SCAN* pscan);
+LOCAL int monitorScan(SCAN* pscan, int pass);
 LOCAL void monitorScans();
 LOCAL SCAN* searchScan(char* name);
 LOCAL int  scan_getDim(SCAN* pscan);
@@ -1182,14 +1188,23 @@ LOCAL int disconnectScan(SCAN* pscan)
 /* pscan: a pointer to the SCAN structure connected to the scan record. */
 /* return 0 if all monitors have been successfuly added.                */
 /*        -1 otherwise.                                                 */
-LOCAL int monitorScan(SCAN* pscan)
+LOCAL int monitorScan(SCAN* pscan, int pass)
 {
 	int i;
 
 	if (pscan == NULL) return(-1);
 	Debug1(1, "monitorScan(%s)...\n", pscan->name);
 	if (pscan->name[0] == 0) return(-1);
-	
+
+	if (pass==0) {
+		if (ca_add_event(DBR_TIME_SHORT, pscan->cdata, 
+				dataMonitor, (void*)NULL, 0)!=ECA_NORMAL) {
+			Debug1(2, "Unable to monitor %s\n", ca_name(pscan->cdata));
+			return -1;
+		}
+		return 0;
+	}
+
 	if (pscan->cnpts == NULL) {
 		Debug1(2, "Unable to monitor %s npts field\n", pscan->name);
 		return -1;
@@ -1252,14 +1267,6 @@ LOCAL int monitorScan(SCAN* pscan)
 			Debug2(2, "Unable to monitor %s trigger %d\n", pscan->name, i);
 			return -1;
 		}
-	}
-
-
-
-	if (ca_add_event(DBR_TIME_SHORT, pscan->cdata, 
-			dataMonitor, (void*)NULL, 0)!=ECA_NORMAL) {
-		Debug1(2, "Unable to monitor %s\n", ca_name(pscan->cdata));
-		return -1;
 	}
 
 	Debug1(1, "monitorScan(%s) OK\n", pscan->name);
@@ -1334,10 +1341,23 @@ LOCAL void monitorScans()
 {
 	SCAN_NODE* pnode;
 
-	pnode= list_scan;
+	/*
+	 * Make two passes through list of sscan records.  On first pass, monitor
+	 * only DATA fields.  This ensures that all DATA fields will be in the same
+	 * event-queue segment, which in turn ensures that DATA events will be
+	 * ordered correctly in time, at least with respect to other DATA events,
+	 * regardless of when the event queue is read, and regardless of any
+	 * discarded events.  
+	 */
+	pnode = list_scan;
 	while (pnode) {
-		monitorScan(&pnode->scan);
-		pnode= pnode->nxt;
+		monitorScan(&pnode->scan, 0);
+		pnode = pnode->nxt;
+	}
+	pnode = list_scan;
+	while (pnode) {
+		monitorScan(&pnode->scan, 1);
+		pnode = pnode->nxt;
 	}
 	updateScans();
 }
@@ -1464,7 +1484,11 @@ LOCAL void dataMonitor(struct event_handler_args eha)
 	SCAN* pscan;
 	short newData, sval;
 	char  disp;
+	/* diagnostics */
+	epicsTimeStamp currtime;
+	char currtimestr[MAX_STRING_SIZE]; 
 
+	epicsTimeGetCurrent(&currtime);
 	pscan= (SCAN*)ca_puser(eha.chid);
 
 if (pscan->nxt) {
@@ -1473,7 +1497,8 @@ if (pscan->nxt) {
 }
 	pval = (struct dbr_time_short *) eha.dbr;
 	sval = pval->value;
-	/*printf("dataMonitor(%s): (DATA=%d)\n", pscan->name, sval);*/
+	Debug2(5,"dataMonitor(%s): (DATA=%d)\n", pscan->name, sval);
+
 	if (pscan->data != -1) {
 		if (sval == 1) {
 			/* hand shaking notify */
@@ -1496,9 +1521,11 @@ if (pscan->nxt) {
 		}
 		Debug1(2,"\n nb_scan_running=%d\n", nb_scan_running);
 	}
-
 	epicsTimeToStrftime(pscan->stamp, MAX_STRING_SIZE, "%b %d, %Y %H:%M:%S.%06f", &pval->stamp);
 	sendScanTSShortMsgWait(MSG_SCAN_DATA, (SCAN*)ca_puser(eha.chid), pval->stamp, pval->value);
+	epicsTimeToStrftime(currtimestr, MAX_STRING_SIZE, "%b %d, %Y %H:%M:%S.%06f", &currtime);
+	Debug6(1,"dataMonitor(%s)tid=%p(%s): (DATA=%d) eha time:%s, currtime=%s\n", pscan->name,
+		epicsThreadGetIdSelf(), epicsThreadGetNameSelf(), sval, pscan->stamp, currtimestr);
 }
 
 /*----------------------------------------------------------------------*/
@@ -1506,7 +1533,7 @@ if (pscan->nxt) {
 /*                                                                      */
 LOCAL void nptsMonitor(struct event_handler_args eha)
 {
-	sendScanLongMsgWait(MSG_SCAN_NPTS, (SCAN *) ca_puser(eha.chid), *((long *) eha.dbr));
+	sendScanLongMsgWait(MSG_SCAN_NPTS, (SCAN *) ca_puser(eha.chid), *((dbr_long_t *) eha.dbr));
 }
 
 /*----------------------------------------------------------------------*/
@@ -1520,17 +1547,17 @@ LOCAL void cptMonitor(struct event_handler_args eha)
 	Debug0(2,"cptMonitor:entry\n");
 	switch(saveData_MessagePolicy) {
 	case 0:
-		sendScanLongMsgWait(MSG_SCAN_CPT, (SCAN *) ca_puser(eha.chid), *((long *) eha.dbr));
+		sendScanLongMsgWait(MSG_SCAN_CPT, (SCAN *) ca_puser(eha.chid), *((dbr_long_t *) eha.dbr));
 		break;
 	case 1:
-		sendScanLongMsg(MSG_SCAN_CPT, (SCAN *) ca_puser(eha.chid), *((long *) eha.dbr));
+		sendScanLongMsg(MSG_SCAN_CPT, (SCAN *) ca_puser(eha.chid), *((dbr_long_t *) eha.dbr));
 		break;
 	case 2:
 		pscan = (SCAN *) ca_puser(eha.chid);
 		(void)epicsTimeGetCurrent(&currentTime);
 		if (epicsTimeDiffInSeconds(&currentTime, &(pscan->cpt_time)) >= cpt_wait_time) {
 			pscan->cpt_time = currentTime;
-			sendScanLongMsg(MSG_SCAN_CPT, (SCAN *) ca_puser(eha.chid), *((long *) eha.dbr));
+			sendScanLongMsg(MSG_SCAN_CPT, (SCAN *) ca_puser(eha.chid), *((dbr_long_t *) eha.dbr));
 		}
 		break;
 	case 3:
@@ -1538,7 +1565,7 @@ LOCAL void cptMonitor(struct event_handler_args eha)
 		(void)epicsTimeGetCurrent(&currentTime);
 		if (epicsTimeDiffInSeconds(&currentTime, &(pscan->cpt_time)) >= cpt_wait_time) {
 			pscan->cpt_time = currentTime;
-			sendScanLongMsgWait(MSG_SCAN_CPT, (SCAN *) ca_puser(eha.chid), *((long *) eha.dbr));
+			sendScanLongMsgWait(MSG_SCAN_CPT, (SCAN *) ca_puser(eha.chid), *((dbr_long_t *) eha.dbr));
 		}
 		break;
 	}
@@ -1549,7 +1576,7 @@ LOCAL void cptMonitor(struct event_handler_args eha)
 /*                                                                      */
 LOCAL void pxnvMonitor(struct event_handler_args eha)
 {
-	sendScanIndexMsgWait(MSG_SCAN_PXNV, (SCAN *) ca_puser(eha.chid), (long) eha.usr, *((short *) eha.dbr));
+	sendScanIndexMsgWait(MSG_SCAN_PXNV, (SCAN *) ca_puser(eha.chid), (long) eha.usr, *((dbr_short_t *) eha.dbr));
 }
 
 /*----------------------------------------------------------------------*/
@@ -1557,7 +1584,7 @@ LOCAL void pxnvMonitor(struct event_handler_args eha)
 /*                                                                      */
 LOCAL void pxsmMonitor(struct event_handler_args eha)
 {
-	sendStringMsgWait(MSG_SCAN_PXSM, eha.usr, eha.dbr);
+	sendStringMsgWait(MSG_SCAN_PXSM, (char *)eha.usr, eha.dbr);
 }
 
 /*----------------------------------------------------------------------*/
@@ -1565,7 +1592,7 @@ LOCAL void pxsmMonitor(struct event_handler_args eha)
 /*                                                                      */
 LOCAL void rxnvMonitor(struct event_handler_args eha)
 {
-	sendScanIndexMsgWait(MSG_SCAN_RXNV, (SCAN *) ca_puser(eha.chid), (long) eha.usr, *((short *) eha.dbr));
+	sendScanIndexMsgWait(MSG_SCAN_RXNV, (SCAN *) ca_puser(eha.chid), (long) eha.usr, *((dbr_short_t *) eha.dbr));
 }
 
 /*----------------------------------------------------------------------*/
@@ -1573,7 +1600,7 @@ LOCAL void rxnvMonitor(struct event_handler_args eha)
 /*                                                                      */
 LOCAL void dxnvMonitor(struct event_handler_args eha)
 {
-	sendScanIndexMsgWait(MSG_SCAN_DXNV, (SCAN *) ca_puser(eha.chid), (long) eha.usr, *((short *) eha.dbr));
+	sendScanIndexMsgWait(MSG_SCAN_DXNV, (SCAN *) ca_puser(eha.chid), (long) eha.usr, *((dbr_short_t *) eha.dbr));
 }
 
 
@@ -1582,7 +1609,7 @@ LOCAL void dxnvMonitor(struct event_handler_args eha)
 /*                                                                      */
 LOCAL void txnvMonitor(struct event_handler_args eha)
 {
-	sendScanIndexMsgWait(MSG_SCAN_TXNV, (SCAN *) ca_puser(eha.chid), (long) eha.usr, *((short *) eha.dbr));
+	sendScanIndexMsgWait(MSG_SCAN_TXNV, (SCAN *) ca_puser(eha.chid), (long) eha.usr, *((dbr_short_t *) eha.dbr));
 }
 
 /*----------------------------------------------------------------------*/
@@ -1590,7 +1617,7 @@ LOCAL void txnvMonitor(struct event_handler_args eha)
 /*                                                                      */
 LOCAL void txcdMonitor(struct event_handler_args eha)
 {
-	sendScanIndexMsgWait(MSG_SCAN_TXCD, (SCAN *) ca_puser(eha.chid), (long) eha.usr, *((float *) eha.dbr));
+	sendScanIndexMsgWait(MSG_SCAN_TXCD, (SCAN *) ca_puser(eha.chid), (long) eha.usr, *((dbr_float_t *) eha.dbr));
 }
 
 /*----------------------------------------------------------------------*/
@@ -1598,7 +1625,7 @@ LOCAL void txcdMonitor(struct event_handler_args eha)
 /*                                                                      */
 LOCAL void descMonitor(struct event_handler_args eha)
 {
-	sendStringMsgWait(MSG_DESC, eha.usr, eha.dbr);
+	sendStringMsgWait(MSG_DESC, (char *)eha.usr, eha.dbr);
 }
 
 
@@ -1619,7 +1646,7 @@ LOCAL void fileBasenameMonitor(struct event_handler_args eha)
 
 LOCAL void realTime1DMonitor(struct event_handler_args eha)
 {
-	sendIntegerMsgWait(MSG_REALTIME1D, *((int *) eha.dbr));
+	sendIntegerMsgWait(MSG_REALTIME1D, *((dbr_long_t *) eha.dbr));
 }
 
 
@@ -1725,7 +1752,7 @@ LOCAL void maxAllowedRetriesMonitor(struct event_handler_args eha)
 	if (eha.status != ECA_NORMAL) {
 		printf("maxAllowedRetriesMonitor: bad status\n");
 	} else {
-		i = *((long *) eha.dbr);
+		i = *((dbr_long_t *) eha.dbr);
 		if (i >= 0) maxAllowedRetries = i;
 		printf("saveData:maxAllowedRetries = %ld\n", maxAllowedRetries);
 	}
@@ -1737,7 +1764,7 @@ LOCAL void retryWaitInSecsMonitor(struct event_handler_args eha)
 	if (eha.status != ECA_NORMAL) {
 		printf("maxAllowedRetriesMonitor: bad status\n");
 	} else {
-		i = *((long *) eha.dbr);
+		i = *((dbr_long_t *) eha.dbr);
 		if (i >= 0) retryWaitInSecs = i;
 	}
 	printf("saveData:retryWaitInSecs = %ld\n", retryWaitInSecs);
@@ -2355,6 +2382,8 @@ LOCAL int writeScanRecInProgress(SCAN *pscan, epicsTimeStamp stamp, int isRetry)
 
 	/* the offset of this scan                                          */
 	scan_offset = xdr_getpos(&xdrs);
+	Debug2(2, "saveData:writeScanRecInProgress:(%s) scan_offset=%ld\n",
+			pscan->name, scan_offset);
 	if (scan_offset == (u_int)(-1)) {writeFailed = TRUE; goto cleanup;}
 
 	/*------------------------------------------------------------------*/
@@ -2514,7 +2543,7 @@ LOCAL int writeScanRecInProgress(SCAN *pscan, epicsTimeStamp stamp, int isRetry)
 		ca_array_put(DBR_SHORT, 1, save_status_chid, &save_status);
 	}
 	if (isRetry) {
-		printf("saveData:writeScanRecCompleted(%s): retry succeeded\n", pscan->name);
+		printf("saveData:writeScanRecInProgress(%s): retry succeeded\n", pscan->name);
 		sprintf(msg, "Retry succeeded for %s", pscan->fname);
 		msg[MAX_STRING_SIZE-1]= '\0';
 		sendUserMessage(msg);
@@ -2569,7 +2598,9 @@ LOCAL int writeScanRecCompleted(SCAN *pscan, int isRetry)
 				} else {
 					status = ca_array_get(DBR_DOUBLE, pscan->bcpt, pscan->cpxra[i], pscan->pxra[i]);
 					if (status != ECA_NORMAL) {
-						printf("saveData:writeScanRecCompleted: ca_array_get_callback returned %d\n", status);
+						printf("saveData:writeScanRecCompleted: ca_array_get() (%ld pts) returned %d for scan %s, p%d\n",
+							pscan->bcpt, status, pscan->name, i);
+						printf("...%d means '%s'\n", status, ca_message(status));
 					}
 				}
 				if (pscan->bcpt < pscan->npts) { /* zero unacquired data points */
@@ -2606,7 +2637,11 @@ LOCAL int writeScanRecCompleted(SCAN *pscan, int isRetry)
 						printf("saveData:writeScanRecCompleted: Can't get %s detector array %d\n", pscan->name, i);
 					} else {
 						status = ca_array_get(DBR_FLOAT, pscan->bcpt, pscan->cdxda[i], pscan->dxda[i]);
-						if (status != ECA_NORMAL) printf("saveData:writeScanRecCompleted: ca_array_get returned error for det %d \n", i);
+						if (status != ECA_NORMAL) {
+							printf("saveData:writeScanRecCompleted: ca_array_get() (%ld pts) returned %d for scan %s, d%d\n",
+								pscan->bcpt, status, pscan->name, i);
+							printf("...%d means '%s'\n", status, ca_message(status));
+						}
 					}
 				}
 			}

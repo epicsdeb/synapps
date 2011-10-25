@@ -1,12 +1,19 @@
 <!doctype html public "-//w3c//dtd html 4.0 transitional//en">
 <html>
 <head>
-   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-   <title>The <b>sscan</b> record v5.41</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+	<title>The sscan record for sscan module R2.7</title>
+
+	<style type="text/css">
+	<!--
+	blockquote { font-size:smaller;}
+	-->
+	</style>
+
 </head>
 <body>
 <h1>
-The <b>sscan</b> record v5.5</h1>
+The sscan record for sscan module R2.7</h1>
 Author: Tim M. Mooney<br>
 Based on the scan record, written by Ned D. Arnold.<br>
 <p>&nbsp;Advanced Photon Source
@@ -40,15 +47,23 @@ Scans</a>
 <br><a href="#HEADING_1-4"><b>1.4.</b> Completion of positioner and
 detector-trigger operations</a>
 
-<br><a href="#HEADING_2"><b>2.&nbsp;&nbsp;&nbsp;</b> <b>sscan</b>-Record Fields</a>
+<br><a href="#HEADING_1-5"><b>1.5.</b> Fly scans</a>
+
+<br><a href="#HEADING_1-5-1"><b>1.5.1.</b> Scalar-mode fly scans</a>
+
+<br><a href="#HEADING_1-5-2"><b>1.5.2.</b> Array-mode fly scans</a>
+
+<br><a href="#HEADING_2"><b>2.&nbsp;&nbsp;&nbsp;</b> sscan-Record Fields</a>
 
 <br><a href="#HEADING_2-1"><b>2.1.</b> Control Fields</a>
 
 <br><a href="#HEADING_2-2"><b>2.2.</b> Positioner Fields</a>
 
-<br><a href="#HEADING_2-2-1"><b>2.2.1</b> Linear Mode</a>
+<br><a href="#HEADING_2-2-1"><b>2.2.1</b> <tt>LINEAR</tt> Mode</a>
 
-<br><a href="#HEADING_2-2-2"><b>2.2.2.</b> Table Mode</a>
+<br><a href="#HEADING_2-2-2"><b>2.2.2.</b> <tt>TABLE</tt> Mode</a>
+
+<br><a href="#HEADING_2-2-3"><b>2.2.3.</b> <tt>FLY</tt> Mode</a>
 
 <br><a href="#HEADING_2-3"><b>2.3.</b> Detector-Trigger Fields</a>
 
@@ -71,44 +86,62 @@ detector-trigger operations</a>
 <h1>1. Introduction</h1>
 <hr>
 
-The purpose of the <b>sscan</b> record is to move <i>positioners</i> through a
-series of positions and record <i>detector</i> data at each of the positions.
-The whole sequence of operations is referred to as a <i>scan</i>, or as one
-loop of a multi-dimensional scan.  After parameters defining the scan have been
-initialized and the scan has been launched, the <b>sscan</b> record begins a possibly
+The purpose of the sscan record is to move <i>positioners</i> through a series
+of positions and record <i>detector</i> data at each of the positions. This
+series of operations is commonly referred to as a <i>scan</i>, or as one loop of
+a multi-dimensional scan.  After parameters defining the scan have been
+initialized and the scan has been launched, the sscan record begins a possibly
 long and involved sequence of operations normally without further input, and 
 notifies any interested clients as the scan progresses. The data are collected
-into arrays within the record so that they needn't be written point by point by
-a client.
+into arrays within the record so that clients needn't handle them point by
+point.  A separate piece of software ("saveData", which is included with the
+sscan record in the synApps sscan module) can coordinate with the sscan record
+to write scan data to disk.
 
-<p>A single <b>sscan</b> record supports a one dimensional scan. Several <b>sscan</b> records
-can be linked together to perform a multi-dimensional scan.  Each <b>sscan</b> record
+<blockquote>
+
+Note that the word "scan" is used frequently in other EPICS documentation to
+mean something quite different from what is meant here.  In the <i>EPICS
+Application Developers Guide</i>, "scan" connotes record processing or
+execution, as in "Database scanning is the mechanism for deciding when to
+process a record." Also, periodic record processing is performed by "scan
+tasks", and the field that controls when a record will be processed is named
+"SCAN".  None of these uses of "scan" have anything to do with the sscan record,
+and the word will not have the EPICS meaning in the rest of this
+documentation.
+
+</blockquote>
+
+
+<p>A single sscan record supports a one dimensional scan. Several sscan records
+can be linked together to perform a multi-dimensional scan.  Each sscan record
 can control up to four positioners, trigger up to four detectors, and acquire
 data from up to 74 process variables (70 detector values of type <tt>float</tt>
 and four positioner readbacks of type <tt>double</tt>).
 
-<p>&nbsp;Typically, the <b>sscan</b> record moves motors and acquires scaler
-data at each motor position, but obviously it can also be used for other
-purposes. Any writable EPICS PV (process variable) can be scanned through a set
-of values while data are recorded from any other PVs.  For example, one of the
-positioner PVs could be used to vary the gain or dwell time  of a detector
-during a scan.  Therefore, throughout this document the term <i>positioner</i>
-should be taken to mean "any PV to which you can write a number". Similarly, the
-term <i>detector trigger</i> typically refers to a PV that will cause data
-acquisition to begin when it is written to, but it could be taken to mean "any
-PV to which you can write a number". Finally, the term <i>detector</i> refers to
-any readable numeric PV.
+<p>In the most common use, the sscan record moves motors and acquires scaler
+(pulse counter) data at each motor position, but obviously it can also be used
+for other purposes. Any writable EPICS PV (process variable) can be scanned
+through a set of values while data are recorded from any other PVs.  For
+example, one of the positioner PVs could be used to vary the gain or dwell time 
+of a detector during a scan.  Therefore, throughout this document the term
+<i>positioner</i> should be taken to mean "any PV to which you can write a
+number". Similarly, the term <i>detector trigger</i> will typically refer to a
+PV that will cause data acquisition to begin when it is written to, but it could
+be taken to mean "any PV to which you can write a number". Finally, the term
+<i>detector</i> refers to any readable numeric PV.  ("Signal" might be a better
+word for this.)
 
-<P>The <b>sscan</b> record normally acquires sets of scalar data values and assembles
+<P>The sscan record normally acquires sets of scalar data values and assembles
 them into arrays, but it can also acquire arrays directly from array-valued
 PVs.  The end results can only be one-dimensional arrays, however; a single
-<b>sscan</b> record cannot acquire multi-dimensional data.
+sscan record cannot acquire multi-dimensional data.
 
-<p>&nbsp;All of the process variable names used to identify positioners,
+<p>All of the process variable names used to identify positioners,
 detectors, and detector triggers are specified using <i>reassignable links</i>.
-This allows a scan to be configured on the fly.  Currently, these links are
-implemented with the recDynLink library, which is distributed along with the
-<b>scan</b> module.
+This allows a scan to be configured at run time, immediately before it is
+executed.  Currently, these links are implemented with the recDynLink library,
+which is distributed along with the <b>sscan</b> module.
 
 <!---------------------------------------------------------------------------->
 
@@ -136,22 +169,23 @@ written to after the positioner has arrived at each position, and it is
 expected to initiate some data-acquisition operation.
 
 <DT><tt>D01PV</tt> <DD>the name of a detector (signal) PV.  The value of this PV
-will be recorded after the detector-trigger has finished acquiring data.
+will be recorded after the detector trigger has finished acquiring data.
 
 </DL>
 
 When a scan is started (by writing a <tt>1</tt> to the <tt>EXSC</tt> field) the
-<b>sscan</b> record commands the positioner to move to its starting position. 
-The <b>sscan</b> record uses recDynLinkPutCallback() to tell the positioner to
-move, and waits for the resulting callback, indicating that the positioner is
-finished, before moving on to the next step of the scan, which is to trigger the
+sscan record commands the positioner to move to its starting position.  The
+sscan record uses recDynLinkPutCallback() to tell the positioner to move, and
+waits for the resulting callback, indicating that the positioner is finished,
+before moving on to the next phase of the scan, which is to trigger the
 detector.&nbsp; The detector is also triggered using  recDynLinkPutCallback(),
-and the <b>sscan</b> record waits for it to finish before going on to the next
-data point. This algorithm continues until the <b>sscan</b> record has completed
+and the sscan record waits for it to finish before reading detectors and going
+on to perform another (move, trigger, read) sequence to acquire the next data
+point. This algorithm continues until the sscan record has completed
 <tt>NPTS</tt> steps, or the scan is aborted (by a client writing <tt>0</tt> to
-<tt>the EXSC</tt> field). At the end of the scan, the <b>sscan</b> record has
-filled in an array of the positions visited (<tt>P1RA</tt>), and an array of
-detector values acquired (<tt>D01DA</tt>).
+<tt>the EXSC</tt> field). At the end of the scan, the sscan record has filled in
+an array of the positions visited (<tt>P1RA</tt>), and an array of detector
+values acquired (<tt>D01DA</tt>).
 
 <P>Let's run through that again, this time more generally, with more detail, and
 including more of the available options.
@@ -160,9 +194,9 @@ including more of the available options.
 <DT>Positioners
 
 <DD>You can specify zero to four positioners.  Positioners are expected to tell
-the <b>sscan</b> record when they're done moving (more about this later).  After all
-positioners have declared themselves done, the <b>sscan</b> record waits for a
-user-specified settling time (<tt>PDLY</tt>, normally zero) before firing
+the sscan record when they're done moving (more about this later).  After all
+positioners have declared themselves done, the sscan record waits for a
+user-specified settling time (<tt>PDLY</tt>, normally zero) before writing to
 detector triggers.  (If no positioners, then no positioner settling time.)
 
 <DT>Positions to visit <DD>There are lots of possibilities here.  You can
@@ -177,7 +211,7 @@ pre-scan position.
 <DD>Detector triggers act much like positioners, in that they write a value and
 wait for any ensuing processing to finish, but they send the same value at every
 data point (<tt>T<em>n</em>CD</tt>).  After all triggered detectors have
-declared themselves done, the <b>sscan</b> record waits for a user-specified
+declared themselves done, the sscan record waits for a user-specified
 settling time (<tt>DDLY</tt>, normally zero) before reading data from
 detector-signal PVs.  (If no detector triggers, then no detector settling time.)
 
@@ -185,9 +219,9 @@ detector-signal PVs.  (If no detector triggers, then no detector settling time.)
 <DT>Detector signals
 
 <DD>Typically, detector signals are scalar PVs, but they can be array-valued
-PVs.  If so, the <b>sscan</b> record will read them at the end of the scan.  If
-array-valued PVs require processing to acquire their values, the <b>sscan</b> record
-can fire a special array trigger (<tt>A1PV</tt> <tt>A1CD</tt>, exactly
+PVs.  If so, the sscan record will read them at the end of the scan.  If
+array-valued PVs require processing to acquire their values, the sscan record
+can write to a special array trigger (<tt>A1PV</tt> <tt>A1CD</tt>, exactly
 analogous to detector triggers), and wait for any ensuing processing to finish
 before reading the arrays.  If all detector signals are array valued, it's
 probably better to use the array acquisition type. (See <tt>ACQT</tt>.)
@@ -210,21 +244,21 @@ its peak value during the scan).
 <p><a NAME="HEADING_1-2"></a>
 <h2>1.2. Multidimensional Scans</h2>
 
-Multidimensional scans are easy: an outer-loop <b>sscan</b> record (which we'll call
-"scan2") regards an inner-loop <b>sscan</b> record ("scan1") as a detector to be
-triggered, and each <b>sscan</b> record acquires its own data.  Thus,
+Multidimensional scans are easy: an outer-loop sscan record (which we'll call
+"scan2") regards an inner-loop sscan record ("scan1") as a detector to be
+triggered, and each sscan record acquires its own data.  Thus,
 <tt>scan2.T1PV</tt>, is set to <tt>scan1.EXSC</tt>, and <tt>scan2.T1CD</tt> is
 set to 1.  In words, scan2 writes a <tt>1</tt> to the "execute scan" field
 (<tt>EXSC</tt>) of scan1.
 
-<p>&nbsp;To initiate the scan, the scan2 record is commanded to begin 
+<p>To initiate the scan, the scan2 record is commanded to begin 
 (<tt>scan2.EXSC</tt> is set to <tt>1</tt>).  scan2 sends its <i>positioners</i> to
 their starting points, and waits for their callbacks.  Then scan2 writes to its
 <i>detector trigger</i>(s), (one of) which in this case causes scan1 to begin its own scan.
 The scan1 record will now go through its entire programmed scan, acquiring data
 from its detectors at each point.
 
-<p>&nbsp;When scan1 is finished, and its data have been written (or at least
+<p>When scan1 is finished, and its data have been written (or at least
 secured), its completion callback causes scan2 to continue in its scan procedure
 -- reading detector values, moving positioners to new positions, and causing
 scan1 to execute again.
@@ -237,27 +271,27 @@ scans in parallel from a single outer-loop scan, but in practice, the capability
 of limited use, because there is no coordination between the inner-loop scans, and no
 data-storage client exists that would correctly understand the acquired data.)
 
-<P>An outer <b>sscan</b> record involved in a multidimensional scan doesn't know or care
-that the "detector" it's triggering is actually another <b>sscan</b> record, which is
-going to do an entire inner scan; the outer <b>sscan</b> record simply triggers what
-it regards as a detector, and waits for that detector to complete.  Nor do the
-inner <b>sscan</b> records know that they are parts of something larger than
-themselves.  The only piece of code that has to know a multidimensional scan is
-occurring is the client that stores the data.  This client must collect all of
-the data from each inner scan before those data are overwritten by the next
-execution of that inner scan, because <b>sscan</b> records hold only one-dimensional
-arrays of data.
+<P>An outer sscan record involved in a multidimensional scan doesn't know or
+care that the detector trigger it's writing to is actually another sscan record,
+which is going to do an entire inner scan; the outer sscan record simply
+triggers what it regards as a detector, and waits for that detector to
+complete.  Nor do the inner sscan records know that they are parts of something
+larger than themselves.  The only piece of code that has to know a
+multidimensional scan is occurring is the client that stores the data.  This
+client must collect all of the data from each inner scan before those data are
+overwritten by the next execution of that inner scan, because sscan records hold
+only one-dimensional arrays of data.
 
 <P>Clearly, this calls for some handshaking between the client and the
-<b>sscan</b> records involved in a multidimensional scan.  The next section
-describes the handshake mechanisms implemented by the <b>sscan</b> record.
+sscan records involved in a multidimensional scan.  The next section
+describes the handshake mechanisms implemented by the sscan record.
 
 <!---------------------------------------------------------------------------->
 
 <p><a NAME="HEADING_1-3"></a>
 <h2>1.3. Interaction with clients</h2>
 
-<P>Clients of the <b>sscan</b> record include the software that starts, stops,
+<P>Clients of the sscan record include the software that starts, stops,
 or pauses a scan; software that displays data acquired by a scan; software that
 writes scan data to disk; and software that participates in the a scan by
 implementing positioner or detector operation. A single client may do any or all
@@ -266,28 +300,31 @@ of these things, of course, but it seems best to discuss them separately.
 <p><a NAME="HEADING_1-3-1"></a>
 <h3>1.3.1 Starting a scan</h3>
 
-The client writes the number <tt>1</tt> to the <b>sscan</b> record's
-<tt>EXSC</tt> field to start a scan.  If the <b>sscan</b> record can start a new
+The client writes the number <tt>1</tt> to the sscan record's
+<tt>EXSC</tt> field to start a scan.  If the sscan record is able to start a new
 scan, it sets its <tt>BUSY</tt> field to <tt>1</tt> while the new scan is in
 progress, and it sets <tt>BUSY</tt> to <tt>0</tt> when the scan is done.
 
-<P>If the <b>sscan</b> record cannot start a new scan, the client will receive
-an error indication, and the command will be ignored.  The <b>sscan</b> record
+<P>If the sscan record is not able to start a new scan, the client will receive
+an error indication, and the command will be ignored.  The sscan record
 will set its <tt>SMSG</tt> field to a string describing the reason why it cannot
 start a new scan.  Possible reasons include the following:
 
 <dl>
-<dt>"Scan is paused"<dd>The <b>sscan</b>-record field <tt>PAUS</tt> has a nonzero value,
-indicating that some client has told the <b>sscan</b> record to stand by until
+<dt>"Scan is paused"<dd>The sscan-record field <tt>PAUS</tt> has a nonzero value,
+indicating that some client has told the sscan record to stand by until
 <tt>PAUS</tt> is set back to <tt>0</tt>.
+
 <dt>"Already scanning"<dd>A scan is already in progress.  Setting <tt>EXSC</tt> to
 <tt>1</tt> while  scan is in progress has no effect on that scan.
+
 <dt>"Waiting for saveData"<dd>A new scan cannot be started because the
 data-storage client, "saveData", is still using one of the two sets of
-data arrays, and the other set is full of scan data waiting for service
+data arrays, and the other set is full of scan data also waiting for service
 by saveData.
+
 <dt>"Waiting for callback"<dd>The previous scan is essentially complete,
-but one of the commands the <b>sscan</b> record issued has not yet completed.
+but one of the commands the sscan record issued has not yet completed.
 </dl>
 
 <P>In all of these cases, the start command is ignored, and the scan will not
@@ -296,13 +333,13 @@ removed.  A new start command must be issued.
 
 <p><a NAME="HEADING_1-3-2"></a>
 <h3>1.3.2 Stopping a scan</h3>
-A client tells the <b>sscan</b> record to stop scanning by writing <tt>0</tt> to the
+A client tells the sscan record to stop scanning by writing <tt>0</tt> to the
 <tt>EXSC</tt> field.  But stopping a scan is sometimes a complicated process, because,
-while a scan is in progress, the <b>sscan</b> record issues commands to other
+while a scan is in progress, the sscan record issues commands to other
 software, and waits for the <i>callbacks</i> that will come when those
-commands complete.  Also, the <b>sscan</b> record handshakes with the data-storage
+commands complete.  Also, the sscan record handshakes with the data-storage
 client (if present) to ensure that data arrays are not overwritten before
-their content has been written to disk.  When a <b>sscan</b> record receives a "stop"
+their content has been written to disk.  When a sscan record receives a "stop"
 command, it can stop itself easily, but it cannot unsend or abort the commands
 it already sent, and it's not permitted to assume that commands already sent,
 or data not yet written, may simply be abandoned.  If it's waiting for
@@ -310,20 +347,20 @@ either of these, it will continue to wait until the user tells it to stop by
 writing <tt>0</tt> again to the <tt>EXSC</tt> field.  If it's waiting for data storage,
 two writes of <tt>0</tt> to <tt>EXSC</tt> are required.
 
-<P>When a <b>sscan</b> record is told to stop while it has outstanding callbacks, it
+<P>When a sscan record is told to stop while it has outstanding callbacks, it
 sets its <tt>SMSG</tt> field to the string "Abort: waiting for callback".  When
 the callback arrives, <tt>SMSG</tt> will change to "Scan aborted by operator",
 and the <tt>BUSY</tt> field will be set to <tt>0</tt>.
 
-<P>When a <b>sscan</b> record is told to stop while it is waiting for service by the
+<P>When a sscan record is told to stop while it is waiting for service by the
 data-storage client, "saveData", it sets its <tt>SMSG</tt> field to the string
 "Killing scan (kill=<i>n</i>/3)", where <i>n</i> is 1, 2, or 3..  When saveData
-has serviced the <b>sscan</b> record, <tt>SMSG</tt> will change to "Scan aborted by
+has serviced the sscan record, <tt>SMSG</tt> will change to "Scan aborted by
 operator", and the <tt>BUSY</tt> field will be set to <tt>0</tt>.  If saveData does not
-service the <b>sscan</b> record, writing <tt>0</tt> to <tt>EXSC</tt> a total of three times will
+service the sscan record, writing <tt>0</tt> to <tt>EXSC</tt> a total of three times will
 cause the scan to complete with the message "Abandoning unsaved scan data".
 
-<P>If the <b>sscan</b> record is waiting for both outstanding callbacks and the
+<P>If the sscan record is waiting for both outstanding callbacks and the
 data-storage client, the messages it writes to <tt>SMSG</tt> may overwrite each
 other, and not clearly indicate what is happening.  The user's course of
 action, however, is always the same:
@@ -334,7 +371,7 @@ action, however, is always the same:
 waiting for callbacks and data storage.
 
 <li>Two successive writes of <tt>0</tt> to <tt>EXSC</tt> request a scan abort
-with no wait for outstanding callbacks.  However, the <b>sscan</b> record will
+with no wait for outstanding callbacks.  However, the sscan record will
 still wait for the data-storage client.
 
 <li>Three successive writes of <tt>0</tt> to <tt>EXSC</tt> demand an immediate
@@ -346,10 +383,10 @@ case.
 <P>When a scan is aborted, and more than one write to <tt>EXSC</tt> was
 required, the <i>next</i> scan may inherit the problem.  If the problem was an
 outstanding callback, and that callback <i>still</i> has not come in by the next
-time the <b>sscan</b> record is told to start, the scan will not be permitted to
+time the sscan record is told to start, the scan will not be permitted to
 write to the PV whose callback is still outstanding.  This may indicate that a
 PV is imperfectly implemented, and cannot be scanned; or that some error
-prevented the operation from completing; or that the <b>sscan</b> record missed
+prevented the operation from completing; or that the sscan record missed
 the completion message; or simply that the operation is taking a long time to
 finish.  If the operation cannot be manually stopped, the only recourse is to
 erase the PV name and rewrite it.  This closes and reopens the channel-access
@@ -359,19 +396,19 @@ connection to that PV, and frequently will resolve the immediate problem.
 <h3>1.3.3 Pausing a scan</h3>
 
 A scan can be paused by writing "PAUSE", or the number 1, to the <tt>PAUS</tt> field.
-While a <b>sscan</b> record is paused, it will do nothing to further the progress
+While a sscan record is paused, it will do nothing to further the progress
 of the scan, but it will remain receptive to outstanding callbacks.  A paused
 scan is continued by writing "GO", or the number <tt>0</tt>, to the <tt>PAUS</tt> field.
 
 <P>Pausing a multidimensional scan should work in the same way as pausing a
-single <b>sscan</b> record, but there have been reports that the process fails
+single sscan record, but there have been reports that the process fails
 sometimes for multidimensional scans, leaving the scan active but not resuming
 when <tt>PAUS</tt> is rescinded.  The issue is being studied.
 
 <p><a NAME="HEADING_1-3-4"></a>
 <h3>1.3.4 Displaying scan data</h3>
 
-Scan data is published by the <b>sscan</b> record using EPICS Channel Access,
+Scan data is published by the sscan record using EPICS Channel Access,
 just as any other EPICS record would publish the values of its fields.  The act
 of publishing data via Channel Access is referred to here as
 <i>posting</i>, because the EPICS function that performs this function is
@@ -384,7 +421,7 @@ whenever it is posted, by <i>monitoring</i> -- also called <i>subscribing to</i>
 how this is done.  The purpose here is simply to introduce the terms <i>post</i>
 and <i>monitor</i>, so that I can use them in this documentation.
 
-<P>The <b>sscan</b> record maintains two sets of array PV's for scan data: data
+<P>The sscan record maintains two sets of array PV's for scan data: data
 from a completed scan are posted as P<i>n</i>RA and D<i>nn</i>DA (e.g.,
 <tt>P1RA</tt>, <tt>D01DA</tt>); data from a scan in progress are posted as
 P<i>n</i>CA and D<i>nn</i>CA.  During a scan, arrays are posted only if the user
@@ -393,7 +430,7 @@ requests this by setting the array-posting period, <tt>ATIME</tt>, to a value gr
 mask <tt>DBE_LOG</tt>, and the completed-scan postings (P<i>n</i>RA and
 D<i>nn</i>DA) remain available to clients until the next scan completes.   
 
-<blockquote>Because the <b>sscan</b> record implements double-buffered data
+<blockquote>Because the sscan record implements double-buffered data
 arrays, and because of the way in which posting is accomplished in EPICS, the
 posting of scan-in-progress data arrays results unavoidably in useless reposting
 of completed-scan data arrays.  If this presents a problem for a data-display or
@@ -412,10 +449,10 @@ the readback's current value (<tt>R<i>n</i>CV</tt>).  (If there is no readback
 PV, the posted readback value will be a copy of the desired value.)
 
 <P>Not all data points of a scan are guaranteed to be posted as scalar values,
-because the <b>sscan</b> record <i>throttles</i> it's posting, so that it
+because the sscan record <i>throttles</i> it's posting, so that it
 doesn't exceed 20 data points per second.  This throttling is intended to limit
 the network activity caused by a scan, and it's necessary because displaying
-scan data is not more important that acquiring it, and because the <b>sscan</b>
+scan data is not more important that acquiring it, and because the sscan
 record also uses the network to acquire data.
 
 <P>The task of accumulating posted scalar values into data arrays is complicated
@@ -458,30 +495,31 @@ numPoints to the cached value received from <tt>CPT</tt>.
 
 <P>1) <B>The new way, using the <tt>AWAIT</tt> and <tt>AAWAIT</tt> fields:</B>
 <P>The data-storage client waits for <tt>DATA==1</tt>, which indicates that the
-scan is over and the <b>sscan</b> record has finished posting all array fields;
-writes <tt>1</tt> to the <tt>AWAIT</tt> field to prevent the <b>sscan</b> record
+scan is over and the sscan record has finished posting all array fields;
+writes <tt>1</tt> to the <tt>AWAIT</tt> field to prevent the sscan record
 from overwriting array fields before the client has read them; and writes
 <tt>0</tt> to <tt>AWAIT</tt> when it is finished reading.  One advantage of this
-handshake is that it allows the <b>sscan</b> record to proceed with the next
-scan (the <b>sscan</b> record's data arrays are double buffered) until it's time
+handshake is that it allows the sscan record to proceed with the next
+scan (the sscan record's data arrays are double buffered) until it's time
 to post data.  In this way, the data-storage client can be writing one set of
-scan data while the <b>sscan</b> record is acquiring the next set.
+scan data while the sscan record is acquiring the next set.
 
 <P>For <em>very</em> fast scans, or a very slow data-storage client, there might
 not be sufficient time, between the posting of one data set and the acquisition
 of the next, for the client to write <tt>1</tt> to <tt>AWAIT</tt> (array wait)
-field.  In this case, you can cause the <b>sscan</b> record automatically to set
+field.  In this case, you can cause the sscan record automatically to set
 <tt>AWAIT==1</tt>, whenever it posts data, by setting the <tt>AAWAIT</tt> (auto
 array wait) field to <tt>1</tt>.  (It's OK if the client also sets
-<tt>AWAIT==1</tt>.) <b>saveData</b>, the data-storage client included in the synApps
-sscan module, sets <tt>AAWAIT</tt> for each of the <b>sscan</b> records it monitors.
+<tt>AWAIT==1</tt>.) <b>saveData</b>, the data-storage client included in the
+synApps <b>sscan</b> module, sets <tt>AAWAIT</tt> for each of the sscan records
+it monitors.
 
-<P>NOTE:  Because saveData sets <tt>AAWAIT</tt> for the <b>sscan</b> records it
+<P>NOTE:  Because saveData sets <tt>AAWAIT</tt> for the sscan records it
 monitors, a scan cannot execute to completion until saveData has written the
 previous scan's data to disk (or has tried and failed a preset number of times
-to do this).  The sscan module currently does not provide a mechanism by which
+to do this).  The <b>sscan</b> module currently does not provide a mechanism by which
 the end user can turn data storage off and on.  Data storage is turned on at
-boot time, for each <b>sscan</b> record, by telling saveData to monitor that <b>sscan</b>
+boot time, for each sscan record, by telling saveData to monitor that sscan
 record.  The only way to turn data storage off is to edit the startup file
 and reboot.
 
@@ -492,14 +530,14 @@ field, so that it gets reset to zero only when all have finished.  (It's OK if
 effect.)
 
 <P>Note that this <tt>AWAIT</tt> handshake protects scan data no matter how the
-<b>sscan</b> record gets executed, unlike the old method described next.
+sscan record gets executed, unlike the old method described next.
 
 <P>2) <B>The old way, using the <tt>WAIT</tt>, <tt>WCNT</tt>, and <tt>AWCT</tt>
 fields:</B>
 
 <P>Before the <tt>AWAIT</tt> field was introduced, the only means of
-handshaking was an extension of the mechanism by which the <b>sscan</b> record waits
-for detector triggers to signal completion.  In this extension, the <b>sscan</b>
+handshaking was an extension of the mechanism by which the sscan record waits
+for detector triggers to signal completion.  In this extension, the sscan
 record waits until all detector triggers have signalled completion,
 <em>and</em> the field <tt>WAIT</tt> is equal to zero.  This extension's
 intended purpose is to support detectors that can't signal completion with a
@@ -509,13 +547,13 @@ purpose, while a data-storage client is using it to protect data acquired from
 an inner-loop scan. 
 
 <p>Here's how the handshake works in a data-storage application:  The data-storage
-client notices that an inner <b>sscan</b> record has started a scan (typically, it monitors
+client notices that an inner sscan record has started a scan (typically, it monitors
 the <tt>DATA</tt> field, which is set to zero at the beginning of a scan), and
-writes a <tt>1</tt> to the outer <b>sscan</b> record's <tt>WAIT</tt> field.  This prevents the
-outer <b>sscan</b> record from continuing until the client has read the inner scan's data. 
+writes a <tt>1</tt> to the outer sscan record's <tt>WAIT</tt> field.  This prevents the
+outer sscan record from continuing until the client has read the inner scan's data. 
 The client waits for <tt>DATA==1</tt>, which indicates that new data are available. 
 When the client has finished reading the inner scan's data, it writes a <tt>0</tt> to the
-outer <b>sscan</b> record's <tt>WAIT</tt> field, allowing the scan to continue.
+outer sscan record's <tt>WAIT</tt> field, allowing the scan to continue.
 
 <P>If there are several clients that want the scan to <tt>WAIT</tt> for them, they
 can all write to the <tt>WAIT</tt> field.  Each <tt>1</tt> increments the scan's wait-count
@@ -540,47 +578,47 @@ whether or not a client is available to write to the <tt>WAIT</tt> field.  The
 disadvantage is that the is not reliable for very fast scans.
 
 <P>Note that this form of handshaking doesn't do a very thorough job of data
-protection, because it does not directly prevent a <b>sscan</b> record
+protection, because it does not directly prevent a sscan record
 from overwriting its own arrays; it only prevents an outer-loop
-<b>sscan</b> record from <em>telling</em> an inner-loop record to start a
-new scan line.  If the <b>sscan</b> record is executed by some other
+sscan record from <em>telling</em> an inner-loop record to start a
+new scan line.  If the sscan record is executed by some other
 agent, the <tt>WAIT</tt> handshake doesn't protect data at all.
 
 <p><a NAME="HEADING_1-3-6"></a>
 <h3>1.3.6 Handshaking with CA clients that implement positioners or detectors</h3>
 
-A channel-access client can participate in scans driven by the <b>sscan</b> record if
+A channel-access client can participate in scans driven by the sscan record if
 two criteria are met:
 
 <OL>
 
-<LI>The client is driven by a PV to which one of the <b>sscan</b> record's
+<LI>The client is driven by a PV to which one of the sscan record's
 positioner or detector-trigger links writes.
 
-<LI>The client can signal completion in a way that the <b>sscan</b> record understands.
+<LI>The client can signal completion in a way that the sscan record understands.
 
 </OL> 
 
 <P>There are two mechanisms the client can use to signal completion that will
-work with the <b>sscan</b> record:
+work with the sscan record:
 
 <DL>
 
 <DT><b>putNotify-based completion signalling</b>
 
-<DD><P>This is the method the <b>sscan</b> record expects everything it
+<DD><P>This is the method the sscan record expects everything it
 drives to use for signalling completion, and it is the method the
-<b>sscan</b> record itself uses to signal completion.  Clients can't
+sscan record itself uses to signal completion.  Clients can't
 signal completion directly using putNotify, because their execution is not
 managed by EPICS. But they can do it indirectly, by
-writing to a <b>busy</b> record.
+writing to a <i>busy</i> record.
 
-<P>A <b>busy</b> record is a custom EPICS record, supplied as part of the synApps
+<P>A <i>busy</i> record is a custom EPICS record, supplied as part of the synApps
 package, that looks and operates almost exactly like the binary-output ("bo")
 record, except that it executes its forward link, <tt>FLNK</tt>, only when its
 <tt>VAL</tt> field has the value zero.  As it happens, EPICS' putNotify
 completion mechanism is implemented as part of the processing of forward links,
-so the fact that the <b>busy</b> record allows a CA client to control the execution of
+so the fact that the <i>busy</i> record allows a CA client to control the execution of
 its forward link means that the client can control the timing of a putNotify
 callback.
 
@@ -588,11 +626,10 @@ callback.
 
 <ul>
 
-<li>A developer loads a <b>busy</b> record (let's call it <tt>xxx:detBusy</tt>) into
+<li>A developer loads a <i>busy</i> record (let's call it <tt>xxx:detBusy</tt>) into
 the IOC.
 
-<li>The <b>sscan</b> record writes <tt>1</tt> to a
-<tt>xxx:detBusy.VAL</tt>.
+<li>The sscan record writes a <tt>1</tt> to <tt>xxx:detBusy.VAL</tt>.
 
 <li>The client monitors <tt>xxx:detBusy.VAL</tt>, and begins some operation when
 it goes to <tt>1</tt>.
@@ -602,16 +639,17 @@ it goes to <tt>1</tt>.
 <li>This causes the record to process, and to request that EPICS execute its
 forward link.
 
-<li>EPICS discovers that the <b>busy</b> record is finished when it executes the
-forward link.
+<li>EPICS discovers that the <i>busy</i> record is finished when it executes the
+forward link, and it sends a callback to the sscan record.
 
 </ul>
 
-Thus, the <b>busy</b> record appears to be executing all the time the client actually
-<em>is</em> executing, so EPICS knows when the client is done.
+<P>Thus, the <i>busy</i> record appears to be executing all the time the client
+actually <em>is</em> executing, so the sscan record can know when the client is
+done.
 
 <P>Very simple, but it does require that a dedicated record be loaded in some IOC.
-Here's a database that loads a <b>busy</b> record:
+Here's a database that loads a <i>busy</i> record:
 
 <pre>
 record(busy, "xxx:CCD_Busy")
@@ -619,27 +657,27 @@ record(busy, "xxx:CCD_Busy")
 }
 </pre>
 
-Many of the databases in synApps contain <b>busy</b> records for this purpose,
+Many of the databases in synApps contain <i>busy</i> records for this purpose,
 particularly those that act as front ends for State Notation Language (SNL)
-code.  Though motivated by the needs of the <b>sscan</b> record, this
+code.  Though motivated by the needs of the sscan record, this
 completion-signalling capability can be used by any CA client participating in
 any EPICS application.
 
-<P><DT><b><tt>WAIT</tt>-field handshake with the <b>sscan</b> record</b>
+<P><DT><b><tt>WAIT</tt>-field handshake with the sscan record</b>
 
-<DD><P>This handshake is intended for CA clients implementing detectors. Here's
-how it works:
+<DD><P>This handshake is intended for CA clients that implement detectors, and
+that do <i>not</i> signal completion using a <i>busy</i> record. Here's how it works:
 
 <ul>
 
 <li>The client monitors a PV to find out when someone wants it to
 acquire data.
 
-<li>The <b>sscan</b> record writes some value to the PV to start
+<li>The sscan record writes some value to the PV to start
 acquisition.
 
 <li>The client writes <tt>1</tt> to &lt;scanrecord&gt;<tt>.WAIT</tt>, indicating
-that it wants the <b>sscan</b> record to wait.
+that it wants the sscan record to wait.
 
 <li>The client performs its
 data-acquisition task.
@@ -651,14 +689,14 @@ data-acquisition task.
 
 <P>Several clients can use the <tt>WAIT</tt> field, each write of <tt>1</tt>
 increments a wait count <tt>WCNT</tt>; each write of <tt>0</tt> decrements
-<tt>WCNT</tt>; the <b>sscan</b> record stops waiting when <tt>WCNT</tt> is decremented
-to zero.  The <b>sscan</b> record doesn't care, by the way, who writes
+<tt>WCNT</tt>; the sscan record stops waiting when <tt>WCNT</tt> is decremented
+to zero.  The sscan record doesn't care, by the way, who writes
 what to <tt>WAIT</tt>; it simply waits until the number of <tt>WAIT==0</tt>
 writes equals the number of <tt>WAIT==1</tt> writes.
 
-<p>But what if clients are a little slow to react, and the <b>sscan</b>
+<p>But what if clients are a little slow to react, and the sscan
 record checks its wait-count <tt>WCNT</tt> before the clients have had time to
-write 1's to it? If this is a problem, you can cause the <b>sscan</b>
+write 1's to it? If this is a problem, you can cause the sscan
 record to set <tt>WCNT</tt> at the appropriate time, by setting
 &lt;scanrecord&gt;<tt>.AWCT</tt> to the number of slow clients.  (But now those
 slow clients must NOT write <tt>1</tt> to <tt>WAIT</tt>.) </DL> 
@@ -666,79 +704,248 @@ slow clients must NOT write <tt>1</tt> to <tt>WAIT</tt>.) </DL>
 <!---------------------------------------------------------------------------->
 
 <p><a NAME="HEADING_1-4"></a>
-<h2> 1.4. Completion of positioner and
-detector-trigger operations</h2>
+<h2> 1.4. Completion of positioner and detector-trigger operations</h2>
 
-<p>&nbsp;As was mentioned previously, all of the process variable names used to
+<p>As was mentioned previously, all of the process variable names used to
 identify positioners, detectors, and detector triggers are specified using
 <i>reassignable links</i>.  These links are implemented differently than
 standard EPICS links.  Reassignable links are channel-access links implemented
 with the recDynLink library (originally written by Marty Kraimer and Ned Arnold;
 modified to use callbacks and currently maintained by Tim Mooney).  These links
 perform writes with the channel-access function, <tt>ca_put_callback()</tt>, and
-expect the callback function to be called only after all processing caused by
-the write operation is complete. For simple positioners and detectors, this is
-never a problem.  Individual records using either <i>synchronous</i> or
-<i>asynchronous</i> completion strategies (as these terms are defined in the
-EPICS Application Developer's Guide) always satisfy the completion-callback
-criterion.  Special records (<b>motor</b>, <b>scaler</b>, <b>mca</b>, and
-<b>sscan</b> record) which do not use either synchronous or asynchronous
-strategies have been engineered to satisfy the completion-callback criterion
-simply by having them refrain from calling <tt>recGblFwdLink()</tt> (i.e., from
-firing their Forward Links) until the operation they started has finished.
+the sscan record expects the resulting callback function to be called only after
+all processing caused by the write operation has completed. (I'll call this
+expectation the <i>completion-callback criterion</i>, in this documentation, and
+I'll describe the conditions under which it is met.)
+
+<P>For simple positioners and detectors, this is never a problem.  Individual
+records (using either <i>synchronous</i> or <i>asynchronous</i> completion
+strategies, as these terms are defined in the <i>EPICS Application Developer's
+Guide</i>) always satisfy the completion-callback criterion.  Special records
+(motor, scaler, mca, and sscan records) which do not use either synchronous or
+asynchronous strategies, have been engineered to satisfy the completion-callback
+criterion simply by having them refrain from calling <tt>recGblFwdLink()</tt>
+(i.e., from executing their Forward Links) until the operation they started has
+finished.
 
 <p>If a positioner or detector is implemented with a collection of linked
-records all of which individually satisfy the completion-callback criterion,
-the whole series of records will also satisfy the criterion <b>if</b> all links
-in the processing chain started by the <b>sscan</b> record's write have the attribute
-<tt>PP</tt>, and all of the records that process are scan-passive (i.e., their <tt>SCAN</tt>
-fields are set to "Passive").  Databases that do not satisfy this criterion can
-still satisfy the completion-callback criterion very simply: at least one
-record in the database must refrain from firing its Forward Link until the
-operation is finished, and that record must be either be the record written to,
-or it must be linked with attribute <tt>PP</tt> to the record.  The <b>busy</b> record was
-implemented for this purpose.  Using the <b>busy</b> record, any sort of processing,
-even processing that involves an external, non-EPICS processor can easily
-satisfy the completion-callback criterion.
+records all of which individually satisfy the completion-callback criterion, the
+whole series of records will also satisfy the criterion if all links in the
+processing chain started by the sscan record's write have the attribute
+<tt>PP</tt>, and all of the records that process are scan-passive (i.e., their
+<tt>SCAN</tt> fields are set to "Passive").  Databases that do not satisfy this
+criterion can still satisfy the completion-callback criterion very simply: at
+least one record in the database must refrain from executing its Forward Link
+until the operation is finished, and that record must be either be the record
+written to, or it must be driven by that record via an unbroken series of
+<tt>PP</tt> links.
+
+<P>If a positioner or detector is implemented with the help of a CA client, such as
+an SNL program, see the subsection on "putNotify-based completion signalling" in
+section <a href="#HEADING_1-3-6"><b>1.3.6</b> Handshaking with CA clients that
+implement positioners or detectors</a>.
 
 <p>Database developers should note that a <tt>PP</tt> link from a record in one
-crate to a record in another crate will silently be converted to a <tt>CA</tt>
+IOC to a record in another IOC will silently be converted to a <tt>CA</tt>
 link, which will not satisfy the completion-callback criterion.  In this case,
-there are two options: the <b>busy</b>-record solution, detailed above, and the
+there are two options: the <i>busy</i>-record solution, detailed above, and the
 use of a buffer record that can do a <tt>ca_put_callback()</tt> to make the
-inter-crate link.  Currently, I'm aware of six record types that can do a
-<tt>ca_put_callback()</tt>: the <b>sscan</b>, <b>swait</b>, and <b>sseq</b>
-records; an <b>ai</b> record with soft asynchronous device support; and the
-<b>sCalcout</b> and <b>aCalcout</b> records.  (The <b>sscan</b>, <b>swait</b>,
-<b>sseq</b>, <b>sCalcout</b>, and <b>aCalcout</b> records are distributed with
-synApps.  <b>swait</b>, <b>sCalcout</b>, and <b>aCalcout</b> are  variants of
-the <b>calcout</b> record; <b>sseq</b> is a variant of the <b>seq</b> record.)
+link between IOCs.  Currently, I'm aware of six record types that can do a
+<tt>ca_put_callback()</tt>: the sscan, swait, and sseq
+records; an ai record with soft asynchronous device support; and the
+sCalcout and aCalcout records.  (The sscan, swait,
+sseq, sCalcout, and aCalcout records are distributed with
+synApps.  swait, sCalcout, and aCalcout are  variants of
+the calcout record; sseq is a variant of the seq record.)
 
 <!---------------------------------------------------------------------------->
+<p><a NAME="HEADING_1-5"></a>
+<h2> 1.5. Fly scans</h2>
 
+The term "fly scan" is generic for several types of scans that behave and are
+configured differently, though all involve one or more positioners moving while
+data are being acquired.  Such positioners are said to be in "fly mode".
+
+<P>Currently, the sscan record treats fly-mode positioners in essentially the
+same way for all types of fly scans: they are sent to their start positions
+(along with any non-fly-mode positioners), and the sscan record waits for all to
+complete; then, fly-mode positioners are launched toward their end points when
+detectors are triggered for the first (or only) time, and the sscan record does
+not wait for them to complete.
+
+<P>Clearly, the speed at which a fly-mode positioner moves is an important
+consideration for a fly scan, because one wants to know at what position data
+points are acquired.  But the sscan record does not provide any support for
+reconciling positioner speed with other scan conditions, such as the start and
+end points, the number of data points to be acquired, and the detector dwell
+time.  This must be done by external software, either before the scan starts, or
+as part of processing triggered by one of the sscan record's links, such as the
+before-scan link.
+
+<P>From the viewpoint of the sscan record, there are two types of fly scans:
+<i>scalar-mode</i> fly scans, in which the sscan record directs the scan point by
+point; and <i>array-mode</i> fly scans, in which the scan record hands off the
+point-by-point direction to some other entity, such as a multichannel scaler. 
+These types are distinguished by the value of <tt>ACQT</tt> (ACQuisition Type).
+
+<p><a NAME="HEADING_1-5-1"></a>
+<h3> 1.5.1 Scalar-mode fly scans</h3>
+
+<P>If <tt>ACQT</tt>==<tt>SCALAR</tt> ("scalar mode", the default), the sscan
+record will direct the acquisition of <tt>NPTS</tt> data points individually, as
+we've been assuming thus far. That is, it will execute <tt>NPTS</tt> iterations
+of (move, trigger, read).  A scalar-mode scan is a fly scan if one or more
+positioners have their step mode PVs (<tt>P<em>n</em>SM</tt>) set to
+<tt>FLY</tt>.  The only difference between this type of scan and the scans we've
+considered up to now is the motion of those fly-mode positioners.
+
+<P>In scalar mode, the sscan record executes fly scans as follows:
+
+<ol>
+
+<li>Execute the before-scan link.  Wait for completion if
+<tt>BSWAIT</tt>==<tt>Wait</tt>.
+
+<li>Send all positioners to their start points, and wait for completion.
+
+<li>Send fly-mode positioners to their end points.  Do not wait for completion.
+
+<li>Trigger detectors and wait for completion.
+
+<li>Read positioners and detectors.
+
+<li>Send non-fly-mode positioners to their next positions and wait for completion.
+
+<li> Trigger detectors and wait for completion.
+
+<li>Read positioners and detectors.
+
+<li>Repeat (6,7,8) until <tt>NPTS</tt> data points have been acquired, or the
+scan is aborted.
+
+<li>Execute the array-trigger link, and wait for completion.
+
+<li>Read the first <tt>NPTS</tt> elements of any array-valued detectors.
+
+<li>If <tt>PASM</tt>!=<tt>STAY</tt>, send all positioners to specified
+positions, and wait for completion.  (It is assumed that these commands
+will redirect any fly-mode positioners that are still moving toward their end
+points.)
+
+<li>Execute the after-scan link.  Wait for completion if
+<tt>ASWAIT</tt>==<tt>Wait</tt>.
+
+</ol>
+
+<P>Scalar-mode fly scans are relatively easy to configure, because the only
+external conditions that must be set are the positioner speed and the detector
+dwell time.  However, the association between positioner and detector values is
+typically not as precise or as repeatable as in a step scan.  This is because
+fly-mode positioners are read while they are moving, and because the timing of
+those reads is not tightly synchronized with the positioner's motion.  In the
+simplest case (no non-fly-mode positioners) the  time between positioner reads
+is the detector dwell time plus the sscan record's per-point overhead time,
+which varies because the IOC processor is doing other things in addition to
+scanning.
+
+<p><a NAME="HEADING_1-5-2"></a>
+<h3> 1.5.2 Array-mode fly scans</h3>
+
+<P>If <tt>ACQT</tt>==<tt>1D ARRAY</tt> ("array mode"), the sscan record will
+direct the acquisition of only a single "data point", and that data point will
+be a set of one-dimensional arrays of length <t>NPTS</tt>.  In an array-mode
+scan, all positioners are treated as being in fly mode, whatever the values of
+their step-mode PVs, because the sscan record writes to them only twice.  After
+moving positioners to their start positions, the sscan record will execute only
+one (move, trigger, read) sequence.
+
+<blockquote>Array mode was originally intended merely to read a collection of
+array-valued detectors (multichannel analyzer spectra), and not to involve
+positioners at all.  However, the sscan record does not erase any existing
+positioner PVs when array mode is selected, and if any exist then
+<i>something</i> must be done with them, so this documentation must describe
+it.</blockquote>
+
+<P>In array mode, the sscan record executes fly scans as follows:
+
+<ol>
+
+<li>Execute the before-scan link.  Wait for completion if
+<tt>BSWAIT</tt>==<tt>Wait</tt>.
+
+<li>Send all positioners to their start points, and wait for completion.
+
+<li>Send all positioners to their end points.  Do not wait for completion.
+
+<li>Trigger detectors and wait for completion.
+
+<li>Execute the array-trigger link, and wait for completion.
+
+<li>Read the first <tt>NPTS</tt> elements of any array-valued detectors.
+
+<li>If <tt>PASM</tt>!=<tt>STAY</tt>, send all positioners to specified
+positions, and wait for completion.  (It is assumed that these commands
+will redirect any fly-mode positioners that are still moving toward their end
+points.)
+
+<li>Execute the after-scan link.  Wait for completion if
+<tt>ASWAIT</tt>==<tt>Wait</tt>.
+
+</ol>
+
+<P>Because the sscan record doesn't do any point-by-point writes to (or reads
+from) positioners during an array-mode scan, the data it acquires will represent
+an average over position, unless some external agent enforces a coordination
+between positioner values and the acquisition of detector-array elements.  The
+advantage of array-mode fly scans over scalar-mode fly scans is that this
+coordination can be done externally by hardware that's capable of doing it well;
+the disavantage is that hardware positioner/detector coordination must be
+arranged.
+
+<P>In one common implementation of an array-mode scan, detector data are
+acquired by a multichannel scaler, which is advanced from channel to channel
+either by a periodic signal, or by pulses from a motor.  In contrast to the
+scalar-mode fly scans discussed above, this type of fly scan can have a very
+precise and reproducible association between positioner and detector values.
+
+
+<blockquote> In previous versions of the sscan record, fly mode was implemented
+slightly differently, as follows (differences are in <i>italics</i>) If the
+sscan record was in scalar mode (<tt>ACQT</tt>==<tt>SCALAR</tt>), and a
+positioner's step mode had the value <tt>FLY</tt>, the sscan record sent it to
+the start position at the beginning of a scan, waited for it to get there,
+<i>acquired one data point (trigger, read),</i>  sent the positioner to the end
+position, and began acquiring the remaining data points while the positioner was
+travelling to the end position.  <i>If the record was in array mode
+(<tt>ACQT</tt>==<tt>1D&nbsp;ARRAY</tt>), positioners that were not explicitly in
+fly mode (<tt>PnSM</tt>!=<tt>FLY</tt>) were not sent to the end position at
+all.</i> </blockquote>
+
+
+<!---------------------------------------------------------------------------->
 <br><br><br><hr>
 <p><a NAME="HEADING_2"></a>
-<h1>2. <b>sscan</b>-Record Fields</h1>
+<h1>2. sscan-Record Fields</h1>
 <hr>
 
-Many options are available to control the execution of a scan. All
-parameters for a particular <b>sscan</b> record must be configured prior to initiating
-the scan, as the <b>sscan</b> record will not allow most fields to be written to while
-a scan is in progress.  However, in a multidimensional scan, outer scans can
-modify the parameters of inner scans, because at the time an outer <b>sscan</b> record
-is writing to positioners, all inner <b>sscan</b> records are idle. You should use
-caution in programming such self modifying scans, because clients displaying
-and storing multidimensional-scan data may have trouble dealing with parameters
-changing during a scan.
+Many options are available to control the execution of a scan. All parameters
+for a particular sscan record must be configured prior to initiating the scan,
+as the sscan record will not allow most fields to be written to while a scan is
+in progress.  However, in a multidimensional scan, outer scans can modify the
+parameters of inner scans, because at the time an outer sscan record is writing
+to positioners, all inner sscan records are idle. You should use caution in
+programming such self modifying scans, because clients displaying or analyzing
+multidimensional scan data may have trouble dealing with parameters changing
+during a scan.
 
-<P>In this documentation, many of the <b>sscan</b>-record fields will be listed in
+<P>In this documentation, many of the sscan-record fields will be listed in
 tables containing the following informational headings:
 
 <dl>
 
 <dt><b>Field</b></dt>
 
-<dd>The name of the <b>sscan</b>-record field</dd>
+<dd>The name of the sscan-record field</dd>
 
 <dt><b>Summary</b></dt>
 
@@ -767,7 +974,7 @@ menu, the text string will be shown, followed by the corresponding index. </dd>
 
 <dt><b>Modify</b></dt>
 
-<dd>Is user ever allowed to write to this field?  (Note that the <b>sscan</b> record
+<dd>Is user ever allowed to write to this field?  (Note that the sscan record
 will reject writes to certain otherwise writable fields while a scan is
 underway.)</dd>
 
@@ -834,7 +1041,7 @@ underway.)</dd>
 <td>Yes</td>
 <td>"STAY" (<tt>0</tt>)</td>
 <td>Yes</td>
-<td>No</td>
+<td>Yes</td>
 <td>No</td>
 <td>No</td>
 </tr>
@@ -960,24 +1167,24 @@ underway.)</dd>
 
 	<tt>BSPV</tt>, <tt>BSNV</tt>, <tt>BSCD</tt>, and <tt>BSWAIT</tt> allow the
 	user to specify a PV to be written to before every scan starts.  (If the
-	<b>sscan</b> record is part of a multidimensional scan, each
-	participating <b>sscan</b> record has its own set of before-scan
+	sscan record is part of a multidimensional scan, each
+	participating sscan record has its own set of before-scan
 	parameters, so you can cause an action to occur before the whole scan
 	starts, and before each nested loop starts.)
 
 	<P>To specify a before-scan PV write, write the name of the PV to
 	<tt>BSPV</tt>, and the value to be written to <tt>BSCD</tt>.  If you want
-	the <b>sscan</b> record to wait for completion of processing
+	the sscan record to wait for completion of processing
 	triggered by the write, before going on with the rest of the scan, set
 	<tt>BSWAIT</tt> to "YES" (1).  You can check to status of the link by
 	looking at <tt>BSNV</tt>.  If the link is good, <tt>BSNV</tt> will be zero.
 
 	<P>Note that the before-scan link is permitted to change only selected
-	fields of its own <b>sscan</b> record:  it cannot change PV names
+	fields of its own sscan record:  it cannot change PV names
 	(i.e., links); and it cannot change the acquisition type (<tt>ACQT</tt>) or
-	mode (<tt>ACQM</tt>).  If this <b>sscan</b> record is part of a
+	mode (<tt>ACQM</tt>).  If this sscan record is part of a
 	multidimensional scan, the before-scan link can change any field of a
-	lower-level <b>sscan</b> record (i.e., one that its record it
+	lower-level sscan record (i.e., one that its record it
 	driving), and no field of a higher level scan record.
 
 </blockquote>
@@ -1055,24 +1262,24 @@ underway.)</dd>
 
 	<tt>ASPV</tt>, <tt>ASNV</tt>, <tt>ASCD</tt>, and <tt>ASWAIT</tt> allow the
 	user to specify a PV to be written to after every scan is finished.  (If the
-	<b>sscan</b> record is part of a multidimensional scan, each
-	participating <b>sscan</b> record has its own set of after-scan
+	sscan record is part of a multidimensional scan, each
+	participating sscan record has its own set of after-scan
 	parameters, so you can cause an action to occur after the whole scan is
 	done, and after each nested loop is done.)
 
 	<P>To specify an after-scan PV write, write the name of the PV to
 	<tt>ASPV</tt>, and the value to be written to <tt>ASCD</tt>.  If you want the
-	<b>sscan</b> record to wait for completion of processing triggered by
+	sscan record to wait for completion of processing triggered by
 	the write, before going on with the rest of the scan wrap-up, set <tt>ASWAIT</tt> to
 	"YES" (1).  You can check to status of the link by looking at <tt>ASNV</tt>.  If the
 	link is good, <tt>ASNV</tt> will be zero.
 
 	<P>Note that the after-scan link is permitted to change only selected fields
-	of its own <b>sscan</b> record:  it cannot change PV names (i.e.,
+	of its own sscan record:  it cannot change PV names (i.e.,
 	links); and it cannot change the acquisition type (<tt>ACQT</tt>) or mode
-	(<tt>ACQM</tt>).  If this <b>sscan</b> record is part of a
+	(<tt>ACQM</tt>).  If this sscan record is part of a
 	multidimensional scan, the after-scan link can change any field of a
-	lower-level <b>sscan</b> record (i.e., one that its record it
+	lower-level sscan record (i.e., one that its record it
 	driving), and no field of a higher level scan record.
 
 </blockquote>
@@ -1136,11 +1343,11 @@ underway.)</dd>
 <blockquote>
 
 	<tt>A1PV</tt>, <tt>A1NV</tt>, and <tt>A1CD</tt> allow the user to specify a
-	PV to be written to before the <b>sscan</b> record tries to read
+	PV to be written to before the sscan record tries to read
 	array-valued data.  (It may be necessary, for example, to cause data to be
 	read from hardware into a set of EPICS PVs, or to execute some calculation
-	on the data, before the <b>sscan</b> record acquires it. The
-	<b>sscan</b> record will wait for processing triggered by this write
+	on the data, before the sscan record acquires it. The
+	sscan record will wait for processing triggered by this write
 	to complete before reading arrays.
 
 	<P>To specify an array-preparation PV write, write the name of the PV to
@@ -1170,7 +1377,7 @@ underway.)</dd>
 <td>Copy Last Array Point Thru This Element Number</td>
 <td>LONG</td>
 <td>Yes</td>
-<td>0.0</td>
+<td>0</td>
 <td>Yes</td>
 <td>Yes</td>
 <td>No</td>
@@ -1193,7 +1400,7 @@ underway.)</dd>
 	arrays to be posted (uselessly, because they were posted at the end of the
 	previous scan, and the data they contain has not changed).  Some display or
 	storage clients may have a problem with this new behavior of the
-	<b>sscan</b> record.  If so, there are two alternatives: 1) leave
+	sscan record.  If so, there are two alternatives: 1) leave
 	<tt>ATIME</tt> at its default value of 0.0, or 2) have the client specify
 	DBE_LOG when it subscribes to the data array (using ca_add_event() or
 	ca_create_subscription()). (If a client does not monitor data arrays, but
@@ -1210,7 +1417,9 @@ underway.)</dd>
 	arrays posted during a scan, by setting <tt>COPYTO</tt> to the number of
 	array elements in the client's data buffer.  If <tt>COPYTO</tt> == 0, no
 	copying will be done; if <tt>COPYTO</tt> == -1, the last value will be
-	copied to all unused array elements in the <b>sscan</b> record's data buffers.
+	copied to all unused array elements in the sscan record's data buffers.
+	If <tt>COPYTO</tt> is set to a value larger than <tt>MPTS</tt>, the value
+	used will be <tt>MPTS</tt>.
 
 </blockquote>
 </td>
@@ -1223,43 +1432,48 @@ underway.)</dd>
 
 <h2>2.2. Positioner Fields</h2>
 
-Each <b>sscan</b> record may control up to four <i>positioners</i> that are commanded
-to a new <i>desired position</i> after collecting data at each point. The
-positioners are defined by typing in an ASCII string that represents the
-process variable name of the positioner.
+Each sscan record can control up to four <i>positioners</i>, by which it
+sets conditions under which data will be acquired.  A positioner is any numeric PV
+to which the sscan record can write, and you specify that a positioner is to
+be scanned by typing its PV name into one of the sscan record's fields
+<tt>PnPV</tt>.  If the value written to the PV (the <i>desired</i> value) might not
+accurately indicate the true value of the underlying hardware positioner, you can
+specify a readback PV to retrieve a more accurate value.  I'll sometimes call the
+PV that the sscan record writes to the "drive" PV.  If no readback PV is specified,
+the drive PV will also be used as the readback PV.
 
-<p>There are three modes for determining the desired value for the positioner.
-The desired mode is specified in the <tt>P1SM</tt>-<tt>P4SM</tt>  fields:
-<tt>Linear</tt>, <tt>Table</tt>, and <tt>On-The-Fly</tt>. If a positioner is
-specified as <tt>Linear</tt>, its desired value is determined by using
-parameters such as start position, step increment, number of points, and end
-position (which are explained below). If a positioner is specified as
-<tt>Table</tt>, its next position is found in an array that has been loaded
-into the record prior to initiating a scan. If the positioner is specified as
-<tt>On-The-Fly</tt>, the <b>sscan</b> record sends it to the start position at the
-beginning of a scan, waits for it to get there, acquires one data point,  sends
-the positioner to the end position, and begins acquiring the remaining data
-points while the positioner presumably is travelling to the end position.
+<p>There are three possible modes for determining desired values for a positioner:
+<tt>LINEAR</tt>, <tt>TABLE</tt>, and <tt>FLY</tt>.  Each positioner has its own
+mode PV, and you specify which mode you want for a positioner by setting its
+<tt>PnSM</tt> field (e.g., <tt>P1SM</tt> for positioner 1). If <tt>PnSM</tt>==
+<tt>LINEAR</tt>, the desired values are determined from parameters such as start
+position, step increment, number of points, and end position. If
+<tt>PnSM</tt>==<tt>TABLE</tt>, the desired values are found in an array
+(<tt>PnPA</tt>), which must have been loaded into the sscan record prior to
+initiating a scan. If <tt>PnSM</tt>==<tt>FLY</tt>, the desired values are the start
+and end positions for <tt>LINEAR</tt> mode.
 
-<P>Currently, the <b>sscan</b> record does not wait for an <tt>On-The-Fly</tt>
-positioner to arrive at the end point.  Ideally, the <b>sscan</b> record should finish
-the data-acquisition portion of a scan but not enter the post-scan phase
-(sending positioners to after-scan positions, and executing the after-scan
-link) until the positioner has declared itself done.  But currently this is not
-what is done.
+<blockquote> In addition to the positioner scan modes <tt>PnSM</tt>, there is
+another sscan record field that influences how positioners are scanned.  The
+<tt>ACQT</tt> (acquisition type) field affects all positioners, and either
+directs them to behave as described above (when ACQT==<tt>SCALAR</tt>), or to
+all be effectively in fly mode (when ACQT==<tt>1D&nbsp;ARRAY</tt>.  I'll
+sometimes refer to this as "array mode").  See the "Fly Scans" section for
+more detail. </blockquote>
 
 <P>For each positioner, the user may specify a process variable in the
-<tt>R1PV</tt> -<tt>R4PV</tt>  fields that corresponds to the actual (or
-measured) position of the motor. If this readback field is configured, the
-<b>sscan</b> record will confirm after each movement that the actual position is
-within a specified delta to the desired position. The delta is specified in the
-<tt>R1DL</tt> -<tt>R4DL</tt>  fields. If the delta is exceeded, the scan will
-abort and the record will go into an alarm state. A text field within the
-record (<tt>SMSG</tt>) will inform the operator of the error condition.
+<tt>R1PV</tt>-<tt>R4PV</tt>  fields that corresponds to the actual (or measured)
+position of the motor. If this readback field is configured, the sscan record
+will confirm after each movement that the readback position differs by no more
+than a specified value from the desired position. The difference limit is
+specified in the <tt>R1DL</tt> -<tt>R4DL</tt> fields.  If it's zero, no check is
+performed.  Otherwise, if the difference limit is exceeded, the scan will abort
+and the record will go into an alarm state. A text field within the record
+(<tt>SMSG</tt>) will inform the operator of the error condition.
 
 <P>The positioner-readback field normally contains the name of a PV from which
 readback values are read, but it may also contain the static text "TIME", or
-"time".  In this case, the <b>sscan</b> record sets the scalar readback
+"time".  In this case, the sscan record sets the scalar readback
 field <tt>R<i>n</i>CV</tt> to the time in seconds since the beginning of the scan, and
 fills the readback array <tt>P<i>n</i>RA</tt> with those values.
 
@@ -1305,7 +1519,7 @@ fills the readback array <tt>P<i>n</i>RA</tt> with those values.
 
 <tr>
 <td><tt>P<i>n</i>SM</tt></td>
-<td>Positioner <i>n</i> Step Mode</td>
+<td>Positioner <i>n</i> step-mode</td>
 <td>Menu ("LINEAR", "TABLE", "FLY")</td>
 <td>Yes</td>
 <td>"LINEAR" (<tt>0</tt>)</td>
@@ -1483,36 +1697,12 @@ fills the readback array <tt>P<i>n</i>RA</tt> with those values.
 
 <tr>
 <td><tt>R<i>n</i>DL</tt> </td>
-<td>Readback <i>n</i> Delta&nbsp;</td>
+<td>Readback <i>n</i> Difference Limit&nbsp;</td>
 <td>DOUBLE</td>
 <td>Yes</td>
 <td>0</td>
 <td>Yes</td>
 <td>Yes</td>
-<td>No</td>
-<td>No</td>
-</tr>
-
-<tr>
-<td><tt>R<i>n</i>CV</tt></td>
-<td>Readback <i>n</i> Current Value</td>
-<td>DOUBLE</td>
-<td>No</td>
-<td>0</td>
-<td>Yes</td>
-<td>No</td>
-<td>Yes</td>
-<td>No</td>
-</tr>
-
-<tr>
-<td><tt>R<i>n</i>LV</tt></td>
-<td>Readback <i>n</i> Last Value</td>
-<td>DOUBLE</td>
-<td>No</td>
-<td>0</td>
-<td>Yes</td>
-<td>No</td>
 <td>No</td>
 <td>No</td>
 </tr>
@@ -1591,23 +1781,24 @@ data.
 
 <p><a NAME="HEADING_2-2-1"></a>
 
-<h3> 2.2.1 Linear Mode</h3>
+<h3> 2.2.1 <tt>LINEAR</tt> Mode</h3>
 
-If a positioner's step mode field (<tt>P1SM</tt>) specifies <tt>Linear</tt>, a
-scan can be fully defined by three parameters, e.g., the start position
-(<tt>P1SP</tt>), the step increment (<tt>P1SI</tt>), and the number of data
-points (<tt>NPTS</tt>). A scan involving <i>N</i> positioners is defined by
-merely 2<i>N</i>+1 parameters, since <tt>NPTS</tt> applies to all positioners.
-For the convenience of interactive users, and to support channel access clients
-that define scans differently, the first positioner can be specified by as many
-as six parameters: starting position (<tt>P1SP</tt>), ending position
-(<tt>P1EP</tt>), center position (<tt>P1CP</tt>), scan  width (<tt>P1WD</tt>), step increments (<tt>P1SP</tt>), and <tt>NPTS</tt>. For the other three
-positioners, the same parameters are available minus the <tt>NPTS</tt> field,
-since that applies to all. The parameters that pertain to the same positioner
-are a set. The record imposes an upper limit (<tt>MPTS</tt>) on <tt>NPTS</tt>.
-Both <tt>MPTS</tt> and <tt>NPTS</tt> are configured by the user. The positioner
-width, configurable in the <tt>P1WD</tt> -<tt>P4WD</tt>  fields, may be
-negative.
+If a positioner's step-mode field (e.g., <tt>P1SM</tt>) has the value
+<tt>LINEAR</tt>, a scan can be fully defined by three parameters, e.g., the
+start position (<tt>P1SP</tt>), the step increment (<tt>P1SI</tt>), and the
+number of data points (<tt>NPTS</tt>). A scan involving <i>N</i> positioners is
+defined by merely 2<i>N</i>+1 parameters, since <tt>NPTS</tt> applies to all
+positioners. For the convenience of interactive users, and to support channel
+access clients that define scans differently, the first positioner can be
+specified by as many as six parameters: starting position (<tt>P1SP</tt>),
+ending position (<tt>P1EP</tt>), center position (<tt>P1CP</tt>), scan  width
+(<tt>P1WD</tt>), step increments (<tt>P1SP</tt>), and <tt>NPTS</tt>. For the
+other three positioners, the same parameters are available minus the
+<tt>NPTS</tt> field, since that applies to all. The parameters that pertain to
+the same positioner are a set. The record imposes an upper limit (<tt>MPTS</tt>)
+on <tt>NPTS</tt>. Both <tt>MPTS</tt> and <tt>NPTS</tt> are configured by the
+user. The positioner width, configurable in the <tt>P1WD</tt> -<tt>P4WD</tt> 
+fields, may be negative.
 
 <p>For <i>n</i> in [1..4]:<br>
 
@@ -1695,7 +1886,7 @@ redundant parameters anyway.
 
 <p>There is no unique prescription for removing inconsistencies among redundant
 parameters, and no hard-coded set of preferences among parameters is likely to
-please everyone. Therefore, the <b>sscan</b> record allows the user to "freeze"
+please everyone. Therefore, the sscan record allows the user to "freeze"
 parameters with flags so that they will not be changed by the record's internal
 attempts to ensure consistency among the parameter set. Frozen parameters can
 be changed by the user and by any other client, but not by the record. It is
@@ -1834,11 +2025,12 @@ easily, but advanced users are not limited in flexibility.
 <!---------------------------------------------------------------------------->
 
 <p><a NAME="HEADING_2-2-2"></a>
-<h3>2.2.2 Table Mode</h3>
+<h3>2.2.2 <tt>TABLE</tt> Mode</h3>
 
-In <tt>Table</tt> mode, the user provides the values for the
-<tt>P<i>n</i>PA</tt> arrays prior to the start of a scan. These arrays are used
-only in <tt>Table</tt> mode.
+If a positioner's step-mode field (e.g., <tt>P1SM</tt>) has the value
+<tt>TABLE</tt> mode, the user specifies all positions to be visited during the
+scan by writing them into an array (e.g., <tt>P1PA</tt>) prior to the start of a
+scan. These arrays are used only in <tt>TABLE</tt> mode.
 
 <p>For <i>n</i> in [1..4]:<br>
 
@@ -1868,6 +2060,80 @@ only in <tt>Table</tt> mode.
 </tr>
 </table>
 
+<P>To load an array of positions into <tt>P<i>n</i>PA</tt>, you can use any
+channel-access client that knows how to write to numeric arrays.  There are
+several versions of the command-line program caput that can do this.  For one
+version, you specify the switch <code>-m</code>, and write a comma-separated
+list of values:
+
+<pre>caput -m 2idb1:scan1.P1PA 0.,1.,2.</pre>
+
+works.  For another version, you specify the flag <code>-a</code>, specify the
+number of values to be written, and specify the values separated by spaces:
+
+<pre>caput -a 2idb1:scan1.P1PA 3 0. 1. 2.</pre>
+
+<P>You might also do this from Python, using <a href="http://cars9.uchicago.edu/software/python/pyepics3">pyepics</a>:
+
+<pre>
+wheaties% setenv LD_LIBRARY_PATH /home/oxygen/MOONEY/epics/base-3.14.12.1/lib/solaris-sparc
+wheaties% python
+>>> import epics
+>>> epics.caput("xxx:scan1.P1PA", [1,2,3,4,5,6,7])
+>>> epics.caget("xxx:scan1.P1PA")
+array([ 1.,  2.,  3.,  4.,  5.,  6.,  7.,  0.,  0.,  0.,  0.,  0.,  0.,
+...
+</pre>
+
+<!---------------------------------------------------------------------------->
+
+<p><a NAME="HEADING_2-2-3"></a>
+<h3>2.2.3 <tt>FLY</tt> Mode</h3>
+
+If a positioner's step-mode field (e.g., <tt>P1SM</tt>) has the value
+<tt>FLY</tt>, the positioner is said to be in "fly mode", and it will make only
+two motions during the scan. The first motion is the same as that of a linear-
+or table-mode positioner: the sscan record sends the positioner to its start
+point, and waits for it to get there.  The next motion is different: when the
+sscan record triggers detectors for the first time, it also launches fly-mode
+positioners to their end points.  The sscan record doesn't wait for fly-mode
+positioners to reach their end points, and fly-mode positioners are not
+commanded again, unless the Positioner After-Scan Mode (<tt>PASM</tt>) requires
+this (for example, by specifying that all positioners return to their pre-scan
+positions).
+
+<P>Note that the PV <tt>ACQT</tt> (ACQuisition Type) also affects positioner
+motion: when <tt>ACQT</tt>==<tt>1D ARRAY</tt>, all positioners are effectively
+in fly mode, because the sscan record will acquire only one (array valued) data
+point.   In this case, the PVs <tt>P<i>n</i>SM</tt> serve only to determine the
+starting and ending points of the positioners' motions, as detailed in the
+following table for positioner 1:
+
+<P><table BORDER> <tr><th>scan mode (P1SM)<th>acquisition type (ACQT)<th>start
+point<th>end point<th>motion <tr><td colspan 4>
+<tr><td>LINEAR<td>SCALAR<td>P1SP<td>P1EP<td>point-to-point
+<tr><td>TABLE<td>SCALAR<td>P1PA[0]<td>P1PA[npts-1]<td>point-to-point
+<tr><td>FLY<td>SCALAR<td>P1SP<td>P1EP<td>fly <tr><td colspan 4>
+<tr><td>LINEAR<td>1D ARRAY<td>P1SP<td>P1EP<td>fly <tr><td>TABLE<td>1D
+ARRAY<td>P1PA[0]<td>P1PA[npts-1]<td>fly <tr><td>FLY<td>1D
+ARRAY<td>P1SP<td>P1EP<td>fly </table>
+
+<P>While fly-mode positioners are moving toward their end points, the sscan
+record goes through all the normal scan phases -- triggering detectors and
+waiting for them to finish, reading any detectors and positioner readbacks,
+sending any non-fly-mode positioners to their next positions and waiting for
+them to get there.
+
+
+<P>If a fly-mode positioner has a specified readback PV (<tt>R<i>n</i>PV</tt>),
+its value will be read during the scan, but in many cases the value will be only
+approximately correct, because the positioner is in motion during the read, and
+because the sscan record doesn't cause the readback PV to process.  If the
+positioner is a motor, for example, and the readback PV is posted periodically,
+the sscan record will read values that are imperfectly synchronized with the
+scan.
+
+
 <!---------------------------------------------------------------------------->
 
 <p><a NAME="HEADING_2-3"></a>
@@ -1875,10 +2141,10 @@ only in <tt>Table</tt> mode.
 <h2>2.3. Detector-Trigger Fields</h2>
 
 If valid process variable names are entered into the detector trigger fields
-(<tt>T1PV</tt>-<tt>T4PV</tt> ) fields, the <b>sscan</b> record will write the
+(<tt>T1PV</tt>-<tt>T4PV</tt> ) fields, the sscan record will write the
 specified command data (the floating point numbers <tt>T1CD</tt>-<tt>T4CD</tt>
 ) to those process variables between the positioning phase and the data
-acquisition phase.  If no detector trigger field contains a valid PV, the <b>sscan</b>
+acquisition phase.  If no detector trigger field contains a valid PV, the sscan
 record will skip this step and acquire the data immediately.<p>
 
 For <i>n</i> in [1..4]:<br>
@@ -1939,11 +2205,11 @@ For <i>n</i> in [1..4]:<br>
 
 <h2>2.4. Delay Fields</h2>
 
-Generally, after the <b>sscan</b> record has written to positioners and waited for all
+Generally, after the sscan record has written to positioners and waited for all
 positioners to declare themselves done, it waits an additional settling time,
 specified in seconds by the <tt>PDLY</tt> field, before entering the next scan
 phase. Similarly, after detector triggers have declared themselves done, the
-<b>sscan</b> record waits for <tt>DDLY</tt> seconds before reading positioner and
+sscan record waits for <tt>DDLY</tt> seconds before reading positioner and
 detector data.
 
 <P>If no positioners are defined, then <tt>PDLY</tt> is ignored.  If no
@@ -1957,17 +2223,17 @@ does not apply to after-scan positioner motions.
 <h2>2.5. Client Handshaking Fields</h2>
 
 Immediately before data are to be read from positioners and detectors, the
-<b>sscan</b> record checks the <tt>WCNT</tt> field.  If this field is nonzero, the
-<b>sscan</b> record waits until it gets set to zero before reading data and continuing
+sscan record checks the <tt>WCNT</tt> field.  If this field is nonzero, the
+sscan record waits until it gets set to zero before reading data and continuing
 with the scan.  The <tt>WCNT</tt> is not directly writable by clients. 
 Instead, a client wanting to put a hold on the scan writes a <tt>1</tt> to the
 <tt>WAIT</tt> field, which increments <tt>WCNT</tt> by one.  When the client is
 ready for the scan to continue, it writes a <tt>0</tt> to the <tt>WAIT</tt> field,
 which decrements the <tt>WCNT</tt> field.  This mechanism allows several
-clients independently to handshake with the <b>sscan</b> record, and it is intended or
+clients independently to handshake with the sscan record, and it is intended or
 two purposes:
 
-<P>1) A data-storage client can put a hold on a <b>sscan</b> record whose data it is
+<P>1) A data-storage client can put a hold on a sscan record whose data it is
 writing by writing to the <tt>AWAIT</tt> field.  This hold doesn't prevent the
 record from executing, or even from acquiring new data, but it does prevent the
 record from switching data buffers.
@@ -1982,13 +2248,13 @@ putNotify mechanism can declare completion using <tt>WAIT</tt>.
 
 <P>A client may not be able to write quickly enough to <tt>WAIT</tt> to ensure
 that the scan holds before data acquisition.  In this case, the client can
-cause the <b>sscan</b> record to write automatically to <tt>WCNT</tt> whenever
+cause the sscan record to write automatically to <tt>WCNT</tt> whenever
 detectors are triggered, by incrementing the value of the <tt>AWCT</tt> field. 
 The client must remember to decrement <tt>AWCT</tt> before exiting, otherwise
 scans will hang waiting for a nonexistent client.
 
 <P>A client may not be able to write quickly enough to <tt>AWAIT</tt> to ensure
-that the scan holds before switching buffers.  In this case, the <b>sscan</b> record
+that the scan holds before switching buffers.  In this case, the sscan record
 can be made to write automatically to <tt>AWAIT</tt> whenever data are posted,
 by setting the <tt>AAWAIT</tt> field to <tt>1</tt>. 
 
@@ -2090,7 +2356,7 @@ by setting the <tt>AAWAIT</tt> field to <tt>1</tt>.
 <h2>2.6 Detector Fields</h2>
 <hr>
 
-Each <b>sscan</b> record can acquire data from up to 74 process variables (70
+Each sscan record can acquire data from up to 74 process variables (70
 detector signals, <tt>D01</tt>-<tt>D70</tt>, and four positioner readbacks,
 <tt>R1</tt>-<tt>R4</tt>) at each point in the scan. These data will most
 commonly be from a detector or from a position readback (which would record the
@@ -2099,7 +2365,7 @@ position array).
 
 <P>Although positioner readbacks, <tt>R1</tt>-<tt>R4</tt>, are normally used to
 confirm the position at which data actually were acquired (as opposed to the
-position to which the <b>sscan</b> record <i>told</i> a positioner to go), they
+position to which the sscan record <i>told</i> a positioner to go), they
 can be used to record any data.  These four variables are the only place to
 record double-precision scan data.  Note that these readbacks are not
 full-fledged detectors, because the sscan record currently cannot read into them
@@ -2119,13 +2385,13 @@ record will post them when the scan is finished.)
 record after the completion of each inner scan and associate these data with
 the current outer-scan information.  (Let's call the inner scan 'x', and the
 outer scan 'y'.)  This will allow the client to display data after each x scan.
-The <b>sscan</b> record will buffer the data for only one x scan, so the client must
+The sscan record will buffer the data for only one x scan, so the client must
 read the arrays before the next x scan is completed.  If the scan is too fast
 for this, see <a href="#HEADING_1-3-4">section 1.3.4 - Handshaking with
 data-storage clients</a>
 
 <p>During slow scans, the application program may want to display scan progress
-point-by-point. The <b>sscan</b> record posts monitors on fields that it updates each
+point-by-point. The sscan record posts monitors on fields that it updates each
 point, but it doesn't post point-by-point monitors faster than 20 times per
 second. If a scan is proceeding at a rate less than 20 points per second, every
 point will be posted. If a scan is proceeding at 100 steps per second, scalar
@@ -2346,14 +2612,20 @@ data will contain every point at the completion of the scan.
 <P>A scan is started when a client writes <tt>1</tt> to the EXSC field.
 
 <P>Prior to beginning an actual scan, the record can be commanded to check the
-scan parameters to ensure that all positioner requests are within reasonable
-limits. This is done by writing <tt>1</tt> to the <tt>CMND</tt> field. The record will
-do a "dry run" by calculating every positioner value (or looking it up in the
-table) and comparing it with the high range and low range values
+scan parameters to ensure that all positioner requests are within positioner
+limits. This is done by writing <tt>1</tt> to the <tt>CMND</tt> field. The
+record will do a "dry run" by calculating every positioner value (or looking it
+up in the table) and comparing it with the high range and low range values
 (<tt>P1HR</tt>-<tt>P4HR</tt> and <tt><tt>P1LR</tt></tt>-<tt>P4LR</tt>)
 associated with that positioner's Process Variable. (Drive limits are an
 attribute of most process variables).  If any step would exceed the drive
-limits, the operator is notified via the <tt>SMSG</tt> field.
+limits, the operator is notified via the <tt>SMSG</tt> field.  (Note that the
+sscan record does not retrieve positioner limits whenever they are changed, but
+only when the sscan record connects (makes a link) to the positioner.  The sscan
+record disconnects and reconnects to positioners at the beginning of every
+scan for this reason, though it declines to do this if the most recent scan
+ended less than <code>sscanRecordLookupTime</code> seconds ago.  The default
+value of <code>sscanRecordLookupTime</code> is 1.)
 
 
 <table BORDER>
@@ -2406,11 +2678,12 @@ limits, the operator is notified via the <tt>SMSG</tt> field.
 
 <tr><td>0<td>Clear the State Message field (<tt>SMSG</tt>)</td></tr>
 
-<tr><td>1<td>Execute a "dry run", checking the desired position against the
-range limits for each positioner</td></tr>
+<tr><td>1<td>Execute a "dry run", checking positioners against their
+limits</td></tr>
 
-<tr><td>2<td>Check to see if limits would be violated if the currently
-programmed scan were actually performed</td></tr>
+<tr><td>2<td>Show a preview of the scan, using the positioner and detector
+arrays DnnCA and PnCA:  Write data-point numbers to DnnCA, and corresponding
+positioner values to PnCA.</td></tr>
 
 <tr><td>3<td>Clear all PVs, freeze flags, modes, switches, etc.</td></tr>
 
@@ -2581,39 +2854,27 @@ detectors.</td></tr>
 <tr><td>7</td><td>WAIT:DETECTORS</td><td>We've triggered detectors.  Now we're
 waiting for their callbacks to come in.</td></tr>
 
-<tr><td>8</td><td>START_FLY</td><td>This is an on-the-fly scan</td></tr>
-
-<tr><td>9</td><td>RETRACE_MOVE</td><td>The next thing to do it send positioners
+<tr><td>8</td><td>RETRACE_MOVE</td><td>The next thing to do it send positioners
 to their post-scan positions.</td></tr>
 
-<tr><td>10</td><td>WAIT:RETRACE</td><td>We've told positioners to go to their
+<tr><td>9</td><td>WAIT:RETRACE</td><td>We've told positioners to go to their
 post-scan positions.  Now we're waiting for their callbacks to come
 in.</td></tr>
 
-<tr><td>11</td><td>DO:AFTER_SCAN</td><td>The next thing to do is trigger the
+<tr><td>10</td><td>DO:AFTER_SCAN</td><td>The next thing to do is trigger the
 after-scan link.</td></tr>
 
-<tr><td>12</td><td>WAIT:AFTER_SCAN</td><td>The after-scan link has been
+<tr><td>11</td><td>WAIT:AFTER_SCAN</td><td>The after-scan link has been
 triggered.  We're waiting for its callback to come in.</td></tr>
 
-<tr><td>13</td><td>SCAN_DONE</td><td>The scan is finished.</td></tr>
+<tr><td>12</td><td>SCAN_DONE</td><td>The scan is finished.</td></tr>
 
-<tr><td>14</td><td>WAIT:SAVE_DATA</td><td>The scan is waiting for
-<tt>AWAIT<tt>&nbsp;->&nbsp;<tt>0</tt> so it can switch data buffers.</td></tr>
-
-<tr><td>15</td><td>SCAN_PENDING</td><td>A scan has been commanded, but has not
+<tr><td>13</td><td>SCAN_PENDING</td><td>A scan has been commanded, but has not
 yet started</td></tr>
 
-<tr colspan=3><td colspan=3>The remaining menu choices can't be displayed as
-strings by CA clients, but should be displayed as numbers.</td></tr>
+<tr><td>14</td><td>PREVIEW</td><td>We're doing a preview of the scan.</td></tr>
 
-<tr><td>16</td><td>TRIG_ARRAY_READ</td><td>The scan is about to trigger array
-reads (A1PV)</td></tr>
-
-<tr><td>17</td><td>WAIT:ARRAY_READ</td><td>The scan is waiting for a callback
-from the array-read PV</td></tr>
-
-<tr><td>18</td><td>PREVIEW</td><td>We're doing a preview of the scan.</td></tr>
+<tr><td>15</td><td>RECORD SCALAR DATA</td><td>Record scalar data.</td></tr>
 
 </table>
 
@@ -2637,24 +2898,24 @@ would get last scan's data.</td></tr>
 the callback is still outstanding.   <br>If a client should read an array now,
 it would get last scan's data.</td></tr>
 
-<tr><td>2</td><td>ARRAY_GET_CALLBACK_WAIT</td><td>recDynLinkGetCallback() has been
+<tr><td>3</td><td>ARRAY_GET_CALLBACK_WAIT</td><td>recDynLinkGetCallback() has been
 issued for array-valued PVs, and one or more callbacks are still outstanding.
 </td></tr>
 
-<tr><td>3</td><td>RECORD_ARRAY_DATA</td><td>It's time to read array data.  If
+<tr><td>4</td><td>RECORD_ARRAY_DATA</td><td>It's time to read array data.  If
 any array-valued PVs exist, the data state will change to
 ARRAY_GET_CALLBACK_WAIT while waiting for the callbacks.</td></tr>
 
-<tr><td>3</td><td>SAVE_DATA_WAIT</td><td>Arrays are filled, but cannot be
+<tr><td>5</td><td>SAVE_DATA_WAIT</td><td>Arrays are filled, but cannot be
 posted yet because the data-storage client is not finished writing last scan's
 data.   <br>If a client should read an array now, it would get last scan's
 data.</td></tr>
 
-<tr><td>4</td><td>PACKED</td><td>Arrays are filled, and buffers have been
+<tr><td>6</td><td>PACKED</td><td>Arrays are filled, and buffers have been
 switched, but they haven't yet been posted.   <br>If a client should read an
 array now, it would get last scan's data.</td></tr>
 
-<tr><td>5</td><td>POSTED</td><td>Data arrays have been posted.  <br>Now the
+<tr><td>7</td><td>POSTED</td><td>Data arrays have been posted.  <br>Now the
 data-storage client can read this scan's array data.</td></tr>
 
 </table>
@@ -2754,7 +3015,7 @@ data-storage client can read this scan's array data.</td></tr>
 
 <tr>
 <td><tt>VERS</tt></td>
-<td>Code Version</td>
+<td>Code Version (This field has not been kept up to date.)</td>
 <td>FLOAT</td>
 <td>No</td>
 <td>1.0</td>
