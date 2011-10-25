@@ -15,20 +15,22 @@ TEMPLATE_TOP=$(EPICS_BASE)/templates/makeBaseApp/top
 #INSTALL_LOCATION_APP=$(TOP)/target
 
 # synApps support modules
-SUPPORT=/home/oxygen/DKLINE/EPICS/dev/synApps_5_4/support
+SUPPORT=/home/oxygen/MOONEY/epics/synAppsSVN/support
+-include $(TOP)/../configure/SUPPORT.$(EPICS_HOST_ARCH)
 
 # Modules required for building module
-ASYN=/home/oxygen/DKLINE/EPICS/dev/synApps_5_4/support/asyn/4-10
-STD=/home/oxygen/DKLINE/EPICS/dev/synApps_5_4/support/std/2-7
-IP=/home/oxygen/DKLINE/EPICS/dev/synApps_5_4/support/ip/2-9
-STREAM=/home/oxygen/DKLINE/EPICS/dev/synApps_5_4/support/stream/2-4
-IPAC=/home/oxygen/DKLINE/EPICS/dev/synApps_5_4/support/ipac/2-10
+ASYN=$(SUPPORT)/asynSVN
+STD=$(SUPPORT)/std-3-0
+IP=$(SUPPORT)/ip-2-11
+STREAM=$(SUPPORT)/stream-2-4-5
+IPAC=$(SUPPORT)/ipac-2-11
 
 # Modules required for building module application
-AUTOSAVE=/home/oxygen/DKLINE/EPICS/dev/synApps_5_4/support/autosave/4-5
+AUTOSAVE=$(SUPPORT)/autosave-4-8
 
 # EPICS_BASE usually appears last so other apps can override stuff:
-EPICS_BASE=/home/oxygen/DKLINE/EPICS/dev/base-3.14.10
+EPICS_BASE=/home/oxygen/MOONEY/epics/base-3.14.12.1
+-include $(TOP)/../configure/EPICS_BASE.$(EPICS_HOST_ARCH)
 
 #Capfast users may need the following definitions
 #CAPFAST_TEMPLATES=

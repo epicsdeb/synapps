@@ -41,9 +41,9 @@
 
 
  Source control info:
-    Modified by:    dkline
-                    2009/09/16 18:58:06
-                    1.6
+    Modified by:    $Author: dkline $
+                    $Date: 2009/03/11 18:43:29 $
+                    $Revision: 1.3 $
 
  =============================================================================
  History:
@@ -55,7 +55,8 @@
  2009-Mar-11  DMK  Removed calls to free() during initialization to eliminate
                    a segmentation fault (on soft IOCs) when a DG645 is not
                    connected. This was successful on an EBRICK. 
- 2009-Sep-09  DMK  Modified to eliminate RTEMS compiler warnings.
+ 2009-Mar-30  DMK  Allow multiple instances of instrument.
+ 2010-Sep-30  DMK  Solidified multiple instance implementation.
  -----------------------------------------------------------------------------
 
 */
@@ -83,7 +84,6 @@
 #include <epicsStdio.h>
 #include <cantProceed.h>
 #include <epicsString.h>
-#include <epicsExport.h>
 #include <epicsThread.h>
 
 
@@ -96,11 +96,14 @@
 #include <asynOctetSyncIO.h>
 #include <asynUInt32Digital.h>
 
+/* epicsExport.h must come last */
+#include <epicsExport.h>
+
 
 /* Define symbolic constants */
 #define TIMEOUT         (3.0)
 #define BUFFER_SIZE     (100)
-
+#define INSTANCES       (10)
 
 /* Forward struct declarations */
 typedef struct Port Port;
@@ -126,6 +129,7 @@ struct Port
 {
     char* myport;
     char* ioport;
+    int   index;
     int   ioaddr;
     int   discos;
     int   writeReads;
@@ -154,7 +158,7 @@ struct Port
 struct Status
 {
     int code;
-    const char* msg;
+    char* msg;
 };
 
 
@@ -166,14 +170,14 @@ struct Command
     int channel;
     Port* pport;
 
-    const char* readCommand;
+    char* readCommand;
     asynStatus (*readFunc)(Command* pcommand,asynUser* pasynUser,char* inpBuf,int inputSize,int* eomReason,ifaceType asynIface);
     int (*readConv)(asynUser* pasynUser,char* inpBuf,int maxchars,void* outBuf,ifaceType asynIface);
 
-    const char* writeCommand;
+    char* writeCommand;
     asynStatus (*writeFunc)(Command* pcommand,asynUser* pasynUser,void* data,ifaceType asynIface);
 
-    const char* desc;
+    char* desc;
 };
 
 
@@ -212,12 +216,12 @@ static asynStatus readOctet(void* ppvt,asynUser* pasynUser,char* data,size_t max
 
 
 /* Forward references for external asynOctet interface */
-static asynStatus writeOnly(Port* pport,asynUser* pasynUser,const char* outBuf);
-static asynStatus writeRead(Port* pport,asynUser* pasynUser,const char* outBuf,char* inpBuf,int inputSize,int *eomReason);
+static asynStatus writeOnly(Port* pport,asynUser* pasynUser,char* outBuf);
+static asynStatus writeRead(Port* pport,asynUser* pasynUser,char* outBuf,char* inpBuf,int inputSize,int *eomReason);
 
 
 /* Forward references for utility methods */
-static const char* findStatus(int code);
+static char* findStatus(int code);
 static Command* findCommand(int command);
 
 /* Forward references for command table methods */
@@ -244,8 +248,8 @@ static asynStatus writeChannelDelay(Command* pcommand,asynUser* pasynUser,void* 
 
 
 /* Define local variants */
-static Port* pports = NULL;
-static const char* delayText[] = {"T0", "T1", "A", "B", "C", "D", "E", "F", "G", "H"};
+static Port* pports[INSTANCES] = {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL};
+static char* delayText[] = {"T0", "T1", "A", "B", "C", "D", "E", "F", "G", "H"};
 static Status statusMsg[] =
 {
     {  0, "STATUS OK"},
@@ -500,16 +504,17 @@ static int commandLen=sizeof(commandTable)/sizeof(Command);
 int drvAsynDG645(const char* myport,const char* ioport,int ioaddr)
 {
     Port* pport;
-    int len,i,j,eomReason;
+    int len,i,j,eomReason,index;
     char inpBuf[BUFFER_SIZE];
     asynUser* pasynUser;
     asynOctet* pasynOctet;
     asynFloat64* pasynFloat64;
     asynUInt32Digital* pasynUInt32;
 
-    if( pports )
+    for(index=0;index<INSTANCES;++index) if( pports[index]==NULL ) break;
+    if( index==INSTANCES )
     {
-        printf("drvAsynDG645:init %s: interface already established\n",myport);
+        printf("drvAsynDG645:init %s: all interfaces already established\n",myport);
         return( -1 );
     }
 
@@ -531,6 +536,7 @@ int drvAsynDG645(const char* myport,const char* ioport,int ioaddr)
     pport->myport = (char*)(pasynOctet + 1);
     pport->ioport = (char*)(pport->myport + i);
 
+    pport->index     = index;
     pport->ioaddr    = ioaddr;
     pport->pasynUser = pasynUser;
     pport->syncLock  = epicsMutexMustCreate();
@@ -628,9 +634,7 @@ int drvAsynDG645(const char* myport,const char* ioport,int ioaddr)
 
     /* Complete initialization */
     pport->init=1;
-    for( i=0; i<commandLen; ++i ) commandTable[i].pport=pport;
-
-    pports = pport;
+    pports[index] = pport;
     return( 0 );
 }
 
@@ -638,7 +642,7 @@ int drvAsynDG645(const char* myport,const char* ioport,int ioaddr)
 /****************************************************************************
  * Define private utility methods
  ****************************************************************************/
-static const char* findStatus(int code)
+static char* findStatus(int code)
 {
     for(int i=0; i<statusLen; ++i) if( statusMsg[i].code==code ) return( statusMsg[i].msg );
     return( NULL );
@@ -665,7 +669,7 @@ static int cvtCopyText(asynUser* pasynUser,char* inpBuf,int maxchars,void* outBu
 static int cvtErrorText(asynUser* pasynUser,char* inpBuf,int maxchars,void* outBuf,ifaceType asynIface)
 {
     int v=atoi(inpBuf);
-    const char* m=findStatus(v);
+    char* m=findStatus(v);
     Command* pcommand=(Command*)pasynUser->drvUser;
 
     if( m ) {strcpy((char*)outBuf,m);pcommand->pport->error=v;} else {strcpy((char*)outBuf,"*ERR*");pcommand->pport->error=0;}
@@ -807,7 +811,7 @@ static void report(void* ppvt,FILE* fp,int details)
     int i;
     Port* pport = (Port*)ppvt;
 
-    fprintf(fp,"    %s\n",pport->ident);
+    fprintf(fp,"    %s index %d\n",pport->ident,pport->index);
     fprintf(fp,"    conns %d refs %d pvs %d discos %d writeReads %d writeOnlys %d\n",pport->conns,pport->refs,pport->pvs,pport->discos,pport->writeReads,pport->writeOnlys);
     fprintf(fp,"    support %s initialized\n",(pport->init)?"IS":"IS NOT");
     fprintf(fp,"    myport \"%s\" ioport \"%s\"\n",pport->myport,pport->ioport);
@@ -894,6 +898,7 @@ static asynStatus writeFloat64(void* ppvt,asynUser* pasynUser,epicsFloat64 value
     if( pasynManager->getAddr(pasynUser,&addr)) return( asynError );
 
     epicsMutexMustLock(pport->syncLock);
+    pcommand->pport = pports[pport->index];
     status = pcommand->writeFunc(pcommand,pport->pasynUser,&value,ifaceAsynFloat64);
     epicsMutexUnlock(pport->syncLock);
 
@@ -911,6 +916,7 @@ static asynStatus readFloat64(void* ppvt,asynUser* pasynUser,epicsFloat64* value
     if( pasynManager->getAddr(pasynUser,&addr)) return( asynError );
 
     epicsMutexMustLock(pport->syncLock);
+    pcommand->pport = pports[pport->index];
     status = pcommand->readFunc(pcommand,pport->pasynUser,inpBuf,sizeof(inpBuf),&eom,ifaceAsynFloat64);
     epicsMutexUnlock(pport->syncLock);
 
@@ -935,6 +941,7 @@ static asynStatus writeUInt32(void* ppvt,asynUser* pasynUser,epicsUInt32 value,e
     if( pasynManager->getAddr(pasynUser,&addr)) return( asynError );
 
     epicsMutexMustLock(pport->syncLock);
+    pcommand->pport = pports[pport->index];
     status = pcommand->writeFunc(pcommand,pport->pasynUser,&value,ifaceAsynUInt32);
     epicsMutexUnlock(pport->syncLock);
 
@@ -952,6 +959,7 @@ static asynStatus readUInt32(void* ppvt,asynUser* pasynUser,epicsUInt32* value,e
     if( pasynManager->getAddr(pasynUser,&addr)) return( asynError );
 
     epicsMutexMustLock(pport->syncLock);
+    pcommand->pport = pports[pport->index];
     status = pcommand->readFunc(pcommand,pport->pasynUser,inpBuf,sizeof(inpBuf),&eom,ifaceAsynUInt32);
     epicsMutexUnlock(pport->syncLock);
 
@@ -980,6 +988,7 @@ static asynStatus writeOctet(void *ppvt,asynUser *pasynUser,const char *data,siz
     if( pasynManager->getAddr(pasynUser,&addr)) return( asynError );
 
     epicsMutexMustLock(pport->syncLock);
+    pcommand->pport = pports[pport->index];
     status = pcommand->writeFunc(pcommand,pport->pasynUser,(char*)data,ifaceAsynOctet);
     epicsMutexUnlock(pport->syncLock);
 
@@ -999,6 +1008,7 @@ static asynStatus readOctet(void* ppvt,asynUser* pasynUser,char* data,size_t max
     if( pasynManager->getAddr(pasynUser,&addr)) return( asynError );
 
     epicsMutexMustLock(pport->syncLock);
+    pcommand->pport = pports[pport->index];
     status = pcommand->readFunc(pcommand,pport->pasynUser,inpBuf,sizeof(inpBuf),eom,ifaceAsynOctet);
     epicsMutexUnlock(pport->syncLock);
 
@@ -1012,7 +1022,7 @@ static asynStatus readOctet(void* ppvt,asynUser* pasynUser,char* data,size_t max
 /****************************************************************************
  * Define private DG645 external interface asynOctet methods
  ****************************************************************************/
-static asynStatus writeOnly(Port* pport,asynUser* pasynUser,const char* outBuf)
+static asynStatus writeOnly(Port* pport,asynUser* pasynUser,char* outBuf)
 {
     asynStatus status;
     size_t nActual,nRequested=strlen(outBuf);
@@ -1037,7 +1047,7 @@ static asynStatus writeOnly(Port* pport,asynUser* pasynUser,const char* outBuf)
 
     return( status );
 }
-static asynStatus writeRead(Port* pport,asynUser* pasynUser,const char* outBuf,char* inpBuf,int inputSize,int* eomReason)
+static asynStatus writeRead(Port* pport,asynUser* pasynUser,char* outBuf,char* inpBuf,int inputSize,int* eomReason)
 {
     asynStatus status;
     size_t nWrite,nRead,nWriteRequested=strlen(outBuf);

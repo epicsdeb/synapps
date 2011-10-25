@@ -3,7 +3,6 @@ include $(TOP)/configure/CONFIG
 
 #----------------------------------------
 #  ADD MACRO DEFINITIONS AFTER THIS LINE
-include $(TOP)/configure/RELEASE
 
 #----------------------------------------------------
 #  Optimization of db files using dbst (DEFAULT: NO)

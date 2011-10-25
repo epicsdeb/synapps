@@ -35,9 +35,9 @@
             timeout - Communication timeout (in sec)
 
  Source control info:
-    Modified by:    dkline
-                    2009/02/26 13:18:50
-                    1.3
+    Modified by:    $Author: dkline $
+                    $Date: 2009-02-26 13:18:50 $
+                    $Revision: 1.3 $
 
  =============================================================================
  History:
@@ -79,9 +79,11 @@
 
 
 /* EPICS synApps/Asyn related include files */
-#include <epicsExport.h>
 #include "asynDriver.h"
 #include "asynOctet.h"
+
+/* epicsExport.h must come last */
+#include <epicsExport.h>
 
 
 /* Define symbolic constants */

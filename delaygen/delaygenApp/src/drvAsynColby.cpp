@@ -62,9 +62,9 @@
 
 
  Source control info:
-    Modified by:    dkline
-                    2009/09/16 18:58:06
-                    1.6
+    Modified by:    $Author: dkline $
+                    $Date: 2009-09-16 18:58:06 $
+                    $Revision: 1.6 $
 
  =============================================================================
  History:
@@ -104,7 +104,6 @@
 #include <epicsStdio.h>
 #include <cantProceed.h>
 #include <epicsString.h>
-#include <epicsExport.h>
 #include <epicsThread.h>
 
 
@@ -116,6 +115,9 @@
 #include <asynOctet.h>
 #include <asynOctetSyncIO.h>
 #include <asynUInt32Digital.h>
+
+/* epicsExport.h must come last */
+#include <epicsExport.h>
 
 
 /* Define symbolic constants */

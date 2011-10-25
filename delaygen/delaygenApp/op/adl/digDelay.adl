@@ -124,7 +124,7 @@ text {
 	"basic attribute" {
 		clr=14
 	}
-	textix="Phase Shifter (GigaBaudics)"
+	textix="Phase Shifter ($(T))"
 	align="horiz. centered"
 }
 text {
@@ -179,9 +179,14 @@ text {
 		height=20
 	}
 	display[0] {
-		label="output"
+		label="output bits transform"
 		name="yyTransform_full.adl"
 		args="P=$(P),T=$(Q)output"
+	}
+	display[1] {
+		label="output bits word"
+		name="digDelayOutWord.adl"
+		args="P=$(P),Q=$(Q),T=$(T)"
 	}
 	clr=0
 	bclr=17
@@ -247,7 +252,7 @@ composite {
 				height=10
 			}
 			monitor {
-				chan="$(P)$(Q)aSub.VALD"
+				chan="$(P)$(Q)genSub.VALD"
 				clr=54
 				bclr=1
 			}
@@ -279,7 +284,7 @@ composite {
 		height=10
 	}
 	monitor {
-		chan="$(P)$(Q)aSub.VALE"
+		chan="$(P)$(Q)genSub.VALE"
 		clr=54
 		bclr=1
 	}
@@ -294,7 +299,7 @@ composite {
 		height=14
 	}
 	monitor {
-		chan="$(P)$(Q)aSub.VALC"
+		chan="$(P)$(Q)genSub.VALC"
 		clr=54
 		bclr=1
 	}
@@ -398,7 +403,7 @@ polyline {
 		height=14
 	}
 	control {
-		chan="$(P)$(Q)aSub.E"
+		chan="$(P)$(Q)genSub.E"
 		clr=14
 		bclr=51
 	}
