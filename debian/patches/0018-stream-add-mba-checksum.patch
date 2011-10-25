@@ -1,0 +1,52 @@
+From: Michael Davidsaver <mdavidsaver@bnl.gov>
+Date: Wed, 11 Aug 2010 16:44:00 -0400
+Subject: [PATCH] stream: add mba checksum
+
+mda is the sum of a ascii byte string "%2X" subtraced from FF
+---
+ stream/src/ChecksumConverter.cc |   17 +++++++++++++++--
+ 1 files changed, 15 insertions(+), 2 deletions(-)
+
+diff --git a/stream/src/ChecksumConverter.cc b/stream/src/ChecksumConverter.cc
+index dd531d1..4f77b6f 100644
+--- a/stream/src/ChecksumConverter.cc
++++ b/stream/src/ChecksumConverter.cc
+@@ -17,7 +17,7 @@
+ * someone, it's your problem.                                  *
+ *                                                              *
+ ***************************************************************/
+-
++#include <stdio.h>
+ #include "StreamFormatConverter.h"
+ #include "StreamError.h"
+ #if defined(__vxworks) || defined(vxWorks) || defined(_WIN32) || defined(__rtems__)
+@@ -41,6 +41,18 @@ static ulong sum(const uchar* data, ulong len, ulong sum)
+     return sum;
+ }
+ 
++static ulong mba(const uchar* data, ulong len, ulong sum)
++{
++    int i = len/2;
++    unsigned inchar;
++    while (i--)
++    {
++        sscanf((const char *)data+(2*i), "%2X", &inchar);
++        sum += inchar;
++    }
++    return sum;
++}
++
+ static ulong xor8(const uchar* data, ulong len, ulong sum)
+ {
+     while (len--)
+@@ -492,7 +504,8 @@ static checksum checksumMap[] =
+     {"crc32r",  crc_0x04C11DB7_r, 0xFFFFFFFF, 0xFFFFFFFF, 4}, // 0xCBF43926
+     {"jamcrc",  crc_0x04C11DB7_r, 0xFFFFFFFF, 0x00000000, 4}, // 0x340BC6D9
+     {"adler32", adler32,          0x00000001, 0x00000000, 4}, // 0x091E01DE
+-    {"hexsum8", hexsum,           0x00,       0x00,       1}  // 0x2D
++    {"hexsum8", hexsum,           0x00,       0x00,       1}, // 0x2D
++    {"mba",     mba,              0xFF,       0xFF,       1}
+ };
+ 
+ static ulong mask[5] = {0, 0xFF, 0xFFFF, 0xFFFFFF, 0xFFFFFFFF};
+-- 

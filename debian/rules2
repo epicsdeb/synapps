@@ -1,0 +1,255 @@
+# -*- makefile -*-
+
+# Basic site configuration here.
+
+EPICS_BASE = /usr/lib/epics
+
+CROSS_COMPILER_TARGET_ARCHS += RTEMS-mvme3100
+
+# Can be installed In a single location
+# IE. $(INSTALL_LOCATION)/lib/archname/ will contain libraries
+# for all modules.
+#
+#Note: This will overwrite $(INSTALL_LOCATION)/configure/RELEASE
+#      and other.  It is better to install to a new directory
+#      and then copy what is appropriate.
+#INSTALL_LOCATION=
+
+# Skip some modules
+SKIP += vxStats allenBradley
+
+LINUX_USB_INSTALLED=YES
+LINUX_TIFF_INSTALLED=YES
+ENVIRON += LINUX_USB_INSTALLED LINUX_TIFF_INSTALLED
+
+ENVIRON += USE_RPATH 
+
+SHRLIB_VERSION ?= 20110728
+
+#Note: SNCSEQ will create configure/RULES_BUILD with the additional
+#      rules required to handle .st files.
+
+#############################################################
+# Most users will not need to change anything below this line
+#############################################################
+
+BMAKEFLAGS_NO :=
+BMAKEFLAGS_YES :=
+ifneq (,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
+NUMJOBS = $(patsubst parallel=%,%,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
+BMAKEFLAGS_YES := -j$(NUMJOBS)
+endif
+
+# EPICS application bulk builder
+#  Michael Davidsaver <mdavidsaver@bnl.gov>
+#  July 2009
+
+# Sequentially builds a series of EPICS modules (configure/ + *App/)
+# which may depend on one another.
+# Based on SynApps makefile from Tim Mooney
+
+# Modules are identified by directory name (ie seq)
+# By default the makefile variable name is this name
+# all caps (ie SEQ).  When this is undesirable then
+# 'moddir_NAME' can be explicitly set (ie seq_NAME=SNCSEQ).
+#
+# The directory name is used when naming dependencies.
+
+# Modules must be listed in dependency order.
+#  A module must be listed after all modules it depends on.
+
+# The dependency list should include only direct dependencies.
+
+# Tier 1
+
+MODS += seq
+seq_NAME = SNCSEQ
+
+MODS += ipac
+
+MODS += sscan
+
+MODS += autosave
+
+# Tier 2
+
+MODS += asyn
+asyn_DEPS = seq ipac
+
+MODS += calc
+calc_DEPS = sscan
+
+# Tier 3
+
+MODS += busy
+busy_DEPS = asyn
+
+MODS += motor
+motor_DEPS = asyn seq ipac
+motor_CPPFLAGS = -DDEBUG
+
+MODS += std
+std_DEPS = asyn seq
+
+MODS += dac128v
+dac128v_DEPS = asyn ipac
+
+MODS += ip330
+ip330_DEPS = asyn ipac
+
+MODS += ipunidig
+ipunidig_DEPS = asyn ipac
+
+MODS += love
+love_DEPS = asyn ipac
+
+MODS += ip
+ip_DEPS = asyn ipac seq
+
+MODS += optics
+optics_DEPS = asyn seq
+
+MODS += stream
+stream_DEPS = asyn calc sscan
+
+MODS += modbus
+modbus_DEPS = asyn
+
+MODS += vac
+vac_DEPS = asyn ipac
+
+# Tier 4
+
+MODS += delaygen
+delaygen_DEPS = asyn std autosave
+
+MODS += camac
+camac_DEPS = motor std
+
+MODS += mca
+mca_DEPS = seq asyn std busy autosave calc sscan
+
+MODS += vme
+vme_DEPS = std seq
+
+#MODS +=
+#_DEPS = 
+
+#######################################
+
+SUPPORT = $$PWD
+
+# makefile variable names to be passed to all modules
+ENVIRON += EPICS_BASE SUPPORT
+
+ifneq ($(INSTALL_LOCATION),)
+ENVIRON += INSTALL_LOCATION
+endif
+
+ifneq ($(CROSS_COMPILER_TARGET_ARCHS),)
+ENVIRON += CROSS_COMPILER_TARGET_ARCHS
+endif
+
+ENVIRON += $(EXTRA_ENV)
+
+# $(1) is ENVIRON name (ie EPICS_BASE)
+ENV = "$(1)=$($(1))"
+
+# makefile variables to be passed to all modules
+E = $(foreach e,$(ENVIRON),$(call ENV,$(e)))
+
+# $(1) is path relative to module dir (ie bin or lib/linux-x86)
+# $(2) is the module name (ie asyn)
+FORCERM = $(if $(1),rm -rf $(1:%=$(2)/%),)
+
+all: realall # see below
+
+# Rules for a a single module
+#
+# $(1) is mod name (ie seq or sscan)
+define build-mod
+
+# Default to all caps.  'motor' becomes 'MOTOR'.
+$(1)_NAME ?= $(shell echo -n "$(1)" | tr '[:lower:]' '[:upper:]')
+
+$(1)_SONUM ?= $$(SHRLIB_VERSION)
+
+$(1)_DIR ?= $(1)
+
+$(1)_PAR ?= YES
+
+# Specific makefile variables to be pass to the named module.
+$(1)_ENV ?= $$(foreach ee,$$($(1)_DEPS),$$($$(ee)_NAME)=$$(SUPPORT)/$$($$(ee)_DIR)) \
+SHRLIB_VERSION=$$($(1)_SONUM) \
+CMD_CPPFLAGS=$$($(1)_CPPFLAGS)
+
+# Build dependencies and module
+build-$(1): $$($(1)_DEPS:%=build-%) single-$(1)
+
+# Build module only
+single-$(1):
+	$$(MAKE) $$(BMAKEFLAGS_$$($(1)_PAR)) -C $$($(1)_DIR) $$(E) $$($(1)_ENV)
+
+build-all += build-$(1)
+
+info-$(1):
+	@echo "------------------"
+	@echo "Info: $(1)"
+	@echo "NAME=$$($(1)_NAME)"
+	@echo "SONUM=$$($(1)_SONUM)"
+	@echo "DEPS=$$($(1)_DEPS)"
+	@echo "ENV=$$(E) $$($(1)_ENV)"
+
+rinfo-$(1): $$($(1)_DEPS:%=rinfo-%) info-$(1)
+
+info-all += info-$(1)
+
+# Use module realclean rule to remove 'O.*' subdirectories (ie O.linux-x86).
+realclean-$(1):
+	$$(MAKE) $$(BMAKEFLAGS_$$($(1)_PAR)) -C $$($(1)_DIR) $(E) $$($(1)_ENV) distclean
+
+# Delete module install directories
+$(1)_CLEAN ?= bin db dbd include lib html templates
+fullclean-$(1):
+	$$(call FORCERM,$$($(1)_CLEAN),$(1))
+
+clean-$(1): realclean-$(1) #fullclean-$(1)
+
+clean-all += clean-$(1)
+
+endef
+
+MMODS = $(filter-out $(SKIP),$(MODS))
+
+# Generate rules for all modules
+$(foreach m,$(MMODS),$(eval $(call build-mod,$(m))))
+
+realall install: $(build-all)
+
+info: $(info-all) binfo
+
+binfo:
+	@echo "------------------"
+	@echo "EPICS_BASE: $(EPICS_BASE)"
+	@echo "INSTALL_LOCATION: $(INSTALL_LOCATION)"
+	@echo "CROSS_COMPILER_TARGET_ARCHS: $(CROSS_COMPILER_TARGET_ARCHS)"
+
+clean: $(clean-all)
+distclean: clean
+
+runtests:
+
+help:
+	@echo "Modules:"
+	@echo " $(MMODS)" | sed -e 's/ /\n  /g'
+	@echo "Targets:"
+	@echo "  all        - Build all modules"
+	@echo "  build-MOD  - build a module and its dependencies"
+	@echo "  single-MOD - build a module without updating dependencies"
+	@echo "  clean      - Clean all module"
+	@echo "  clean-MOD  - clean a single module"
+	@echo "Information targets:"
+	@echo "  info       - Show all information"
+	@echo "  binfo      - Show configuration options affecting build"
+	@echo "  info-MOD   - Show information about a module"
+	@echo "  rinfo-MOD  - Show information about a module and its dependencies"

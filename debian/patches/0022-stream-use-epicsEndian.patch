@@ -1,0 +1,59 @@
+From: Michael Davidsaver <mdavidsaver@bnl.gov>
+Date: Wed, 27 Jul 2011 14:22:01 -0400
+Subject: [PATCH] stream: use epicsEndian
+
+---
+ stream/src/RawFloatConverter.cc |   39 +++++++++------------------------------
+ 1 files changed, 9 insertions(+), 30 deletions(-)
+
+diff --git a/stream/src/RawFloatConverter.cc b/stream/src/RawFloatConverter.cc
+index f643960..3273630 100644
+--- a/stream/src/RawFloatConverter.cc
++++ b/stream/src/RawFloatConverter.cc
+@@ -21,36 +21,15 @@
+ #include "StreamFormatConverter.h"
+ #include "StreamError.h"
+ 
+-#if defined(__vxworks) || defined(vxWorks) 
+-#include <vxWorks.h>
+-#define __BYTE_ORDER _BYTE_ORDER 
+-#define __LITTLE_ENDIAN _LITTLE_ENDIAN
+-#define __BIG_ENDIAN _BIG_ENDIAN 
+-#elif defined(_WIN32)
+-// Assume that win32 is always little endian
+-#define __LITTLE_ENDIAN 1234
+-#define __BIG_ENDIAN 4321
+-#define __BYTE_ORDER __LITTLE_ENDIAN
+-#else
+-// Let's hope all other architectures have sys/param.h
+-#include <sys/param.h>
+-#endif
+-
+-// Some architectures don't define __BYTE_ORDER but
+-// define either _LITTLE_ENDIAN or _BIG_ENDIAN
+-#ifndef __BYTE_ORDER
+-#define __LITTLE_ENDIAN 1234
+-#define __BIG_ENDIAN 4321
+-#if defined(_BIG_ENDIAN) && !defined(_LITTLE_ENDIAN)
+-#define __BYTE_ORDER __BIG_ENDIAN
+-#endif
+-#if !defined(_BIG_ENDIAN) && defined(_LITTLE_ENDIAN)
+-#define __BYTE_ORDER __LITTLE_ENDIAN
+-#endif
+-#endif
+-
+-#ifndef __BYTE_ORDER
+-#error define __BYTE_ORDER as __LITTLE_ENDIAN or __BIG_ENDIAN
++#include <epicsEndian.h>
++
++#if !defined(__BYTE_ORDER) || !defined(__LITTLE_ENDIAN) || !defined(__BIG_ENDIAN)
++#undef __BYTE_ORDER
++#undef __LITTLE_ENDIAN
++#undef __BIG_ENDIAN
++#define __BYTE_ORDER EPICS_BYTE_ORDER
++#define __LITTLE_ENDIAN EPICS_ENDIAN_LITTLE
++#define __BIG_ENDIAN EPICS_ENDIAN_BIG
+ #endif
+ 
+ #if (__BYTE_ORDER == __LITTLE_ENDIAN || __BYTE_ORDER == __BIG_ENDIAN)
+-- 

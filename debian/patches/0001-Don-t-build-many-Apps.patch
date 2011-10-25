@@ -1,0 +1,163 @@
+From: Michael Davidsaver <mdavidsaver@bnl.gov>
+Date: Fri, 23 Apr 2010 14:02:49 -0400
+Subject: [PATCH] Don't build many Apps
+
+They aren't packaged and waste build time
+---
+ delaygen/delaygenApp/src/Makefile |   18 ------------------
+ ip/ipApp/src/Makefile             |    4 ++--
+ love/loveApp/src/Makefile         |    4 ++--
+ mca/mcaApp/RontecSrc/Makefile     |    2 +-
+ mca/mcaApp/SISSrc/Makefile        |    2 +-
+ modbus/modbusApp/src/Makefile     |    2 +-
+ std/stdApp/src/Makefile           |    7 ++++++-
+ stream/streamApp/Makefile         |    2 +-
+ 8 files changed, 14 insertions(+), 27 deletions(-)
+
+diff --git a/delaygen/delaygenApp/src/Makefile b/delaygen/delaygenApp/src/Makefile
+index 496da1d..4edb928 100644
+--- a/delaygen/delaygenApp/src/Makefile
++++ b/delaygen/delaygenApp/src/Makefile
+@@ -23,27 +23,9 @@ delaygen_LIBS_vxWorks += std asyn TyGSOctal Ipac ip
+ delaygen_LIBS_vxWorks += $(EPICS_BASE_IOC_LIBS)
+ 
+ #=============================================================================
+-# Build an IOC application
+-PROD_IOC = delaygenApp
+-
+-#-----------------------------------------------------------------------------
+-# <name>.dbd will be created and installed
+-DBD += iocdelaygenApp.dbd
+-DBD += iocdelaygenAppVxWorks.dbd 
+ 
+ DBD += delaygenSupport.dbd
+ 
+-#-----------------------------------------------------------------------------
+-# <name>_registerRecordDeviceDriver.cpp will be created from <name>.dbd
+-delaygenApp_SRCS_DEFAULT += iocdelaygenApp_registerRecordDeviceDriver.cpp delaygenMain.cpp
+-delaygenApp_SRCS_vxWorks += iocdelaygenAppVxWorks_registerRecordDeviceDriver.cpp
+-
+-#-----------------------------------------------------------------------------
+-# Include libraries
+-delaygenApp_LIBS += autosave std delaygen stream asyn
+-delaygenApp_LIBS_vxWorks += TyGSOctal Ipac ip
+-delaygenApp_LIBS += $(EPICS_BASE_IOC_LIBS)
+-
+ #
+ #=============================================================================
+ 
+diff --git a/ip/ipApp/src/Makefile b/ip/ipApp/src/Makefile
+index 0303f8d..209bfc9 100644
+--- a/ip/ipApp/src/Makefile
++++ b/ip/ipApp/src/Makefile
+@@ -13,7 +13,7 @@ LIBRARY_IOC += ip
+ DBD += ipSupport.dbd
+ DBD += ipVXSupport.dbd
+ DBD += ip.dbd
+-DBD += ipVX.dbd
++#DBD += ipVX.dbd
+ 
+ ip_SRCS += devXxStrParm.c
+ ip_SRCS += devXxEurotherm.c
+@@ -38,7 +38,7 @@ ip_LIBS += $(EPICS_BASE_IOC_LIBS)
+ #=============================
+ # build an ioc application for testing
+ 
+-PROD_IOC = ipApp
++#PROD_IOC = ipApp
+ 
+ # <name>_registerRecordDeviceDriver.cpp will be created from <name>.dbd
+ ipApp_SRCS_DEFAULT += ip_registerRecordDeviceDriver.cpp ipMain.cpp
+diff --git a/love/loveApp/src/Makefile b/love/loveApp/src/Makefile
+index c8d11b7..beb6d4e 100644
+--- a/love/loveApp/src/Makefile
++++ b/love/loveApp/src/Makefile
+@@ -26,7 +26,7 @@ love_LIBS += $(EPICS_BASE_IOC_LIBS)
+ 
+ #=============================================================================
+ # Build an ioc application <name>
+-PROD_IOC = loveApp
++#PROD_IOC = loveApp
+ 
+ #-----------------------------------------------------------------------------
+ # <name>.dbd and <name>VX.dbd will be created and installed
+@@ -34,7 +34,7 @@ ifeq ($(OS_CLASS), WIN32)
+ DBD += loveAppWin32.dbd
+ else
+ DBD += loveApp.dbd
+-DBD += loveAppVX.dbd
++#DBD += loveAppVX.dbd
+ endif
+ 
+ #-----------------------------------------------------------------------------
+diff --git a/mca/mcaApp/RontecSrc/Makefile b/mca/mcaApp/RontecSrc/Makefile
+index 7b7d4ba..7e0f8b2 100644
+--- a/mca/mcaApp/RontecSrc/Makefile
++++ b/mca/mcaApp/RontecSrc/Makefile
+@@ -23,7 +23,7 @@ mcaRontec_LIBS += asyn
+ mcaRontec_LIBS += $(EPICS_BASE_IOC_LIBS)
+ 
+ #==================================
+-PROD_IOC += mcaRontecApp
++#PROD_IOC += mcaRontecApp
+ 
+ ## <name>_registerRecordDeviceDriver.cpp will be created from <name>.dbd
+ mcaRontecApp_SRCS_DEFAULT += mcaRontec_registerRecordDeviceDriver.cpp mcaRontecMain.cpp
+diff --git a/mca/mcaApp/SISSrc/Makefile b/mca/mcaApp/SISSrc/Makefile
+index 7d18f1e..7678592 100644
+--- a/mca/mcaApp/SISSrc/Makefile
++++ b/mca/mcaApp/SISSrc/Makefile
+@@ -7,7 +7,7 @@ include $(TOP)/configure/CONFIG
+ # <name>.dbd will be created from <name>Include.dbd
+ DBD += mcaSTR7201Support.dbd
+ DBD += mcaSIS3820Support.dbd
+-DBD += mcaSISTest.dbd
++#DBD += mcaSISTest.dbd
+ 
+ #=============================
+ # Build the library for ARCHs with VME capability.
+diff --git a/modbus/modbusApp/src/Makefile b/modbus/modbusApp/src/Makefile
+index bfc2736..3239ac6 100755
+--- a/modbus/modbusApp/src/Makefile
++++ b/modbus/modbusApp/src/Makefile
+@@ -31,7 +31,7 @@ LIB_SYS_LIBS_WIN32 += WS2_32
+ #=============================
+ # build an ioc application
+ 
+-PROD_IOC = modbusApp
++#PROD_IOC = modbusApp
+ 
+ # <name>_registerRecordDeviceDriver.cpp will be created from <name>.dbd
+ PROD_SRCS_DEFAULT += modbus_registerRecordDeviceDriver.cpp modbusMain.cpp
+diff --git a/std/stdApp/src/Makefile b/std/stdApp/src/Makefile
+index e86ea55..6c06e2d 100644
+--- a/std/stdApp/src/Makefile
++++ b/std/stdApp/src/Makefile
+@@ -73,7 +73,12 @@ std_LIBS += $(EPICS_BASE_IOC_LIBS)
+ #=============================
+ # build an ioc application for testing
+ 
+-PROD_IOC = stdApp
++# Since this app is in the same directory as the std library
++# it will not link with the appropriate -L../../lib/xxx entry
++# since this directory has not been created yet.
++# However, since this app isn't packaged I'll just ignore it
++# MAD 04/10
++#PROD_IOC = stdApp
+ 
+ # <name>_registerRecordDeviceDriver.cpp will be created from <name>.dbd
+ stdApp_SRCS_DEFAULT += std_registerRecordDeviceDriver.cpp
+diff --git a/stream/streamApp/Makefile b/stream/streamApp/Makefile
+index 79836ed..829974d 100644
+--- a/stream/streamApp/Makefile
++++ b/stream/streamApp/Makefile
+@@ -13,7 +13,7 @@ include $(TOP)/configure/CONFIG
+ 
+ #HOST_OPT = NO
+ 
+-PROD = streamApp
++#PROD = streamApp
+ DBD  = streamApp.dbd
+ 
+ streamApp_DBD += base.dbd
+-- 

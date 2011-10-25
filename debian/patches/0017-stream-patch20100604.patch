@@ -1,0 +1,193 @@
+From: Michael Davidsaver <mdavidsaver@bnl.gov>
+Date: Wed, 27 Jul 2011 09:56:31 -0400
+Subject: [PATCH] stream: patch20100604
+
+---
+ stream/doc/formats.html             |    8 ++++-
+ stream/src/StreamCore.cc            |   55 +++++++++++++++++++++++++++-------
+ stream/src/StreamFormat.h           |   13 ++++----
+ stream/src/StreamFormatConverter.cc |    2 +-
+ stream/src/StreamProtocol.cc        |   10 ++++++
+ 5 files changed, 68 insertions(+), 20 deletions(-)
+
+diff --git a/stream/doc/formats.html b/stream/doc/formats.html
+index 0d5b366..2e78770 100644
+--- a/stream/doc/formats.html
++++ b/stream/doc/formats.html
+@@ -28,7 +28,7 @@ A format converter consists of
+ <ul>
+  <li>The <code>%</code> character</li>
+  <li>Optionally a field name in <code>()</code></li>
+- <li>Optionally flags out of the characters <code>*# +0-</code></li>
++ <li>Optionally flags out of the characters <code>*# +0-?</code></li>
+  <li>Optionally an integer <em>width</em> field</li>
+  <li>Optionally a period character (<code>.</code>) followed
+      by an integer <em>precision</em> field (input ony for most formats)</li>
+@@ -61,6 +61,8 @@ The <code>0</code> flag says that numbers should be left padded with
+ The <code>-</code> flag specifies that output is left justified if
+ <em>width</em> is larger than required.
+ </p>
++The <code>?</code> flag makes failing input conversions succeed with
++a default zero value (0, 0.0, or "", depending on the format type).
+ 
+ <h3>Examples:</h3>
+ <table>
+@@ -84,6 +86,10 @@ The <code>-</code> flag specifies that output is left justified if
+   <td><code>in "%*i";</code></td>
+   <td>skipped integer number</td>
+  </tr>
++ <tr>
++  <td><code>in "%?d";</code></td>
++  <td>decimal number or nothing (read as 0)</td>
++ </tr>
+ </table>
+ 
+ <a name="types"></a>
+diff --git a/stream/src/StreamCore.cc b/stream/src/StreamCore.cc
+index e7dc876..9498a12 100644
+--- a/stream/src/StreamCore.cc
++++ b/stream/src/StreamCore.cc
+@@ -1164,14 +1164,21 @@ matchInput()
+                     }
+                     if (consumed < 0)
+                     {
+-                        if (!(flags & AsyncMode) && onMismatch[0] != in_cmd)
++                        if (fmt.flags & default_flag)
+                         {
+-                            error("%s: Input \"%s%s\" does not match format %%%s\n",
+-                                name(), inputLine.expand(consumedInput, 20)(),
+-                                inputLine.length()-consumedInput > 20 ? "..." : "",
+-                                formatstring);
++                            consumed = 0;
++                        }
++                        else
++                        {
++                            if (!(flags & AsyncMode) && onMismatch[0] != in_cmd)
++                            {
++                                error("%s: Input \"%s%s\" does not match format %%%s\n",
++                                    name(), inputLine.expand(consumedInput, 20)(),
++                                    inputLine.length()-consumedInput > 20 ? "..." : "",
++                                    formatstring);
++                            }
++                            return false;
+                         }
+-                        return false;
+                     }
+                     consumedInput += consumed;
+                     break;
+@@ -1321,8 +1328,16 @@ scanValue(const StreamFormat& fmt, long& value)
+         scanLong(fmt, inputLine(consumedInput), value);
+     debug("StreamCore::scanValue(%s, format=%%%c, long) input=\"%s\"\n",
+         name(), fmt.conv, inputLine.expand(consumedInput)());
+-    if (consumed < 0 ||
+-        consumed > inputLine.length()-consumedInput) return -1;
++    if (consumed < 0)
++    {
++        if (fmt.flags & default_flag)
++        {
++            value = 0;
++            consumed = 0;
++        }
++        else return -1;
++    }
++    if (consumed > inputLine.length()-consumedInput) return -1;
+     debug("StreamCore::scanValue(%s) scanned %li\n",
+         name(), value);
+     flags |= GotValue;
+@@ -1344,8 +1359,16 @@ scanValue(const StreamFormat& fmt, double& value)
+         scanDouble(fmt, inputLine(consumedInput), value);
+     debug("StreamCore::scanValue(%s, format=%%%c, double) input=\"%s\"\n",
+         name(), fmt.conv, inputLine.expand(consumedInput)());
+-    if (consumed < 0 ||
+-        consumed > inputLine.length()-consumedInput) return -1;
++    if (consumed < 0)
++    {
++        if (fmt.flags & default_flag)
++        {
++            value = 0.0;
++            consumed = 0;
++        }
++        else return -1;
++    }
++    if (consumed > inputLine.length()-consumedInput) return -1;
+     debug("StreamCore::scanValue(%s) scanned %#g\n",
+         name(), value);
+     flags |= GotValue;
+@@ -1368,8 +1391,16 @@ scanValue(const StreamFormat& fmt, char* value, long maxlen)
+         scanString(fmt, inputLine(consumedInput), value, maxlen);
+     debug("StreamCore::scanValue(%s, format=%%%c, char*, maxlen=%ld) input=\"%s\"\n",
+         name(), fmt.conv, maxlen, inputLine.expand(consumedInput)());
+-    if (consumed < 0 ||
+-        consumed > inputLine.length()-consumedInput) return -1;
++    if (consumed < 0)
++    {
++        if (fmt.flags & default_flag)
++        {
++            value[0] = 0;
++            consumed = 0;
++        }
++        else return -1;
++    }
++    if (consumed > inputLine.length()-consumedInput) return -1;
+ #ifndef NO_TEMPORARY
+     debug("StreamCore::scanValue(%s) scanned \"%s\"\n",
+         name(), StreamBuffer(value, maxlen).expand()());
+diff --git a/stream/src/StreamFormat.h b/stream/src/StreamFormat.h
+index 7e049e8..cac9ff1 100644
+--- a/stream/src/StreamFormat.h
++++ b/stream/src/StreamFormat.h
+@@ -23,12 +23,13 @@
+ #define StreamFormat_h
+ 
+ typedef enum {
+-    left_flag  = 0x01,
+-    sign_flag  = 0x02,
+-    space_flag = 0x04,
+-    alt_flag   = 0x08,
+-    zero_flag  = 0x10,
+-    skip_flag  = 0x20
++    left_flag    = 0x01,
++    sign_flag    = 0x02,
++    space_flag   = 0x04,
++    alt_flag     = 0x08,
++    zero_flag    = 0x10,
++    skip_flag    = 0x20,
++    default_flag = 0x40
+ } StreamFormatFlag;
+ 
+ typedef enum {
+diff --git a/stream/src/StreamFormatConverter.cc b/stream/src/StreamFormatConverter.cc
+index 1d8577b..d71c7fc 100644
+--- a/stream/src/StreamFormatConverter.cc
++++ b/stream/src/StreamFormatConverter.cc
+@@ -112,7 +112,7 @@ static void copyFormatString(StreamBuffer& info, const char* source)
+     const char* p = source - 1;
+     while (*p != '%' && *p != ')') p--;
+     info.append('%');
+-    while (++p != source-1) info.append(*p);
++    while (++p != source-1) if (*p != '?') info.append(*p);
+ }
+ 
+ // Standard Long Converter for 'diouxX'
+diff --git a/stream/src/StreamProtocol.cc b/stream/src/StreamProtocol.cc
+index 7f5d2f8..446a51e 100644
+--- a/stream/src/StreamProtocol.cc
++++ b/stream/src/StreamProtocol.cc
+@@ -1504,6 +1504,16 @@ compileFormat(StreamBuffer& buffer, const char*& formatstr,
+                 }
+                 streamFormat.flags |= skip_flag;
+                 break;
++            case '?':
++                if (formatType != ScanFormat)
++                {
++                    errorMsg(line,
++                        "Use of default modifier '?' "
++                        "only allowed in input formats\n");
++                    return false;
++                }
++                streamFormat.flags |= default_flag;
++                break;
+             default:
+                 loop = false;
+         }
+-- 

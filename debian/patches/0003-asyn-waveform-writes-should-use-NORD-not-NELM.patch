@@ -1,0 +1,23 @@
+From: Michael Davidsaver <mdavidsaver@bnl.gov>
+Date: Thu, 12 May 2011 13:55:01 -0400
+Subject: [PATCH] asyn: waveform writes should use NORD not NELM
+
+Use the current number of elements, not the maximum
+---
+ asyn/asyn/devEpics/devAsynXXXArray.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/asyn/asyn/devEpics/devAsynXXXArray.h b/asyn/asyn/devEpics/devAsynXXXArray.h
+index 1748573..fcb089b 100644
+--- a/asyn/asyn/devEpics/devAsynXXXArray.h
++++ b/asyn/asyn/devEpics/devAsynXXXArray.h
+@@ -223,7 +223,7 @@ static void callbackWfOut(asynUser *pasynUser) \
+     asynPrint(pasynUser, ASYN_TRACEIO_DEVICE, \
+               "%s %s::callbackWfOut\n", pwf->name, driverName); \
+     status = pPvt->pArray->write(pPvt->arrayPvt, \
+-        pPvt->pasynUser, pwf->bptr, pwf->nelm); \
++        pPvt->pasynUser, pwf->bptr, pwf->nord); \
+     if (status == asynSuccess) { \
+         pwf->udf=0; \
+     } else { \
+-- 

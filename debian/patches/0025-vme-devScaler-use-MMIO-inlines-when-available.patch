@@ -1,0 +1,25 @@
+From: Michael Davidsaver <mdavidsaver@bnl.gov>
+Date: Wed, 23 Jun 2010 10:59:36 -0400
+Subject: [PATCH] vme: devScaler use MMIO inlines when available
+
+basicIoOps.h is available in recent RTEMS for some archs (ie PPC)
+---
+ vme/vmeApp/src/devScaler_debug.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
+
+diff --git a/vme/vmeApp/src/devScaler_debug.c b/vme/vmeApp/src/devScaler_debug.c
+index 91d6966..d0ac5ce 100644
+--- a/vme/vmeApp/src/devScaler_debug.c
++++ b/vme/vmeApp/src/devScaler_debug.c
+@@ -45,7 +45,9 @@ Modification Log:
+ #include	<epicsVersion.h>
+ 
+ #ifdef HAS_IOOPS_H
+-#include	<basicIoOps.h>
++#  include <basicIoOps.h>
++#elif defined (__rtems__) && (defined(_ARCH_PPC) || defined(__PPC__) || defined(__PPC))
++#  include <libcpu/io.h>
+ #endif
+ 
+ typedef unsigned int uint32;
+-- 
