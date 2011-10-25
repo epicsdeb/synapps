@@ -10,6 +10,36 @@ content="text/html; charset=iso-8859-1">
 
 <h1 align="center">autosave Release Notes</h1>
 
+<h3>4.8</h3>
+<ul>
+	<li>Folded in modifications by Zheqiao Geng (SLAC):
+	<ul>
+		<li>Introduced NFS remount function for RTEMS in case of too many file-write failures
+		<li>Separated the NFS mounting code to src/os folder for vxWorks, RTEMS and Linux
+			(added WIN32, cygwin, solaris, default)
+		<li>Added timeout checking for PERIODIC or MONITORED callback functions
+		<li>Enabled to reconnect the unconnected CA channels
+		<li>Used ca_create_channel + callback instead of ca_search
+		<li>Added illegal pointer checking at callback functions
+		<li>Added file checking after writing to the disk
+		<li>Disconnected all CA channels before exiting the program
+	</ul>
+	<li>check mount point before using it.
+	<li>Increased the size of info buffer for save list auto generation from database
+	<li>Include Michael Davidsaver's mods  to handle info node of arbitrary length
+	<li>Added ZNAM, ONAM to records in saveRestoreStatus.db
+	<li>Don't require successful dismount as prerequisite for mount.  Most likely case
+		is that dismount will succeed on first try, remount will fail, and then dismount
+		will fail from then on because the file system has already been dismounted.
+	<li>If array data is found in a .sav file, parse to end whether or not the array will
+		be restored.
+	<li>Added .opi display files for CSS-BOY.
+	<li>Fixed wrong seek distance on WIN32.
+	<li>Compile-time option for Linux to manage or not manage NFS mount.
+	<li>Make makeAutosaveFiles() callable from the vxWorks shell.  (Previously, it was
+		callable only from iocsh.)
+</ul>
+
 <h3>4.7</h3>
 <ul>
 <li> Previously, array-valued PV's whose representation in a .sav file was

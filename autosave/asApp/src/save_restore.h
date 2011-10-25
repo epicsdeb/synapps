@@ -72,7 +72,7 @@ extern FILE *fopen_and_check(const char *file, long *status);
 extern long SR_get_array_info(char *name, long *num_elements, long *field_size, long *field_type);
 extern long SR_get_array(char *name, void *pArray, long *num_elements);
 extern long SR_write_array_data(FILE *out_fd, char *name, void *pArray, long num_elements);
-extern long SR_array_restore(int pass, FILE *inp_fd, char *PVname, char *value_string);
+extern long SR_array_restore(int pass, FILE *inp_fd, char *PVname, char *value_string, int gobble);
 extern long SR_put_array_values(char *PVname, void *p_data, long num_values);
 
 #define PATH_SIZE 255		/* max size of the complete path to one file */
@@ -85,6 +85,7 @@ extern volatile int save_restoreDatedBackupFiles;
 extern struct restoreList restoreFileList;
 extern int myFileCopy(const char *source, const char *dest);
 extern void dbrestoreShow(void);
+extern void makeNfsPath(char *dest, const char *s1, const char *s2);
 
 extern int	save_restoreNFSOK;
 extern int	save_restoreIoErrors;
