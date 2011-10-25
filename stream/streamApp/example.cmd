@@ -1,5 +1,3 @@
-#!./streamApp
-
 dbLoadDatabase "O.Common/streamApp.dbd"
 streamApp_registerRecordDeviceDriver
 

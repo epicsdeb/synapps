@@ -44,8 +44,8 @@ class MantissaExponentConverter : public StreamFormatConverter
 };
 
 int MantissaExponentConverter::
-parse(const StreamFormat& fmt, StreamBuffer& info,
-    const char*& source, bool scanFormat)
+parse(const StreamFormat&, StreamBuffer&,
+    const char*&, bool)
 {
     return double_format;
 }
@@ -60,7 +60,7 @@ scanDouble(const StreamFormat& fmt, const char* input, double& value)
     sscanf(input, "%d%d%n", &mantissa, &exponent, &length);
     if (fmt.flags & skip_flag) return length;
     if (length == -1) return -1;
-    value = (double)(mantissa) * pow(10, exponent);
+    value = (double)(mantissa) * pow(10.0, exponent);
     return length;
 }
 
@@ -75,7 +75,7 @@ printDouble(const StreamFormat& fmt, StreamBuffer& output, double value)
     int prec = fmt.prec;
     
     if (prec < 1) prec = 6;
-    buf.printf("%.*e", prec-1, fabs(value)/pow(10, prec-1));
+    buf.printf("%.*e", prec-1, fabs(value)/pow(10.0, prec-1));
     buf.remove(1,1);
     buf.remove(buf.find('e'),1);
     

@@ -32,7 +32,7 @@ public:
 
     enum Codes
     {
-        eos = 0, skip, format, format_field, last_function_code
+        eos = 0, skip, whitespace, format, format_field, last_function_code
     };
 
     class Client;
@@ -75,8 +75,6 @@ public:
         bool compileString(StreamBuffer& buffer, const char*& source,
             FormatType formatType = NoFormat, Client* = NULL, int quoted = false);
         bool checkUnused();
-        void errorMsg(int line, const char* fmt, ...)
-            __attribute__ ((format(printf,3,4)));
         ~Protocol();
         void report();
     };
@@ -115,8 +113,6 @@ private:
         const char* specialchars = NULL, bool eofAllowed = false);
     bool parseAssignment(const char* variable, Protocol&);
     bool parseValue(StreamBuffer& buffer, bool lazy = false);
-    void errorMsg(const char* fmt, ...)
-        __attribute__ ((format(printf,2,3)));
 
 protected: 
     ~StreamProtocolParser(); // get rid of cygnus-2.7.2 compiler warning

@@ -17,6 +17,9 @@ PROD = streamApp
 DBD  = streamApp.dbd
 
 streamApp_DBD += base.dbd
+
+# In 3.14.12 aaiRecord.dbd and aaoRecord.dbd are part of base.dbd
+# In earlier versions, these records are buggy and not included by default
 #streamApp_DBD += aaiRecord.dbd aaoRecord.dbd
 
 PROD_SRCS += streamApp_registerRecordDeviceDriver.cpp
@@ -25,23 +28,14 @@ PROD_SRCS_vxWorks = -nil-
 
 PROD_LIBS = stream
 
-ifdef PCRE
-# With local PCRE package
-PROD_LIBS += pcre
-else
-ifneq ($(words $(PCRE_LIB) $(PCRE_INCLUDE)),0)
-# With system wide PCRE installation
-PROD_SYS_LIBS += pcre
-PROD_DEPLIB_DIRS += $(PCRE_LIB)
-endif
-endif
-
 ifdef ASYN
 # Which types of asyn busses do you have?
-ifneq ($(OS_CLASS), WIN32)
-# asynDriver up to version 4-8 does not support serial port for Windows!
+
+# asynDriver up to version 4-16 does not support serial port for Windows!
+#ifneq ($(OS_CLASS), WIN32)
 streamApp_DBD += drvAsynSerialPort.dbd
-endif
+#endif
+
 streamApp_DBD += drvAsynIPPort.dbd
 #streamApp_DBD += drvGsIP488.dbd
 #streamApp_DBD += drvNi1014.dbd
@@ -51,17 +45,30 @@ endif
 
 ifneq ($(words $(CALC) $(SYNAPPS)), 0)
 # With synApps scalcout record
-streamApp_DBD += calc.dbd
+streamApp_DBD += calcSupport.dbd
 streamApp_DBD += streamSynApps.dbd
-PROD_LIBS += calc sscan
+PROD_LIBS += calc
+# older calc versions require sscan
+#PROD_LIBS += sscan
 PROD_LIBS_DEFAULT += streamSynApps
 endif
 
 streamApp_DBD += stream.dbd
 
+ifdef PCRE
+LIB_LIBS += pcre
+else
+ifneq ($(words $(PCRE_LIB) $(PCRE_INCLUDE)),0)
+PROD_SYS_LIBS_DEFAULT += pcre
+PROD_SYS_LIBS_WIN32 += $(PCRE_LIB)\\pcre
+SHRLIB_DEPLIB_DIRS += $(PCRE_LIB)
+endif
+endif
+
 PROD_LIBS += $(EPICS_BASE_IOC_LIBS)
 
 # Write StreamDevice debug output to this file
+# If unset output goes to stdout
 CPPFLAGS += -DDEBUGFILE=StreamDebug.log
 
 include $(TOP)/configure/RULES
@@ -69,14 +76,6 @@ include $(TOP)/configure/RULES
 clean:: myclean
 
 myclean:
-	rm -f core* streamApp streamApp.exe* StreamDebug.log
-
-build: link
-
-link:
-	rm -f ../streamApp$(EXE)
-	ln -s O.$(EPICS_HOST_ARCH)/streamApp$(EXE) ../streamApp$(EXE)
+	$(RM) core* StreamDebug.log
 
 endif
-
-

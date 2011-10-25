@@ -46,13 +46,20 @@ init(const void* s, long minsize)
     else
     {
         // clear local buffer
-        memset(buffer+minsize, 0, cap-minsize);
+        memset(buffer, 0, cap);
     }
     if (s) {
         len = minsize;
         memcpy(buffer, s, minsize);
     }
 }
+
+// How the buffer looks like:
+// |----free-----|####used####|-------free-------|
+///|<--- offs -->|<-- len --->|<- cap-offs-len ->|
+// 0            offs      offs+len              cap
+//               |<-------------- minsize --------------->
+
 
 void StreamBuffer::
 grow(long minsize)
@@ -102,7 +109,7 @@ grow(long minsize)
     memset(newbuffer+len, 0, newcap-len);
     if (buffer != local)
     {
-        delete buffer;
+        delete [] buffer;
     }
     buffer = newbuffer;
     cap = newcap;
@@ -212,7 +219,7 @@ replace(long remstart, long remlen, const void* ins, long inslen)
         memset(newbuffer+newlen, 0, newcap-newlen);
         if (buffer != local)
         {
-            delete buffer;
+            delete [] buffer;
         }
         buffer = newbuffer;
         cap = newcap;
@@ -266,9 +273,18 @@ StreamBuffer StreamBuffer::expand(long start, long length) const
     if (start < 0)
     {
         start += len;
-        if (start < 0) start = 0;
     }
-    end = length >= 0 ? start+length : len;
+    if (length < 0)
+    {
+        start += length;
+        length = -length;
+    }
+    if (start < 0)
+    {
+        length += start;
+        start = 0;
+    }
+    end = start+length;
     if (end > len) end = len;
     StreamBuffer result((end-start)*2);
     start += offs;

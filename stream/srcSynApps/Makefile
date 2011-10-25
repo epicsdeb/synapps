@@ -14,12 +14,10 @@ SRCS += $(LIBRARY_DEFAULT)_registerRecordDeviceDriver.cpp
 endif 
 SRCS += $(SYNAPPS_RECORDS:%=dev%Stream.c)
 
-LIB_LIBS += stream dbIoc registryIoc iocsh
+LIB_LIBS += stream $(EPICS_BASE_IOC_LIBS)
 
 include $(TOP)/configure/RULES
 
 # create streamSynApps.dbd from all SYNAPPS_RECORDS
 $(COMMON_DIR)/$(LIBRARY_DEFAULT).dbd: ../../src/CONFIG_STREAM
-	@for r in $(SYNAPPS_RECORDS); \
-	do echo "device($$r,INST_IO,dev$${r}Stream,\"stream\")"; \
-	done > $@
+	$(PERL) ../../src/makedbd.pl $(SYNAPPS_RECORDS) > $@

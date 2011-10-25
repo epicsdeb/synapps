@@ -156,7 +156,6 @@ class Stream : protected StreamCore
     friend long streamPrintf(dbCommon *record, format_t *format, ...);
     friend long streamScanfN(dbCommon *record, format_t *format,
         void*, size_t maxStringSize);
-    friend long streamScanSep(dbCommon *record);
     friend long streamReload(char* recordname);
 
 public:
@@ -170,16 +169,6 @@ public:
 #ifdef EPICS_3_14
 extern "C" {
 epicsExportAddress(int, streamDebug);
-}
-#endif
-
-#ifdef MEMGUARD
-static const iocshFuncDef memguardReportDef =
-    { "memguardReport", 0, NULL };
-
-static void memguardReportFunc (const iocshArgBuf *args)
-{
-    memguardReport();
 }
 #endif
 
@@ -251,9 +240,6 @@ extern "C" void streamReloadFunc (const iocshArgBuf *args)
 
 static void streamRegistrar ()
 {
-#ifdef MEMGUARD
-    iocshRegister(&memguardReportDef, memguardReportFunc);
-#endif
     iocshRegister(&reloadDef, streamReloadFunc);
     // make streamReload available for subroutine records
     registryFunctionAdd("streamReload",
@@ -352,7 +338,6 @@ report(int interest)
                 pstream->ioLink->value.instio.string);
         }
     }
-    StreamPrintTimestampFunction = streamEpicsPrintTimestamp;
     return OK;
 }
 
@@ -487,15 +472,6 @@ long streamPrintf(dbCommon *record, format_t *format, ...)
     bool success = pstream->print(format, ap);
     va_end(ap);
     return success ? OK : ERROR;
-}
-
-long streamScanSep(dbCommon* record)
-{
-    // depreciated
-    debug("streamScanSep(%s)\n", record->name);
-    Stream* pstream = (Stream*)record->dpvt;
-    if (!pstream) return ERROR;
-    return pstream->scanSeparator() ? OK : ERROR;
 }
 
 long streamScanfN(dbCommon* record, format_t *format,
@@ -714,6 +690,7 @@ process()
         debug("Stream::process(%s): could not start, status=%d\n",
             name(), status);
         (void) recGblSetSevr(record, status, INVALID_ALARM);
+        record->pact = false;
         return false;
     }
     debug("Stream::process(%s): protocol started\n", name());
@@ -935,10 +912,15 @@ getFieldAddress(const char* fieldname, StreamBuffer& address)
     }
     else
     {
-        // FIELD in this record
+        // FIELD in this record or VAL in other record
         char fullname[PVNAME_SZ + 1];
         sprintf(fullname, "%s.%s", name(), fieldname);
-        if (dbNameToAddr(fullname, &dbaddr) != OK) return false;
+        if (dbNameToAddr(fullname, &dbaddr) != OK)
+        {
+            // VAL in other record
+            sprintf(fullname, "%s.VAL", fieldname);
+            if (dbNameToAddr(fullname, &dbaddr) != OK) return false;
+        }
     }
     address.append(&dbaddr, sizeof(dbaddr));
     return true;
@@ -968,6 +950,26 @@ formatValue(const StreamFormat& format, const void* fieldaddress)
         long nelem = pdbaddr->no_elements;
         size_t size = nelem * typeSize[format.type];
         char* buffer = fieldBuffer.clear().reserve(size);
+        
+        if (strcmp(((dbFldDes*)pdbaddr->pfldDes)->name, "TIME") == 0)
+        {
+            double time;
+            
+            if (format.type != double_format)
+            {
+                error ("%s: can only read double values from TIME field\n", name());
+                return false;
+            }
+            if (pdbaddr->precord == record)
+            {
+                /* if getting time from own record, update timestamp first */
+                recGblGetTimeStamp(record);
+            }
+            time = pdbaddr->precord->time.secPastEpoch + 631152000u + pdbaddr->precord->time.nsec * 1e-9;
+            debug("Stream::formatValue(%s): read %f from TIME field\n", name(), time);
+            return printValue(format, time);
+        }
+
         if (dbGet(pdbaddr, dbfMapping[format.type], buffer,
             NULL, &nelem, NULL) != 0)
         {
@@ -1034,7 +1036,6 @@ bool Stream::
 matchValue(const StreamFormat& format, const void* fieldaddress)
 {
     // this function must increase consumedInput
-    // [I use goto and feel very ashamed for it.]
     long consumed;
     long lval;
     double dval;
@@ -1053,34 +1054,43 @@ matchValue(const StreamFormat& format, const void* fieldaddress)
         buffer = fieldBuffer.clear().reserve(size);
         for (nord = 0; nord < nelem; nord++)
         {
+            debug("Stream::matchValue(%s): buffer before: %s\n", name(), fieldBuffer.expand()());
             switch (format.type)
             {
                 case long_format:
                 {
                     consumed = scanValue(format, lval);
-                    if (consumed < 0) goto noMoreElements;
-                    ((epicsInt32*)buffer)[nord] = lval;
+                    if (consumed >= 0) ((epicsInt32*)buffer)[nord] = lval;
+                    debug("Stream::matchValue(%s): %s[%li] = %li\n",
+                            name(), pdbaddr->precord->name, nord, lval);
                     break;
                 }
                 case enum_format:
                 {
                     consumed = scanValue(format, lval);
-                    if (consumed < 0) goto noMoreElements;
-                    ((epicsUInt16*)buffer)[nord] = (epicsUInt16)lval;
+                    if (consumed >= 0) ((epicsUInt16*)buffer)[nord] = (epicsUInt16)lval;
+                    debug("Stream::matchValue(%s): %s[%li] = %li\n",
+                            name(), pdbaddr->precord->name, nord, lval);
                     break;
                 }
                 case double_format:
                 {
                     consumed = scanValue(format, dval);
-                    if (consumed < 0) goto noMoreElements;
-                    ((epicsFloat64*)buffer)[nord] = dval;
+                    // Direct assignment to buffer fails fith gcc 3.4.3 for xscale_be
+                    // Optimization bug?
+                    epicsFloat64 f64=dval;
+                    if (consumed >= 0) memcpy(((epicsFloat64*)buffer)+nord, &f64, sizeof(f64));
+                    debug("Stream::matchValue(%s): %s[%li] = %#g %#g\n",
+                            name(), pdbaddr->precord->name, nord, dval,
+                            ((epicsFloat64*)buffer)[nord]);
                     break;
                 }
                 case string_format:
                 {
                     consumed = scanValue(format,
                         buffer+MAX_STRING_SIZE*nord, MAX_STRING_SIZE);
-                    if (consumed < 0) goto noMoreElements;
+                    debug("Stream::matchValue(%s): %s[%li] = \"%.*s\"\n",
+                            name(), pdbaddr->precord->name, nord, MAX_STRING_SIZE, buffer+MAX_STRING_SIZE*nord);
                     break;
                 }
                 default:
@@ -1088,15 +1098,16 @@ matchValue(const StreamFormat& format, const void* fieldaddress)
                         "Illegal format type\n", name());
                     return false;
             }
+            debug("Stream::matchValue(%s): buffer after: %s\n", name(), fieldBuffer.expand()());
+            if (consumed < 0) break;
             consumedInput += consumed;
         }
-noMoreElements:
         if (!nord)
         {
             // scan error: set other record to alarm status
             if (pdbaddr->precord != record)
             {
-                recGblSetSevr(pdbaddr->precord, CALC_ALARM, INVALID_ALARM);
+                (void) recGblSetSevr(pdbaddr->precord, CALC_ALARM, INVALID_ALARM);
                 if (!INIT_RUN)
                 {
                     // process other record to send alarm monitor
@@ -1105,16 +1116,39 @@ noMoreElements:
             }
             return false;
         }
+        if (strcmp(((dbFldDes*)pdbaddr->pfldDes)->name, "TIME") == 0)
+        {
+#ifdef epicsTimeEventDeviceTime
+            if (format.type != double_format)
+            {
+                error ("%s: can only write double values to TIME field\n", name());
+                return false;
+            }
+            dval = dval-631152000u;
+            pdbaddr->precord->time.secPastEpoch = (long)dval;
+            /* rouding: we don't have 9 digits precision in a double of today's number of seconds */
+            pdbaddr->precord->time.nsec = (long)((dval-(long)dval)*1e6)*1000;
+            debug("Stream::matchValue(%s): writing %i.%i to TIME field\n", name(),
+                pdbaddr->precord->time.secPastEpoch, pdbaddr->precord->time.nsec);
+            pdbaddr->precord->tse = epicsTimeEventDeviceTime;
+            return true;
+#else
+            error ("%s: writing TIME field is not supported in this EPICS version\n", name());
+            return false;
+#endif
+        }
+        
         if (pdbaddr->precord == record || INIT_RUN)
         {
             // write into own record, thus don't process it
             // in @init we must not process other record
-            debug("Stream::matchValue(%s): dbPut(%s.%s,...)\n",
+            debug("Stream::matchValue(%s): dbPut(%s.%s,%s)\n",
                 name(),
                 pdbaddr->precord->name,
-                ((dbFldDes*)pdbaddr->pfldDes)->name);
+                ((dbFldDes*)pdbaddr->pfldDes)->name,
+                fieldBuffer.expand()());
             putfunc = "dbPut";
-            status = dbPut(pdbaddr, dbfMapping[format.type], fieldBuffer(), nord);
+            status = dbPut(pdbaddr, dbfMapping[format.type], buffer, nord);
             if (INIT_RUN && pdbaddr->precord != record)
             {
                 // clean error status of other record in @init
@@ -1126,12 +1160,13 @@ noMoreElements:
         else
         {
             // write into other record, thus process it
-            debug("Stream::matchValue(%s): dbPutField(%s.%s,...)\n",
+            debug("Stream::matchValue(%s): dbPutField(%s.%s,%s)\n",
                 name(),
                 pdbaddr->precord->name,
-                ((dbFldDes*)pdbaddr->pfldDes)->name);
+                ((dbFldDes*)pdbaddr->pfldDes)->name,
+                fieldBuffer.expand()());
             putfunc = "dbPutField";
-            status = dbPutField(pdbaddr, dbfMapping[format.type], fieldBuffer(), nord);
+            status = dbPutField(pdbaddr, dbfMapping[format.type], buffer, nord);
         }
         if (status != 0)
         {

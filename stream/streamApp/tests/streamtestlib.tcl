@@ -29,11 +29,10 @@ proc deviceconnect {s addr port} {
 set inputbuffer {}
 proc receiveHandler {sock} {
     global inputbuffer inputlog
-    debugmsg "received data"
     set input [read $sock]
     puts -nonewline $inputlog $input
     append inputbuffer $input
-    debugmsg "inputbuffer=[escape $inputbuffer]"
+    debugmsg "receiving \"[escape $inputbuffer]\""
     if [eof $sock] {
         close $sock
         debugmsg "connection closed by ioc"
@@ -42,16 +41,23 @@ proc receiveHandler {sock} {
 }
 
 proc startioc {} {
-    global debug records protocol startup port sock ioc testname env
+    global debug records protocol startup port sock ioc testname env streamversion
     set fd [open test.db w]
     puts $fd $records
     close $fd
     set fd [open test.proto w]
     puts $fd $protocol
     close $fd
-    set fd [open test.cmd w]
-    puts $fd "dbLoadDatabase ../O.Common/streamApp.dbd"
-    puts $fd "streamApp_registerRecordDeviceDriver"
+    set fd [open test.cmd w 0777]
+    
+    if [info exists streamversion] {
+        puts $fd "#!/usr/local/bin/iocsh"
+        puts $fd "require stream,$streamversion"
+    } else {
+        puts $fd "#!../O.$env(EPICS_HOST_ARCH)/streamApp"
+        puts $fd "dbLoadDatabase ../O.Common/streamApp.dbd"
+        puts $fd "streamApp_registerRecordDeviceDriver"
+    }
     puts $fd "epicsEnvSet STREAM_PROTOCOL_PATH ."
     puts $fd "drvAsynIPPortConfigure device localhost:$port"
     puts $fd "dbLoadRecords test.db"
@@ -61,23 +67,36 @@ proc startioc {} {
     puts $fd "dbior stream 2"
     puts $fd "var streamDebug 1"
     close $fd
-    set ioc [open "|../O.$env(EPICS_HOST_ARCH)/streamApp test.cmd >& $testname.ioclog" w]
+    if [info exists streamversion] {
+        set ioc [open "|iocsh test.cmd >& $testname.ioclog 2>@stderr" w]
+    } else {
+        set ioc [open "|../O.$env(EPICS_HOST_ARCH)/streamApp test.cmd >& $testname.ioclog 2>@stderr" w]
+    }
     fconfigure $ioc -blocking yes -buffering none
     debugmsg "waiting to connect"
     vwait sock
 }
 
+set lastcommand ""
+set line 0
 proc ioccmd {command} {
     global ioc
+    global lastcommand
+    global line
+    set lastcommand $command
+    set line 0
+    debugmsg "$command"
     puts $ioc $command
 }
 
 proc send {string} {
-    global sock
+    global sock lastsent
+    set lastsent $string
     puts -nonewline $sock $string
+    flush $sock
 }
 
-set timeout 10000
+set timeout 5000
 proc receive {} {
     global inputbuffer timeoutid timeout
     set timeoutid [after $timeout {
@@ -102,6 +121,11 @@ proc receive {} {
 set faults 0
 proc assure {args} {
     global faults
+    global lastcommand
+    global lastsent
+    global line
+    
+    incr line
     set input {}
     for {set i 0} {$i < [llength $args]} {incr i} {
         if [catch {lappend input [receive]} msg] {
@@ -118,47 +142,63 @@ proc assure {args} {
             lappend notfound $expected
         }
     }
+    if {[llength $notfound] || [llength $input]} {
+        puts stderr "In command \"$lastcommand\""
+        if [info exists lastsent] {
+            puts stderr "last sent: \"[escape $lastsent]\""
+        }
+    }
     foreach string $notfound {
-        puts stderr "Error in assure: missing    \"[escape $string]\""
+        puts stderr "Error in assure: line $line missing \"[escape $string]\""
     }
     foreach string $input {
-        puts stderr "Error in assure: unexpected \"[escape $string]\""
+        puts stderr "Error in assure: got unexpected \"[escape $string]\""
     }
     if {[llength $notfound] || [llength $input]} {incr faults}
 }
 
 proc escape {string} {
-    while {![string is print -failindex index $string]} {
-        set char [string index $string $index]
-        scan $char "%c" code
-        switch $char {
-            "\r" { set escaped "\\r" }
-            "\n" { set escaped "\\n" }
-            "\a" { set escaped "\\a" }
-            "\t" { set escaped "\\t" }
-            default { set escaped [format "<%02x>" $code] }
+    set result ""
+    set length [string length $string]
+    for {set i 0} {$i < $length} {incr i} {
+        set c [string index $string $i]
+        scan $c %c n
+        if {$n == 13} {
+            append result "\\r"
+        } elseif {$n == 10} {
+            append result "\\n"
+        } elseif {($n & 127) < 32} {
+            append result [format "<%02x>" $n]
+        } else {
+            append result $c
         }
-        set string [string replace $string $index $index $escaped]
     }
-    return $string
+    return $result
 }
 
 proc finish {} {
     global ioc timeout testname faults
-    close $ioc
     set timeout 1000
     while {![catch {set string [receive]}]} {
         puts stderr "Error in finish: unexpected \"[escape $string]\""
         incr faults
     }
+    after 100
+    close $ioc
     if $faults {
-        puts "Test failed."
+        puts "\033\[31;7mTest failed.\033\[0m"
         exit 1
     }
-    puts "Test passed."
+    puts "\033\[32mTest passed.\033\[0m"
     eval file delete [glob -nocomplain test.*] StreamDebug.log $testname.ioclog
 }
 
 set port 40123
 socket -server deviceconnect $port
 set inputlog [open "test.inputlog" w]
+
+# SLS style driver modules (optionally with version)
+if {[lindex $argv 0] == "-sls"} {
+    set streamversion [lindex $argv 1]
+    set argv [lrange $argv 2 end]
+}

@@ -21,6 +21,7 @@
 #include "devStream.h"
 #include <waveformRecord.h>
 #include <string.h>
+#include <errlog.h>
 #include <epicsExport.h>
 
 static long readData (dbCommon *record, format_t *format)
@@ -43,10 +44,10 @@ static long readData (dbCommon *record, format_t *format)
                 switch (wf->ftvl)
                 {
                     case DBF_DOUBLE:
-                        ((double *)wf->bptr)[wf->nord] = dval;
+                        ((epicsFloat64 *)wf->bptr)[wf->nord] = (epicsFloat64)dval;
                         break;
                     case DBF_FLOAT:
-                        ((float *)wf->bptr)[wf->nord] = (float)dval;
+                        ((epicsFloat32 *)wf->bptr)[wf->nord] = (epicsFloat32)dval;
                         break;
                     default:
                         errlogSevPrintf (errlogFatal,
@@ -66,23 +67,23 @@ static long readData (dbCommon *record, format_t *format)
                 switch (wf->ftvl)
                 {
                     case DBF_DOUBLE:
-                        ((double *)wf->bptr)[wf->nord] = (double)lval;
+                        ((epicsFloat64 *)wf->bptr)[wf->nord] = (epicsFloat64)lval;
                         break;
                     case DBF_FLOAT:
-                        ((float *)wf->bptr)[wf->nord] = (float)lval;
+                        ((epicsFloat32 *)wf->bptr)[wf->nord] = (epicsFloat32)lval;
                         break;
                     case DBF_LONG:
                     case DBF_ULONG:
-                        ((long *)wf->bptr)[wf->nord] = lval;
+                        ((epicsInt32 *)wf->bptr)[wf->nord] = (epicsInt32)lval;
                         break;
                     case DBF_SHORT:
                     case DBF_USHORT:
                     case DBF_ENUM:
-                        ((short *)wf->bptr)[wf->nord] = (short)lval;
+                        ((epicsInt16 *)wf->bptr)[wf->nord] = (epicsInt16)lval;
                         break;
                     case DBF_CHAR:
                     case DBF_UCHAR:
-                        ((char *)wf->bptr)[wf->nord] = (char)lval;
+                        ((epicsInt8 *)wf->bptr)[wf->nord] = (epicsInt8)lval;
                         break;
                     default:
                         errlogSevPrintf (errlogFatal,
@@ -156,29 +157,29 @@ static long writeData (dbCommon *record, format_t *format)
                 switch (wf->ftvl)
                 {
                     case DBF_DOUBLE:
-                        dval = ((double *)wf->bptr)[nowd];
+                        dval = ((epicsFloat64 *)wf->bptr)[nowd];
                         break;
                     case DBF_FLOAT:
-                        dval = ((float *)wf->bptr)[nowd];
+                        dval = ((epicsFloat32 *)wf->bptr)[nowd];
                         break;
                     case DBF_LONG:
-                        dval = ((long *)wf->bptr)[nowd];
+                        dval = ((epicsInt32 *)wf->bptr)[nowd];
                         break;
                     case DBF_ULONG:
-                        dval = ((unsigned long *)wf->bptr)[nowd];
+                        dval = ((epicsUInt32 *)wf->bptr)[nowd];
                         break;
                     case DBF_SHORT:
-                        dval = ((short *)wf->bptr)[nowd];
+                        dval = ((epicsInt16 *)wf->bptr)[nowd];
                         break;
                     case DBF_USHORT:
                     case DBF_ENUM:
-                        dval = ((unsigned short *)wf->bptr)[nowd];
+                        dval = ((epicsUInt16 *)wf->bptr)[nowd];
                         break;
                     case DBF_CHAR:
-                        dval = ((char *)wf->bptr)[nowd];
+                        dval = ((epicsInt8 *)wf->bptr)[nowd];
                         break;
                     case DBF_UCHAR:
-                        dval = ((unsigned char *)wf->bptr)[nowd];
+                        dval = ((epicsUInt8 *)wf->bptr)[nowd];
                         break;
                     default:
                         errlogSevPrintf (errlogFatal,
@@ -196,21 +197,23 @@ static long writeData (dbCommon *record, format_t *format)
                 switch (wf->ftvl)
                 {
                     case DBF_LONG:
+                        lval = ((epicsInt32 *)wf->bptr)[nowd];
+                        break;
                     case DBF_ULONG:
-                        lval = ((long *)wf->bptr)[nowd];
+                        lval = ((epicsUInt32 *)wf->bptr)[nowd];
                         break;
                     case DBF_SHORT:
-                        lval = ((short *)wf->bptr)[nowd];
+                        lval = ((epicsInt16 *)wf->bptr)[nowd];
                         break;
                     case DBF_USHORT:
                     case DBF_ENUM:
-                        lval = ((unsigned short *)wf->bptr)[nowd];
+                        lval = ((epicsUInt16 *)wf->bptr)[nowd];
                         break;
                     case DBF_CHAR:
-                        lval = ((char *)wf->bptr)[nowd];
+                        lval = ((epicsInt8 *)wf->bptr)[nowd];
                         break;
                     case DBF_UCHAR:
-                        lval = ((unsigned char *)wf->bptr)[nowd];
+                        lval = ((epicsUInt8 *)wf->bptr)[nowd];
                         break;
                     default:
                         errlogSevPrintf (errlogFatal,

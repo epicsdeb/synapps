@@ -3,12 +3,13 @@
 <html>
 <head>
 <title>StreamDevice: Tips and Tricks</title>
-<link rel="shortcut icon" href="sls_icon.ico">
+<link rel="shortcut icon" href="favicon.ico">
 <link rel="stylesheet" type="text/css" href="stream.css">
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
 <meta name="author" content="Dirk Zimoch">
 </head>
 <body>
+<iframe src="nav.html" id="navleft"></iframe>
 <h1>StreamDevice: Tips and Tricks</h1>
 
 <a name="argvar"></a>
@@ -95,10 +96,10 @@ array_out {separator=", "; out "an array: (%.2f)";}
 The format <code>%.2f</code> is repeated for each element of the array.
 All elements are separated by <code>", "</code>.<br>
 Output will look like this:
+</p>
 <pre>
 an array: (3.14, 17.30, -12.34)
 </pre>
-</p>
 <h3>B) We have up to 12 numeric values</h3>
 <p>
 Use a <a href="calcout.html">calcout</a> record and
@@ -131,14 +132,14 @@ Use <a href="formats.html#types">record references</a> in the format.
 </p>
 <p>
 <code>
-acquire {out 'ACQUIRE "%(\$1:directory.VAL)s/%s",%(\$1:time.VAL).3f;';}
+acquire {out 'ACQUIRE "%(\$1:directory)s/%s",%(\$1:time).3f;';}
 </code>
 </p>
 <p>
-You must specify the full <code>record.FIELD</code> name,
-even for <code>VAL</code> fields.
-To avoid record names in protocol files use
-<a href="protocol.html#argvar">protocol arguments</a>.
+You can specify a record name or record.FIELD in parentheses directly
+after the <code>%</code>.
+To avoid plain record names in protocol files use
+<a href="protocol.html#argvar">protocol arguments</a> like <code>\$1</code>.
 In the link, specify the record name or just the basename of the
 other records (device name) in parentheses.
 </p>
@@ -221,7 +222,7 @@ To avoid record names in protocol files, use
 </p>
 <p>
 <code>
-read_AB {out "GET A,B"; in "A=%f, B=%(\$1.VAL)f";}
+read_AB {out "GET A,B"; in "A=%f, B=%(\$1)f";}
 </code>
 </p>
 <p>
@@ -259,7 +260,7 @@ When asked "<code>CURRENT?</code>", the device send something like
 </p>
 <p>
 <code>
-read_current {out "CURRENT?"; in "CURRENT %f A"; @mismatch {in "%(\1.VAL)39c";}}
+read_current {out "CURRENT?"; in "CURRENT %f A"; @mismatch {in "%(\1)39c";}}
 </code>
 </p>
 <p>
@@ -292,6 +293,5 @@ record (stringout, "$(DEVICE):clean_2") {<br>
 </code>
 <hr>
 <p><small>Dirk Zimoch, 2007</small></p>
-<script src="stream.js" type="text/javascript"></script>
 </body>
 </html>
