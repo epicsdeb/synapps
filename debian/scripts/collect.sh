@@ -61,7 +61,7 @@ getpart ipac https://svn.aps.anl.gov/trac/epics/ipac/attachment/wiki/V2.11/ipac-
 
 getpart asyn http://www.aps.anl.gov/epics/download/modules/asyn4-17.tar.gz
 
-getpart vme http://www.aps.anl.gov/bcda/synApps/tar/vme_R2-8.tar.gz
+getpart vme http://www.aps.anl.gov/bcda/synApps/tar/vme_R2-7.tar.gz
 
 getpart vac http://www.aps.anl.gov/bcda/synApps/tar/vac_R1-3.tar.gz
 
