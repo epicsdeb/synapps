@@ -1,0 +1,123 @@
+From: Michael Davidsaver <mdavidsaver@bnl.gov>
+Date: Mon, 20 Aug 2012 16:25:42 -0400
+Subject: [PATCH] autosave: Status PVs use severity
+
+---
+ autosave/asApp/Db/save_restoreStatus.db |   40 +++++++++++++++++++++++++++++++
+ 1 files changed, 40 insertions(+), 0 deletions(-)
+
+diff --git a/autosave/asApp/Db/save_restoreStatus.db b/autosave/asApp/Db/save_restoreStatus.db
+index 9645277..9c10d97 100644
+--- a/autosave/asApp/Db/save_restoreStatus.db
++++ b/autosave/asApp/Db/save_restoreStatus.db
+@@ -36,6 +36,10 @@ record(mbbo, "$(P)SR_rebootStatus") {
+   field(TWST, "Warning")
+   field(THST, "Seq Fail")
+   field(FRST, "Ok")
++  field(ZRSV, "INVALID")
++  field(ONSV, "MAJOR")
++  field(TWSV, "MINOR")
++  field(THSV, "MINOR")
+ }
+ 
+ record(mbbo, "$(P)SR_status") {
+@@ -50,6 +54,10 @@ record(mbbo, "$(P)SR_status") {
+   field(TWST, "Warning")
+   field(THST, "Seq Fail")
+   field(FRST, "Ok")
++  field(ZRSV, "INVALID")
++  field(ONSV, "MAJOR")
++  field(TWSV, "MINOR")
++  field(THSV, "MINOR")
+ }
+ 
+ record(stringout, "$(P)SR_recentlyStr") {
+@@ -93,6 +101,10 @@ record(mbbo, "$(P)SR_0_Status") {
+   field(TWST, "Warning")
+   field(THST, "Seq Fail")
+   field(FRST, "Ok")
++  field(ZRSV, "INVALID")
++  field(ONSV, "MAJOR")
++  field(TWSV, "MINOR")
++  field(THSV, "MINOR")
+ }
+ 
+ record(stringout, "$(P)SR_0_StatusStr") {
+@@ -126,6 +138,10 @@ record(mbbo, "$(P)SR_1_Status") {
+   field(TWST, "Warning")
+   field(THST, "Seq Fail")
+   field(FRST, "Ok")
++  field(ZRSV, "INVALID")
++  field(ONSV, "MAJOR")
++  field(TWSV, "MINOR")
++  field(THSV, "MINOR")
+ }
+ 
+ record(stringout, "$(P)SR_1_StatusStr") {
+@@ -159,6 +175,10 @@ record(mbbo, "$(P)SR_2_Status") {
+   field(TWST, "Warning")
+   field(THST, "Seq Fail")
+   field(FRST, "Ok")
++  field(ZRSV, "INVALID")
++  field(ONSV, "MAJOR")
++  field(TWSV, "MINOR")
++  field(THSV, "MINOR")
+ }
+ 
+ record(stringout, "$(P)SR_2_StatusStr") {
+@@ -193,6 +213,10 @@ record(mbbo, "$(P)SR_3_Status") {
+   field(TWST, "Warning")
+   field(THST, "Seq Fail")
+   field(FRST, "Ok")
++  field(ZRSV, "INVALID")
++  field(ONSV, "MAJOR")
++  field(TWSV, "MINOR")
++  field(THSV, "MINOR")
+ }
+ 
+ record(stringout, "$(P)SR_3_StatusStr") {
+@@ -226,6 +250,10 @@ record(mbbo, "$(P)SR_4_Status") {
+   field(TWST, "Warning")
+   field(THST, "Seq Fail")
+   field(FRST, "Ok")
++  field(ZRSV, "INVALID")
++  field(ONSV, "MAJOR")
++  field(TWSV, "MINOR")
++  field(THSV, "MINOR")
+ }
+ 
+ record(stringout, "$(P)SR_4_StatusStr") {
+@@ -259,6 +287,10 @@ record(mbbo, "$(P)SR_5_Status") {
+   field(TWST, "Warning")
+   field(THST, "Seq Fail")
+   field(FRST, "Ok")
++  field(ZRSV, "INVALID")
++  field(ONSV, "MAJOR")
++  field(TWSV, "MINOR")
++  field(THSV, "MINOR")
+ 
+ }
+ 
+@@ -293,6 +325,10 @@ record(mbbo, "$(P)SR_6_Status") {
+   field(TWST, "Warning")
+   field(THST, "Seq Fail")
+   field(FRST, "Ok")
++  field(ZRSV, "INVALID")
++  field(ONSV, "MAJOR")
++  field(TWSV, "MINOR")
++  field(THSV, "MINOR")
+ }
+ 
+ 
+@@ -328,6 +364,10 @@ record(mbbo, "$(P)SR_7_Status") {
+   field(TWST, "Warning")
+   field(THST, "Seq Fail")
+   field(FRST, "Ok")
++  field(ZRSV, "INVALID")
++  field(ONSV, "MAJOR")
++  field(TWSV, "MINOR")
++  field(THSV, "MINOR")
+ }
+ 
+ record(stringout, "$(P)SR_7_StatusStr") {
+-- 
