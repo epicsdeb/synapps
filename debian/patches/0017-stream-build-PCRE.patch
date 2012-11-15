@@ -8,14 +8,14 @@ Build optional regular expression support for linux targets
  1 files changed, 5 insertions(+), 0 deletions(-)
 
 diff --git a/stream/configure/RELEASE b/stream/configure/RELEASE
-index 3a08766..f8c31a9 100644
+index 3a08766..7fa5fc1 100644
 --- a/stream/configure/RELEASE
 +++ b/stream/configure/RELEASE
 @@ -8,6 +8,11 @@
  # each time EPICS_BASE, SNCSEQ, or any other external
  # module defined in the RELEASE file is rebuilt.
  
-+ifneq ($(filter linux%,$(EPICS_HOST_ARCH)),)
++ifneq ($(filter linux%,$(T_A)),)
 +PCRE_INCLUDE=/usr/include
 +PCRE_LIB=/usr/lib
 +endif
