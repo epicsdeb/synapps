@@ -1,0 +1,26 @@
+From: Michael Davidsaver <mdavidsaver@bnl.gov>
+Date: Thu, 15 Nov 2012 13:22:53 -0500
+Subject: [PATCH] stream: build PCRE
+
+Build optional regular expression support for linux targets
+---
+ stream/configure/RELEASE |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
+
+diff --git a/stream/configure/RELEASE b/stream/configure/RELEASE
+index 3a08766..f8c31a9 100644
+--- a/stream/configure/RELEASE
++++ b/stream/configure/RELEASE
+@@ -8,6 +8,11 @@
+ # each time EPICS_BASE, SNCSEQ, or any other external
+ # module defined in the RELEASE file is rebuilt.
+ 
++ifneq ($(filter linux%,$(EPICS_HOST_ARCH)),)
++PCRE_INCLUDE=/usr/include
++PCRE_LIB=/usr/lib
++endif
++
+ SUPPORT=/home/oxygen/MOONEY/distrib/synApps_5_5/support
+ ASYN=/home/oxygen/MOONEY/distrib/synApps_5_5/support/asyn-4-13
+ CALC=/home/oxygen/MOONEY/distrib/synApps_5_5/support/calc-2-8
+-- 
