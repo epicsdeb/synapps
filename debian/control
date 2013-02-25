@@ -42,7 +42,8 @@ Description: Shared libraries for IOCs using synApps modules
 
 Package: epics-synapps
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends},
+         libsynapps20111025 (>= ${source:Version}), libsynapps20111025 (<< ${source:Version}.1~),
 Conflicts: epics-synapps-doc (<= 5.4.1-2)
 Suggests: epics-synapps-doc, epics-synapps-util
 Description: Files for running IOCs using synApps modules
@@ -57,6 +58,8 @@ Description: Files for running IOCs using synApps modules
 Package: epics-synapps-dev
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
+         libsynapps20111025 (= ${binary:Version}),
+         epics-synapps (= ${source:Version}),
          libpcre3-dev,
          epics-synapps (= ${source:Version}),
          epics-dev
@@ -124,7 +127,8 @@ Description: All MEDM display panels from synapps
 
 Package: rtems-synapps-mvme2100
 Architecture: all
-Depends: ${rtems:Depends}, epics-synapps-dev (= ${binary:Version})
+Depends: ${rtems:Depends},
+         epics-synapps-dev (>= ${source:Version}), epics-synapps-dev (<< ${source:Version}.1~),
 Conflicts: epics-synapps-mvme2100
 Provides: epics-synapps-mvme2100
 Replaces: epics-synapps-mvme2100
@@ -138,7 +142,8 @@ Description: synApps built for the mvme2100
 
 Package: rtems-synapps-mvme2307
 Architecture: all
-Depends: ${rtems:Depends}, epics-synapps-dev (= ${binary:Version})
+Depends: ${rtems:Depends},
+         epics-synapps-dev (>= ${source:Version}), epics-synapps-dev (<< ${source:Version}.1~),
 Conflicts: epics-synapps-mvme2307
 Provides: epics-synapps-mvme2307
 Replaces: epics-synapps-mvme2307
@@ -152,7 +157,8 @@ Description: synApps built for the mvme2307
 
 Package: rtems-synapps-mvme3100
 Architecture: all
-Depends: ${rtems:Depends}, epics-synapps-dev (= ${binary:Version})
+Depends: ${rtems:Depends},
+         epics-synapps-dev (>= ${source:Version}), epics-synapps-dev (<< ${source:Version}.1~),
 Conflicts: epics-synapps-mvme3100
 Provides: epics-synapps-mvme3100
 Replaces: epics-synapps-mvme3100
@@ -166,7 +172,8 @@ Description: synApps built for the mvme3100
 
 Package: rtems-synapps-mvme5500
 Architecture: all
-Depends: ${rtems:Depends}, epics-synapps-dev (= ${binary:Version})
+Depends: ${rtems:Depends},
+         epics-synapps-dev (>= ${source:Version}), epics-synapps-dev (<< ${source:Version}.1~),
 Conflicts: epics-synapps-mvme5500
 Provides: epics-synapps-mvme5500
 Replaces: epics-synapps-mvme5500
