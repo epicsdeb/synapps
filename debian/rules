@@ -1,0 +1,155 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+
+export DH_VERBOSE=1
+
+export EPICS_HOST_ARCH:=$(shell /usr/lib/epics/startup/EpicsHostArch)
+
+%:
+	dh --with epics -Sepicsmake $@
+binary: binary-arch binary-indep
+binary-arch binary-indep: install
+install: build
+
+MODS=asyn autosave busy calc camac dac128v debian delaygen ip \
+ip330 ipac ipunidig love mca modbus motor optics seq \
+softglue sscan std stream vac vme
+
+dh_auto_configure override_dh_auto_test:
+
+
+override_dh_auto_clean:
+	make -C mdautils clean
+	rm -rf op opi
+	rm -f adltemp edlskip
+	dh_auto_clean -- -f debian/rules2
+
+
+override_dh_auto_build:
+ifneq (,$(findstring edm-synapps, $(shell dh_listpackages)))
+
+	# remove duplicate adl files
+	rm -f ip/ipApp/op/adl/LoveController.adl
+	rm -f optics/documentation/fb_epid/source/fb_epid.adl
+	rm -f std/stdApp/op/adl/arrayPlot.adl
+
+	rm -rf $(CURDIR)/opi
+	install -d $(CURDIR)/opi
+
+	find $(MODS) -name '*.opi' -a -not -name '*test*' -a -not -path './debian*' -a -not -path './opi' \
+	 | xargs cp -f -t $(CURDIR)/opi
+
+	rm -rf $(CURDIR)/op
+	install -d $(CURDIR)/op
+
+	find $(MODS) -name '*.adl' -a -not -name '*test*' -a -not -path './debian*' -a -not -path './op' \
+	 | xargs cp -f -t $(CURDIR)/op
+
+	rm -f edlskip
+	for ff in op/*.adl; do \
+		fromdos $$ff; \
+		if adl2edl -rename -rgb $$ff > $${ff%.adl}.edl.tmp; then \
+			mv $${ff%.adl}.edl.tmp $${ff%.adl}.edl; \
+		else \
+			rm $${ff%.adl}.edl.tmp; \
+			echo "Failed to convert $$ff" >> edlskip; \
+		fi \
+	done
+	rm -f op/*.db
+	chmod -x op/*
+
+	# the medm composite widget doesn't get correctly converted
+	# to an edm embedded window widget.
+	sed -i -e 's|"[^c]*composite file |"|g' op/*.edl
+endif # edm-synapps
+
+	$(MAKE) -C mdautils
+
+	dh_auto_build -- -f debian/rules2
+
+
+override_dh_auto_install:
+	 dh_auto_install -- -f debian/rules2
+
+override_dh_install:
+
+	# We will fetch these ourselves
+	# since many are not install anyway
+	rm -rf debian/tmp/usr/lib/epics/db/*
+	
+	# find all .db files
+	find $(MODS) -name '*.db' -a -not -path './debian*' \
+	 -exec install -m 644 {} debian/tmp/usr/lib/epics/db/ \;
+
+	install -d debian/tmp/usr/lib/epics/as/req
+
+	# find all autosave request files
+	find $(MODS) -name '*.req' -a -not -path './debian*' \
+	 -exec install -m 644 {} debian/tmp/usr/lib/epics/as/req/ \;
+
+
+	# Install extra rules for SNC
+	rm -f debian/tmp/usr/lib/epics/configure/RULES_BUILD
+	rm -f debian/tmp/usr/lib/epics/configure/RELEASE*
+	install -d debian/tmp/usr/lib/epics/configure/rules.d
+
+	install -m 644 seq/configure/RULES_BUILD \
+debian/tmp/usr/lib/epics/configure/rules.d/seqsnc.make
+
+
+	# Location of 'snc' executable changes
+
+	# remove old defintion of SNC=
+	sed -i -e '/^# snc executable/,/#----/d' \
+debian/tmp/usr/lib/epics/configure/rules.d/seqsnc.make
+	# append new defintion
+	echo 'SNC ?= $$(call PATH_FILTER, $$(TOOLS)/snc$$(HOSTEXE))' >> \
+debian/tmp/usr/lib/epics/configure/rules.d/seqsnc.make
+
+
+	# Executables for /usr/bin
+	install -d debian/tmp/usr/bin
+
+	install -m 755 -t debian/tmp/usr/bin \
+debian/tmp/usr/lib/epics/bin/$(EPICS_HOST_ARCH)/snc
+
+	# symlink
+	rm -f debian/tmp/usr/lib/epics/bin/$(EPICS_HOST_ARCH)/snc
+
+	ln -s ../../../../bin/snc \
+debian/tmp/usr/lib/epics/bin/$(EPICS_HOST_ARCH)/snc
+
+
+ifneq (,$(findstring epics-synapps-doc, $(shell dh_listpackages)))
+	# collect docmentation
+	for dd in */doc*; do \
+		cp -r $$dd \
+debian/epics-synapps-doc/usr/share/doc/epics-synapps/`dirname $$dd` ;\
+	done
+endif # epics-synapps-doc
+
+
+	# Cleanup things which look like fully expanded dbds
+	# since no applications are packaged
+	grep -c waveformPOST debian/epics-synapps/usr/lib/epics/dbd/* \
+	|grep -v '0$$' \
+	| cut -f 1 -d ':' \
+	| xargs rm -f
+
+	rm -rf debian/tmp/usr/lib/epics/lib/*/*Test*
+	rm -rf debian/tmp/usr/lib/epics/lib/*/*test*
+
+	rm -rf debian/tmp/usr/lib/epics/dbd/*Test*
+	rm -rf debian/tmp/usr/lib/epics/dbd/*test*
+
+	rm -rf debian/tmp/usr/lib/epics/bin/RTEMS-*
+
+	dh_install
+
+
+override_dh_fixperms:
+	dh_fixperms
+
+	# These get detected as improper scripts
+	# and won't be executed in-place anyway
+	find debian/epics-synapps/usr/lib/epics/iocBoot -type f -exec chmod -x {} \;

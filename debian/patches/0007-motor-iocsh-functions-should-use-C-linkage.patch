@@ -1,0 +1,30 @@
+From: Michael Davidsaver <mdavidsaver@bnl.gov>
+Date: Thu, 30 Jul 2009 11:38:07 -0400
+Subject: [PATCH] motor: iocsh functions should use C linkage
+
+Helpful for RTEMS
+---
+ motor/motorApp/OmsSrc/drvMAXv.cc |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/motor/motorApp/OmsSrc/drvMAXv.cc b/motor/motorApp/OmsSrc/drvMAXv.cc
+index e238f76..d252f8e 100644
+--- a/motor/motorApp/OmsSrc/drvMAXv.cc
++++ b/motor/motorApp/OmsSrc/drvMAXv.cc
+@@ -754,6 +754,7 @@ static char *readbuf(volatile struct MAXv_motor *pmotor, char *bufptr)
+ /* Configuration function for  module_types data     */
+ /* areas. MAXvSetup()                                */
+ /*****************************************************/
++extern "C"
+ RTN_STATUS
+ MAXvSetup(int num_cards,        /* maximum number of cards in rack */
+           int addrs_type,       /* VME address type; 16 - A16, 24 - A24 or 32 - A32. */
+@@ -895,6 +896,7 @@ MAXvSetup(int num_cards,        /* maximum number of cards in rack */
+     return(rtncode);
+ }
+ 
++extern "C"
+ RTN_VALUES MAXvConfig(int card,                 /* number of card being configured */
+                       const char *initstr)      /* initialization string */
+ {
+-- 
