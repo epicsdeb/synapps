@@ -1,0 +1,42 @@
+From: Michael Davidsaver <mdavidsaver@bnl.gov>
+Date: Mon, 25 Mar 2013 10:51:54 -0400
+Subject: [PATCH] stream: remove 3.13 build
+
+equivalent to StreamDevice-2-6-patch20121009
+---
+ stream/streamApp/Makefile |   14 --------------
+ 1 files changed, 0 insertions(+), 14 deletions(-)
+
+diff --git a/stream/streamApp/Makefile b/stream/streamApp/Makefile
+index 5764bc3..c44934c 100644
+--- a/stream/streamApp/Makefile
++++ b/stream/streamApp/Makefile
+@@ -1,13 +1,5 @@
+ TOP=../..
+ 
+-# Look if we have EPICS R3.13 or R3.14
+-ifeq ($(wildcard $(TOP)/configure),)
+-# EPICS R3.13
+-include $(TOP)/config/CONFIG_APP
+-# The real work is in Makefile.Vx
+-include $(TOP)/config/RULES_ARCHS
+-else
+-
+ # EPICS R3.14
+ include $(TOP)/configure/CONFIG
+ 
+@@ -66,13 +58,7 @@ CPPFLAGS += -DDEBUGFILE=StreamDebug.log
+ 
+ include $(TOP)/configure/RULES
+ 
+-ifeq ($(EPICS_REVISION),14)
+ clean:: myclean
+-else
+-clean: myclean
+-endif
+ 
+ myclean:
+ 	$(RM) core* StreamDebug.log
+-
+-endif
+-- 

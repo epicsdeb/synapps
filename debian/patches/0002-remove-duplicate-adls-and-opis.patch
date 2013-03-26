@@ -8,33 +8,33 @@ sscan/sscanApp/op/adl/arrayPlot.adl
 optics/opticsApp/op/adl/fb_epid.adl
 love/loveApp/op/adl/LoveController.adl
 ---
- ip/ipApp/op/adl/LoveController.adl              |  436 -------
+ love/loveApp/op/adl/LoveController.adl          |  425 ------
  optics/documentation/fb_epid/source/fb_epid.adl | 1194 -----------------
  sscan/sscanApp/op/opi/scan_more.adl             | 1565 -----------------------
  std/stdApp/op/adl/arrayPlot.adl                 |  145 ---
  std/stdApp/op/opi/arrayPlot.opi                 |  206 ---
- 5 files changed, 0 insertions(+), 3546 deletions(-)
- delete mode 100644 ip/ipApp/op/adl/LoveController.adl
+ 5 files changed, 0 insertions(+), 3535 deletions(-)
+ delete mode 100644 love/loveApp/op/adl/LoveController.adl
  delete mode 100644 optics/documentation/fb_epid/source/fb_epid.adl
  delete mode 100644 sscan/sscanApp/op/opi/scan_more.adl
  delete mode 100644 std/stdApp/op/adl/arrayPlot.adl
  delete mode 100644 std/stdApp/op/opi/arrayPlot.opi
 
-diff --git a/ip/ipApp/op/adl/LoveController.adl b/ip/ipApp/op/adl/LoveController.adl
+diff --git a/love/loveApp/op/adl/LoveController.adl b/love/loveApp/op/adl/LoveController.adl
 deleted file mode 100644
-index 7da324f..0000000
---- a/ip/ipApp/op/adl/LoveController.adl
+index 1d4ae04..0000000
+--- a/love/loveApp/op/adl/LoveController.adl
 +++ /dev/null
-@@ -1,436 +0,0 @@
+@@ -1,425 +0,0 @@
 -
 -file {
--	name="/home/oxygen4/MOONEY/epics/3.13.1.1/tmm/tmmApp/op/adl/LoveController.adl"
--	version=020306
+-	name="/home/oxygen12/DKLINE/EPICS/synApps/ioc/Love/LoveApp/op/adl/LoveController.adl"
+-	version=030004
 -}
 -display {
 -	object {
--		x=1055
--		y=191
+-		x=251
+-		y=117
 -		width=184
 -		height=145
 -	}
@@ -295,158 +295,37 @@ index 7da324f..0000000
 -	textix="$(P)$(Q)"
 -	align="horiz. centered"
 -}
--composite {
+-rectangle {
 -	object {
--		x=104
+-		x=110
 -		y=27
--		width=20
--		height=23
+-		width=10
+-		height=10
 -	}
--	"composite name"=""
--	children {
--		rectangle {
--			object {
--				x=110
--				y=27
--				width=10
--				height=10
--			}
--			"basic attribute" {
--				clr=10
--			}
--		}
--		rectangle {
--			object {
--				x=110
--				y=27
--				width=10
--				height=10
--			}
--			"basic attribute" {
--				clr=30
--			}
--			"dynamic attribute" {
--				vis="if not zero"
--				chan="$(P)$(Q):SetPt1Enable"
--			}
--		}
--		text {
--			object {
--				x=104
--				y=40
--				width=20
--				height=10
--			}
--			"basic attribute" {
--				clr=0
--				fill="outline"
--			}
--			textix="SP1"
--			align="horiz. centered"
--		}
+-	"basic attribute" {
+-		clr=10
 -	}
 -}
--composite {
+-rectangle {
 -	object {
--		x=128
--		y=27
--		width=20
--		height=23
+-		x=133
+-		y=28
+-		width=10
+-		height=10
 -	}
--	"composite name"=""
--	children {
--		rectangle {
--			object {
--				x=133
--				y=27
--				width=10
--				height=10
--			}
--			"basic attribute" {
--				clr=10
--			}
--		}
--		rectangle {
--			object {
--				x=133
--				y=27
--				width=10
--				height=10
--			}
--			"basic attribute" {
--				clr=16
--			}
--			"dynamic attribute" {
--				vis="if not zero"
--				chan="$(P)$(Q):SetPt2Enable"
--			}
--		}
--		text {
--			object {
--				x=128
--				y=40
--				width=20
--				height=10
--			}
--			"basic attribute" {
--				clr=0
--				fill="outline"
--			}
--			textix="SP2"
--			align="horiz. centered"
--		}
+-	"basic attribute" {
+-		clr=10
 -	}
 -}
--composite {
+-rectangle {
 -	object {
--		x=155
+-		x=160
 -		y=27
--		width=20
--		height=23
+-		width=10
+-		height=10
 -	}
--	"composite name"=""
--	children {
--		rectangle {
--			object {
--				x=160
--				y=27
--				width=10
--				height=10
--			}
--			"basic attribute" {
--				clr=10
--			}
--		}
--		rectangle {
--			object {
--				x=160
--				y=27
--				width=10
--				height=10
--			}
--			"basic attribute" {
--				clr=20
--			}
--			"dynamic attribute" {
--				clr="alarm"
--				vis="if zero"
--				chan="$(P)$(Q):AlarmEnable"
--			}
--		}
--		text {
--			object {
--				x=155
--				y=40
--				width=20
--				height=10
--			}
--			"basic attribute" {
--				clr=0
--				fill="outline"
--			}
--			textix="Alrm"
--			align="horiz. centered"
--		}
+-	"basic attribute" {
+-		clr=10
 -	}
 -}
 -menu {
@@ -461,6 +340,116 @@ index 7da324f..0000000
 -		clr=14
 -		bclr=51
 -	}
+-}
+-text {
+-	object {
+-		x=104
+-		y=40
+-		width=20
+-		height=10
+-	}
+-	"basic attribute" {
+-		clr=0
+-		fill="outline"
+-	}
+-	textix="SP1"
+-	align="horiz. centered"
+-}
+-rectangle {
+-	object {
+-		x=110
+-		y=27
+-		width=10
+-		height=10
+-	}
+-	"basic attribute" {
+-		clr=30
+-	}
+-	"dynamic attribute" {
+-		vis="calc"
+-		calc="A>B"
+-		chan="$(P)$(Q):Value"
+-		chanB="$(P)$(Q):SetPt1"
+-	}
+-}
+-text {
+-	object {
+-		x=128
+-		y=40
+-		width=20
+-		height=10
+-	}
+-	"basic attribute" {
+-		clr=0
+-		fill="outline"
+-	}
+-	textix="SP2"
+-	align="horiz. centered"
+-}
+-rectangle {
+-	object {
+-		x=133
+-		y=27
+-		width=10
+-		height=10
+-	}
+-	"basic attribute" {
+-		clr=16
+-	}
+-	"dynamic attribute" {
+-		vis="calc"
+-		calc="A>B"
+-		chan="$(P)$(Q):Value"
+-		chanB="$(P)$(Q):SetPt2"
+-	}
+-}
+-text {
+-	object {
+-		x=155
+-		y=40
+-		width=20
+-		height=10
+-	}
+-	"basic attribute" {
+-		clr=0
+-		fill="outline"
+-	}
+-	textix="Alrm"
+-	align="horiz. centered"
+-}
+-rectangle {
+-	object {
+-		x=160
+-		y=27
+-		width=10
+-		height=10
+-	}
+-	"basic attribute" {
+-		clr=20
+-	}
+-	"dynamic attribute" {
+-		vis="calc"
+-		calc="(A<B)||(A>C)"
+-		chan="$(P)$(Q):Value"
+-		chanB="$(P)$(Q):AlarmLo"
+-		chanC="$(P)$(Q):AlarmHi"
+-	}
+-}
+-"related display" {
+-	object {
+-		x=167
+-		y=4
+-		width=12
+-		height=12
+-	}
+-	display[0] {
+-		label="Love Control"
+-		name="LoveControllerControl.adl"
+-		args="P=$(P),Q=$(Q)"
+-	}
+-	clr=8
+-	bclr=7
+-	visual="invisible"
 -}
 diff --git a/optics/documentation/fb_epid/source/fb_epid.adl b/optics/documentation/fb_epid/source/fb_epid.adl
 deleted file mode 100644

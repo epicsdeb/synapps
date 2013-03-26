@@ -1,0 +1,22 @@
+From: Michael Davidsaver <mdavidsaver@bnl.gov>
+Date: Mon, 25 Mar 2013 18:23:36 -0400
+Subject: [PATCH] motor: fix printf spec in Newport
+
+---
+ motor/motorApp/NewportSrc/drvMM4000Asyn.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/motor/motorApp/NewportSrc/drvMM4000Asyn.c b/motor/motorApp/NewportSrc/drvMM4000Asyn.c
+index 1ea8dad..d8bb5b6 100644
+--- a/motor/motorApp/NewportSrc/drvMM4000Asyn.c
++++ b/motor/motorApp/NewportSrc/drvMM4000Asyn.c
+@@ -934,7 +934,7 @@ static int sendOnly(MM4000Controller *pController, char *outputBuff)
+         if (status != asynSuccess)
+         {
+             asynPrint(pController->pasynUser, ASYN_TRACE_ERROR,
+-                      "drvMM4000Asyn:sendOnly: error sending command %d, sent=%d, status=%d\n",
++                      "drvMM4000Asyn:sendOnly: error sending command %p, sent=%d, status=%d\n",
+                       outputBuff, nActual, status);
+         }
+     }
+-- 

@@ -1,0 +1,37 @@
+From: Michael Davidsaver <mdavidsaver@bnl.gov>
+Date: Mon, 25 Mar 2013 18:23:10 -0400
+Subject: [PATCH] mca: Missing file for SIS
+
+---
+ mca/mcaApp/SISSrc/SIS38XXTestMain.cpp |   21 +++++++++++++++++++++
+ 1 files changed, 21 insertions(+), 0 deletions(-)
+ create mode 100644 mca/mcaApp/SISSrc/SIS38XXTestMain.cpp
+
+diff --git a/mca/mcaApp/SISSrc/SIS38XXTestMain.cpp b/mca/mcaApp/SISSrc/SIS38XXTestMain.cpp
+new file mode 100644
+index 0000000..4d63c6f
+--- /dev/null
++++ b/mca/mcaApp/SISSrc/SIS38XXTestMain.cpp
+@@ -0,0 +1,21 @@
++/* AB300Main.cpp */
++/* Author:  Marty Kraimer Date:    17MAR2000 */
++
++#include <stddef.h>
++#include <stdlib.h>
++#include <stddef.h>
++#include <string.h>
++#include <stdio.h>
++
++#include "epicsThread.h"
++#include "iocsh.h"
++
++int main(int argc,char *argv[])
++{
++    if(argc>=2) {    
++        iocsh(argv[1]);
++        epicsThreadSleep(.2);
++    }
++    iocsh(NULL);
++    return(0);
++}
+-- 

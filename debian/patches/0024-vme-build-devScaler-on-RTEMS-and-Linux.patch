@@ -8,7 +8,7 @@ Subject: [PATCH] vme: build devScaler on RTEMS and Linux
  2 files changed, 2 insertions(+), 1 deletions(-)
 
 diff --git a/vme/vmeApp/src/Makefile b/vme/vmeApp/src/Makefile
-index 49f1965..9080656 100644
+index 7ebe507..dcfe0dd 100644
 --- a/vme/vmeApp/src/Makefile
 +++ b/vme/vmeApp/src/Makefile
 @@ -27,7 +27,7 @@ vme_SRCS_vxWorks += drvIK320.c
@@ -21,11 +21,11 @@ index 49f1965..9080656 100644
  vme_SRCS_vxWorks += vmeRecord.c
  vme_SRCS_vxWorks += devBunchClkGen.c
 diff --git a/vme/vmeApp/src/devScaler_debug.c b/vme/vmeApp/src/devScaler_debug.c
-index 462a059..d0ac5ce 100644
+index 026f485..4555bb3 100644
 --- a/vme/vmeApp/src/devScaler_debug.c
 +++ b/vme/vmeApp/src/devScaler_debug.c
 @@ -57,6 +57,7 @@ typedef unsigned short uint16;
- #include	<rebootLib.h>
+ #include	<epicsExit.h>
  extern int logMsg(char *fmt, ...);
  #else
 +#define logMsg errlogPrintf

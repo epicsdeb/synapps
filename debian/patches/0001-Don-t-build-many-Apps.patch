@@ -69,10 +69,10 @@ index 0303f8d..209bfc9 100644
  # <name>_registerRecordDeviceDriver.cpp will be created from <name>.dbd
  ipApp_SRCS_DEFAULT += ip_registerRecordDeviceDriver.cpp ipMain.cpp
 diff --git a/love/loveApp/src/Makefile b/love/loveApp/src/Makefile
-index c8d11b7..beb6d4e 100644
+index ea6073c..e296942 100644
 --- a/love/loveApp/src/Makefile
 +++ b/love/loveApp/src/Makefile
-@@ -26,7 +26,7 @@ love_LIBS += $(EPICS_BASE_IOC_LIBS)
+@@ -26,12 +26,12 @@ love_LIBS += $(EPICS_BASE_IOC_LIBS)
  
  #=============================================================================
  # Build an ioc application <name>
@@ -81,17 +81,14 @@ index c8d11b7..beb6d4e 100644
  
  #-----------------------------------------------------------------------------
  # <name>.dbd and <name>VX.dbd will be created and installed
-@@ -34,7 +34,7 @@ ifeq ($(OS_CLASS), WIN32)
- DBD += loveAppWin32.dbd
- else
  DBD += loveApp.dbd
 -DBD += loveAppVX.dbd
 +#DBD += loveAppVX.dbd
- endif
  
  #-----------------------------------------------------------------------------
+ # <name>_registerRecordDeviceDriver.cpp will be created from <name>.dbd
 diff --git a/mca/mcaApp/RontecSrc/Makefile b/mca/mcaApp/RontecSrc/Makefile
-index 7b7d4ba..7e0f8b2 100644
+index 778e7cd..46c0019 100644
 --- a/mca/mcaApp/RontecSrc/Makefile
 +++ b/mca/mcaApp/RontecSrc/Makefile
 @@ -23,7 +23,7 @@ mcaRontec_LIBS += asyn
@@ -104,15 +101,15 @@ index 7b7d4ba..7e0f8b2 100644
  ## <name>_registerRecordDeviceDriver.cpp will be created from <name>.dbd
  mcaRontecApp_SRCS_DEFAULT += mcaRontec_registerRecordDeviceDriver.cpp mcaRontecMain.cpp
 diff --git a/mca/mcaApp/SISSrc/Makefile b/mca/mcaApp/SISSrc/Makefile
-index 7d18f1e..7678592 100644
+index b2b9205..77c934c 100644
 --- a/mca/mcaApp/SISSrc/Makefile
 +++ b/mca/mcaApp/SISSrc/Makefile
-@@ -7,7 +7,7 @@ include $(TOP)/configure/CONFIG
+@@ -9,7 +9,7 @@ USR_CPPFLAGS += -DUSE_DMA
+ 
  # <name>.dbd will be created from <name>Include.dbd
- DBD += mcaSTR7201Support.dbd
- DBD += mcaSIS3820Support.dbd
--DBD += mcaSISTest.dbd
-+#DBD += mcaSISTest.dbd
+ DBD += SIS38XXSupport.dbd
+-DBD += SIS38XXTest.dbd
++#DBD += SIS38XXTest.dbd
  
  #=============================
  # Build the library for ARCHs with VME capability.
@@ -148,7 +145,7 @@ index 50d5230..01dad27 100644
  # <name>_registerRecordDeviceDriver.cpp will be created from <name>.dbd
  stdApp_SRCS_DEFAULT += std_registerRecordDeviceDriver.cpp
 diff --git a/stream/streamApp/Makefile b/stream/streamApp/Makefile
-index 16e2f6a..8ee34ec 100644
+index f201fb9..5764bc3 100644
 --- a/stream/streamApp/Makefile
 +++ b/stream/streamApp/Makefile
 @@ -13,7 +13,7 @@ include $(TOP)/configure/CONFIG

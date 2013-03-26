@@ -1,0 +1,41 @@
+From: Michael Davidsaver <mdavidsaver@bnl.gov>
+Date: Thu, 30 Jul 2009 11:38:07 -0400
+Subject: [PATCH] motor: iocsh functions should use C linkage
+
+Helpful for RTEMS
+---
+ motor/motorApp/OmsSrc/drvMAXv.cc |    6 ++----
+ 1 files changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/motor/motorApp/OmsSrc/drvMAXv.cc b/motor/motorApp/OmsSrc/drvMAXv.cc
+index bd6c6a3..05d4117 100644
+--- a/motor/motorApp/OmsSrc/drvMAXv.cc
++++ b/motor/motorApp/OmsSrc/drvMAXv.cc
+@@ -176,10 +176,6 @@ static int configurationFlags[MAXv_NUM_CARDS] = {0};
+ /*----------------functions-----------------*/
+ 
+ /* Common local function declarations. */
+-extern "C" {
+-RTN_STATUS MAXvSetup(int, int, unsigned int, unsigned int, int, int);
+-RTN_VALUES MAXvConfig(int, const char *);
+-}
+ static long report(int);
+ static long init();
+ static void query_done(int, int, struct mess_node *);
+@@ -804,6 +800,7 @@ static char *readbuf(volatile struct MAXv_motor *pmotor, char *bufptr)
+ /* Configuration function for  module_types data     */
+ /* areas. MAXvSetup()                                */
+ /*****************************************************/
++extern "C"
+ RTN_STATUS
+ MAXvSetup(int num_cards,        /* maximum number of cards in rack */
+           int addrs_type,       /* VME address type; 16 - A16, 24 - A24 or 32 - A32. */
+@@ -945,6 +942,7 @@ MAXvSetup(int num_cards,        /* maximum number of cards in rack */
+     return(rtncode);
+ }
+ 
++extern "C"
+ RTN_VALUES MAXvConfig(int card,                 /* number of card being configured */
+                       const char *initstr,      /* configuration string */
+                       int config)		/* initialization configuration */
+-- 

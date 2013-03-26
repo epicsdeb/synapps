@@ -1,0 +1,36 @@
+From: Michael Davidsaver <mdavidsaver@bnl.gov>
+Date: Mon, 25 Mar 2013 10:34:14 -0400
+Subject: [PATCH] stream: StreamDevice-2-6-patch20121003
+
+---
+ stream/src/StreamBusInterface.cc |    2 +-
+ stream/src/StreamProtocol.cc     |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/stream/src/StreamBusInterface.cc b/stream/src/StreamBusInterface.cc
+index c3fe97c..5b137fc 100644
+--- a/stream/src/StreamBusInterface.cc
++++ b/stream/src/StreamBusInterface.cc
+@@ -66,7 +66,7 @@ find(Client* client, const char* busname, int addr, const char* param)
+ {
+     StreamBusInterfaceRegistrarBase* r;
+     StreamBusInterface* bus;
+-    for (r = r->first; r; r = r->next)
++    for (r = StreamBusInterfaceRegistrarBase::first; r; r = r->next)
+     {
+         bus = r->find(client, busname, addr, param);
+         if (bus) return bus;
+diff --git a/stream/src/StreamProtocol.cc b/stream/src/StreamProtocol.cc
+index 40367da..9c4c821 100644
+--- a/stream/src/StreamProtocol.cc
++++ b/stream/src/StreamProtocol.cc
+@@ -1037,7 +1037,7 @@ compileNumber(unsigned long& number, const char*& source, unsigned long max)
+             "Garbage after numeric value: %s\n", buffer());
+         return false;
+     }
+-    if (n < 0 || n > max)
++    if (n > max)
+     {
+         debug("StreamProtocolParser::Protocol::compileNumber: %s\n",
+             buffer.expand()());
+-- 

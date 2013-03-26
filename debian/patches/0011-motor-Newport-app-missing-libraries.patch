@@ -1,0 +1,23 @@
+From: Michael Davidsaver <mdavidsaver@bnl.gov>
+Date: Mon, 1 Apr 2013 17:13:16 -0400
+Subject: [PATCH] motor: Newport app missing libraries
+
+---
+ motor/motorApp/NewportSrc/Makefile |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
+
+diff --git a/motor/motorApp/NewportSrc/Makefile b/motor/motorApp/NewportSrc/Makefile
+index ffe3b20..8e98fea 100644
+--- a/motor/motorApp/NewportSrc/Makefile
++++ b/motor/motorApp/NewportSrc/Makefile
+@@ -74,6 +74,9 @@ XPSGatheringMain_SYS_LIBS_solaris += socket nsl
+ PROD_IOC += XPSGathering2
+ XPSGathering2_SRCS += XPSGathering2.c
+ XPSGathering2_LIBS += Newport motor asyn
++ifdef SNCSEQ
++XPSGathering2_LIBS += seq pv
++endif
+ XPSGathering2_LIBS += $(EPICS_BASE_IOC_LIBS)
+ XPSGathering2_SYS_LIBS_solaris += socket nsl
+ 
+-- 

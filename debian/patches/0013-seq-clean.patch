@@ -1,0 +1,20 @@
+From: Michael Davidsaver <mdavidsaver@bnl.gov>
+Date: Fri, 29 Mar 2013 14:25:11 -0400
+Subject: [PATCH] seq: clean
+
+---
+ seq/Makefile |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
+
+diff --git a/seq/Makefile b/seq/Makefile
+index 70e21dd..afa3fe5 100644
+--- a/seq/Makefile
++++ b/seq/Makefile
+@@ -42,3 +42,6 @@ release: upload
+ 	$(RM) seq-$(SEQ_RELEASE).tar.gz
+ 
+ .PHONY: release upload
++
++distclean:
++	rm -f documentation/bnf.inc
+-- 
