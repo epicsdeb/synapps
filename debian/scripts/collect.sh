@@ -1,5 +1,5 @@
 #!/bin/bash
-set -x
+set -x -e
 
 die() {
   echo "$1" >&2
@@ -53,50 +53,48 @@ getpart() {
   cp -lf "$name" "$oname" || die "Can't copy $oname to $OUT"
 }
 
-getpart stream http://epics.web.psi.ch/software/streamdevice/StreamDevice-2-5.tgz
+getpart stream http://epics.web.psi.ch/software/streamdevice/StreamDevice-2-6.tgz
 
-getpart seq http://www-csr.bessy.de/control/SoftDist/sequencer/releases/seq-2.0.12.tar.gz
+getpart seq http://www-csr.bessy.de/control/SoftDist/sequencer/releases/seq-2.1.12.tar.gz
 
-getpart ipac https://svn.aps.anl.gov/trac/epics/ipac/attachment/wiki/V2.11/ipac-2.11.tar.gz?format=raw ipac-2.11.tar.gz
+getpart ipac https://svn.aps.anl.gov/trac/epics/ipac/raw-attachment/wiki/V2.11/ipac-2.11.tar.gz
 
-getpart asyn http://www.aps.anl.gov/epics/download/modules/asyn4-17.tar.gz
+getpart asyn http://www.aps.anl.gov/epics/download/modules/asyn4-21.tar.gz
 
-getpart vme http://www.aps.anl.gov/bcda/synApps/tar/vme_R2-7.tar.gz
+getpart vme http://www.aps.anl.gov/bcda/synApps/tar/vme_R2-8.tar.gz
 
-getpart vac http://www.aps.anl.gov/bcda/synApps/tar/vac_R1-3.tar.gz
+getpart vac http://www.aps.anl.gov/bcda/synApps/tar/vac_R1-4.tar.gz
 
-getpart std http://www.aps.anl.gov/bcda/synApps/tar/std_R3-0.tar.gz
+getpart std http://www.aps.anl.gov/bcda/synApps/tar/std_R3-1.tar.gz
 
-getpart softglue http://www.aps.anl.gov/bcda/synApps/tar/softGlue_R2-1.tar.gz
+getpart softglue http://www.aps.anl.gov/bcda/synApps/tar/softGlue_R2-2.tar.gz
 
-getpart sscan http://www.aps.anl.gov/bcda/synApps/tar/sscan_R2-7.tar.gz
+getpart sscan http://www.aps.anl.gov/bcda/synApps/tar/sscan_R2-8-1.tar.gz
 
-getpart mdautils http://www.aps.anl.gov/bcda/mdautils/mdautils-1.2.tar.gz
+getpart mdautils http://www.aps.anl.gov/bcda/mdautils/mdautils-1.3.0.tar.gz
 
-getpart optics http://www.aps.anl.gov/bcda/synApps/tar/optics_R2-7.tar.gz
+getpart optics http://www.aps.anl.gov/bcda/synApps/tar/optics_R2-8-1.tar.gz
 
-getpart motor http://www.aps.anl.gov/bcda/synApps/motor/tar/motorR6-5-2.tar.gz
+getpart motor http://www.aps.anl.gov/bcda/synApps/motor/tar/motorR6-7-1.tar.gz
 
-getpart modbus http://cars.uchicago.edu/software/pub/modbusR2-3.tgz
+getpart modbus http://cars.uchicago.edu/software/pub/modbusR2-4.tgz
 
-getpart mca http://cars.uchicago.edu/software/pub/mcaR6-12-5.tgz
+getpart mca http://cars.uchicago.edu/software/pub/mcaR7-3-1.tgz
 
-getpart love http://www.aps.anl.gov/bcda/synApps/tar/love_R3-2-3.tar.gz
+getpart love http://www.aps.anl.gov/bcda/synApps/tar/love_R3-2-5.tar.gz
 
-getpart ipunidig http://cars.uchicago.edu/software/pub/ipUnidigR2-7.tgz
+getpart ipunidig http://cars.uchicago.edu/software/pub/ipUnidigR2-9.tgz
 
-getpart ip330 http://cars.uchicago.edu/software/pub/ip330R2-6.tgz
+getpart ip330 http://cars.uchicago.edu/software/pub/ip330R2-7.tgz
 
-getpart ip http://www.aps.anl.gov/bcda/synApps/tar/ip_R2-10.tar.gz
+getpart ip http://www.aps.anl.gov/bcda/synApps/tar/ip_R2-13.tar.gz
 
-getpart delaygen http://www.aps.anl.gov/bcda/synApps/delaygen/tar/delaygen_R1-0-6.tar.gz
+getpart delaygen http://www.aps.anl.gov/bcda/synApps/delaygen/tar/delaygen_R1-0-7.tar.gz
 
-getpart dac128v http://cars.uchicago.edu/software/pub/dac128VR2-6.tgz
+getpart dac128v http://cars.uchicago.edu/software/pub/dac128VR2-7.tgz
 
-getpart camac http://cars.uchicago.edu/software/pub/camacR2-6.tgz
+getpart calc http://www.aps.anl.gov/bcda/synApps/tar/calc_R3-1.tar.gz
 
-getpart calc http://www.aps.anl.gov/bcda/synApps/tar/calc_R2-8.tar.gz
+getpart busy http://www.aps.anl.gov/bcda/synApps/tar/busy_R1-4.tar.gz
 
-getpart busy http://www.aps.anl.gov/bcda/synApps/tar/busy_R1-3.tar.gz
-
-getpart autosave http://www.aps.anl.gov/bcda/synApps/tar/autosave_R4-8.tar.gz
+getpart autosave http://www.aps.anl.gov/bcda/synApps/tar/autosave_R5-0.tar.gz
