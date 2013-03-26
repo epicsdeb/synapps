@@ -28,22 +28,17 @@ override_dh_auto_clean:
 override_dh_auto_build:
 ifneq (,$(findstring edm-synapps, $(shell dh_listpackages)))
 
-	# remove duplicate adl files
-	rm -f ip/ipApp/op/adl/LoveController.adl
-	rm -f optics/documentation/fb_epid/source/fb_epid.adl
-	rm -f std/stdApp/op/adl/arrayPlot.adl
-
 	rm -rf $(CURDIR)/opi
 	install -d $(CURDIR)/opi
 
 	find $(MODS) -name '*.opi' -a -not -name '*test*' -a -not -path './debian*' -a -not -path './opi' \
-	 | xargs cp -f -t $(CURDIR)/opi
+	 | xargs -n 1 cp -b --suffix '.dup' -t $(CURDIR)/opi
 
 	rm -rf $(CURDIR)/op
 	install -d $(CURDIR)/op
 
 	find $(MODS) -name '*.adl' -a -not -name '*test*' -a -not -path './debian*' -a -not -path './op' \
-	 | xargs cp -f -t $(CURDIR)/op
+	 | xargs -n 1 cp -b --suffix '.dup' -t $(CURDIR)/op
 
 	rm -f edlskip
 	for ff in op/*.adl; do \
