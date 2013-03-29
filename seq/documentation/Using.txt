@@ -1,0 +1,289 @@
+Using the Run Time Sequencer
+============================
+
+.. todo:: This chapter should be completely re-worked.
+
+.. warning:: Much of the information here is out-dated, some is
+   missing, and some is plainly wrong. I badly need to re-write
+   this chapter.
+
+In the previous chapter you learned how to create and compile some
+simple programs. In this chapter you will be introduced to
+the run-time sequencer so that you can execute your program.
+
+VxWorks-specific instructions
+-----------------------------
+
+Loading the sequencer
+^^^^^^^^^^^^^^^^^^^^^
+
+The sequencer is unbundled from EPICS base and so must be loaded
+separately. The sequencer is loaded into an IOC by the VxWorks
+loader from object files on the UNIX file system. Assuming the
+IOC's working directory is set properly, the following command will
+load the sequencer object code::
+
+  ld < pvLibrary
+  ld < seqLibrary
+
+Loading a State Program
+^^^^^^^^^^^^^^^^^^^^^^^
+
+State programs are loaded into an IOC by the VxWorks loader from
+object files on the UNIX file system. Assuming the IOC's working
+directory is set properly, the following command will load the
+object file "example.o"::
+
+  ld < example.o
+
+This can be typed in from the console or put into a script file,
+such as the VxWorks start-up file.
+
+Executing the State Program
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Let's assume that the program name (from the ``program`` statement)
+is "level\_check". Then to execute the program
+under VxWorks you would use the following command::
+
+  seq &level_check
+
+This will create one task for each state set in the program. The
+task ID of the first state set task will be displayed. You can find
+out which tasks are running by using the VxWorks ``i`` command.
+
+Examining the State Program
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. warning:: The following works only if you are using the EPICS
+   IOC shell, not if you use the VxWorks C shell. On the VxWorks shell
+   you must supply the thread ID, giving the program name (even in
+   double quotes) will not work. 
+   You can find the thread ID belonging to the program by executing
+   ``seqShow`` without arguments.
+
+You can examine the program by typing::
+
+  seqShow level_check
+
+This will display information about each state set (e.g. state
+set names, current state, previous state). You can display
+information about the process variables associated with this
+program by typing either of::
+
+  seqChanShow level_check
+  seqChanShow level_check, "DTL_6:CM_2:ai1"
+  seqChanShow level_check, "-"
+
+You can display information about monitor queues by typing::
+
+  seqQueueShow level_check
+
+The first parameter to ``seqShow`` , ``seqChanShow`` and ``seqQueueShow``
+is either the task identifier (tid) or the *unquoted* task name of
+the program task. If the program has more than one tid
+or name, then any one of these can be used. The second parameter is
+a valid channel name, or ``-`` to show only those channels which
+are disconnected, or ``+`` to show only those channels which are
+connected. The ``seqChanShow`` and ``seqQueueShow`` utilities will
+prompt for input after showing the first or the specified channel;
+enter *<Enter>* or a signed number to view more channels or queues;
+enter ``q`` to quit.
+
+If you wish to see the task names, state set names, and task
+identifiers for all programs type::
+
+  seqShow
+
+.. _Stopping the State Program Tasks:
+
+Stopping the State Program Tasks
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You should not directly delete program tasks. Instead, use
+the ``seqStop`` command::
+
+  seqStop level_check
+
+The parameter to ``seqStop`` is either the task identifier (tid) or
+the task name of the program task.
+
+A program can also terminate itself, see :ref:`Transitions`.
+
+Unix-specific instructions
+--------------------------
+
+Executing the State Program
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Under Unix, you execute the program directly. You might type
+the following::
+
+  level_check
+
+Once the state set threads have been created, the console remains
+active and you can type commands as described below.
+
+Examining the program
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The following commands can be issued under Unix (hit ``?`` to
+obtain the list):
+
+commands (abbreviable):
+
+i
+  show all threads
+
+all
+  show all sequencers
+
+channels
+  show all channels
+
++
+  show conn. channels
+
+-
+  show disc. channels
+
+queues
+  show queues
+
+statesets
+  show state-sets
+
+<EOF>
+  exit
+
+As you see, all commands can be abbreviated to a single character.
+
+Stopping the State Program Tasks
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A program may be killed by sending it a ``SIGTERM`` (*Ctrl-C*)
+signal (this is an untidy exit, but who cares?) or by entering an
+*<EOF>* (*Ctrl-D*) character. The latter calls ``seqStop`` and is a
+tidy exit.
+
+.. _run time parameters:
+
+Specifying Run-Time Parameters
+------------------------------
+
+You can specify run-time parameters to the sequencer. Parameters
+serve three purposes:
+
+
+#. macro substitution in process variable names,
+#. for use by your program, and
+#. as special parameters to the sequencer.
+
+You can pass parameters to your program at run time by
+including them in a string with the following format::
+
+  "<param1>=<value1>, <param2>=<value2>, ..."
+
+This same format can be used in the ``program`` statement's parameter
+list (see :ref:`StateProgram`). Parameters
+specified on the command-line override those specified in the
+``program`` statement.
+
+VxWorks
+^^^^^^^
+
+For example, if we wish to specify the value of the macro "unit" in
+the example in the last chapter, we would execute the program with
+the following command::
+
+  seq &level_check, "unit=DTL_6:CM_2"
+
+Unix
+^^^^
+
+This works just the same under Unix. The above example becomes::
+
+  level_check "unit=DTL_6:CM_2"
+
+Access within program
+^^^^^^^^^^^^^^^^^^^^^
+
+Parameters can be accessed by your program with the function
+:c:func:`macValueGet`. The following built-in
+parameters have special meaning to the sequencer::
+
+  debug = <level>
+
+Sets a logging level. *level-1* is passed on to the PV API. Can be
+used in user code::
+
+  logfile = <filename>
+
+This parameter specifies the name of the logging file for the
+run-time tasks associated with the program. If none is
+specified then all log messages are written to ``stdout``::
+
+  name = <thread_name>
+
+Normally the thread names are derived from the program name. This
+parameter specifies an alternative base name for the run-time
+threads::
+
+  priority = <task_priority>
+
+This parameter specifies the initial task priority when the tasks
+are created. The value ``task_priority`` must be an integer between
+0 and 99 (it's ignored under Unix)::
+
+  stack = <stack_size>
+
+This parameter specifies the stack size in bytes (its use is
+deprecated, and it is in any case ignored under Unix).
+
+Sequencer Logging
+-----------------
+
+The sequencer logs various information that could help a user
+determine the health of a program. Logging uses the
+``errlogPrintf`` function and will be directed to the IOC log file if
+the IOC log facility has been initialized. Under VxWorks this is
+done automatically but under Unix it must be done by the
+programmer. This can be done in the main program (if you are
+writing it yourself) or in the entry handler, which is executed in
+the context of the first state set before the remaining state sets
+have been created. For example::
+
+  entry {
+  #ifdef UNIX
+  %%#include "logClient.h"
+    iocLogInit();
+  #endif
+  }
+
+The programmer may log information using ``errlogPrintf`` directly or
+else by using the ``seqLog`` function. By default, ``seqLog`` output
+goes to ``stdout`` , but it may be directed to any file by specifying
+the ``logfile`` parameter as described above.
+
+What Triggers an Event?
+-----------------------
+
+There are five types of sequencer event:
+
+-  a process variable monitor is posted
+-  an asynchronous ``pvGet`` or ``pvPut`` completes
+-  a time delay elapses
+-  an event flag is set or cleared
+-  a process variable connects or disconnects
+
+When one of these events occur, the sequencer executes the
+appropriate ``when`` statements based on the current states and the
+particular event or events. Whenever a new state is entered, the
+corresponding ``when`` statements for that state are executed
+immediately, regardless of the occurrence of any of the above
+events.
+
+Prior to Version 1.8 of the sequencer, event flags were cleared
+after a ``when`` statement executed. Currently, event flags must be
+cleared with either ``efTestAndClear`` or ``efClear`` , unless 
+the :option:`-e` compiler option was chosen.

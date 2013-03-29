@@ -1,7 +1,7 @@
 
 file {
 	name="/home/oxygen/MOONEY/epics/synApps/support/calc/calcApp/op/adl/arrayPlot8.adl"
-	version=030101
+	version=030107
 }
 display {
 	object {
@@ -139,38 +139,46 @@ text {
 		bclr=14
 	}
 	style="line"
-	count="2000"
+	count="$(P)$(C).NUSE"
 	trace[0] {
 		ydata="$(Y1)"
 		data_clr=0
+		yaxis=0
 	}
 	trace[1] {
 		ydata="$(Y2)"
 		data_clr=45
+		yaxis=1
 	}
 	trace[2] {
 		ydata="$(Y3)"
 		data_clr=20
+		yaxis=1
 	}
 	trace[3] {
 		ydata="$(Y4)"
 		data_clr=33
+		yaxis=1
 	}
 	trace[4] {
 		ydata="$(Y5)"
 		data_clr=30
+		yaxis=1
 	}
 	trace[5] {
 		ydata="$(Y6)"
 		data_clr=15
+		yaxis=1
 	}
 	trace[6] {
 		ydata="$(Y7)"
 		data_clr=52
+		yaxis=1
 	}
 	trace[7] {
 		ydata="$(Y8)"
 		data_clr=36
+		yaxis=1
 	}
 	x_axis {
 		rangeStyle="auto-scale"
@@ -181,7 +189,7 @@ text {
 	y2_axis {
 		rangeStyle="auto-scale"
 	}
-	countPvName="2000"
+	countPvName="$(P)$(C).NUSE"
 	eraseMode="if zero"
 }
 text {

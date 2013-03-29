@@ -35,6 +35,9 @@
 
 #include <asynPortDriver.h>
 
+#define digitalInputString  "DIGITAL_INPUT"
+#define digitalOutputString "DIGITAL_OUTPUT"
+#define DACOutputString     "DAC_OUTPUT"
 
 #define GREENSPRING_ID 0xF0
 #define SYSTRAN_ID     0x45
@@ -69,577 +72,636 @@
 #define MAX_MESSAGES 1000
 
 typedef struct {
-    volatile epicsUInt16 *outputRegisterLow;
-    volatile epicsUInt16 *outputRegisterHigh;
-    volatile epicsUInt16 *outputEnableLow;
-    volatile epicsUInt16 *outputEnableHigh;
-    volatile epicsUInt16 *inputRegisterLow;
-    volatile epicsUInt16 *inputRegisterHigh;
-    volatile epicsUInt16 *controlRegister0;
-    volatile epicsUInt16 *controlRegister1;
-    volatile epicsUInt16 *intVecRegister;
-    volatile epicsUInt16 *intEnableRegisterLow;
-    volatile epicsUInt16 *intEnableRegisterHigh;
-    volatile epicsUInt16 *intPolarityRegisterLow;
-    volatile epicsUInt16 *intPolarityRegisterHigh;
-    volatile epicsUInt16 *intClearRegisterLow;
-    volatile epicsUInt16 *intClearRegisterHigh;
-    volatile epicsUInt16 *intPendingRegisterLow;
-    volatile epicsUInt16 *intPendingRegisterHigh;
-    volatile epicsUInt16 *DACRegister;
+  volatile epicsUInt16 *outputRegisterLow;
+  volatile epicsUInt16 *outputRegisterHigh;
+  volatile epicsUInt16 *outputEnableLow;
+  volatile epicsUInt16 *outputEnableHigh;
+  volatile epicsUInt16 *inputRegisterLow;
+  volatile epicsUInt16 *inputRegisterHigh;
+  volatile epicsUInt16 *controlRegister0;
+  volatile epicsUInt16 *controlRegister1;
+  volatile epicsUInt16 *intVecRegister;
+  volatile epicsUInt16 *intEnableRegisterLow;
+  volatile epicsUInt16 *intEnableRegisterHigh;
+  volatile epicsUInt16 *intPolarityRegisterLow;
+  volatile epicsUInt16 *intPolarityRegisterHigh;
+  volatile epicsUInt16 *intClearRegisterLow;
+  volatile epicsUInt16 *intClearRegisterHigh;
+  volatile epicsUInt16 *intPendingRegisterLow;
+  volatile epicsUInt16 *intPendingRegisterHigh;
+  volatile epicsUInt16 *DACRegister;
 } ipUnidigRegisters;
 
 typedef struct {
-    epicsUInt32 bits;
-    epicsUInt32 interruptMask;
+  epicsUInt32 bits;
+  epicsUInt32 interruptMask;
 } ipUnidigMessage;
 
 
-static const char *driverName = "IpUnidig";
+static const char *driverName = "drvIpUnidig";
 
 
 /** This is the class definition for the IpUnidig class*/
 class IpUnidig : public asynPortDriver
 {
 public:
-    IpUnidig(const char *portName, int carrier, int slot, int msecPoll, int intVec, int risingMask, int fallingMask);
-    virtual asynStatus writeInt32(asynUser *pasynUser, epicsInt32 value);
-    virtual asynStatus readInt32(asynUser *pasynUser, epicsInt32 *value);
-    virtual asynStatus getBounds(asynUser *pasynUser, epicsInt32 *low, epicsInt32 *high);
-    virtual asynStatus readUInt32Digital(asynUser *pasynUser, epicsUInt32 *value, epicsUInt32 mask);
-    virtual asynStatus writeUInt32Digital(asynUser *pasynUser, epicsUInt32 value, epicsUInt32 mask);
-    virtual asynStatus setInterruptUInt32Digital(asynUser *pasynUser, epicsUInt32 mask, interruptReason reason);
-    virtual asynStatus clearInterruptUInt32Digital(asynUser *pasynUser, epicsUInt32 mask);
-    virtual asynStatus getInterruptUInt32Digital(asynUser *pasynUser, epicsUInt32 *mask, interruptReason reason);
-    virtual void report(FILE *fp, int details);
-    // These should be private, but are called from C, so must be public
-    void pollerThread();  
-    void intFunc();
-    void rebootCallback();
+  IpUnidig(const char *portName, int carrier, int slot, int msecPoll, int intVec, int risingMask, int fallingMask);
+  virtual asynStatus writeInt32(asynUser *pasynUser, epicsInt32 value);
+  virtual asynStatus readInt32(asynUser *pasynUser, epicsInt32 *value);
+  virtual asynStatus getBounds(asynUser *pasynUser, epicsInt32 *low, epicsInt32 *high);
+  virtual asynStatus readUInt32Digital(asynUser *pasynUser, epicsUInt32 *value, epicsUInt32 mask);
+  virtual asynStatus writeUInt32Digital(asynUser *pasynUser, epicsUInt32 value, epicsUInt32 mask);
+  virtual asynStatus setInterruptUInt32Digital(asynUser *pasynUser, epicsUInt32 mask, interruptReason reason);
+  virtual asynStatus clearInterruptUInt32Digital(asynUser *pasynUser, epicsUInt32 mask);
+  virtual asynStatus getInterruptUInt32Digital(asynUser *pasynUser, epicsUInt32 *mask, interruptReason reason);
+  virtual void report(FILE *fp, int details);
+  // These should be private, but are called from C, so must be public
+  void pollerThread();  
+  void intFunc();
+  void rebootCallback();
 
 private:
-    unsigned char manufacturer;
-    unsigned char model;
-    epicsUInt16 *baseAddress;
-    int supportsInterrupts;
-    int rebooting;
-    epicsUInt32 risingMask;
-    epicsUInt32 fallingMask;
-    epicsUInt32 polarityMask;
-    epicsUInt32 oldBits;
-    ipUnidigRegisters regs;
-    int forceCallback;
-    double pollTime;
-    epicsMessageQueueId msgQId;
-    int messagesSent;
-    int messagesFailed;
-    int dataParam;
-    
-    void writeIntEnableRegs();
+  unsigned char manufacturer_;
+  unsigned char model_;
+  epicsUInt16 *baseAddress_;
+  int supportsInterrupts_;
+  int rebooting_;
+  epicsUInt32 risingMask_;
+  epicsUInt32 fallingMask_;
+  epicsUInt32 polarityMask_;
+  epicsUInt32 oldBits_;
+  ipUnidigRegisters regs_;
+  int forceCallback_;
+  double pollTime_;
+  epicsMessageQueueId msgQId_;
+  int messagesSent_;
+  int messagesFailed_;
+  // We need separate parameters for input and output because we don't want device
+  // support to set the output records based on the input records, which it will do
+  // if they are the same parameter.
+  int digitalInputParam_;
+  #define FIRST_IPUNIDIG_PARAM digitalInputParam_
+  int digitalOutputParam_;
+  int DACOutputParam_;
+  #define LAST_IPUNIDIG_PARAM DACOutputParam_
+  
+  void writeIntEnableRegs();
 };
+
+#define NUM_IPUNIDIG_PARAMS (&LAST_IPUNIDIG_PARAM - &FIRST_IPUNIDIG_PARAM + 1)
 
 // These functions must have C linkage because they are called from other EPICS components
 extern "C" {
 static void rebootCallbackC(void * pPvt)
 {
-    IpUnidig *pIpUnidig = (IpUnidig *)pPvt;
-    pIpUnidig->rebootCallback();
+  IpUnidig *pIpUnidig = (IpUnidig *)pPvt;
+  pIpUnidig->rebootCallback();
 }
 
 static void pollerThreadC(void * pPvt)
 {
-    IpUnidig *pIpUnidig = (IpUnidig *)pPvt;
-    pIpUnidig->pollerThread();
+  IpUnidig *pIpUnidig = (IpUnidig *)pPvt;
+  pIpUnidig->pollerThread();
 }
 
 static void intFuncC(void * pPvt)
 {
-    IpUnidig *pIpUnidig = (IpUnidig *)pPvt;
-    pIpUnidig->intFunc();
+  IpUnidig *pIpUnidig = (IpUnidig *)pPvt;
+  pIpUnidig->intFunc();
 }
 }
 
 IpUnidig::IpUnidig(const char *portName, int carrier, int slot, int msecPoll, int intVec, int risingMask, int fallingMask)
-    :asynPortDriver(portName,1,1,
-                    asynInt32Mask | asynUInt32DigitalMask | asynDrvUserMask,
-                    asynUInt32DigitalMask,
-                    0,1,0,0)
+  :asynPortDriver(portName,1,NUM_IPUNIDIG_PARAMS,
+                  asynInt32Mask | asynUInt32DigitalMask | asynDrvUserMask,
+                  asynUInt32DigitalMask,
+                  0,1,0,0),
+  risingMask_(risingMask),
+  fallingMask_(fallingMask),
+  polarityMask_(risingMask)
+  
 {
-    //static const char *functionName = "IpUnidig";
-    ipac_idProm_t *id;
-    epicsUInt16 *base;
-   
-    /* Default of 100 msec for backwards compatibility with old version */
-    if (msecPoll == 0) msecPoll = 100;
-    this->pollTime = msecPoll / 1000.;
-    this->messagesSent = 0;
-    this->messagesFailed = 0;
-    this->rebooting = 0;
-    this->forceCallback = 0;
-    this->oldBits = 0;
-    this->msgQId = epicsMessageQueueCreate(MAX_MESSAGES, sizeof(ipUnidigMessage));
+  //static const char *functionName = "IpUnidig";
+  ipac_idProm_t *id;
+  epicsUInt16 *base;
 
-    if (ipmCheck(carrier, slot)) {
-       errlogPrintf("IpUnidig: bad carrier or slot\n");
-    }
-    id = (ipac_idProm_t *) ipmBaseAddr(carrier, slot, ipac_addrID);
-    base = (epicsUInt16 *) ipmBaseAddr(carrier, slot, ipac_addrIO);
-    this->baseAddress = base;
+  /* Default of 100 msec for backwards compatibility with old version */
+  if (msecPoll == 0) msecPoll = 100;
+  pollTime_ = msecPoll / 1000.;
+  messagesSent_ = 0;
+  messagesFailed_ = 0;
+  rebooting_ = 0;
+  forceCallback_ = 0;
+  oldBits_ = 0;
+  msgQId_ = epicsMessageQueueCreate(MAX_MESSAGES, sizeof(ipUnidigMessage));
 
-    manufacturer = id->manufacturerId & 0xff;
-    model = id->modelId & 0xff;
-    switch (manufacturer) {
-    case GREENSPRING_ID:
-       switch (model) {
-          case UNIDIG_E:
-          case UNIDIG:
-          case UNIDIG_D:
-          case UNIDIG_O_24IO:
-          case UNIDIG_HV_16I8O:
-          case UNIDIG_E48:
-          case UNIDIG_I_O_24I:
-          case UNIDIG_I_E:
-          case UNIDIG_I:
-          case UNIDIG_I_D:
-          case UNIDIG_I_O_24IO:
-          case UNIDIG_I_HV_16I8O:
-          case UNIDIG_O_12I12O:
-          case UNIDIG_I_O_12I12O:
-          case UNIDIG_O_24I:
-          case UNIDIG_HV_8I16O:
-          case UNIDIG_I_HV_8I16O:
-             break;
-          default:
-             errlogPrintf("IpUnidig model 0x%x not supported\n",model);
-             break;
-       }
-       break;
+  if (ipmCheck(carrier, slot)) {
+    errlogPrintf("IpUnidig: bad carrier or slot\n");
+  }
+  id = (ipac_idProm_t *) ipmBaseAddr(carrier, slot, ipac_addrID);
+  base = (epicsUInt16 *) ipmBaseAddr(carrier, slot, ipac_addrIO);
+  baseAddress_ = base;
 
-    case SYSTRAN_ID:
-       if(model != SYSTRAN_DIO316I) {
-          errlogPrintf("IpUnidig model 0x%x not Systran DIO316I\n",model);
-       }
-       break;
-       
-    case SBS_ID:
-       if(model != SBS_IPOPTOIO8) {
-          errlogPrintf("IpUnidig model 0x%x not SBS IP-OPTOIO-8\n",model);
-       }
-       break;
-       
-    default: 
-       errlogPrintf("IpUnidig manufacturer 0x%x not supported\n", manufacturer);
-       break;
-    }
-
-    this->manufacturer = manufacturer;
-    this->model = model;
-
-    /* Set up the register pointers.  Set the defaults for most modules */
-    /* Define registers in units of 16-bit words */
-    this->regs.outputRegisterLow        = base;
-    this->regs.outputRegisterHigh       = base + 0x1;
-    this->regs.inputRegisterLow         = base + 0x2;
-    this->regs.inputRegisterHigh        = base + 0x3;
-    this->regs.outputEnableLow          = base + 0x8;
-    this->regs.outputEnableHigh         = base + 0x5;
-    this->regs.controlRegister0         = base + 0x6;
-    this->regs.intVecRegister           = base + 0x8;
-    this->regs.intEnableRegisterLow     = base + 0x9;
-    this->regs.intEnableRegisterHigh    = base + 0xa;
-    this->regs.intPolarityRegisterLow   = base + 0xb;
-    this->regs.intPolarityRegisterHigh  = base + 0xc;
-    this->regs.intClearRegisterLow      = base + 0xd;
-    this->regs.intClearRegisterHigh     = base + 0xe;
-    this->regs.intPendingRegisterLow    = base + 0xd;
-    this->regs.intPendingRegisterHigh   = base + 0xe;
-    this->regs.DACRegister              = base + 0xe;
-    
-    /* Set things up for specific models which need to be treated differently */
-    switch (manufacturer) {
-    case GREENSPRING_ID: 
-       switch (model) {
-       case UNIDIG_O_24IO:
-       case UNIDIG_O_12I12O:
-       case UNIDIG_I_O_24IO:
-       case UNIDIG_I_O_12I12O:
-          /* Enable outputs */
-          *this->regs.controlRegister0 |= 0x4;
-          break;
-       case UNIDIG_HV_16I8O:
-       case UNIDIG_I_HV_16I8O:
-          /*  These modules don't allow access to outputRegisterLow */
-          this->regs.outputRegisterLow = NULL;
-          /* Set the comparator DAC for 2.5 volts.  Each bit is 15 mV. */
-          *this->regs.DACRegister = 2500/15;
-          break;
-       }
-       break;
-    case SYSTRAN_ID:
-       switch (model) {
-       case SYSTRAN_DIO316I:
-          /* Different register layout */
-          this->regs.outputRegisterLow  = base;
-          this->regs.outputRegisterHigh = base + 0x1;
-          this->regs.inputRegisterLow   = base + 0x2;
-          this->regs.inputRegisterHigh  = NULL;
-          this->regs.controlRegister0   = base + 0x3;
-          this->regs.controlRegister1   = base + 0x4;
-          /* Enable outputs for ports 0-3 */
-          *this->regs.controlRegister0  |= 0xf;
-          /* Set direction of ports 0-1 to be output */
-          *this->regs.controlRegister1  |= 0x3;
-          break;
-       }
-       break;
-    case SBS_ID:
-       switch (model) {
-       case SBS_IPOPTOIO8:
-         /* Different register layout */
-         memset(&this->regs, 0, sizeof(this->regs));
-         this->regs.inputRegisterLow   = base + 1;
-         this->regs.outputRegisterLow  = base + 2;
-         this->regs.controlRegister0   = base + 3;
-         *this->regs.controlRegister0 = 0x00;   /* Start state machine reset */
-         *this->regs.controlRegister0 = 0x01;   /* ....   */
-         *this->regs.controlRegister0 = 0x00;   /* State machine in state 0 */
-         *this->regs.controlRegister0 = 0x2B;   /* Select Port B DDR */
-         *this->regs.controlRegister0 = 0xFF;   /* All Port B bits are inputs */
-         *this->regs.controlRegister0 = 0x2A;   /* Select Port B DPPR */
-         *this->regs.controlRegister0 = 0xFF;   /* All Port B bits inverted */
-         *this->regs.controlRegister0 = 0x01;   /* Select MCCR */
-         *this->regs.controlRegister0 = 0x84;   /* Enable ports A and B */
-          break;
-        }
+  manufacturer_ = id->manufacturerId & 0xff;
+  model_ = id->modelId & 0xff;
+  switch (manufacturer_) {
+  case GREENSPRING_ID:
+    switch (model_) {
+      case UNIDIG_E:
+      case UNIDIG:
+      case UNIDIG_D:
+      case UNIDIG_O_24IO:
+      case UNIDIG_HV_16I8O:
+      case UNIDIG_E48:
+      case UNIDIG_I_O_24I:
+      case UNIDIG_I_E:
+      case UNIDIG_I:
+      case UNIDIG_I_D:
+      case UNIDIG_I_O_24IO:
+      case UNIDIG_I_HV_16I8O:
+      case UNIDIG_O_12I12O:
+      case UNIDIG_I_O_12I12O:
+      case UNIDIG_O_24I:
+      case UNIDIG_HV_8I16O:
+      case UNIDIG_I_HV_8I16O:
+        break;
+      default:
+        errlogPrintf("IpUnidig model 0x%x not supported\n",model_);
         break;
     }
-    switch (model) {
-       case UNIDIG_I_O_24I:
-       case UNIDIG_I_E:
-       case UNIDIG_I:
-       case UNIDIG_I_D:
-       case UNIDIG_I_O_24IO:
-       case UNIDIG_I_HV_16I8O:
-       case UNIDIG_I_O_12I12O:
-       case UNIDIG_I_HV_8I16O:
-          this->supportsInterrupts = 1;
-          break;
-       default:
-          this->supportsInterrupts = 0;
-          break;
+    break;
+
+  case SYSTRAN_ID:
+    if(model_ != SYSTRAN_DIO316I) {
+      errlogPrintf("IpUnidig model 0x%x not Systran DIO316I\n",model_);
     }
+    break;
+       
+  case SBS_ID:
+    if(model_ != SBS_IPOPTOIO8) {
+      errlogPrintf("IpUnidig model 0x%x not SBS IP-OPTOIO-8\n",model_);
+    }
+    break;
+     
+  default: 
+    errlogPrintf("IpUnidig manufacturer 0x%x not supported\n", manufacturer_);
+    break;
+  }
 
-    /* Create the asynPortDriver parameter for the data */
-    createParam("DIGITAL_DATA", asynParamUInt32Digital, &this->dataParam); 
-
-    /* Start the thread to poll and handle interrupt callbacks to 
-     * device support */
-    epicsThreadCreate("ipUnidig",
-                      epicsThreadPriorityHigh,
-                      epicsThreadGetStackSize(epicsThreadStackBig),
-                      (EPICSTHREADFUNC)pollerThreadC,
-                      this);
+  /* Set up the register pointers.  Set the defaults for most modules */
+  /* Define registers in units of 16-bit words */
+  regs_.outputRegisterLow        = base;
+  regs_.outputRegisterHigh       = base + 0x1;
+  regs_.inputRegisterLow         = base + 0x2;
+  regs_.inputRegisterHigh        = base + 0x3;
+  regs_.outputEnableLow          = base + 0x8;
+  regs_.outputEnableHigh         = base + 0x5;
+  regs_.controlRegister0         = base + 0x6;
+  regs_.intVecRegister           = base + 0x8;
+  regs_.intEnableRegisterLow     = base + 0x9;
+  regs_.intEnableRegisterHigh    = base + 0xa;
+  regs_.intPolarityRegisterLow   = base + 0xb;
+  regs_.intPolarityRegisterHigh  = base + 0xc;
+  regs_.intClearRegisterLow      = base + 0xd;
+  regs_.intClearRegisterHigh     = base + 0xe;
+  regs_.intPendingRegisterLow    = base + 0xd;
+  regs_.intPendingRegisterHigh   = base + 0xe;
+  regs_.DACRegister              = base + 0xe;
     
-    this->risingMask = risingMask;
-    this->fallingMask = fallingMask;
-    this->polarityMask = risingMask;
-    /* If the interrupt vector is zero, don't bother with interrupts, 
-     * since the user probably didn't pass this
-     * parameter to IpUnidig::init().  This is an optional parameter added
-     * after initial release. */
-    if (this->supportsInterrupts && (intVec !=0)) {
-       /* Interrupt support */
-       /* Write to the interrupt polarity and enable registers */
-       *this->regs.intVecRegister = intVec;
-       if (devConnectInterruptVME(intVec, intFuncC, (void *)this)) {
-           errlogPrintf("ipUnidig interrupt connect failure\n");
-       }
-       *this->regs.intPolarityRegisterLow  = (epicsUInt16) this->polarityMask;
-       *this->regs.intPolarityRegisterHigh = (epicsUInt16) 
-                                                    (this->polarityMask >> 16);
-       writeIntEnableRegs();
+  /* Set things up for specific models which need to be treated differently */
+  switch (manufacturer_) {
+    case GREENSPRING_ID: 
+      switch (model_) {
+        case UNIDIG_O_24IO:
+        case UNIDIG_O_12I12O:
+        case UNIDIG_I_O_24IO:
+        case UNIDIG_I_O_12I12O:
+          /* Enable outputs */
+          *regs_.controlRegister0 |= 0x4;
+          break;
+        case UNIDIG_HV_16I8O:
+        case UNIDIG_I_HV_16I8O:
+          /*  These modules don't allow access to outputRegisterLow */
+          regs_.outputRegisterLow = NULL;
+          /* Set the comparator DAC for 2.5 volts.  Each bit is 15 mV. */
+          *regs_.DACRegister = 2500/15;
+          break;
+      }
+      break;
+    case SYSTRAN_ID:
+      switch (model_) {
+        case SYSTRAN_DIO316I:
+          /* Different register layout */
+          regs_.outputRegisterLow  = base;
+          regs_.outputRegisterHigh = base + 0x1;
+          regs_.inputRegisterLow   = base + 0x2;
+          regs_.inputRegisterHigh  = NULL;
+          regs_.controlRegister0   = base + 0x3;
+          regs_.controlRegister1   = base + 0x4;
+          /* Enable outputs for ports 0-3 */
+          *regs_.controlRegister0  |= 0xf;
+          /* Set direction of ports 0-1 to be output */
+          *regs_.controlRegister1  |= 0x3;
+          break;
+      }
+      break;
+    case SBS_ID:
+      switch (model_) {
+        case SBS_IPOPTOIO8:
+          /* Different register layout */
+          memset(&regs_, 0, sizeof(regs_));
+          regs_.inputRegisterLow   = base + 1;
+          regs_.outputRegisterLow  = base + 2;
+          regs_.controlRegister0   = base + 3;
+          *regs_.controlRegister0 = 0x00;   /* Start state machine reset */
+          *regs_.controlRegister0 = 0x01;   /* ....   */
+          *regs_.controlRegister0 = 0x00;   /* State machine in state 0 */
+          *regs_.controlRegister0 = 0x2B;   /* Select Port B DDR */
+          *regs_.controlRegister0 = 0xFF;   /* All Port B bits are inputs */
+          *regs_.controlRegister0 = 0x2A;   /* Select Port B DPPR */
+          *regs_.controlRegister0 = 0xFF;   /* All Port B bits inverted */
+          *regs_.controlRegister0 = 0x01;   /* Select MCCR */
+          *regs_.controlRegister0 = 0x84;   /* Enable ports A and B */
+           break;
+      }
+      break;
+  }
+  switch (model_) {
+    case UNIDIG_I_O_24I:
+    case UNIDIG_I_E:
+    case UNIDIG_I:
+    case UNIDIG_I_D:
+    case UNIDIG_I_O_24IO:
+    case UNIDIG_I_HV_16I8O:
+    case UNIDIG_I_O_12I12O:
+    case UNIDIG_I_HV_8I16O:
+      supportsInterrupts_ = 1;
+      break;
+    default:
+      supportsInterrupts_ = 0;
+      break;
+  }
 
-       /* Enable IPAC module interrupts and set module status. */
-       ipmIrqCmd(carrier, slot, 0, ipac_irqEnable);
-       ipmIrqCmd(carrier, slot, 0, ipac_statActive);
+  /* Create the asynPortDriver parameter for the data */
+  createParam(digitalInputString,  asynParamUInt32Digital, &digitalInputParam_); 
+  createParam(digitalOutputString, asynParamUInt32Digital, &digitalOutputParam_); 
+  createParam(DACOutputString,     asynParamInt32,         &DACOutputParam_); 
+
+  // We use this to call readUInt32Digital, which needs the correct reason
+  pasynUserSelf->reason = digitalInputParam_;
+  
+  // Set the values of rising mask and falling mask in the parameter library, just for reporting purposes
+  asynPortDriver::setUInt32DigitalInterrupt(digitalInputParam_, risingMask_, interruptOnZeroToOne);
+  asynPortDriver::setUInt32DigitalInterrupt(digitalInputParam_, fallingMask_, interruptOnOneToZero);
+   
+  /* Start the thread to poll and handle interrupt callbacks to 
+   * device support */
+  epicsThreadCreate("ipUnidig",
+                    epicsThreadPriorityHigh,
+                    epicsThreadGetStackSize(epicsThreadStackBig),
+                    (EPICSTHREADFUNC)pollerThreadC,
+                    this);
+
+  /* If the interrupt vector is zero, don't bother with interrupts, 
+   * since the user probably didn't pass this
+   * parameter to IpUnidig::init().  This is an optional parameter added
+   * after initial release. */
+  if (supportsInterrupts_ && (intVec !=0)) {
+    /* Interrupt support */
+    /* Write to the interrupt polarity and enable registers */
+    *regs_.intVecRegister = intVec;
+    if (devConnectInterruptVME(intVec, intFuncC, (void *)this)) {
+      errlogPrintf("ipUnidig interrupt connect failure\n");
     }
+    *regs_.intPolarityRegisterLow  = (epicsUInt16)polarityMask_;
+    *regs_.intPolarityRegisterHigh = (epicsUInt16)(polarityMask_ >> 16);
+    writeIntEnableRegs();
 
-    epicsAtExit(rebootCallbackC, this);
+    /* Enable IPAC module interrupts and set module status. */
+    ipmIrqCmd(carrier, slot, 0, ipac_irqEnable);
+    ipmIrqCmd(carrier, slot, 0, ipac_statActive);
+  }
+
+  epicsAtExit(rebootCallbackC, this);
 }
 
     
 asynStatus IpUnidig::readUInt32Digital(asynUser *pasynUser, epicsUInt32 *value, epicsUInt32 mask)
 {
-    static const char *functionName = "readUInt32Digital";
-    ipUnidigRegisters r = this->regs;
+  static const char *functionName = "readUInt32Digital";
+  ipUnidigRegisters r = regs_;
 
-    if(this->rebooting) epicsThreadSuspendSelf();
-    *value = 0;
-    if (r.inputRegisterLow)  *value  = (epicsUInt32) *r.inputRegisterLow;
-    if (r.inputRegisterHigh) *value |= (epicsUInt32) (*r.inputRegisterHigh << 16);
-    *value &= mask;
-    asynPrint(pasynUser, ASYN_TRACEIO_DRIVER,
-              "%s:%s:, *value=%x\n", 
-              driverName, functionName, *value);
-    return(asynSuccess);
+  if(rebooting_) epicsThreadSuspendSelf();
+  if (pasynUser->reason != digitalInputParam_) {
+    asynPrint(pasynUser, ASYN_TRACE_FLOW,
+              "%s:%s:, invalid reason=%d\n", 
+              driverName, functionName, pasynUser->reason);
+    return(asynError);
+  }
+  *value = 0;
+  if (r.inputRegisterLow)  *value  = (epicsUInt32) *r.inputRegisterLow;
+  if (r.inputRegisterHigh) *value |= (epicsUInt32) (*r.inputRegisterHigh << 16);
+  *value &= mask;
+  asynPrint(pasynUser, ASYN_TRACEIO_DRIVER,
+            "%s:%s:, *value=%x\n", 
+            driverName, functionName, *value);
+  return(asynSuccess);
 }
 
 asynStatus IpUnidig::writeUInt32Digital(asynUser *pasynUser, epicsUInt32 value, epicsUInt32 mask)
 {
-    static const char *functionName = "writeUInt32Digital";
-    ipUnidigRegisters r = this->regs;
+  static const char *functionName = "writeUInt32Digital";
+  ipUnidigRegisters r = regs_;
 
-    /* For the IP-Unidig differential output models, must enable all outputs */
-    if(this->rebooting) epicsThreadSuspendSelf();
-    if ((this->manufacturer == GREENSPRING_ID)  &&
-        ((this->model == UNIDIG_D) || (this->model == UNIDIG_I_D))) {
-         *r.outputEnableLow  |= (epicsUInt16) mask;
-         *r.outputEnableHigh |= (epicsUInt16) (mask >> 16);
-    }
-    /* Set any bits that are set in the value and the mask */
-    if (r.outputRegisterLow)  *r.outputRegisterLow  |= (epicsUInt16) (value & mask);
-    if (r.outputRegisterHigh) *r.outputRegisterHigh |= (epicsUInt16) ((value & mask) >> 16);
-    /* Clear bits that are clear in the value and set in the mask */
-    if (r.outputRegisterLow)  *r.outputRegisterLow  &= (epicsUInt16) (value | ~mask);
-    if (r.outputRegisterHigh) *r.outputRegisterHigh &=(epicsUInt16) ((value | ~mask) >> 16);
-    asynPrint(pasynUser, ASYN_TRACEIO_DRIVER,
-              "%s:%s, value=%x, mask=%x\n", driverName, functionName, value, mask);
-    return(asynSuccess);
+  /* For the IP-Unidig differential output models, must enable all outputs */
+  if(rebooting_) epicsThreadSuspendSelf();
+  if (pasynUser->reason != digitalOutputParam_) {
+    asynPrint(pasynUser, ASYN_TRACE_FLOW,
+              "%s:%s:, invalid reason=%d\n", 
+              driverName, functionName, pasynUser->reason);
+    return(asynError);
+  }
+  /* Put value in parameter library */
+  setUIntDigitalParam(pasynUser->reason, value, mask);
+  
+  if ((manufacturer_ == GREENSPRING_ID)  &&
+      ((model_ == UNIDIG_D) || (model_ == UNIDIG_I_D))) {
+    *r.outputEnableLow  |= (epicsUInt16) mask;
+    *r.outputEnableHigh |= (epicsUInt16) (mask >> 16);
+  }
+  /* Set any bits that are set in the value and the mask */
+  if (r.outputRegisterLow)  *r.outputRegisterLow  |= (epicsUInt16) (value & mask);
+  if (r.outputRegisterHigh) *r.outputRegisterHigh |= (epicsUInt16) ((value & mask) >> 16);
+  /* Clear bits that are clear in the value and set in the mask */
+  if (r.outputRegisterLow)  *r.outputRegisterLow  &= (epicsUInt16) (value | ~mask);
+  if (r.outputRegisterHigh) *r.outputRegisterHigh &=(epicsUInt16) ((value | ~mask) >> 16);
+  asynPrint(pasynUser, ASYN_TRACEIO_DRIVER,
+            "%s:%s:, value=%x, mask=%x\n", 
+            driverName, functionName, value, mask);
+  return(asynSuccess);
 }
 
 asynStatus IpUnidig::writeInt32(asynUser *pasynUser, epicsInt32 value)
 {
-    static const char *functionName = "writeInt32";
-    ipUnidigRegisters r = this->regs;
-    if ((this->manufacturer == GREENSPRING_ID)  &&
-        ((this->model == UNIDIG_HV_16I8O)   || (this->model == UNIDIG_HV_8I16O)  ||
-         (this->model == UNIDIG_I_HV_16I8O) || (this->model == UNIDIG_HV_8I16O))) 
-    {
-         *r.DACRegister  = value;
-         return(asynSuccess);
-    } 
-    else 
-    {
-        asynPrint(pasynUser, ASYN_TRACE_ERROR, "%s:%s,not allowed for this model",driverName, functionName);
-        return(asynError);
-    }
+  static const char *functionName = "writeInt32";
+  if (pasynUser->reason != DACOutputParam_) {
+    asynPrint(pasynUser, ASYN_TRACE_FLOW,
+              "%s:%s:, invalid reason=%d\n", 
+              driverName, functionName, pasynUser->reason);
+    return(asynError);
+  }
+  /* Put value in parameter library */
+  setIntegerParam(pasynUser->reason, value);
+
+  ipUnidigRegisters r = regs_;
+  if ((manufacturer_ == GREENSPRING_ID)  &&
+      ((model_ == UNIDIG_HV_16I8O)   || (model_ == UNIDIG_HV_8I16O)  ||
+       (model_ == UNIDIG_I_HV_16I8O) || (model_ == UNIDIG_HV_8I16O))) 
+  {
+    *r.DACRegister  = value;
+    return(asynSuccess);
+  } 
+  else 
+  {
+    asynPrint(pasynUser, ASYN_TRACE_ERROR, 
+        "%s:%s,not allowed for this model",
+        driverName, functionName);
+    return(asynError);
+  }
 }
 
 asynStatus IpUnidig::readInt32(asynUser *pasynUser, epicsInt32 *value)
 {
-    static const char *functionName = "readInt32";
-    ipUnidigRegisters r = this->regs;
+  static const char *functionName = "readInt32";
+  ipUnidigRegisters r = regs_;
 
-    if ((this->manufacturer == GREENSPRING_ID)  &&
-        ((this->model == UNIDIG_HV_16I8O)   || (this->model == UNIDIG_HV_8I16O)  ||
-         (this->model == UNIDIG_I_HV_16I8O) || (this->model == UNIDIG_HV_8I16O))) 
-    {
-         *value = *r.DACRegister;
-         return(asynSuccess);
-    } 
-    else 
-    {
-        asynPrint(pasynUser, ASYN_TRACE_ERROR, "%s:%s,not allowed for this model",driverName, functionName);
-        return(asynError);
-    }
+  if (pasynUser->reason != DACOutputParam_) {
+    asynPrint(pasynUser, ASYN_TRACE_FLOW,
+              "%s:%s:, invalid reason=%d\n", 
+              driverName, functionName, pasynUser->reason);
+    return(asynError);
+  }
+  if ((manufacturer_ == GREENSPRING_ID)  &&
+      ((model_ == UNIDIG_HV_16I8O)   || (model_ == UNIDIG_HV_8I16O)  ||
+       (model_ == UNIDIG_I_HV_16I8O) || (model_ == UNIDIG_HV_8I16O))) 
+  {
+    *value = *r.DACRegister;
+    return(asynSuccess);
+  } 
+  else 
+  {
+    asynPrint(pasynUser, ASYN_TRACE_ERROR, 
+        "%s:%s: not allowed for this model",
+        driverName, functionName);
+    return(asynError);
+  }
 }
 
 asynStatus IpUnidig::getBounds(asynUser *pasynUser, epicsInt32 *low, epicsInt32 *high)
 {
-    static const char *functionName = "getBounds";
-    if ((this->manufacturer == GREENSPRING_ID)  &&
-        ((this->model == UNIDIG_HV_16I8O)   || (this->model == UNIDIG_HV_8I16O)  ||
-         (this->model == UNIDIG_I_HV_16I8O) || (this->model == UNIDIG_HV_8I16O))) 
-    {
-         *low = 0;
-         *high = 4095;
-         return(asynSuccess);
-    } 
-    else 
-    {
-       asynPrint(pasynUser, ASYN_TRACE_ERROR,"%s %s,not allowed for this model", driverName, functionName);
-       return(asynError);
-    }
+  static const char *functionName = "getBounds";
+  if ((manufacturer_ == GREENSPRING_ID)  &&
+      ((model_ == UNIDIG_HV_16I8O)   || (model_ == UNIDIG_HV_8I16O)  ||
+       (model_ == UNIDIG_I_HV_16I8O) || (model_ == UNIDIG_HV_8I16O))) 
+  {
+    *low = 0;
+    *high = 4095;
+    return(asynSuccess);
+  } 
+  else 
+  {
+    asynPrint(pasynUser, ASYN_TRACE_ERROR,
+        "%s:%s:, not allowed for this model", 
+        driverName, functionName);
+    return(asynError);
+  }
 }
  
 asynStatus IpUnidig::setInterruptUInt32Digital(asynUser *pasynUser, epicsUInt32 mask, interruptReason reason)
 {
-    //static const char *functionName = "setInterruptUInt32Digital";
+  //static const char *functionName = "setInterruptUInt32Digital";
  
-    switch (reason) {
+  /* Call the base class method to put mask in parameter library so report shows it */
+  asynPortDriver::setInterruptUInt32Digital(pasynUser, mask, reason);
+  
+  switch (reason) {
     case interruptOnZeroToOne:
-        this->risingMask = mask;
-        break;
+      risingMask_ = mask;
+      break;
     case interruptOnOneToZero:
-        this->fallingMask = mask;
-        break;
+      fallingMask_ = mask;
+      break;
     case interruptOnBoth:
-        this->risingMask = mask;
-        this->fallingMask = mask;
-        break;
-    }
-    writeIntEnableRegs();
-    return(asynSuccess);
+      risingMask_ = mask;
+      fallingMask_ = mask;
+      break;
+  }
+  writeIntEnableRegs();
+  return(asynSuccess);
 }
 
 asynStatus IpUnidig::clearInterruptUInt32Digital(asynUser *pasynUser, epicsUInt32 mask)
 {
-    //static const char *functionName = "clearInterruptUInt32Digital";
+  //static const char *functionName = "clearInterruptUInt32Digital";
 
-    this->risingMask &= ~mask;
-    this->fallingMask &= ~mask;
-    writeIntEnableRegs();
-    return(asynSuccess);
+  /* Call the base class method to put mask in parameter library so report shows it */
+  asynPortDriver::clearInterruptUInt32Digital(pasynUser, mask);
+
+  risingMask_ &= ~mask;
+  fallingMask_ &= ~mask;
+  writeIntEnableRegs();
+  return(asynSuccess);
 }
 
 asynStatus IpUnidig::getInterruptUInt32Digital(asynUser *pasynUser, epicsUInt32 *mask, interruptReason reason)
 {
-    //static const char *functionName = "getInterruptUInt32Digital";
+  //static const char *functionName = "getInterruptUInt32Digital";
 
-    switch (reason) {
+  switch (reason) {
     case interruptOnZeroToOne:
-        *mask = this->risingMask;
-        break;
+      *mask = risingMask_;
+      break;
     case interruptOnOneToZero:
-        *mask = this->fallingMask;
-        break;
+      *mask = fallingMask_;
+      break;
     case interruptOnBoth:
-        *mask = this->risingMask | this->fallingMask;
-        break;
-    }
-    return(asynSuccess);
+      *mask = risingMask_ | fallingMask_;
+      break;
+  }
+  return(asynSuccess);
 }
 
 void IpUnidig::intFunc()
 {
-    ipUnidigRegisters r = this->regs;
-    epicsUInt32 inputs=0, pendingLow, pendingHigh, pendingMask, invertMask;
-    ipUnidigMessage msg;
+  ipUnidigRegisters r = regs_;
+  epicsUInt32 inputs=0, pendingLow, pendingHigh, pendingMask, invertMask;
+  ipUnidigMessage msg;
 
-    /* Clear the interrupts by copying from the interrupt pending register to
-     * the interrupt clear register */
-    *r.intClearRegisterLow = pendingLow = *r.intPendingRegisterLow;
-    *r.intClearRegisterHigh = pendingHigh = *r.intPendingRegisterHigh;
-    pendingMask = pendingLow | (pendingHigh << 16);
-    /* Read the current input.  Don't use read() because that can print debugging. */
-    if (r.inputRegisterLow)  inputs = (epicsUInt32) *r.inputRegisterLow;
-    if (r.inputRegisterHigh) inputs |= (epicsUInt32) (*r.inputRegisterHigh << 16);
-    msg.bits = inputs;
-    msg.interruptMask = pendingMask;
-    if (epicsMessageQueueTrySend(this->msgQId, &msg, sizeof(msg)) == 0)
-        this->messagesSent++;
-    else
-        this->messagesFailed++;
+  /* Clear the interrupts by copying from the interrupt pending register to
+   * the interrupt clear register */
+  *r.intClearRegisterLow = pendingLow = *r.intPendingRegisterLow;
+  *r.intClearRegisterHigh = pendingHigh = *r.intPendingRegisterHigh;
+  pendingMask = pendingLow | (pendingHigh << 16);
+  /* Read the current input.  Don't use read() because that can print debugging. */
+  if (r.inputRegisterLow)  inputs = (epicsUInt32) *r.inputRegisterLow;
+  if (r.inputRegisterHigh) inputs |= (epicsUInt32) (*r.inputRegisterHigh << 16);
+  msg.bits = inputs;
+  msg.interruptMask = pendingMask;
+  if (epicsMessageQueueTrySend(msgQId_, &msg, sizeof(msg)) == 0)
+    messagesSent_++;
+  else
+    messagesFailed_++;
 
-    /* Are there any bits which should generate interrupts on both the rising
-     * and falling edge, and which just generated this interrupt? */
-    invertMask = pendingMask & this->risingMask & this->fallingMask;
-    if (invertMask != 0) {
-        /* We want to invert all bits in the polarityMask that are set in 
-         * invertMask. This is done with xor. */
-        this->polarityMask = this->polarityMask ^ invertMask;
-        *r.intPolarityRegisterLow  = (epicsUInt16) this->polarityMask;
-        *r.intPolarityRegisterHigh = (epicsUInt16) (this->polarityMask >> 16);
-    }
+  /* Are there any bits which should generate interrupts on both the rising
+   * and falling edge, and which just generated this interrupt? */
+  invertMask = pendingMask & risingMask_ & fallingMask_;
+  if (invertMask != 0) {
+    /* We want to invert all bits in the polarityMask that are set in 
+     * invertMask. This is done with xor. */
+    polarityMask_ = polarityMask_ ^ invertMask;
+    *r.intPolarityRegisterLow  = (epicsUInt16) polarityMask_;
+    *r.intPolarityRegisterHigh = (epicsUInt16) (polarityMask_ >> 16);
+  }
 }
 
 
 void IpUnidig::pollerThread()
 {
-    /* This function runs in a separate thread.  It waits for the poll
-     * time, or an interrupt, whichever comes first.  If the bits read from
-     * the ipUnidig have changed then it does callbacks to all clients that
-     * have registered with registerDevCallback */
-    //static const char *functionName = "pollerThread";
-    epicsUInt32 newBits, changedBits, interruptMask=0;
-    ipUnidigMessage msg;
+  /* This function runs in a separate thread.  It waits for the poll
+   * time, or an interrupt, whichever comes first.  If the bits read from
+   * the ipUnidig have changed then it does callbacks to all clients that
+   * have registered with registerDevCallback */
+  //static const char *functionName = "pollerThread";
+  epicsUInt32 newBits, changedBits, interruptMask=0;
+  ipUnidigMessage msg;
+  static const char *functionName = "pollerThread";
 
-    while(1) {      
-        /*  Wait for an interrupt or for the poll time, whichever comes first */
-        if (epicsMessageQueueReceiveWithTimeout(this->msgQId, 
-                                                &msg, sizeof(msg), 
-                                                this->pollTime) == -1) {
-            /* The wait timed out, so there was no interrupt, so we need
-             * to read the bits.  If there was an interrupt the bits got
-             * set in the interrupt routines */
-            readUInt32Digital(this->pasynUserSelf, &newBits, 0xffffffff);
-            interruptMask = 0;
-        } else {
-            newBits = msg.bits;
-            interruptMask = msg.interruptMask;
-            asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
-                      "drvIpUnidig::pollerThread, got interrupt\n");
-        }
-
-        asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER,
-                  "drvIpUnidig::pollerThread, bits=%x, this->oldBits=%x, interruptMask=%x\n", 
-                  newBits, this->oldBits, interruptMask);
-
-        /* We detect change both from interruptMask (which only works for
-         * interrupts) and changedBits, which works for polling */
-        changedBits = newBits ^ this->oldBits;
-        interruptMask = interruptMask | changedBits;
-        if (this->forceCallback) interruptMask = 0xffffff;
-        if (interruptMask) {
-            this->oldBits = newBits;
-            this->forceCallback = 0;
-            asynPortDriver::setUIntDigitalParam(0, newBits, 0xFFFFFFFF);
-            asynPortDriver::setInterruptUInt32Digital(this->pasynUserSelf, interruptMask, interruptOnBoth);
-            callParamCallbacks();
-        }
+  while(1) {    
+    /*  Wait for an interrupt or for the poll time, whichever comes first */
+    if (epicsMessageQueueReceiveWithTimeout(msgQId_, 
+                                            &msg, sizeof(msg), 
+                                            pollTime_) == -1) {
+      /* The wait timed out, so there was no interrupt, so we need
+       * to read the bits.  If there was an interrupt the bits got
+       * set in the interrupt routines */
+      readUInt32Digital(this->pasynUserSelf, &newBits, 0xffffffff);
+      interruptMask = 0;
+    } else {
+      newBits = msg.bits;
+      interruptMask = msg.interruptMask;
+      asynPrint(this->pasynUserSelf, ASYN_TRACE_FLOW,
+                "%s:%s:, got interrupt\n",
+                driverName, functionName);
     }
+
+    asynPrint(this->pasynUserSelf, ASYN_TRACEIO_DRIVER,
+              "%s:%s:, bits=%x, oldBits=%x, interruptMask=%x\n", 
+              driverName, functionName, newBits, oldBits_, interruptMask);
+
+    /* We detect change both from interruptMask (which only works for
+     * interrupts) and changedBits, which works for polling */
+    changedBits = newBits ^ oldBits_;
+    interruptMask = interruptMask | changedBits;
+    if (forceCallback_) interruptMask = 0xffffff;
+    if (interruptMask) {
+      oldBits_ = newBits;
+      forceCallback_ = 0;
+      asynPortDriver::setUIntDigitalParam(digitalInputParam_, newBits, 0xFFFFFFFF, interruptMask);
+      callParamCallbacks();
+    }
+  }
 }
 
 
 void IpUnidig::writeIntEnableRegs()
 {
-    ipUnidigRegisters r = this->regs;
+  ipUnidigRegisters r = regs_;
 
-    *r.intEnableRegisterLow  = (epicsUInt16) (this->risingMask | 
-                                              this->fallingMask);
-    *r.intEnableRegisterHigh = (epicsUInt16) ((this->risingMask | 
-                                               this->fallingMask) >> 16);
+  *r.intEnableRegisterLow  = (epicsUInt16) (risingMask_ | 
+                                            fallingMask_);
+  *r.intEnableRegisterHigh = (epicsUInt16) ((risingMask_ | 
+                                             fallingMask_) >> 16);
 }
 
 void IpUnidig::rebootCallback()
 {
-    ipUnidigRegisters r = this->regs;
+  ipUnidigRegisters r = regs_;
 
-    *r.intEnableRegisterLow = 0;
-    *r.intEnableRegisterHigh = 0;
-    this->rebooting = 1;
+  *r.intEnableRegisterLow = 0;
+  *r.intEnableRegisterHigh = 0;
+  rebooting_ = 1;
 }
 
 void IpUnidig::report(FILE *fp, int details)
 {
-    ipUnidigRegisters r = this->regs;
-    epicsUInt32 intEnableRegister = 0, intPolarityRegister = 0;
+  ipUnidigRegisters r = regs_;
+  epicsUInt32 intEnableRegister = 0, intPolarityRegister = 0;
 
-    fprintf(fp, "drvIpUnidig %s: connected at base address %p\n",
-            this->portName, this->baseAddress);
-    if (details >= 1) {
-        if (r.intEnableRegisterLow)    intEnableRegister =     *r.intEnableRegisterLow;
-        if (r.intEnableRegisterHigh)   intEnableRegister |=   (*r.intEnableRegisterHigh << 16);
-        if (r.intPolarityRegisterLow)  intPolarityRegister =   *r.intPolarityRegisterLow;
-        if (r.intPolarityRegisterHigh) intPolarityRegister |= (*r.intPolarityRegisterHigh << 16);
+  fprintf(fp, "drvIpUnidig %s: connected at base address %p\n",
+          this->portName, baseAddress_);
+  if (details >= 1) {
+    if (r.intEnableRegisterLow)    intEnableRegister =     *r.intEnableRegisterLow;
+    if (r.intEnableRegisterHigh)   intEnableRegister |=   (*r.intEnableRegisterHigh << 16);
+    if (r.intPolarityRegisterLow)  intPolarityRegister =   *r.intPolarityRegisterLow;
+    if (r.intPolarityRegisterHigh) intPolarityRegister |= (*r.intPolarityRegisterHigh << 16);
 
-        fprintf(fp, "  risingMask=%x\n", this->risingMask);
-        fprintf(fp, "  fallingMask=%x\n", this->fallingMask);
-        fprintf(fp, "  intEnableRegister=%x\n", intEnableRegister);
-        fprintf(fp, "  intPolarityRegister=%x\n", intPolarityRegister);
-        fprintf(fp, "  messages sent OK=%d; send failed (queue full)=%d\n",
-                this->messagesSent, this->messagesFailed);
-    }
-    asynPortDriver::report(fp, details);
+    fprintf(fp, "  risingMask=%x\n", risingMask_);
+    fprintf(fp, "  fallingMask=%x\n", fallingMask_);
+    fprintf(fp, "  intEnableRegister=%x\n", intEnableRegister);
+    fprintf(fp, "  intPolarityRegister=%x\n", intPolarityRegister);
+    fprintf(fp, "  messages sent OK=%d; send failed (queue full)=%d\n",
+            messagesSent_, messagesFailed_);
+  }
+  asynPortDriver::report(fp, details);
 }
 
 extern "C" int initIpUnidig(const char *portName, int carrier, int slot,
                  int msecPoll, int intVec, int risingMask, 
                  int fallingMask)
 {
-    IpUnidig *pIpUnidig=new IpUnidig(portName,carrier,slot,msecPoll,intVec,risingMask,fallingMask);
-    pIpUnidig=NULL;
-    return(asynSuccess);
+  IpUnidig *pIpUnidig=new IpUnidig(portName,carrier,slot,msecPoll,intVec,risingMask,fallingMask);
+  pIpUnidig=NULL;
+  return(asynSuccess);
 }
 
 /* iocsh functions */
@@ -660,13 +722,13 @@ static const iocshArg * const initArgs[7] = {&initArg0,
 static const iocshFuncDef initFuncDef = {"initIpUnidig",7,initArgs};
 static void initCallFunc(const iocshArgBuf *args)
 {
-    initIpUnidig(args[0].sval, args[1].ival, args[2].ival,
-                 args[3].ival, args[4].ival, args[5].ival,
-                 args[6].ival);
+  initIpUnidig(args[0].sval, args[1].ival, args[2].ival,
+               args[3].ival, args[4].ival, args[5].ival,
+               args[6].ival);
 }
 void ipUnidigRegister(void)
 {
-    iocshRegister(&initFuncDef,initCallFunc);
+  iocshRegister(&initFuncDef,initCallFunc);
 }
 
 epicsExportRegistrar(ipUnidigRegister);

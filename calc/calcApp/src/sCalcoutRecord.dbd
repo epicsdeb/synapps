@@ -2,6 +2,8 @@
 # Copyright (c) 2004 The University of Chicago, as Operator of Argonne
 #     National Laboratory.
 #*************************************************************************
+# Note hardwired postfix-buffer size 282 = 2+n*21/6, where n is infix size of 80
+# Hardwired for backward compatibility with streamDevice, which contains device support.
 menu(scalcoutOOPT) {
 	choice(scalcoutOOPT_Every_Time,"Every Time")
 	choice(scalcoutOOPT_On_Change,"On Change")
@@ -65,7 +67,7 @@ recordtype(scalcout) {
 		promptgroup(GUI_CALC)
 		special(SPC_MOD)
 		pp(TRUE)
-		size(40)
+		size(80)
 	}
 	field(CLCV,DBF_LONG) {
 		prompt("CALC Valid")
@@ -426,10 +428,9 @@ recordtype(scalcout) {
 	field(OCAL,DBF_STRING) {
 		prompt("Output Calculation")
 		promptgroup(GUI_CALC)
-#		special(SPC_SCALC) not in base yet
 		special(SPC_MOD)
 		pp(TRUE)
-		size(36)
+		size(80)
 	}
 	field(OCLV,DBF_LONG) {
 		prompt("OCAL Valid")
@@ -870,12 +871,12 @@ recordtype(scalcout) {
 		prompt("Reverse Polish Calc")
 		special(SPC_NOMOD)
 		interest(4)
-		extra("char	rpcl[240]")
+		extra("unsigned char rpcl[282]")
 	}
 	field(ORPC,DBF_NOACCESS) {
 		prompt("Reverse Polish OCalc")
 		special(SPC_NOMOD)
 		interest(4)
-		extra("char	orpc[240]")
+		extra("unsigned char orpc[282]")
 	}
 }

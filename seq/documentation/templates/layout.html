@@ -1,0 +1,23 @@
+{% extends "!layout.html" %}
+{%- block sidebartoc %}
+{%- if display_toc %}
+<h3><a href="{{ pathto('Manual.html', 1) }}">{{ _('Table Of Contents') }}</a></h3>
+{{ toc }}
+{%- else %}
+<h3>{{ 'Shortcuts' }}</h3>
+<ul class="topless">
+<li><a href="{{ pathto('Installation.html', 1) }}">Installation</a></li>
+<li><a href="{{ pathto('Tutorial.html', 1) }}">Tutorial</a></li>
+<li><a href="{{ pathto('Reference.html', 1) }}">SNL Reference</a></li>
+<li>Users' Guide (<a href="{{ pathto('Manual.html', 1) }}">html</a>,
+    <a href="{{ pathto('Manual.pdf', 1) }}">pdf</a>)</li>
+</ul>
+<h3>{{ _('Related') }}</h3>
+<ul class="topless">
+<li><a href="http://epics.web.psi.ch/software/sequencer/">{{ 'Old Sequencer Home at PSI' }}</a></li>
+<li><a href="http://www.aps.anl.gov/epics/">{{ 'EPICS' }}</a></li>
+<li><a href="http://www.aps.anl.gov/epics/base/R3-14/12-docs/CAref.html">{{ 'Channel Access' }}</a></li>
+</ul>
+<hr>
+{%- endif %}
+{%- endblock %}

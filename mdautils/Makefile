@@ -61,18 +61,20 @@ INSTALL_EXE   = install -c -m 0755
 INSTALL_OTHER = install -c -m 0644
 
 install : all
-	$(INSTALL_MKDIR) $(bindir)
-	$(INSTALL_MKDIR) $(libdir)
-	$(INSTALL_MKDIR) $(includedir)
-	$(INSTALL_MKDIR) $(mandir)
-	$(INSTALL_EXE) mda-ls $(bindir)/
-	$(INSTALL_EXE) mda-info $(bindir)/
-	$(INSTALL_EXE) mda-dump $(bindir)/
-	$(INSTALL_EXE) mda2ascii $(bindir)/
-	$(INSTALL_OTHER) libmda-load.a $(libdir)/
-	$(INSTALL_OTHER) mda-load.h $(includedir)/
-	$(INSTALL_OTHER) doc/mda-ls.1 $(mandir)/
-	$(INSTALL_OTHER) doc/mda-info.1 $(mandir)/
-	$(INSTALL_OTHER) doc/mda-dump.1 $(mandir)/
-	$(INSTALL_OTHER) doc/mda2ascii.1 $(mandir)/
+	$(INSTALL_MKDIR) $(DESTDIR)$(bindir)
+	$(INSTALL_MKDIR) $(DESTDIR)$(libdir)
+	$(INSTALL_MKDIR) $(DESTDIR)$(includedir)
+	$(INSTALL_MKDIR) $(DESTDIR)$(mandir)
+	$(INSTALL_EXE) mda-ls $(DESTDIR)$(bindir)/
+	$(INSTALL_EXE) mda-info $(DESTDIR)$(bindir)/
+	$(INSTALL_EXE) mda-dump $(DESTDIR)$(bindir)/
+	$(INSTALL_EXE) mda2ascii $(DESTDIR)$(bindir)/
+	$(INSTALL_EXE) mdatree2ascii $(DESTDIR)$(bindir)/
+	$(INSTALL_OTHER) libmda-load.a $(DESTDIR)$(libdir)/
+	$(INSTALL_OTHER) mda-load.h $(DESTDIR)$(includedir)/
+	$(INSTALL_OTHER) doc/mda-ls.1 $(DESTDIR)$(mandir)/
+	$(INSTALL_OTHER) doc/mda-info.1 $(DESTDIR)$(mandir)/
+	$(INSTALL_OTHER) doc/mda-dump.1 $(DESTDIR)$(mandir)/
+	$(INSTALL_OTHER) doc/mda2ascii.1 $(DESTDIR)$(mandir)/
+	$(INSTALL_OTHER) doc/mdatree2ascii.1 $(DESTDIR)$(mandir)/
 

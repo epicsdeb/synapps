@@ -2,9 +2,10 @@
 FILENAME... drvESP300.cc
 USAGE...    Motor record driver level support for Newport ESP300/100.
 
-Version:    $Revision: 1.25 $
-Modified By:    $Author: rivers $
-Last Modified:  $Date: 2009-09-01 16:17:46 $
+Version:        $Revision: 14155 $
+Modified By:    $Author: sluiter $
+Last Modified:  $Date: 2011-11-29 14:50:00 -0600 (Tue, 29 Nov 2011) $
+HeadURL:        $URL: https://subversion.xor.aps.anl.gov/synApps/motor/tags/R6-7-1/motorApp/NewportSrc/drvESP300.cc $
 */
 
 /*
@@ -75,17 +76,19 @@ Last Modified:  $Date: 2009-09-01 16:17:46 $
 #define SERIAL_TIMEOUT  5.0 /* Command timeout in sec. */
 
 /*----------------debugging-----------------*/
-#ifdef __GNUG__
-    #ifdef  DEBUG
-        #define Debug(l, f, args...) { if(l<=drvESP300debug) printf(f,## args); }
-    #else
-        #define Debug(l, f, args...)
-    #endif
-#else
-    #define Debug()
-#endif
+
 volatile int drvESP300debug = 0;
 extern "C" {epicsExportAddress(int, drvESP300debug);}
+static inline void Debug(int level, const char *format, ...) {
+  #ifdef DEBUG
+    if (level < drvESP300debug) {
+      va_list pVar;
+      va_start(pVar, format);
+      vprintf(format, pVar);
+      va_end(pVar);
+    }
+  #endif
+}
 
 int ESP300_num_cards = 0;
 

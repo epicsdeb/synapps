@@ -22,14 +22,19 @@
 #include "StreamError.h"
 #include "StreamBuffer.h"
 
-#ifdef EPICS_3_14
-#include <epicsAssert.h>
-#include <epicsTime.h>
-#include <epicsTimer.h>
-#else
+#include <epicsVersion.h>
+#ifdef BASE_VERSION
+#define EPICS_3_13
+#endif
+
+#ifdef EPICS_3_13
 #include <assert.h>
 #include <wdLib.h>
 #include <sysLib.h>
+#else
+#include <epicsAssert.h>
+#include <epicsTime.h>
+#include <epicsTimer.h>
 extern "C" {
 #include <callback.h>
 }
@@ -126,7 +131,7 @@ static const char* ioActionStr[] = {
 };
 
 static const char* asynStatusStr[] = {
-    "asynSuccess", "asynTimeout", "asynOverflow", "asynError"
+    "asynSuccess", "asynTimeout", "asynOverflow", "asynError", "asynDisconnected", "asynDisabled"
 };
 
 static const char* eomReasonStr[] = {
@@ -134,7 +139,7 @@ static const char* eomReasonStr[] = {
 };
 
 class AsynDriverInterface : StreamBusInterface
-#ifdef EPICS_3_14
+#ifndef EPICS_3_13
  , epicsTimerNotify
 #endif
 {
@@ -164,12 +169,12 @@ class AsynDriverInterface : StreamBusInterface
     const char* outputBuffer;
     size_t outputSize;
     int peeksize;
-#ifdef EPICS_3_14
-    epicsTimerQueueActive* timerQueue;
-    epicsTimer* timer;
-#else
+#ifdef EPICS_3_13
     WDOG_ID timer;
     CALLBACK timeoutCallback;
+#else
+    epicsTimerQueueActive* timerQueue;
+    epicsTimer* timer;
 #endif
 
     AsynDriverInterface(Client* client);
@@ -189,11 +194,11 @@ class AsynDriverInterface : StreamBusInterface
     bool disconnectRequest();
     void finish();
 
-#ifdef EPICS_3_14
+#ifdef EPICS_3_13
+    static void expire(CALLBACK *pcallback);
+#else
     // epicsTimerNotify methods
     epicsTimerNotify::expireStatus expire(const epicsTime &);
-#else
-    static void expire(CALLBACK *pcallback);
 #endif
 
     // local methods
@@ -211,20 +216,22 @@ class AsynDriverInterface : StreamBusInterface
             (StreamBusInterface::priority());
     }
     void startTimer(double timeout) {
-#ifdef EPICS_3_14
-        timer->start(*this, timeout);
-#else
+#ifdef EPICS_3_13
         callbackSetPriority(priority(), &timeoutCallback);
         wdStart(timer, (int)((timeout+1)*sysClkRateGet())-1,
             reinterpret_cast<FUNCPTR>(callbackRequest),
             reinterpret_cast<int>(&timeoutCallback));
+#else
+        timer->start(*this, timeout
+            +epicsThreadSleepQuantum()*0.5
+        );
 #endif
     }
     void cancelTimer() {
-#ifdef EPICS_3_14
-        timer->cancel();
-#else
+#ifdef EPICS_3_13
         wdCancel(timer);
+#else
+        timer->cancel();
 #endif
     }
 
@@ -263,15 +270,15 @@ AsynDriverInterface(Client* client) : StreamBusInterface(client)
         handleTimeout);
     assert(pasynUser);
     pasynUser->userPvt = this;
-#ifdef EPICS_3_14
+#ifdef EPICS_3_13
+    timer = wdCreate();
+    callbackSetCallback(expire, &timeoutCallback);
+    callbackSetUser(this, &timeoutCallback);
+#else
     timerQueue = &epicsTimerQueueActive::allocate(true);
     assert(timerQueue);
     timer = &timerQueue->createTimer();
     assert(timer);
-#else
-    timer = wdCreate();
-    callbackSetCallback(expire, &timeoutCallback);
-    callbackSetUser(this, &timeoutCallback);
 #endif
 }
 
@@ -306,11 +313,11 @@ AsynDriverInterface::
     }
     // Now, no handler is running any more and none will start.
 
-#ifdef EPICS_3_14
+#ifdef EPICS_3_13
+    wdDelete(timer);
+#else
     timer->destroy();
     timerQueue->release();
-#else
-    wdDelete(timer);
 #endif
     pasynManager->disconnect(pasynUser);
     pasynManager->freeAsynUser(pasynUser);
@@ -516,7 +523,7 @@ connectToAsynPort()
         status = pasynOctet->read(pvtOctet, pasynUser,
             buffer, 0, &received, &eomReason);
         debug("AsynDriverInterface::connectToAsynPort(%s): "
-            "read(..., 0, ...) [timeout=%f seconds] = %s\n",
+            "read(..., 0, ...) [timeout=%g sec] = %s\n",
             clientName(), pasynUser->timeout,
             asynStatusStr[status]);
         pasynManager->isConnected(pasynUser, &connected);
@@ -610,19 +617,26 @@ writeHandler()
         clientName());
     asynStatus status;
     size_t written = 0;
-    pasynUser->timeout = writeTimeout;
 
-    // discard any early input or early events
-    status = pasynOctet->flush(pvtOctet, pasynUser);
+    // discard any early input, but forward it to potential async records
+    // thus do not use pasynOctet->flush()
+    pasynUser->timeout = 0;
+    do {
+        char buffer [256];
+        size_t received = sizeof(buffer);
+        int eomReason = 0;
+        status = pasynOctet->read(pvtOctet, pasynUser,
+            buffer, received, &received, &eomReason);
+#ifndef NO_TEMPORARY
+        if (received) debug("AsynDriverInterface::writeHandler(%s): flushing %ld bytes: \"%s\"\n",
+            clientName(), (long)received, StreamBuffer(buffer, received).expand()());
+#endif
+    } while (status != asynTimeout);
+        
+    // discard any early events
     receivedEvent = 0;
-
-    if (status != asynSuccess)
-    {
-        error("%s: pasynOctet->flush() failed: %s\n",
-                clientName(), pasynUser->errorMessage);
-        writeCallback(StreamIoFault);
-        return;
-    }
+    
+    pasynUser->timeout = writeTimeout;
     
     // has stream already added a terminator or should
     // asyn do so?
@@ -648,7 +662,7 @@ writeHandler()
         outputBuffer, outputSize, &written);
     debug("AsynDriverInterface::writeHandler(%s): "
         "write(..., outputSize=%ld, written=%ld) "
-        "[timeout=%f seconds] = %s\n",
+        "[timeout=%g sec] = %s\n",
         clientName(), (long)outputSize,  (long)written,
         pasynUser->timeout, asynStatusStr[status]);
 
@@ -732,7 +746,7 @@ readRequest(unsigned long replyTimeout_ms, unsigned long readTimeout_ms,
     long _expectedLength, bool async)
 {
     debug("AsynDriverInterface::readRequest(%s, %ld msec reply, "
-        "%ld msec read, expect %ld bytes, asyn=%s)\n",
+        "%ld msec read, expect %ld bytes, async=%s)\n",
         clientName(), replyTimeout_ms, readTimeout_ms,
         _expectedLength, async?"yes":"no");
         
@@ -756,8 +770,20 @@ readRequest(unsigned long replyTimeout_ms, unsigned long readTimeout_ms,
     }
     status = pasynManager->queueRequest(pasynUser,
         priority(), queueTimeout);
-    if (status != asynSuccess && !async)
+    debug("AsynDriverInterface::readRequest %s: "
+        "queueRequest(..., priority=%d, queueTimeout=%g sec) = %s [async=%s] %s\n",
+        clientName(), priority(), queueTimeout,
+        asynStatusStr[status], async? "true" : "false",
+        status!=asynSuccess ? pasynUser->errorMessage : "");
+    if (status != asynSuccess)
     {
+        // Not queued for some reason (e.g. disconnected / already queued)
+        if (async)
+        {
+            // silently try again later
+            startTimer(replyTimeout);
+            return true;
+        }
         error("%s readRequest: pasynManager->queueRequest() failed: %s\n",
             clientName(), pasynUser->errorMessage);
         return false;
@@ -863,27 +889,26 @@ readHandler()
         received = 0;
         eomReason = 0;
         
+        debug("AsynDriverInterface::readHandler(%s): ioAction=%s "
+            "read(..., bytesToRead=%ld, ...) "
+            "[timeout=%g sec]\n",
+            clientName(), ioActionStr[ioAction],
+            bytesToRead, pasynUser->timeout);
         status = pasynOctet->read(pvtOctet, pasynUser,
             buffer, bytesToRead, &received, &eomReason);
-        if (ioAction == Read || status != asynTimeout)
-        {
-            debug("AsynDriverInterface::readHandler(%s): "
-                "read(..., bytesToRead=%ld, received=%ld...) "
-                "[timeout=%f seconds] = %s\n",
-                clientName(), bytesToRead, (long)received,
-                pasynUser->timeout, asynStatusStr[status]);
-        }
+        debug("AsynDriverInterface::readHandler(%s): "
+            "read returned %s: ioAction=%s received=%ld, eomReason=%s, buffer=\"%s\"\n",
+            clientName(), asynStatusStr[status], ioActionStr[ioAction],
+            (long)received,eomReasonStr[eomReason&0x7],
+            StreamBuffer(buffer, received).expand()());
+
         pasynManager->isConnected(pasynUser, &connected);
         debug("AsynDriverInterface::readHandler(%s): "
-            "device is %sconnected\n",
-            clientName(),connected?"":"dis");
-        if (!connected) {
-            error("%s: connection closed in read\n",
-                clientName());
-            readCallback(StreamIoFault);
-            return;
-        }
-        // pasynOctet->read() has already cut off terminator.
+            "device is now %sconnected\n",
+            clientName(),connected?"":"dis");        
+        // asyn 4.16 sets reason to ASYN_EOM_END when device disconnects.
+        // What about earlier versions?
+        if (!connected) eomReason |= ASYN_EOM_END;
         
         if (status == asynTimeout &&
             pasynUser->timeout == 0.0 &&
@@ -910,6 +935,7 @@ readHandler()
 #endif
                     // ignore what we got from here.
                     // input was already handeled by asynReadHandler()
+
                     // read until no more input is available
                     readMore = -1;
                     break;
@@ -959,6 +985,9 @@ readHandler()
                     // reply timeout
                     if (ioAction == AsyncRead)
                     {
+                        debug("AsynDriverInterface::readHandler(%s): "
+                            "no async input, retry in in %g seconds\n",
+                            clientName(), replyTimeout);
                         // start next poll after timer expires
                         if (replyTimeout != 0.0) startTimer(replyTimeout);
                         // continues with:
@@ -975,7 +1004,7 @@ readHandler()
                 // read timeout
 #ifndef NO_TEMPORARY
                 debug("AsynDriverInterface::readHandler(%s): "
-                        "ioAction=%s, timeout [%f seconds] "
+                        "ioAction=%s, timeout [%g sec] "
                         "after %ld of %ld bytes \"%s\"\n",
                     clientName(), ioActionStr[ioAction], pasynUser->timeout,
                     (long)received, bytesToRead,
@@ -1236,6 +1265,9 @@ timerExpired()
     int autoconnect, connected;
     switch (ioAction)
     {
+        case None:
+            // Timeout of async poll crossed with parasitic input
+            return;
         case ReceiveEvent:
             // timeout while waiting for event
             ioAction = None;
@@ -1254,6 +1286,8 @@ timerExpired()
             // queueRequest might fail if another request was just queued
             pasynManager->isAutoConnect(pasynUser, &autoconnect);
             pasynManager->isConnected(pasynUser, &connected);
+            debug("%s: polling for I/O Intr: autoconnected: %d, connect: %d\n",
+                clientName(), autoconnect, connected);
             if (autoconnect && !connected)
             {
                 // has explicitely been disconnected
@@ -1264,8 +1298,14 @@ timerExpired()
             else
             {
                 // queue for read poll (no timeout)
-                pasynManager->queueRequest(pasynUser,
+                asynStatus status = pasynManager->queueRequest(pasynUser,
                     asynQueuePriorityLow, -1.0);
+                // if this fails, we are already queued by another thread
+                debug("AsynDriverInterface::timerExpired %s: "
+                    "queueRequest(..., priority=Low, queueTimeout=-1) = %s %s\n",
+                    clientName(), asynStatusStr[status],
+                    status!=asynSuccess ? pasynUser->errorMessage : "");
+                if (status != asynSuccess) startTimer(replyTimeout);
                 // continues with:
                 //    handleRequest() -> readHandler() -> readCallback()
             }
@@ -1277,20 +1317,20 @@ timerExpired()
     }
 }
 
-#ifdef EPICS_3_14
-epicsTimerNotify::expireStatus AsynDriverInterface::
-expire(const epicsTime &)
-{
-    timerExpired();
-    return noRestart;
-}
-#else
+#ifdef EPICS_3_13
 void AsynDriverInterface::
 expire(CALLBACK *pcallback)
 {
     AsynDriverInterface* interface =
         static_cast<AsynDriverInterface*>(pcallback->user);
     interface->timerExpired();
+}
+#else
+epicsTimerNotify::expireStatus AsynDriverInterface::
+expire(const epicsTime &)
+{
+    timerExpired();
+    return noRestart;
 }
 #endif
 
@@ -1390,6 +1430,7 @@ void handleRequest(asynUser* pasynUser)
 {
     AsynDriverInterface* interface =
         static_cast<AsynDriverInterface*>(pasynUser->userPvt);
+    interface->cancelTimer();
     debug("AsynDriverInterface::handleRequest(%s) %s\n",
         interface->clientName(), ioActionStr[interface->ioAction]);
     switch (interface->ioAction)

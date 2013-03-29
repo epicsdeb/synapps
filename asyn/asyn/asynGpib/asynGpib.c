@@ -30,8 +30,12 @@
 #include "asynGpibDriver.h"
 
 #define BOOL int
+#ifndef TRUE
 #define TRUE 1
+#endif
+#ifndef FALSE
 #define FALSE 0
+#endif
 #define SRQTIMEOUT .01
 #define MAX_POLL 5
 
@@ -167,7 +171,7 @@ static asynStatus getAddr(gpibPvt *pgpibPvt,asynUser *pasynUser,
     if(*addr==-1) {
         if(pgpibPvt->attributes&ASYN_MULTIDEVICE) {
             epicsSnprintf(pasynUser->errorMessage, pasynUser->errorMessageSize,
-                "%s asynGpib addr %d is illegal\n",
+                "%s asynGpib addr %d is illegal",
                  pgpibPvt->portName,*addr);
             return asynError;
         }
@@ -176,7 +180,7 @@ static asynStatus getAddr(gpibPvt *pgpibPvt,asynUser *pasynUser,
     } else if(*addr<100) {
         if(*addr>=NUM_GPIB_ADDRESSES) {
             epicsSnprintf(pasynUser->errorMessage, pasynUser->errorMessageSize,
-                "%s asynGpib addr %d is illegal\n",
+                "%s asynGpib addr %d is illegal",
                  pgpibPvt->portName,*addr);
             return asynError;
         }
@@ -186,7 +190,7 @@ static asynStatus getAddr(gpibPvt *pgpibPvt,asynUser *pasynUser,
     *primary = *addr/100; *secondary = *primary%100;
     if(*primary>=NUM_GPIB_ADDRESSES || *secondary>=NUM_GPIB_ADDRESSES) {
         epicsSnprintf(pasynUser->errorMessage, pasynUser->errorMessageSize,
-            "%s asynGpib addr %d is illegal\n",
+            "%s asynGpib addr %d is illegal",
              pgpibPvt->portName,*addr);
         return asynError;
     }
@@ -414,7 +418,7 @@ static asynStatus readIt(void *drvPvt,asynUser *pasynUser,
             nt--;
         }
     }
-    if(nt<maxchars) data[nt] = 0;
+    if(nt<(int)maxchars) data[nt] = 0;
     if((nt==maxchars) && eomReason) *eomReason |= ASYN_EOM_CNT;
     *nbytesTransfered = (size_t)nt;
     pasynOctetBase->callInterruptUsers(pasynUser,pgpibPvt->pasynPvt,
@@ -436,7 +440,7 @@ static asynStatus setInputEos(void *drvPvt,asynUser *pasynUser,
     
     if(eoslen>1) {
         epicsSnprintf(pasynUser->errorMessage,pasynUser->errorMessageSize,
-            "%s asynGpib:setInputEos eoslen %d too long. only 1 is allowed\n",
+            "%s asynGpib:setInputEos eoslen %d too long. only 1 is allowed",
              pgpibPvt->portName,eoslen);
         return asynError;
     }

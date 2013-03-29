@@ -33,13 +33,20 @@ Newport_SRCS += devESP300.cc drvESP300.cc
 
 # XPS C8 device driver
 Newport_SRCS += asynOctetSocket.cpp 
-Newport_SRCS += XPS_C8_drivers.cpp drvXPSAsyn.c drvXPSAsynAux.c XPSAsynInterpose.c xps_ftp.c
+Newport_SRCS += XPS_C8_drivers.cpp 
+Newport_SRCS += drvXPSAsynAux.c
+Newport_SRCS += xps_ftp.c
+# This is the model 2 asyn driver
+Newport_SRCS += drvXPSAsyn.c XPSAsynInterpose.c
+# This is the model 3 asyn driver
+Newport_SRCS += XPSController.cpp
+Newport_SRCS += XPSAxis.cpp
 ifdef SNCSEQ
 Newport_SRCS += XPS_trajectoryScan.st
 endif
-
+ 
 # strtok_r needed on WIN32
-Newport_SRCS_WIN32 += strtok_r.cpp
+Newport_SRCS_WIN32 += strtok_r.c
 
 # XPS Gathering test function
 Newport_SRCS += XPSGathering.c
@@ -53,6 +60,7 @@ ifdef SNCSEQ
 Newport_LIBS += seq pv
 endif
 Newport_LIBS += $(EPICS_BASE_IOC_LIBS)
+Newport_SYS_LIBS_WIN32 += ws2_32
 
 PROD_IOC += XPSGatheringMain
 XPSGatheringMain_SRCS += XPSGatheringMain.c
@@ -62,6 +70,12 @@ XPSGatheringMain_LIBS += seq pv
 endif
 XPSGatheringMain_LIBS += $(EPICS_BASE_IOC_LIBS)
 XPSGatheringMain_SYS_LIBS_solaris += socket nsl
+
+PROD_IOC += XPSGathering2
+XPSGathering2_SRCS += XPSGathering2.c
+XPSGathering2_LIBS += Newport motor asyn
+XPSGathering2_LIBS += $(EPICS_BASE_IOC_LIBS)
+XPSGathering2_SYS_LIBS_solaris += socket nsl
 
 include $(TOP)/configure/RULES
 

@@ -1,7 +1,7 @@
 
 file {
-	name="C:\cygwin\home\mooney\epics\synApps\support\all_adl\userArrayCalc_full.adl"
-	version=030004
+	name="/home/oxygen/MOONEY/epics/synApps/support/calc/calcApp/op/adl/userArrayCalc_full.adl"
+	version=030107
 }
 display {
 	object {
@@ -614,10 +614,11 @@ polyline {
 		height=20
 	}
 	control {
-		chan="$(P)$(C).CALC"
+		chan="$(P)$(C).CALC$"
 		clr=14
 		bclr=51
 	}
+	format="string"
 	limits {
 	}
 }
@@ -1131,10 +1132,11 @@ rectangle {
 		height=20
 	}
 	control {
-		chan="$(P)$(C).OCAL"
+		chan="$(P)$(C).OCAL$"
 		clr=14
 		bclr=51
 	}
+	format="string"
 	limits {
 	}
 }
@@ -2410,7 +2412,7 @@ composite {
 	display[0] {
 		label="plot"
 		name="userArrayCalcPlot.adl"
-		args="P=$(P),Y=$(P)$(C).OAV,YLABEL=$(P)$(C).OAV"
+		args="P=$(P),C=$(C),Y=$(P)$(C).OAV,YLABEL=$(P)$(C).OAV"
 	}
 	clr=0
 	bclr=63
@@ -2426,7 +2428,7 @@ composite {
 	display[0] {
 		label="plot"
 		name="userArrayCalcPlot.adl"
-		args="P=$(P),Y=$(P)$(C).BB,YLABEL=$(P)$(C).BB"
+		args="P=$(P),C=$(C),Y=$(P)$(C).BB,YLABEL=$(P)$(C).BB"
 	}
 	clr=0
 	bclr=63
@@ -2442,7 +2444,7 @@ composite {
 	display[0] {
 		label="plot"
 		name="userArrayCalcPlot.adl"
-		args="P=$(P),Y=$(P)$(C).CC,YLABEL=$(P)$(C).CC"
+		args="P=$(P),C=$(C),Y=$(P)$(C).CC,YLABEL=$(P)$(C).CC"
 	}
 	clr=0
 	bclr=63
@@ -2458,7 +2460,7 @@ composite {
 	display[0] {
 		label="plot"
 		name="userArrayCalcPlot.adl"
-		args="P=$(P),Y=$(P)$(C).DD,YLABEL=$(P)$(C).DD"
+		args="P=$(P),C=$(C),Y=$(P)$(C).DD,YLABEL=$(P)$(C).DD"
 	}
 	clr=0
 	bclr=63
@@ -2474,7 +2476,7 @@ composite {
 	display[0] {
 		label="plot"
 		name="userArrayCalcPlot.adl"
-		args="P=$(P),Y=$(P)$(C).EE,YLABEL=$(P)$(C).EE"
+		args="P=$(P),C=$(C),Y=$(P)$(C).EE,YLABEL=$(P)$(C).EE"
 	}
 	clr=0
 	bclr=63
@@ -2490,7 +2492,7 @@ composite {
 	display[0] {
 		label="plot"
 		name="userArrayCalcPlot.adl"
-		args="P=$(P),Y=$(P)$(C).FF,YLABEL=$(P)$(C).FF"
+		args="P=$(P),C=$(C),Y=$(P)$(C).FF,YLABEL=$(P)$(C).FF"
 	}
 	clr=0
 	bclr=63
@@ -2506,7 +2508,7 @@ composite {
 	display[0] {
 		label="plot"
 		name="userArrayCalcPlot.adl"
-		args="P=$(P),Y=$(P)$(C).GG,YLABEL=$(P)$(C).GG"
+		args="P=$(P),C=$(C),Y=$(P)$(C).GG,YLABEL=$(P)$(C).GG"
 	}
 	clr=0
 	bclr=63
@@ -2522,7 +2524,7 @@ composite {
 	display[0] {
 		label="plot"
 		name="userArrayCalcPlot.adl"
-		args="P=$(P),Y=$(P)$(C).HH,YLABEL=$(P)$(C).HH"
+		args="P=$(P),C=$(C),Y=$(P)$(C).HH,YLABEL=$(P)$(C).HH"
 	}
 	clr=0
 	bclr=63
@@ -2538,7 +2540,7 @@ composite {
 	display[0] {
 		label="plot"
 		name="userArrayCalcPlot.adl"
-		args="P=$(P),Y=$(P)$(C).II,YLABEL=$(P)$(C).II"
+		args="P=$(P),C=$(C),Y=$(P)$(C).II,YLABEL=$(P)$(C).II"
 	}
 	clr=0
 	bclr=63
@@ -2554,7 +2556,7 @@ composite {
 	display[0] {
 		label="plot"
 		name="userArrayCalcPlot.adl"
-		args="P=$(P),Y=$(P)$(C).JJ,YLABEL=$(P)$(C).JJ"
+		args="P=$(P),C=$(C),Y=$(P)$(C).JJ,YLABEL=$(P)$(C).JJ"
 	}
 	clr=0
 	bclr=63
@@ -2570,7 +2572,7 @@ composite {
 	display[0] {
 		label="plot"
 		name="userArrayCalcPlot.adl"
-		args="P=$(P),Y=$(P)$(C).KK,YLABEL=$(P)$(C).KK"
+		args="P=$(P),C=$(C),Y=$(P)$(C).KK,YLABEL=$(P)$(C).KK"
 	}
 	clr=0
 	bclr=63
@@ -2586,7 +2588,7 @@ composite {
 	display[0] {
 		label="plot"
 		name="userArrayCalcPlot.adl"
-		args="P=$(P),Y=$(P)$(C).LL,YLABEL=$(P)$(C).LL"
+		args="P=$(P),C=$(C),Y=$(P)$(C).LL,YLABEL=$(P)$(C).LL"
 	}
 	clr=0
 	bclr=63
@@ -2726,12 +2728,12 @@ composite {
 	display[0] {
 		label="plot"
 		name="userArrayCalcPlot.adl"
-		args="P=$(P),Y=$(P)$(C).AA,YLABEL=$(P)$(C).AA"
+		args="P=$(P),C=$(C),Y=$(P)$(C).AA,YLABEL=$(P)$(C).AA"
 	}
 	display[1] {
 		label="plot AA-HH"
 		name="arrayPlot8.adl"
-		args="P=$(P),Y1=$(P)$(C).AA,Y2=$(P)$(C).BB,Y3=$(P)$(C).CC,Y4=$(P)$(C).DD,Y5=$(P)$(C).EE,Y6=$(P)$(C).FF,Y7=$(P)$(C).GG,Y8=$(P)$(C).HH"
+		args="P=$(P),C=$(C),Y1=$(P)$(C).AA,Y2=$(P)$(C).BB,Y3=$(P)$(C).CC,Y4=$(P)$(C).DD,Y5=$(P)$(C).EE,Y6=$(P)$(C).FF,Y7=$(P)$(C).GG,Y8=$(P)$(C).HH"
 	}
 	clr=0
 	bclr=63
@@ -2747,12 +2749,12 @@ composite {
 	display[0] {
 		label="plot"
 		name="userArrayCalcPlot.adl"
-		args="P=$(P),Y=$(P)$(C).AVAL,YLABEL=$(P)$(C).AVAL"
+		args="P=$(P),C=$(C),Y=$(P)$(C).AVAL,YLABEL=$(P)$(C).AVAL"
 	}
 	display[1] {
 		label="plot with input arrays"
 		name="arrayPlot8.adl"
-		args="P=$(P),Y1=$(P)$(C).AVAL,Y2=$(P)$(C).AA,Y3=$(P)$(C).BB,Y4=$(P)$(C).CC,Y5=$(P)$(C).DD,Y6=$(P)$(C).EE,Y7=$(P)$(C).FF,Y8=$(P)$(C).GG"
+		args="P=$(P),C=$(C),Y1=$(P)$(C).AVAL,Y2=$(P)$(C).AA,Y3=$(P)$(C).BB,Y4=$(P)$(C).CC,Y5=$(P)$(C).DD,Y6=$(P)$(C).EE,Y7=$(P)$(C).FF,Y8=$(P)$(C).GG"
 	}
 	clr=0
 	bclr=63

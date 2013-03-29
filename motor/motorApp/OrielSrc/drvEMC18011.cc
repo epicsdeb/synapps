@@ -3,10 +3,10 @@ FILENAME...	drvEMC18011.cc
 USAGE...	Motor record driver level support for Spectra-Physics
                 Encoder Mike Controller (Model: 18011)
 
-Version:	$Revision: 1.4 $
-Modified By:	$Author: sluiter $
-Last Modified:	$Date: 2009-09-08 18:28:23 $
-
+Version:        $Revision: 14155 $
+Modified By:    $Author: sluiter $
+Last Modified:  $Date: 2011-11-29 14:50:00 -0600 (Tue, 29 Nov 2011) $
+HeadURL:        $URL: https://subversion.xor.aps.anl.gov/synApps/motor/tags/R6-7-1/motorApp/OrielSrc/drvEMC18011.cc $
 */
 
 /*
@@ -74,17 +74,18 @@ Last Modified:	$Date: 2009-09-08 18:28:23 $
 #define MOTION_DELAY 0.1
 
 /*----------------debugging-----------------*/
-#ifdef __GNUG__
-    #ifdef	DEBUG
-	#define Debug(l, f, args...) { if(l<=drvEMC18011debug) printf(f,## args); }
-    #else
-	#define Debug(l, f, args...)
-    #endif
-#else
-    #define Debug()
-#endif
 volatile int drvEMC18011debug = 0;
 extern "C" {epicsExportAddress(int, drvEMC18011debug);}
+static inline void Debug(int level, const char *format, ...) {
+  #ifdef DEBUG
+    if (level < drvEMC18011debug) {
+      va_list pVar;
+      va_start(pVar, format);
+      vprintf(format, pVar);
+      va_end(pVar);
+    }
+  #endif
+}
 
 /* --- Local data. --- */
 int EMC18011_num_cards = 0;

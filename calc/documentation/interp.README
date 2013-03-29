@@ -1,9 +1,6 @@
-This interpolation software relies on the gensub record (written by Andy
-Foster), or the aSub record (included in EPICS base beginning with version
-3.14.10).  If needed, a copy of a genSub module version that is compatible
-with synApps is included in the synApps tar file.
+This interpolation software relies on the aSub record.  InterpNew is better.
 
-The following fields of the gensub record have the following functions in this
+The following fields of the aSub record have the following functions in this
 software:
 
 VALA[]  independent variable
@@ -46,9 +43,47 @@ However you load the arrays, make sure you do all of the following:
 
 The supplied database adds a sort of user interface to the software described
 above.  The user writes to $(P)interp_x, and the database sends this value to
-the gensub record, which interpolates and, if successful, writes to
+the aSub record, which interpolates and, if successful, writes to
 $(P)interp_y1 and $(P)interp_y2.  If the user has specified output-link fields
 $(P)interp_y1.OUT or $(P)interp_y2.OUT, then the new values will be written to
 the PV's named in those links.
 
-Tim Mooney 3/04/2009
+==============================================================================
+To use BURT to load and save the VALA, VALB, and VALC arrays, make a burt
+request file for your loaded copy of the interp database:
+
+---begin file interp.req---
+xxx:interp.VALA
+xxx:interp.VALB
+xxx:interp.VALC
+---end file interp.req---
+
+Then make a load file using burtrb:
+
+burtrb -f interp.req -o interp.load
+
+This will produce an output file that might look something like this:
+
+---begin file interp.load---
+--- Start BURT header
+Time:     Thu Dec  9 17:17:48 2010
+Login ID: mooney (Tim Mooney)
+Eff  UID: 597
+Group ID: 104
+Keywords: 
+Comments: 
+Type:     Absolute
+Directory /home/oxygen4/MOONEY/epics/synApps/support/xxx/xxxApp/op/burt
+Req File: interp.req
+--- End BURT header
+xxx:interp.VALA 2000 0.000000000000000e+00 0.000000000000000e+00 ...
+xxx:interp.VALB 2000 0.000000000000000e+00 0.000000000000000e+00 ...
+xxx:interp.VALC 2000 0.000000000000000e+00 0.000000000000000e+00 ...
+---end file interp.load---
+
+You can edit this file to change the array values.  Note that the first
+number ("2000") on the line beginning "xxx:interp.VALA" is the number
+of array values specified on the rest of the line.  (I've chopped
+the line off after two array values in this example.)
+
+Tim Mooney 8/25/2011

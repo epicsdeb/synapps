@@ -41,14 +41,14 @@ sscan_SRCS += req_file.c
 # save scan data stuff
 # XDR not available on WIN32
 ifeq ($(OS_CLASS), WIN32)
-sscan_SRCS += saveDataWin32.c
+sscan_SRCS += saveData_writeXDR.c, writeXDR.c
 else
 sscan_SRCS += xdr_lib.c
 sscan_SRCS += saveData.c
 sscan_SRCS_vxWorks += xdr_stdio.c
+sscan_SYS_LIBS_cygwin32 += $(CYGWIN_RPC_LIB)
 endif
 
-sscan_SYS_LIBS_cygwin32 += $(CYGWIN_RPC_LIB)
 sscan_LIBS += $(EPICS_BASE_IOC_LIBS)
 
 include $(TOP)/configure/RULES

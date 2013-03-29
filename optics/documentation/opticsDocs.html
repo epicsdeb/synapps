@@ -509,24 +509,69 @@ energy is varied.</P>
 <H3>Filters</H3>
 <P ALIGN=CENTER><IMG SRC="2filter.adl.jpg" NAME="Graphic27" ALIGN=BOTTOM WIDTH=207 HEIGHT=231 BORDER=0><BR>2filter.adl</P>
 <P ALIGN=CENTER><IMG SRC="2filter_setup.adl.jpg" NAME="Graphic28" ALIGN=BOTTOM WIDTH=472 HEIGHT=341 BORDER=0><BR>2filter_setup.adl</P>
+
 <P ALIGN=LEFT>XIA PF4 dual filter (parallel interface)</P>
-<P ALIGN=CENTER><IMG SRC="pf4.bmp" NAME="Graphic42" ALIGN=BOTTOM WIDTH=328 HEIGHT=294 BORDER=0><BR><BR><BR>
+<P ALIGN=CENTER><IMG SRC="pf4.jpg" NAME="Graphic42" ALIGN=BOTTOM BORDER=0><BR><BR><BR>
 </P>
-<P ALIGN=CENTER><IMG SRC="pf4more.bmp" NAME="Graphic43" ALIGN=BOTTOM WIDTH=318 HEIGHT=614 BORDER=0></P>
+<P ALIGN=CENTER><IMG SRC="pf4more.jpg" NAME="Graphic43" ALIGN=BOTTOM BORDER=0></P>
 <P ALIGN=CENTER><BR><BR>
 </P>
-<P ALIGN=CENTER><IMG SRC="pf4config.bmp" NAME="Graphic44" ALIGN=BOTTOM WIDTH=319 HEIGHT=274 BORDER=0></P>
+<P ALIGN=CENTER><IMG SRC="pf4config.jpg" NAME="Graphic44" ALIGN=BOTTOM BORDER=0></P>
 <P ALIGN=CENTER><BR><BR>
 </P>
-<P ALIGN=CENTER><IMG SRC="pf4all.bmp" NAME="Graphic45" ALIGN=BOTTOM WIDTH=319 HEIGHT=805 BORDER=0></P>
-<P ALIGN=CENTER><BR><BR>
-</P>
+
+<P>To load an instance of this support, add the following lines to the ioc startup file, <code>st.cmd</code>,
+before the call to <code>iocInit()</code>:
+
+<ul>
+<pre>
+### Load database records for dual PF4 filters
+dbLoadRecords("$(OPTICS)/opticsApp/Db/pf4common.db","P=xxx:,H=pf4:,A=A,B=B")
+dbLoadRecords("$(OPTICS)/opticsApp/Db/pf4bank.db","P=xxx:,H=pf4:,B=A")
+dbLoadRecords("$(OPTICS)/opticsApp/Db/pf4bank.db","P=xxx:,H=pf4:,B=B")
+</pre>
+</ul>
+
+<P>and add the following lines after the call to <code>iocInit()</code>:
+
+<ul>
+<pre>
+# Start PF4 filter sequence program
+#        name = what user will call it
+#        P    = prefix of database and sequencer
+#        H    = hardware (i.e. pf4)
+#        B    = bank indicator (i.e. A,B)
+#        M    = Monochromatic-beam energy PV
+#        BP   = Filter control bit PV prefix
+#        B1   = Filter control bit 0 number
+#        B2   = Filter control bit 1 number
+#        B3   = Filter control bit 2 number
+#        B4   = Fitler control bit 3 number
+seq &pf4,"name=pf1,P=xxx:,H=pf4:,B=A,M=xxx:BraggEAO,BP=xxx:Unidig1Bo,B1=3,B2=4,B3=5,B4=6"
+seq &pf4,"name=pf2,P=xxx:,H=pf4:,B=B,M=xxx:BraggEAO,BP=xxx:Unidig1Bo,B1=7,B2=8,B3=9,B4=10"
+</pre>
+</ul>
+
+<P>For autosave suppport, add the following lines to <code>auto_settings.req</code>:
+
+<ul>
+<pre>
+## PF4 dual filter
+file pf4common.req P=$(P),H=pf4:
+file pf4bank.req   P=$(P),H=pf4:,B=A
+file pf4bank.req   P=$(P),H=pf4:,B=B
+</pre>
+</ul>
+
 <P ALIGN=CENTER STYLE="margin-bottom: 0in"><IMG SRC="colorLine.gif" NAME="Graphic29" ALIGN=BOTTOM WIDTH=576 HEIGHT=5 BORDER=0>
 </P>
 <P ALIGN=CENTER STYLE="margin-bottom: 0in"><IMG SRC="colorLine.gif" NAME="Graphic30" ALIGN=BOTTOM WIDTH=576 HEIGHT=5 BORDER=0>
 </P>
 <P ALIGN=CENTER><IMG SRC="colorLine.gif" NAME="Graphic31" ALIGN=BOTTOM WIDTH=576 HEIGHT=5 BORDER=0>
 </P>
+
+
+
 <H3>Optical table</H3>
 <P>The optical-table software is documented separately. See
 <A HREF="tableRecord.html">tableRecord.html</A> 

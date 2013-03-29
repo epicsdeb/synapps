@@ -1,5 +1,5 @@
 /*************************************************************************\
-* Copyright (c) 2011 UChicago Argonne, LLC,
+* Copyright (c) 2013 UChicago Argonne, LLC,
 *               as Operator of Argonne National Laboratory.
 * This file is distributed subject to a Software License Agreement
 * found in file LICENSE that is included with this distribution. 
@@ -22,16 +22,25 @@
   1.0   -- October 2009
            Renamed structures.
   1.1   -- November 2010
-  1.1.1 -- March 2011
+  1.1.1 -- December 2010
   1.2   -- March 2011
            Fixed integer issues by tying short to int16_t, long to int32_t,
            and char to int8_t
-
+  1.2.1 -- January 2012
+  1.2.2 -- June 2012
+           Added preprocessor commands for c++ compatibility
+  1.3.0 -- February 2013
  */
 
 
 /******************  mda_load.h  **************/
 
+#ifndef MDA_LOAD_H
+#define MDA_LOAD_H 1
+
+#ifdef __cplusplus
+extern "C" {
+#endif 
 
 #include <stdio.h>
 #include <stdint.h>
@@ -108,7 +117,7 @@ struct mda_pv
   int16_t type;
   int16_t count;
   char   *unit;
-  char   *values; // used to be void *, but gave a lot of headaches
+  char   *values; /* used to be void *, but gave a lot of headaches */
 };
 
 
@@ -127,12 +136,12 @@ struct mda_file
 };
 
 
-////////////////////////
+/*****************************************************/
 
 struct mda_scaninfo
 {
-  int16_t scan_rank;          // redundant
-  int32_t requested_points;   // redundant
+  int16_t scan_rank;          /* redundant */
+  int32_t requested_points;   /* redundant */
   char   *name;
   int16_t number_positioners;
   int16_t number_detectors;
@@ -155,8 +164,7 @@ struct mda_fileinfo
   struct mda_scaninfo **scaninfos;
 };
 
-////////////////////////
-
+/******************************************************/
 
 struct mda_file *mda_load( FILE *fptr);
 struct mda_header *mda_header_load( FILE *fptr);
@@ -174,3 +182,10 @@ void mda_extra_unload( struct mda_extra *extra);
 
 struct mda_fileinfo *mda_info_load( FILE *fptr);
 void mda_info_unload( struct mda_fileinfo *fileinfo);
+
+
+#ifdef __cplusplus
+}
+#endif 
+
+#endif /* MDA_LOAD_H */

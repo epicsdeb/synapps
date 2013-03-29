@@ -470,6 +470,15 @@ short   th2TweakDec;
 assign  th2TweakDec to "{P}HR{N}_Theta2DecBO";
 monitor th2TweakDec;
 
+/* min/max theta */
+double  thetaMin;
+assign  thetaMin to "{P}HR{N}_thetaMin";
+monitor thetaMin;
+double  thetaMax;
+assign  thetaMax to "{P}HR{N}_thetaMax";
+monitor thetaMax;
+
+
 %%#include <string.h>
 %%#include <math.h>
 
@@ -812,14 +821,16 @@ state phiLimits
 				theta1Hi = phi1Hi;
 				phi1Lo = phi1MotLoLim * uR2D + (phi1Off + worldOff*uR2D);
 				theta1Lo = phi1Lo;
-				if (theta1Hi > 89.0) {
-					theta1Hi = 89.0;
-					sprintf(seqMsg2, "Theta1HiLim > 89 deg. (Using 89 deg.)");
+				if (theta1Hi > thetaMax) {
+					theta1Hi = thetaMax;
+					sprintf(seqMsg2, "Theta1HiLim > %f deg. (Using %f deg.)",
+						thetaMax, thetaMax);
 					pvPut(seqMsg2);
 				}
-				if (theta1Lo < 1.0) {
-					theta1Lo = 1.0;
-					sprintf(seqMsg2, "Theta1LoLim < 1 deg. (Using 1 deg.)");
+				if (theta1Lo < thetaMin) {
+					theta1Lo = thetaMin;
+					sprintf(seqMsg2, "Theta1LoLim < %f deg. (Using %f deg.)",
+						thetaMin, thetaMin);
 					pvPut(seqMsg2);
 				}
 				pvPut(theta1Hi);
@@ -837,14 +848,16 @@ state phiLimits
 					theta2Hi = phi2Hi;
 					theta2Lo = phi2Lo;
 				}
-				if (theta2Hi > 89.0) {
-					theta2Hi = 89.0;
-					sprintf(seqMsg2, "Theta2HiLim > 89 deg. (Using 89 deg.)");
+				if (theta2Hi > thetaMax) {
+					theta2Hi = thetaMax;
+					sprintf(seqMsg2, "Theta2HiLim > %f deg. (Using %f deg.)",
+						thetaMax,thetaMax);
 					pvPut(seqMsg2);
 				}
-				if (theta2Lo < 1.0) {
-					theta2Lo = 1.0;
-					sprintf(seqMsg2, "Theta2LoLim < 1 deg. (Using 1 deg.)");
+				if (theta2Lo < thetaMin) {
+					theta2Lo = thetaMin;
+					sprintf(seqMsg2, "Theta2LoLim < %f deg. (Using %f deg.)",
+						thetaMin, thetaMin);
 					pvPut(seqMsg2);
 				}
 				pvPut(theta2Hi);

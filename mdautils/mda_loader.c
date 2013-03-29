@@ -1,5 +1,5 @@
 /*************************************************************************\
-* Copyright (c) 2011 UChicago Argonne, LLC,
+* Copyright (c) 2013 UChicago Argonne, LLC,
 *               as Operator of Argonne National Laboratory.
 * This file is distributed subject to a Software License Agreement
 * found in file LICENSE that is included with this distribution. 
@@ -38,6 +38,11 @@
            Renamed DBR_* type variables to EXTRA_PV_* type variables, to
            make explicit the type of integer used (which broke compatibility
            with the EPICS DBR type names).
+  1.2.1 -- January 2012
+  1.2.2 -- June 2012
+           Fixed major bug with INT8 Extra PVs.
+  1.3.0 -- February 2013
+           Don't load files that have nonsensical scan dimensions.
 
  */
 
@@ -240,7 +245,11 @@ static struct mda_scan *scan_read(XDR *xdrs, int recursive)
     return NULL;
   if( !xdr_int32_t(xdrs, &(scan->requested_points) ))
     return NULL;
-    if( !xdr_int32_t(xdrs, &(scan->last_point) ))
+  if( !xdr_int32_t(xdrs, &(scan->last_point) ))
+    return NULL;
+
+  // this happens in corrupt files sometimes.
+  if( scan->scan_rank < 1)
     return NULL;
 
   if( scan->scan_rank > 1)
@@ -384,10 +393,12 @@ static struct mda_pv *pv_read(XDR *xdrs)
 #ifndef DARWIN
       if( !xdr_vector( xdrs, pv->values, pv->count, 
 		       sizeof( int8_t), (xdrproc_t) xdr_int8_t))
+	return NULL;
 #else
         // MacOS Darwin is missing xdr_int8_t, have to fake it with xdr_char
       if( !xdr_vector( xdrs, pv->values, pv->count, 
 		       sizeof( int8_t), (xdrproc_t) xdr_char))
+	return NULL;
 #endif
       break;
     case EXTRA_PV_INT16:
@@ -547,6 +558,8 @@ struct mda_scan *mda_subscan_load( FILE *fptr, int depth, int *indices,
       for( i = 0; i < depth; i++)
 	{
 	  if( !xdr_int16_t(&xdrstream, &scan_rank ))
+	    return NULL;
+	  if( scan_rank < 1)  // file error
 	    return NULL;
 	  if( scan_rank == 1)  // this case should not happen
 	    return NULL;
@@ -795,6 +808,10 @@ struct mda_fileinfo *mda_info_load( FILE *fptr)
         malloc( sizeof(struct mda_scaninfo ));
 
       if( !xdr_int16_t(&xdrstream, &(fileinfo->scaninfos[i]->scan_rank) ))
+        return NULL;
+
+      // file error
+      if( fileinfo->scaninfos[i]->scan_rank < 1)
         return NULL;
 
       if( !xdr_int32_t(&xdrstream, 

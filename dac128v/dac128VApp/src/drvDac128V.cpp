@@ -28,9 +28,10 @@ public:
     virtual void report(FILE *fp, int details);
 
 protected:
-    int DAC128V_Data;       /**< (asynInt32, asynFloat64,    r/w) DAC output value in device units */
+    int DAC128V_Data;          /**< (asynInt32, r/w) DAC output value in device units */
     #define FIRST_DAC_PARAM DAC128V_Data
-    #define LAST_DAC_PARAM DAC128V_Data
+    int DAC128V_DoubleData;    /**< (asynFloat64, r/w) DAC output value in device units but double */
+    #define LAST_DAC_PARAM DAC128V_DoubleData
     
 private:
     int lastChan;
@@ -39,7 +40,8 @@ private:
 };
 
 
-#define DAC128VDataString  "DATA"
+#define DAC128VDataString        "DATA"
+#define DAC128VDoubleDataString  "DOUBLE_DATA"
 
 #define NUM_PARAMS (&LAST_DAC_PARAM - &FIRST_DAC_PARAM + 1)
 
@@ -52,7 +54,8 @@ DAC128V::DAC128V(const char *portName, int carrier, int slot)
 {
     static const char *functionName = "DAC128V";
 
-    createParam(DAC128VDataString, asynParamInt32, &DAC128V_Data);
+    createParam(DAC128VDataString,       asynParamInt32,   &DAC128V_Data);
+    createParam(DAC128VDoubleDataString, asynParamFloat64, &DAC128V_DoubleData);
     
     if (ipmValidate(carrier, slot, SYSTRAN_ID, SYSTRAN_DAC128V) != 0) {
        asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR,
@@ -76,6 +79,7 @@ asynStatus DAC128V::writeInt32(asynUser *pasynUser, epicsInt32 value)
     this->getAddress(pasynUser, &channel);
     if(value<0 || value>this->maxValue || channel<0 || channel>this->lastChan)
         return(asynError);
+    setIntegerParam(channel, DAC128V_Data, value);
     this->regs[channel] = value;
     asynPrint(pasynUser, ASYN_TRACEIO_DRIVER, 
               "%s:%s, port %s, wrote %d to channel %d\n",
@@ -92,7 +96,7 @@ asynStatus DAC128V::getBounds(asynUser *pasynUser, epicsInt32 *low, epicsInt32 *
 
 asynStatus DAC128V::writeFloat64(asynUser *pasynUser, epicsFloat64 value)
 {
-   return(this->writeInt32(pasynUser, (epicsInt32) value));
+    return(this->writeInt32(pasynUser, (epicsInt32) value));
 }
 
 asynStatus DAC128V::readInt32(asynUser *pasynUser, epicsInt32 *value)

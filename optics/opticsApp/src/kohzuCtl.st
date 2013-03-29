@@ -1013,7 +1013,8 @@ state updateRdbk {
 		pvPut(opAlert);
 	} state waitForCmndEnter
 
-	when (thetaDmov && yDmov && zDmov) {
+	/* when (thetaDmov && yDmov && zDmov) {  */  /* on linux, some motor readback monitors arrive after *Dmov */
+	when (thetaDmov && yDmov && zDmov && delay(0.01)) {
 		if (kohzuCtlDebug) %%printf("kohzuCtl:updateRdbk:*Dmov (done=%d,moving=%d)\n", kohzuDone, kohzuMoving);
 		thetaRdbk = thetaMotRdbk;
 		lambdaRdbk = D * sin(thetaRdbk/radConv);

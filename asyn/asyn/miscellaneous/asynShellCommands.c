@@ -17,6 +17,7 @@
 
 #include <epicsEvent.h>
 #include <epicsString.h>
+#include <epicsStdioRedirect.h>
 #include <iocsh.h>
 #include <gpHash.h>
 
@@ -199,7 +200,7 @@ setEos(asynUser *pasynUser)
     default:     setFunc = NULL;                                 break;
     }
     if (setFunc) {
-        peosargs->status = (*setFunc)(peosargs->drvPvt, pasynUser, peosargs->eos, peosargs->eosLen);
+        peosargs->status = (*setFunc)(peosargs->drvPvt, pasynUser, peosargs->eos, (int)peosargs->eosLen);
     }
     else {
         epicsSnprintf(pasynUser->errorMessage, pasynUser->errorMessageSize,
@@ -408,13 +409,13 @@ epicsShareFunc int
         pPvt->timeout,&ninp,&eomReason);
     if (status!=asynSuccess) {
        asynPrint(pasynUser, ASYN_TRACE_ERROR,
-                 "Error reading, ninp=%d error %s\n", ninp,pasynUser->errorMessage);
+                 "Error reading, ninp=%lu error %s\n", (unsigned long)ninp,pasynUser->errorMessage);
        return(-1);
     }
     fprintf(stdout,"eomReason 0x%x\n",eomReason);
     epicsStrPrintEscaped(stdout, pPvt->read_buffer, ninp);
     fprintf(stdout,"\n");
-    return(ninp);
+    return (int)ninp;
 }
 
 epicsShareFunc int
@@ -443,11 +444,11 @@ epicsShareFunc int
         len, pPvt->timeout,&nout);
     if (status!=asynSuccess) {
        asynPrint(pasynUser, ASYN_TRACE_ERROR,
-                 "Error in asynOctetWrite, nout=%d, len=%d error %s\n",
-                 nout, len,pasynUser->errorMessage);
+                 "Error in asynOctetWrite, nout=%lu, len=%lu error %s\n",
+                 (unsigned long)nout, (unsigned long)len, pasynUser->errorMessage);
        return(-1);
     }
-    return(nout);
+    return (int)nout;
 }
 
 epicsShareFunc int
@@ -482,14 +483,14 @@ epicsShareFunc int
                                   &nout,&ninp,&eomReason);
     if (status!=asynSuccess) {
        asynPrint(pasynUser, ASYN_TRACE_ERROR,
-           "Error in WriteRead, nout %d ninp=%d error %s\n",
-           nout, ninp,pasynUser->errorMessage);
+           "Error in WriteRead, nout %lu ninp=%lu error %s\n",
+           (unsigned long)nout, (unsigned long)ninp, pasynUser->errorMessage);
        return(-1);
     }
     fprintf(stdout,"eomReason 0x%x\n",eomReason);
     epicsStrPrintEscaped(stdout, pPvt->read_buffer, ninp);
     fprintf(stdout,"\n");
-    return(ninp);
+    return (int)ninp;
 }
 
 epicsShareFunc int

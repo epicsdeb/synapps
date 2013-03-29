@@ -1,14 +1,14 @@
 
 file {
-	name="/home/oxygen/MOONEY/epics/synApps/support/softGlue/softGlueApp/op/adl/softGlueMenu.adl"
-	version=030104
+	name="/home/oxygen4/MOONEY/epics/synAppsSVN/support/softGlue/softGlueApp/op/adl/softGlueMenu.adl"
+	version=030105
 }
 display {
 	object {
-		x=1199
-		y=30
-		width=110
-		height=160
+		x=1376
+		y=384
+		width=120
+		height=200
 	}
 	clr=14
 	bclr=2
@@ -91,7 +91,7 @@ display {
 	object {
 		x=10
 		y=10
-		width=88
+		width=100
 		height=20
 	}
 	display[0] {
@@ -172,7 +172,7 @@ display {
 	object {
 		x=10
 		y=30
-		width=88
+		width=100
 		height=20
 	}
 	display[0] {
@@ -223,7 +223,7 @@ display {
 	object {
 		x=10
 		y=70
-		width=88
+		width=100
 		height=20
 	}
 	display[1] {
@@ -248,73 +248,13 @@ display {
 	}
 	clr=0
 	bclr=63
-	label="-Field I/O"
-}
-menu {
-	object {
-		x=10
-		y=130
-		width=88
-		height=20
-	}
-	control {
-		chan="$(P)$(H)ReadRate.SCAN"
-		clr=14
-		bclr=51
-	}
-}
-text {
-	object {
-		x=10
-		y=120
-		width=88
-		height=10
-	}
-	"basic attribute" {
-		clr=14
-	}
-	textix="READ PERIOD"
-	align="horiz. centered"
-}
-"related display" {
-	object {
-		x=10
-		y=90
-		width=88
-		height=20
-	}
-	display[0] {
-		label="all softGlue"
-		name="softGlueAll.adl"
-		args="P=$(P),H=$(H)"
-	}
-	display[1] {
-		label="all but I/O"
-		name="softGlueAllButIO.adl"
-		args="P=$(P),H=$(H),N=1,N1=1,N2=2,N3=3,N4=4,N5=5,N6=6,N7=7,N8=8"
-	}
-	display[2] {
-		label="convenience"
-		name="softGlueConvenience.adl"
-		args="P=$(P),H=$(H),PORT=$(PORT),IPORT=$(IPORT),OPORT=$(OPORT)"
-	}
-	display[3] {
-		label="------------"
-	}
-	display[6] {
-		label="octupole"
-		name="softGlueOctupole.adl"
-		args="P=$(P),H=$(H)"
-	}
-	clr=0
-	bclr=63
-	label="-Collections"
+	label="-Field I/O 201"
 }
 "related display" {
 	object {
 		x=10
 		y=50
-		width=88
+		width=100
 		height=20
 	}
 	display[0] {
@@ -385,4 +325,181 @@ text {
 	clr=0
 	bclr=63
 	label="-Other"
+}
+"related display" {
+	object {
+		x=10
+		y=90
+		width=100
+		height=20
+	}
+	display[1] {
+		label="Field I/O All"
+		name="softGlueFieldIO_EP202.adl"
+		args="P=$(P),H=$(H)"
+	}
+	display[2] {
+		label="Field I/O 1-16"
+		name="softGlueFieldIOxx_EP202.adl"
+		args="P=$(P),H=$(H),N1=1,N2=2,N3=3,N4=4,N5=5,N6=6,N7=7,N8=8,N9=9,N10=10,N11=11,N12=12,N13=13,N14=14,N15=15,N16=16"
+	}
+	display[3] {
+		label="Field I/O 17-32"
+		name="softGlueFieldIOxx_EP202.adl"
+		args="P=$(P),H=$(H),N1=17,N2=18,N3=19,N4=20,N5=21,N6=22,N7=23,N8=24,N9=25,N10=26,N11=27,N12=28,N13=29,N14=30,N15=31,N16=32"
+	}
+	display[4] {
+		label="Field I/O 33-48"
+		name="softGlueFieldIOxx_EP202.adl"
+		args="P=$(P),H=$(H),N1=33,N2=34,N3=35,N4=36,N5=37,N6=38,N7=39,N8=40,N9=41,N10=42,N11=43,N12=44,N13=45,N14=46,N15=47,N16=48"
+	}
+	clr=0
+	bclr=63
+	label="-Field I/O 202"
+}
+"text update" {
+	object {
+		x=50
+		y=175
+		width=30
+		height=20
+	}
+	monitor {
+		chan="$(P)$(H)numSignalsInUse"
+		clr=54
+		bclr=2
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+text {
+	object {
+		x=10
+		y=175
+		width=40
+		height=10
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="#SIGS"
+}
+text {
+	object {
+		x=10
+		y=185
+		width=40
+		height=10
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="IN USE"
+}
+text {
+	object {
+		x=85
+		y=175
+		width=20
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="/15"
+	align="horiz. centered"
+}
+"related display" {
+	object {
+		x=10
+		y=110
+		width=100
+		height=20
+	}
+	display[0] {
+		label="all softGlue"
+		name="softGlueAll.adl"
+		args="P=$(P),H=$(H)"
+	}
+	display[1] {
+		label="all but I/O"
+		name="softGlueAllButIO.adl"
+		args="P=$(P),H=$(H),N=1,N1=1,N2=2,N3=3,N4=4,N5=5,N6=6,N7=7,N8=8"
+	}
+	display[2] {
+		label="convenience"
+		name="softGlueConvenience.adl"
+		args="P=$(P),H=$(H),PORT=$(PORT),IPORT=$(IPORT),OPORT=$(OPORT)"
+	}
+	display[3] {
+		label="------------"
+	}
+	display[6] {
+		label="octupole"
+		name="softGlueOctupole.adl"
+		args="P=$(P),H=$(H)"
+	}
+	display[7] {
+		label="velocity gate"
+		name="softGlueVgate.adl"
+		args="P=$(P),H=$(H)"
+	}
+	clr=0
+	bclr=63
+	label="-Collections"
+}
+text {
+	object {
+		x=10
+		y=140
+		width=100
+		height=10
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="READ PERIOD"
+	align="horiz. centered"
+}
+menu {
+	object {
+		x=10
+		y=150
+		width=100
+		height=20
+	}
+	control {
+		chan="$(P)$(H)ReadRate.SCAN"
+		clr=14
+		bclr=51
+	}
+}
+text {
+	object {
+		x=10
+		y=0
+		width=50
+		height=10
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="VERSION: "
+}
+"text update" {
+	object {
+		x=60
+		y=0
+		width=30
+		height=10
+	}
+	monitor {
+		chan="$(P)$(H)version"
+		clr=54
+		bclr=2
+	}
+	format="string"
+	limits {
+	}
 }

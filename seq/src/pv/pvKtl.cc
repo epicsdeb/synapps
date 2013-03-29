@@ -1,6 +1,4 @@
-/* $Id: pvKtl.cc,v 1.2 2001-02-16 18:45:39 mrk Exp $
- *
- * Implementation of EPICS sequencer KTL library (pvKtl)
+/* Implementation of EPICS sequencer KTL library (pvKtl)
  *
  * William Lupton, W. M. Keck Observatory
  */
@@ -1351,7 +1349,10 @@ static void freeKTL( KTL_DATATYPE ktlType, KTL_POLYMORPH *ktlValue )
 }
 
 /*
- * $Log: not supported by cvs2svn $
+ * pvKtl.cc,v
+ * Revision 1.2  2001/02/16 18:45:39  mrk
+ * changes for latest version of 3.14
+ *
  * Revision 1.1.1.1  2000/04/04 03:22:14  wlupton
  * first commit of seq-2-0-0
  *

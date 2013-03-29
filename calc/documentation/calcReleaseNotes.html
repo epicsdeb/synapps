@@ -9,6 +9,156 @@ content="text/html; charset=iso-8859-1">
 <body bgcolor="#FFFFFF">
 
 <h1 align="center">calc Release Notes</h1>
+<h2 align="center">Release 3-1</h2>
+<ul>
+
+<li>Previously, only a single acalcout record could evaluate an expression at a
+time, because aCalcPerform() was not reentrant, because it used a global value
+stack.  Now aCalcPerform allocates a new  value stack for each expression
+evaluation, using EPICS' freeList.  aCalcPerform manages an array of EPICS
+freeLists, selecting an appropriately sized list if possible, making a new one
+if an unclaimed list entry exists, commandeering the least recently used list
+with no outstanding allocations, or reporting failure.  As a consequence, the
+iocshell variable <code>aCalcArraySize</code> is no longer needed and no longer
+exists.
+
+<li>Previously, acalcout expression evaluation always occurred in the
+record-processing thread, regardless of how long expression evaluation was
+expected to take.  (On solaris, evaluations with million-element arrays can
+easily take over a second.)  Now, acalcout records queue expression evaluation
+to a separate thread, for array sizes larger than
+<code>aCalcAsyncThreshold</code> (default: 10000).
+
+<li>Previously, acalcout records reported NUSE as the array size on the initial
+connection by a link or channel-access client.  Now the size can be reported
+either as <code>NELM</code> (the default), or as <code>NUSE</code>, depending on
+the value of the record's <code>SIZE</code> field, which can be either "NELM" or
+"NUSE".  "NELM" always works, but is in some cases less efficient than "NUSE". 
+If "NUSE" is selected, the link or channel must be closed and reestablished when
+the record's <code>NUSE</code> field increases.
+
+<li>arrayCalc plot displays (MEDM files only, for now) now use NUSE to specify
+the array size.  This requires an additional macro (C, the record name) to be
+supplied when launching those displays.
+
+<li>All userCalcs of one kind (i.e., userTransforms10.db, userArrayCalcs10.db,
+etc.) have since EPICS 3.14 been in the same lock set, because they connected
+via NPP links to a common enable PV.  Now, userCalcs are enabled via CA links.
+
+<li>Previously, the acalcout record calculated OVAL and OAV from CALC, instead
+of from OCAL.
+
+<li>In calc R3-0, the array operators <code>fitmpoly</code>, <code>nderiv</code>,
+<code>nsmoo</code> were broken because they had incorrect stack-effect numbers.
+
+<li>In calc R3-0, for both acalcout and scalcout records, stores to
+input-variable fields specified using the "@" and "@@" operators were wrongly
+coded for some expressions.
+
+<li>  Previously, the expression "a?1;b:=0:0" produced a evaluation-time error
+if a==0.  Actually, it <i>is</i> an error to have a store expression not at top
+level and not within parentheses, but postfix doesn't catch it, and anyway it's
+pretty easy to do the expected thing in this case.  Note that it's not possible
+to do the expected thing in the case "a?1:0;b:=0", because we can't know whether
+"(a?1:0);b:=0" or "a?1:(0;b:=0)" was intended.
+
+<li>Previously, the sseq record used database access to get the properties of a
+PV it linked to, even if it was making a CA link to that PV.  Also, the sseq
+record failed to update the status of an input link that had changed from a CA
+link to a DB link.
+
+<li>Previously, userCalc collections were enabled by a record whose value was
+undefined until the enable state was changed.  Now the enables are made to be
+defined in the database file: field(UDF, "0"), field(STAT, "NO_ALARM"),
+field(SEVR, "NO_ALARM")
+
+</ul>
+
+<h2 align="center">Release 3-0</h2>
+<ul>
+
+<li>In all .adl files displaying calc expressions, the expression widget has
+been  modified to have '$' appended to PV name, and to have the attribute
+'format=string'.  <b>The trailing '$' character will confound MEDM versions
+earlier than 3-1-7, which assume '$' begins a macro substitution.</b>
+
+<li>Modified scalcout, transform, swait, and acalcout records to use 80-character
+expression fields.  Modified associated autosave-request files to handle these
+fields by appending '$' to the field name.  <b>Note that autosave R5-0 or higher is
+required to save and restore these fields.</b>
+
+<li>Modified interp.c and interpNew.* software to support interpolating an
+array of values to produce an array of results.  The interpolation of scalars
+and arrays uses the same interpolation tables and polynomial order.
+
+<li>The sseq record (and related databases, etc) was moved from the std module
+to the calc module, along with all of its databases, request files, and display
+files. <b>Command files that load userStringSeqs10.db must be modified to reflect
+its new location.</b> 
+
+<li>The sseq record now notifies the user if a WAITn field is inconsistent with the
+link attribute specified for the associated LNKn field.  (If WAITn, then LNKn
+must be a CA link.)
+
+<li>The unary operator "NOT" should always have meant logical NOT, but actually
+has been implemented as unary negative.  Now, "NOT" and "!" both mean logical
+NOT.
+
+<li>Rewrote string and array calcs following Andrew Johnson's new model for the
+calc software in EPICS base.  This model does a more robust job of handling
+functions with a variable number of arguments, and permits expressions to store
+values to input variables.  I departed slightly from the model to permit store
+operations at other than top level, which allows them to be made conditional. 
+This permitted the addition of the looping function "UNTIL".  String and array
+calcs now export the variables sCalcLoopMax and aCalcLoopMax, respectively, to
+limit the number of iterations of UNTIL loops.
+
+<li><b>WARNING! NON-BACKWARD-COMPATIBLE CHANGE:</b><br>
+
+Fixed the array calc {} (subrange in place) operator to treat array indices as
+documented - exactly as the [] (subrange) operator treats them.  Previously, for
+example, aa{0,n} was not the same as aa[0,n], but instead performed aa{0,n-1}.
+
+<li>Renamed aCalcoutRecord's NEW field as NEWM, to avoid conflict with c++ reserved word
+
+<li>Added python program test_aCalc.py to test array calcs.  The program uses pyepics to talk to
+an acalcout record.  Modified test_sCalc.py to use pyepics.
+
+
+</ul>
+
+<h2 align="center">Release 2-9</h2>
+<ul>
+
+<li>Dropped backward compatibility with genSub record
+
+<li>sCalcout record:
+	<ul>
+
+	<li>now treats arrays of DBF_CHAR, DBF_UCHAR as strings
+
+	<li>now checks CA string-input link by calling dbGetLink(), to defend
+		 against failure resulting from enum strings not having arrived before
+		 first call.
+
+	<li>fixes for 64-bit arch (Thanks to Lewis Muir and Andrew Johnson)
+
+	<li>Some additions to test_sCalc.py
+	
+	<li>Previously, if the OCAL expression evaluation produced an error, the
+	    record set SVAL, instead of OSV, to '***ERROR***'.
+
+	</ul>
+
+<li>Added .opi display files for CSS-BOY
+
+<li>Added some missing logical and bitwise operators to calcExamples.* displays
+
+<li>Added BURT array-load example to interp.README
+
+<li>Added interpNew, a better version of interp.
+
+</ul>
 
 <h2 align="center">Release 2-8</h2>
 <ul>

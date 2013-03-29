@@ -8,7 +8,7 @@ display {
 		x=119
 		y=581
 		width=710
-		height=185
+		height=190
 	}
 	clr=14
 	bclr=3
@@ -311,10 +311,11 @@ rectangle {
 		height=20
 	}
 	control {
-		chan="$(P)$(T).CLCA"
+		chan="$(P)$(T).CLCA$"
 		clr=14
 		bclr=51
 	}
+	format="string"
 	limits {
 	}
 }
@@ -326,10 +327,11 @@ rectangle {
 		height=20
 	}
 	control {
-		chan="$(P)$(T).CLCB"
+		chan="$(P)$(T).CLCB$"
 		clr=14
 		bclr=51
 	}
+	format="string"
 	limits {
 	}
 }
@@ -341,10 +343,11 @@ rectangle {
 		height=20
 	}
 	control {
-		chan="$(P)$(T).CLCC"
+		chan="$(P)$(T).CLCC$"
 		clr=14
 		bclr=51
 	}
+	format="string"
 	limits {
 	}
 }
@@ -356,10 +359,11 @@ rectangle {
 		height=20
 	}
 	control {
-		chan="$(P)$(T).CLCD"
+		chan="$(P)$(T).CLCD$"
 		clr=14
 		bclr=51
 	}
+	format="string"
 	limits {
 	}
 }
@@ -470,7 +474,7 @@ text {
 "related display" {
 	object {
 		x=660
-		y=165
+		y=170
 		width=50
 		height=20
 	}
@@ -483,23 +487,6 @@ text {
 	clr=0
 	bclr=17
 	label="-More"
-}
-polyline {
-	object {
-		x=-1
-		y=27
-		width=714
-		height=3
-	}
-	"basic attribute" {
-		clr=54
-		fill="outline"
-		width=3
-	}
-	points {
-		(0,28)
-		(711,28)
-	}
 }
 "text entry" {
 	object {
@@ -848,7 +835,7 @@ rectangle {
 }
 composite {
 	object {
-		x=268
+		x=200
 		y=168
 		width=197
 		height=16
@@ -857,7 +844,7 @@ composite {
 	children {
 		menu {
 			object {
-				x=345
+				x=277
 				y=168
 				width=120
 				height=16
@@ -870,7 +857,7 @@ composite {
 		}
 		text {
 			object {
-				x=268
+				x=200
 				y=171
 				width=75
 				height=10
@@ -920,6 +907,46 @@ composite {
 				chan="$(P)$(T)_enable"
 				clr=14
 				bclr=51
+			}
+		}
+	}
+}
+composite {
+	object {
+		x=410
+		y=170
+		width=245
+		height=20
+	}
+	"composite name"=""
+	children {
+		text {
+			object {
+				x=410
+				y=174
+				width=80
+				height=10
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="FORWARD LINK"
+			align="horiz. centered"
+		}
+		"text entry" {
+			object {
+				x=505
+				y=170
+				width=150
+				height=20
+			}
+			control {
+				chan="$(P)$(T).FLNK"
+				clr=14
+				bclr=40
+			}
+			format="string"
+			limits {
 			}
 		}
 	}

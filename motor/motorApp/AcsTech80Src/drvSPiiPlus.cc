@@ -3,10 +3,10 @@ FILENAME...	drvSPiiPlus.cc
 USAGE...	Motor record driver level support for ACS Tech80 
                 SPiiPlus
 
-Version:        $Revision$
-Modified By:    $Author$
-Last Modified:  $Date$
-HeadURL:        $URL$
+Version:        $Revision: 14155 $
+Modified By:    $Author: sluiter $
+Last Modified:  $Date: 2011-11-29 14:50:00 -0600 (Tue, 29 Nov 2011) $
+HeadURL:        $URL: https://subversion.xor.aps.anl.gov/synApps/motor/tags/R6-7-1/motorApp/AcsTech80Src/drvSPiiPlus.cc $
 
 */
 
@@ -72,17 +72,18 @@ HeadURL:        $URL$
 #define TIMEOUT	2.0	/* Command timeout in sec. */
 
 /*----------------debugging-----------------*/
-#ifdef __GNUG__
-    #ifdef	DEBUG
-	#define Debug(l, f, args...) { if(l<=drvSPiiPlusdebug) printf(f,## args); }
-    #else
-	#define Debug(l, f, args...)
-    #endif
-#else
-    #define Debug()
-#endif
 volatile int drvSPiiPlusdebug = 0;
 extern "C" {epicsExportAddress(int, drvSPiiPlusdebug);}
+static inline void Debug(int level, const char *format, ...) {
+  #ifdef DEBUG
+    if (level < drvSPiiPlusdebug) {
+      va_list pVar;
+      va_start(pVar, format);
+      vprintf(format, pVar);
+      va_end(pVar);
+    }
+  #endif
+}
 
 /* --- Local data. --- */
 int SPiiPlus_num_cards = 0;

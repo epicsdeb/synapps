@@ -7,7 +7,7 @@ include $(TOP)/configure/CONFIG
 #----------------------------------------
 #  Message system-independent support
 
-INC     += pv.h pvAlarm.h
+INC     += pv.h pvAlarm.h pvType.h
 
 LIBRARY += pv
 pv_SRCS += pvNew.cc pv.cc
@@ -26,8 +26,6 @@ USR_CPPFLAGS_DEFAULT += -DPVKTL
 USR_INCLUDES_vxWorks += -nil-
 USR_INCLUDES_DEFAULT += -I$(KROOT)/rel/default/include
 
-INC                  += pvKtl.h pvKtlCnv.h
-
 pv_SRCS_vxWorks   += -nil-
 pv_SRCS_DEFAULT   += pvKtl.cc pvKtlCnv.cc
 
@@ -39,8 +37,6 @@ ifeq "$(PVCA)" "TRUE"
 
 USR_CPPFLAGS      += -DPVCA
 
-INC               += pvCa.h
-
 pv_SRCS           += pvCa.cc
 
 endif
@@ -50,8 +46,6 @@ endif
 ifeq "$(PVFILE)" "TRUE"
 
 USR_CPPFLAGS      += -DPVFILE
-
-INC               += pvFile.h
 
 pv_SRCS       += pvFile.cc
 

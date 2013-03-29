@@ -1,0 +1,419 @@
+/*************************************************************************\
+Copyright (c) 2010-2012 Helmholtz-Zentrum Berlin f. Materialien
+                        und Energie GmbH, Germany (HZB)
+This file is distributed subject to a Software License Agreement found
+in the file LICENSE that is included with this distribution.
+\*************************************************************************/
+/*************************************************************************\
+                    Parser specification/implementation
+\*************************************************************************/
+%include {
+#include <stdlib.h>
+#include <string.h>
+#include <assert.h>
+
+#include "expr.h"
+#include "main.h"
+#include "parser.h"
+}
+
+%extra_argument { Expr **presult }
+
+%name snlParser
+
+%parse_failure {
+	report("parser giving up\n");
+	exit(1);
+}
+
+%syntax_error {
+	error_at(TOKEN.file, TOKEN.line,
+		"syntax error near token '%s'\n", TOKEN.str);
+}
+
+// %stack_overflow {
+// 	   report("parser stack overflow\n");
+// }
+
+// A stack size of 0 (zero) means stack size gets dynamically increased
+// on demand i.e. stack size is essentially unlimited. This is important
+// because some rules like the one for IF/ELSE statements employ left-recursion.
+%stack_size 0
+
+%token_type { Token }
+%default_type { Expr* }
+
+/* Standard C operator table
+  Primary Expression Operators  () [] . -> expr++ expr--  left-to-right
+  Unary Operators  * & + - ! ~ ++expr --expr (typecast) sizeof()  right-to-left
+  Binary Operators  * / %  left-to-right
+  + -
+  >> <<
+  < > <= >=
+  == !=
+  &
+  ^
+  |
+  &&
+  ||
+  Ternary Operator  ?:  right-to-left
+  Assignment Operators  = += -= *= /= %= >>= <<= &= ^= |=  right-to-left
+  Comma  ,  left-to-right
+*/
+
+// PRE and POST are pseudo tokens, they only for the
+// precedence declaration.
+
+// The comma operator is implemented as an extra production,
+// so we need no explicit precedence for it.
+// %left	COMMA.
+%right	EQUAL ADDEQ SUBEQ ANDEQ OREQ DIVEQ MULEQ MODEQ LSHEQ RSHEQ XOREQ.
+%right	QUESTION COLON.
+%left	OROR.
+%left	ANDAND.
+%left	VBAR.
+%left	CARET.
+%left	AMPERSAND.
+%left	EQ NE.
+%left	GT GE LE LT.
+%left	LSHIFT RSHIFT.
+%left	ADD SUB.
+%left	ASTERISK SLASH MOD.
+%right	NOT INCR DECR PRE.
+%left	LBRACKET RBRACKET POINTER PERIOD POST.
+// LPAREN RPAREN not listed as we do not support indirect calls. */
+
+program ::=
+	PROGRAM NAME(n)
+	program_param(pp)
+	global_defns(ds)
+	entry(en)
+	state_sets(ss)
+	exit(ex)
+	c_codes(cc).
+{
+	*presult =  expr(D_PROG, n, pp, ds, en, ss, ex, cc);
+}
+
+program_param(p) ::= LPAREN string(x) RPAREN.	{ p = x; }
+program_param(p) ::= .				{ p = 0; }
+
+// Definitions
+
+global_defns(p) ::= global_defns(xs) global_defn(x). {
+	p = link_expr(xs, x);
+}
+global_defns(p) ::= .				{ p = 0; }
+
+global_defn(p) ::= assign(x).			{ p = x; }
+global_defn(p) ::= monitor(x).			{ p = x; }
+global_defn(p) ::= sync(x).			{ p = x; }
+global_defn(p) ::= syncq(x).			{ p = x; }
+global_defn(p) ::= declaration(x).		{ p = x; }
+global_defn(p) ::= option(x).			{ p = x; }
+global_defn(p) ::= c_code(x).			{ p = x; }
+
+assign(p) ::= connect variable(v) to string(t) SEMICOLON. {
+	p = expr(D_ASSIGN, v, 0, t);
+}
+assign(p) ::= connect variable(v) subscript(s) to string(t) SEMICOLON. {
+	p = expr(D_ASSIGN, v, expr(E_CONST, s), t);
+}
+assign(p) ::= connect variable(v) to LBRACE(t) strings(ss) RBRACE SEMICOLON. {
+	p = expr(D_ASSIGN, v, 0, expr(E_INIT, t, ss));
+}
+assign(p) ::= connect variable(v) SEMICOLON. {
+	p = expr(D_ASSIGN, v, 0, 0);
+}
+
+connect ::= ASSIGN.
+connect ::= CONNECT.
+
+to ::= TO.
+to ::= .
+
+strings(p) ::= strings(xs) COMMA string(x).	{ p = link_expr(xs, x); }
+strings(p) ::= string(x).			{ p = x; }
+strings(p) ::= .				{ p = 0; }
+
+monitor(p) ::= MONITOR variable(v) opt_subscript(s) SEMICOLON. {
+	p = expr(D_MONITOR, v, s);
+}
+
+sync(p) ::= SYNC variable(v) opt_subscript(s) to event_flag(f) SEMICOLON. {
+	p = expr(D_SYNC, v, s, expr(E_VAR, f), 0);
+}
+
+syncq(p) ::= SYNCQ variable(v) opt_subscript(s) to event_flag(f) syncq_size(n) SEMICOLON. {
+	p = expr(D_SYNCQ, v, s, expr(E_VAR, f), n);
+}
+
+syncq(p) ::= SYNCQ variable(v) opt_subscript(s) syncq_size(n) SEMICOLON. {
+	p = expr(D_SYNCQ, v, s, 0, n);
+}
+
+%type event_flag {Token}
+event_flag(p) ::= NAME(x).			{ p = x; }
+%type variable {Token}
+variable(p) ::= NAME(x).			{ p = x; }
+
+syncq_size(p) ::= INTCON(n).			{ p = expr(E_CONST, n); }
+syncq_size(p) ::= .				{ p = 0; }
+
+opt_subscript(p) ::= subscript(s).		{ p = expr(E_CONST, s); }
+opt_subscript(p) ::= .				{ p = 0; }
+
+%type subscript {Token}
+subscript(p) ::= LBRACKET INTCON(n) RBRACKET.	{ p = n; }
+
+// Declarations
+
+declaration(p) ::= type(t) init_declarators(ds) SEMICOLON.
+						{ p = decl_add_base_type(ds, t); }
+
+init_declarators(p) ::= init_declarator(x).	{ p = x; }
+init_declarators(p) ::= init_declarators(xs) COMMA init_declarator(x).
+						{ p = link_expr(xs, x); }
+
+init_declarator(p) ::= declarator(x).		{ p = x; }
+init_declarator(p) ::= declarator(x) EQUAL init_expr(i).
+						{ p = decl_add_init(x, i); }
+
+declarator(p) ::= ASTERISK declarator(x).	{ p = decl_prefix_pointer(x); }
+declarator(p) ::= direct_declarator(x).		{ p = x; }
+
+direct_declarator(p) ::= variable(n).		{ p = decl_create(n); }
+direct_declarator(p) ::= LPAREN declarator(x) RPAREN.
+						{ p = x; }
+direct_declarator(p) ::= direct_declarator(x) subscript(s).
+						{ p = decl_postfix_array(x, s.str); }
+
+// Initializer
+// Note: comma operator not allowed in 'expr'.
+init_expr(p) ::= LBRACE(t) init_exprs(x) RBRACE.{ p = expr(E_INIT, t, x); }
+init_expr(p) ::= expr(x).			{ p = x; }
+
+init_exprs(p) ::= init_exprs(xs) COMMA init_expr(x).	{ p = link_expr(xs, x); }
+init_exprs(p) ::= init_expr(x).				{ p = x; }
+init_exprs(p) ::= .					{ p = 0; }
+
+%type type {int}
+type(p) ::= CHAR.				{ p = V_CHAR;	}
+type(p) ::= SHORT.				{ p = V_SHORT;	}
+type(p) ::= INT.				{ p = V_INT;	}
+type(p) ::= LONG.				{ p = V_LONG;	}
+type(p) ::= UNSIGNED CHAR.			{ p = V_UCHAR;	}
+type(p) ::= UNSIGNED SHORT.			{ p = V_USHORT;	}
+type(p) ::= UNSIGNED INT.			{ p = V_UINT;	}
+type(p) ::= UNSIGNED LONG.			{ p = V_ULONG;	}
+
+type(p) ::= INT8T.				{ p = V_INT8T;	}
+type(p) ::= UINT8T.				{ p = V_UINT8T;	}
+type(p) ::= INT16T.				{ p = V_INT16T;	}
+type(p) ::= UINT16T.				{ p = V_UINT16T;}
+type(p) ::= INT32T.				{ p = V_INT32T;	}
+type(p) ::= UINT32T.				{ p = V_UINT32T;}
+
+type(p) ::= FLOAT.				{ p = V_FLOAT;	}
+type(p) ::= DOUBLE.				{ p = V_DOUBLE;	}
+type(p) ::= STRING.				{ p = V_STRING;	}
+type(p) ::= EVFLAG.				{ p = V_EVFLAG;	}
+type(p) ::= FOREIGN.				{ p = V_NONE;	}
+
+// Option spec
+
+option(p) ::= OPTION option_value(v) NAME(n) SEMICOLON.
+						{ p = opt_defn(n, v); }
+
+%type option_value {Token}
+option_value(p) ::= ADD(t).			{ p = t; }
+option_value(p) ::= SUB(t).			{ p = t; }
+
+// State sets and states
+
+state_sets(p) ::= state_sets(xs) state_set(x).	{ p = link_expr(xs, x); }
+state_sets(p) ::= state_set(x).			{ p = x; }
+
+state_set(p) ::= SS NAME(n) LBRACE ss_defns(ds) states(xs) RBRACE.
+						{ p = expr(D_SS, n, ds, xs); }
+
+ss_defns(p) ::= ss_defns(xs) ss_defn(x).	{ p = link_expr(xs, x); }
+ss_defns(p) ::= .				{ p = 0; }
+
+ss_defn(p) ::= assign(x).			{ p = x; }
+ss_defn(p) ::= monitor(x).			{ p = x; }
+ss_defn(p) ::= sync(x).				{ p = x; }
+ss_defn(p) ::= syncq(x).			{ p = x; }
+ss_defn(p) ::= declaration(x).			{ p = x; }
+
+states(p) ::= states(xs) state(x).		{ p = link_expr(xs, x); }
+states(p) ::= state(x).				{ p = x; }
+
+state(p) ::=
+	STATE NAME(n) LBRACE state_defns(ds)
+	entry(en) whens(ws) exit(ex) RBRACE.
+{
+	p = expr(D_STATE, n, ds, en, ws, ex);
+}
+
+state_defns(p) ::= state_defns(xs) state_defn(x). {
+	p = link_expr(xs, x);
+}
+state_defns(p) ::= .				{ p = 0; }
+
+state_defn(p) ::= assign(x).			{ p = x; }
+state_defn(p) ::= monitor(x).			{ p = x; }
+state_defn(p) ::= sync(x).			{ p = x; }
+state_defn(p) ::= syncq(x).			{ p = x; }
+state_defn(p) ::= declaration(x).		{ p = x; }
+state_defn(p) ::= option(x).			{ p = x; }
+
+entry(p) ::= ENTRY(t) block(b).			{ p = expr(D_ENTRY, t, b.left, b.right); }
+entry(p) ::= .					{ p = 0; }
+
+exit(p) ::= EXIT(t) block(b).			{ p = expr(D_EXIT, t, b.left, b.right); }
+exit(p) ::= .					{ p = 0; }
+
+whens(p) ::= whens(xs) when(x).			{ p = link_expr(xs, x); }
+whens(p) ::= when(x).				{ p = x; }
+
+when(p) ::= WHEN(t) LPAREN opt_expr(c) RPAREN block(b) STATE NAME(n). {
+	t.str = n.str;
+	p = expr(D_WHEN, t, c, b.left, b.right);
+}
+
+when(p) ::= WHEN(t) LPAREN opt_expr(c) RPAREN block(b) EXIT. {
+	t.str = 0;
+	p = expr(D_WHEN, t, c, b.left, b.right);
+}
+
+%type block {ExprPair}
+block(p) ::= LBRACE block_defns(ds) statements(xs) RBRACE. {
+	p.left = ds; p.right = xs;
+}
+
+block_defns(p) ::= block_defns(ds) block_defn(d). {
+	p = link_expr(ds, d);
+}
+block_defns(p) ::= .				{ p = 0; }
+
+block_defn(p) ::= declaration(x).		{ p = x; }
+block_defn(p) ::= c_code(x).			{ p = x; }
+
+// Statements
+
+statements(p) ::= statements(xs) statement(x).	{ p = link_expr(xs, x); }
+statements(p) ::= .				{ p = 0; }
+
+statement(p) ::= BREAK(t) SEMICOLON.		{ p = expr(S_JUMP, t); }
+statement(p) ::= CONTINUE(t) SEMICOLON.		{ p = expr(S_JUMP, t); }
+statement(p) ::= STATE NAME(t) SEMICOLON.	{ p = expr(S_CHANGE, t); }
+statement(p) ::= c_code(x).			{ p = x; }
+statement(p) ::= LBRACE(t) block_defns(ds) statements(xs) RBRACE.
+						{ p = expr(S_CMPND, t, ds, xs); }
+statement(p) ::= IF(t) LPAREN comma_expr(c) RPAREN statement(th).
+						{ p = expr(S_IF, t, c, th, 0); }
+statement(p) ::= IF(t) LPAREN comma_expr(c) RPAREN statement(th) ELSE statement(el).
+						{ p = expr(S_IF, t, c, th, el); }
+statement(p) ::= WHILE(t) LPAREN comma_expr(c) RPAREN statement(x).
+						{ p = expr(S_WHILE, t, c, x); }
+statement(p) ::= for_statement(x).		{ p = x; }
+statement(p) ::= opt_expr(x) SEMICOLON(t).	{ p = expr(S_STMT, t, x); }
+
+for_statement(p) ::=
+	FOR(for) LPAREN
+	opt_expr(init) SEMICOLON opt_expr(cond) SEMICOLON opt_expr(iter)
+	RPAREN statement(st).		{ p = expr(S_FOR, for, init, cond, iter, st); }
+
+// Expressions
+
+// Note: the non-terminal 'expr' does not include application of the comma operator.
+// Comma separated lists of 'expr' can be: function arguments (non-terminal
+// 'args')and applications of the comma operator (non-terminal 'comma_expr').
+
+// Atomic
+expr(p) ::= INTCON(x).				{ p = expr(E_CONST, x); }
+expr(p) ::= FPCON(x).				{ p = expr(E_CONST, x); }
+expr(p) ::= string(x).				{ p = x; }
+expr(p) ::= variable(v).			{ p = expr(E_VAR, v); }
+
+// Parenthesized
+expr(p) ::= LPAREN(t) comma_expr(x) RPAREN.		{ p = expr(E_PAREN, t, x); }
+
+// Primary Expression and Unary Postfix Operators
+expr(p) ::= NAME(t) LPAREN args(xs) RPAREN.	 [POST] { p = expr(E_FUNC,   t, xs); }
+expr(p) ::= EXIT(t) LPAREN args(xs) RPAREN.	 [POST] { p = expr(E_FUNC,   t, xs); }
+expr(p) ::= expr(x) LBRACKET(t) expr(y) RBRACKET.[POST] { p = expr(E_SUBSCR, t, x, y); }
+expr(p) ::= expr(x) PERIOD(t)  expr(y).		 [POST] { p = expr(E_BINOP,  t, x, y); }
+expr(p) ::= expr(x) POINTER(t) expr(y).		 [POST] { p = expr(E_BINOP,  t, x, y); }
+expr(p) ::= expr(x) INCR(t).			 [POST] { p = expr(E_POST,   t, x); }
+expr(p) ::= expr(x) DECR(t).			 [POST] { p = expr(E_POST,   t, x); }
+
+// Unary Prefix Operators
+expr(p) ::= ADD(t)	expr(x). [PRE]		{ p = expr(E_PRE, t, x); }
+expr(p) ::= SUB(t)	expr(x). [PRE]		{ p = expr(E_PRE, t, x); }
+expr(p) ::= ASTERISK(t)	expr(x). [PRE]		{ p = expr(E_PRE, t, x); }
+expr(p) ::= AMPERSAND(t)expr(x). [PRE]		{ p = expr(E_PRE, t, x); }
+expr(p) ::= NOT(t)	expr(x). [PRE]		{ p = expr(E_PRE, t, x); }
+expr(p) ::= TILDE(t)	expr(x). [PRE]		{ p = expr(E_PRE, t, x); }
+expr(p) ::= INCR(t)	expr(x). [PRE]		{ p = expr(E_PRE, t, x); }
+expr(p) ::= DECR(t)	expr(x). [PRE]		{ p = expr(E_PRE, t, x); }
+
+// Binary Operators, left-to-right
+expr(p) ::= expr(x) SUB(t)	expr(y).	{ p = expr(E_BINOP, t, x, y); }
+expr(p) ::= expr(x) ADD(t)	expr(y).	{ p = expr(E_BINOP, t, x, y); }
+expr(p) ::= expr(x) ASTERISK(t)	expr(y).	{ p = expr(E_BINOP, t, x, y); }
+expr(p) ::= expr(x) SLASH(t)	expr(y).	{ p = expr(E_BINOP, t, x, y); }
+expr(p) ::= expr(x) GT(t)	expr(y).	{ p = expr(E_BINOP, t, x, y); }
+expr(p) ::= expr(x) GE(t)	expr(y).	{ p = expr(E_BINOP, t, x, y); }
+expr(p) ::= expr(x) EQ(t)	expr(y).	{ p = expr(E_BINOP, t, x, y); }
+expr(p) ::= expr(x) NE(t)	expr(y).	{ p = expr(E_BINOP, t, x, y); }
+expr(p) ::= expr(x) LE(t)	expr(y).	{ p = expr(E_BINOP, t, x, y); }
+expr(p) ::= expr(x) LT(t)	expr(y).	{ p = expr(E_BINOP, t, x, y); }
+expr(p) ::= expr(x) OROR(t)	expr(y).	{ p = expr(E_BINOP, t, x, y); }
+expr(p) ::= expr(x) ANDAND(t)	expr(y).	{ p = expr(E_BINOP, t, x, y); }
+expr(p) ::= expr(x) LSHIFT(t)	expr(y).	{ p = expr(E_BINOP, t, x, y); }
+expr(p) ::= expr(x) RSHIFT(t)	expr(y).	{ p = expr(E_BINOP, t, x, y); }
+expr(p) ::= expr(x) VBAR(t)	expr(y).	{ p = expr(E_BINOP, t, x, y); }
+expr(p) ::= expr(x) CARET(t)	expr(y).	{ p = expr(E_BINOP, t, x, y); }
+expr(p) ::= expr(x) AMPERSAND(t) expr(y).	{ p = expr(E_BINOP, t, x, y); }
+expr(p) ::= expr(x) MOD(t)	expr(y).	{ p = expr(E_BINOP, t, x, y); }
+
+// Ternary Operator, right-to-left
+expr(p) ::= expr(c) QUESTION(t) expr(th) COLON expr(el).
+						{ p = expr(E_TERNOP, t, c, th, el); }
+
+// Assignment Operators, right-to-left
+expr(p) ::= expr(x) EQUAL(t)	expr(y).	{ p = expr(E_BINOP, t, x, y); }
+expr(p) ::= expr(x) ADDEQ(t)	expr(y).	{ p = expr(E_BINOP, t, x, y); }
+expr(p) ::= expr(x) SUBEQ(t)	expr(y).	{ p = expr(E_BINOP, t, x, y); }
+expr(p) ::= expr(x) ANDEQ(t)	expr(y).	{ p = expr(E_BINOP, t, x, y); }
+expr(p) ::= expr(x) OREQ(t)	expr(y).	{ p = expr(E_BINOP, t, x, y); }
+expr(p) ::= expr(x) DIVEQ(t)	expr(y).	{ p = expr(E_BINOP, t, x, y); }
+expr(p) ::= expr(x) MULEQ(t)	expr(y).	{ p = expr(E_BINOP, t, x, y); }
+expr(p) ::= expr(x) MODEQ(t) 	expr(y).	{ p = expr(E_BINOP, t, x, y); }
+expr(p) ::= expr(x) LSHEQ(t)	expr(y).	{ p = expr(E_BINOP, t, x, y); }
+expr(p) ::= expr(x) RSHEQ(t)	expr(y).	{ p = expr(E_BINOP, t, x, y); }
+expr(p) ::= expr(x) XOREQ(t)	expr(y).	{ p = expr(E_BINOP, t, x, y); }
+
+// Comma, left-to-right
+comma_expr(p) ::= comma_expr(xs) COMMA(t) expr(x).	{ p = expr(E_BINOP, t, xs, x); }
+comma_expr(p) ::= expr(x).				{ p = x; }
+
+opt_expr(p) ::= comma_expr(x).			{ p = x; }
+opt_expr(p) ::= .				{ p = 0; }
+
+// Function arguments
+// Ssyntactically the same as opt_expr but interpreted differently.
+args(p) ::= args(xs) COMMA expr(x).		{ p = link_expr(xs, x); }
+args(p) ::= expr(x).				{ p = x; }
+args(p) ::= .					{ p = 0; }
+
+string(p) ::= STRCON(t).			{ p = expr(E_STRING, t); }
+
+// Literal (C) code
+
+c_codes(p) ::= c_codes(xs) c_code(x).		{ p = link_expr(xs, x); }
+c_codes(p) ::= .				{ p = 0; }
+
+c_code(p) ::= CCODE(t). 			{ p = expr(T_TEXT, t); }

@@ -1,0 +1,676 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<display typeId="org.csstudio.opibuilder.Display" version="1.0">
+  <auto_zoom_to_fit_all>false</auto_zoom_to_fit_all>
+  <macros>
+    <include_parent_macros>true</include_parent_macros>
+  </macros>
+  <scripts />
+  <show_ruler>true</show_ruler>
+  <height>100</height>
+  <name>CoarseFineMotorShow</name>
+  <snap_to_geometry>false</snap_to_geometry>
+  <show_grid>false</show_grid>
+  <background_color>
+    <color name="Gray_2" />
+  </background_color>
+  <foreground_color>
+    <color name="Gray_14" />
+  </foreground_color>
+  <widget_type>Display</widget_type>
+  <show_close_button>true</show_close_button>
+  <width>470</width>
+  <rules />
+  <show_edit_range>true</show_edit_range>
+  <grid_space>5</grid_space>
+  <actions hook="false" />
+  <y>268</y>
+  <x>375</x>
+  <widget typeId="org.csstudio.opibuilder.widgets.Rectangle" version="1.0">
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <visible>true</visible>
+    <fill_level>100.0</fill_level>
+    <line_color>
+      <color red="128" green="0" blue="255" />
+    </line_color>
+    <scripts />
+    <height>23</height>
+    <anti_alias>true</anti_alias>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <name>Rectangle</name>
+    <transparent>false</transparent>
+    <pv_name />
+    <background_color>
+      <color red="0" green="0" blue="255" />
+    </background_color>
+    <foreground_color>
+      <color name="Gray_0" />
+    </foreground_color>
+    <widget_type>Rectangle</widget_type>
+    <enabled>true</enabled>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <font>
+      <opifont.name>Default</opifont.name>
+    </font>
+    <line_style>0</line_style>
+    <width>130</width>
+    <border_style>0</border_style>
+    <rules />
+    <border_width>1</border_width>
+    <line_width>0</line_width>
+    <horizontal_fill>true</horizontal_fill>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <actions hook="false" />
+    <y>0</y>
+    <tooltip>$(pv_name)
+$(pv_value)</tooltip>
+    <x>0</x>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.groupingContainer" version="1.0">
+    <enabled>true</enabled>
+    <widget_type>Grouping Container</widget_type>
+    <macros>
+      <include_parent_macros>true</include_parent_macros>
+    </macros>
+    <visible>true</visible>
+    <font>
+      <opifont.name>Default</opifont.name>
+    </font>
+    <width>125</width>
+    <border_style>0</border_style>
+    <rules />
+    <lock_children>false</lock_children>
+    <scripts />
+    <height>20</height>
+    <border_width>1</border_width>
+    <name>Grouping Container</name>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <transparent>false</transparent>
+    <show_scrollbar>false</show_scrollbar>
+    <y>75</y>
+    <actions hook="false" />
+    <foreground_color>
+      <color red="0" green="0" blue="0" />
+    </foreground_color>
+    <background_color>
+      <color red="218" green="218" blue="218" />
+    </background_color>
+    <x>5</x>
+    <tooltip />
+    <widget typeId="org.csstudio.opibuilder.widgets.MenuButton" version="1.0">
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+      <visible>true</visible>
+      <actions_from_pv>false</actions_from_pv>
+      <scripts />
+      <height>20</height>
+      <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+      <name>Menu Button</name>
+      <transparent>false</transparent>
+      <pv_name />
+      <background_color>
+        <color name="callup_bg" />
+      </background_color>
+      <foreground_color>
+        <color name="Gray_0" />
+      </foreground_color>
+      <widget_type>Menu Button</widget_type>
+      <enabled>true</enabled>
+      <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+      <font>
+        <opifont.name>Default</opifont.name>
+      </font>
+      <width>55</width>
+      <border_style>6</border_style>
+      <label>Motors</label>
+      <rules />
+      <border_width>1</border_width>
+      <border_color>
+        <color red="0" green="128" blue="255" />
+      </border_color>
+      <y>0</y>
+      <actions hook="false">
+        <action type="OPEN_OPI_IN_VIEW">
+          <path>../motor/motorx.opi</path>
+          <macros>
+            <include_parent_macros>true</include_parent_macros>
+            <M>MOT</M>
+          </macros>
+          <Position>1</Position>
+          <description>Combined (soft) motor</description>
+        </action>
+        <action type="OPEN_OPI_IN_VIEW">
+          <path>../motor/motor2x.opi</path>
+          <macros>
+            <include_parent_macros>true</include_parent_macros>
+            <P>$(PM)</P>
+            <M1>$(CM)</M1>
+            <M2>$(FM)</M2>
+          </macros>
+          <Position>1</Position>
+          <description>Actual motors</description>
+        </action>
+      </actions>
+      <tooltip>$(pv_name)
+$(pv_value)</tooltip>
+      <x>0</x>
+    </widget>
+    <widget typeId="org.csstudio.opibuilder.widgets.MenuButton" version="1.0">
+      <border_alarm_sensitive>false</border_alarm_sensitive>
+      <visible>true</visible>
+      <actions_from_pv>false</actions_from_pv>
+      <scripts />
+      <height>20</height>
+      <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+      <name>Menu Button</name>
+      <transparent>false</transparent>
+      <pv_name />
+      <background_color>
+        <color name="MEDM_COLOR_17" />
+      </background_color>
+      <foreground_color>
+        <color name="Gray_0" />
+      </foreground_color>
+      <widget_type>Menu Button</widget_type>
+      <enabled>true</enabled>
+      <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+      <font>
+        <opifont.name>Default</opifont.name>
+      </font>
+      <width>40</width>
+      <border_style>6</border_style>
+      <label>Less</label>
+      <rules />
+      <border_width>1</border_width>
+      <border_color>
+        <color red="0" green="128" blue="255" />
+      </border_color>
+      <y>0</y>
+      <actions hook="false">
+        <action type="OPEN_DISPLAY">
+          <path>CoarseFineMotor.opi</path>
+          <macros>
+            <include_parent_macros>true</include_parent_macros>
+            <M>MOT</M>
+          </macros>
+          <replace>true</replace>
+          <description>Small display</description>
+        </action>
+      </actions>
+      <tooltip>$(pv_name)
+$(pv_value)</tooltip>
+      <x>85</x>
+    </widget>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.MenuButton" version="1.0">
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <visible>true</visible>
+    <actions_from_pv>true</actions_from_pv>
+    <scripts />
+    <height>20</height>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <name>Menu Button</name>
+    <transparent>false</transparent>
+    <pv_name>$(P)mode</pv_name>
+    <background_color>
+      <color name="ioc_write_bg" />
+    </background_color>
+    <foreground_color>
+      <color name="Gray_14" />
+    </foreground_color>
+    <widget_type>Menu Button</widget_type>
+    <enabled>true</enabled>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <font>
+      <opifont.name>Default</opifont.name>
+    </font>
+    <width>95</width>
+    <border_style>6</border_style>
+    <label />
+    <rules />
+    <border_width>1</border_width>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <y>45</y>
+    <tooltip>$(pv_name)
+$(pv_value)</tooltip>
+    <x>5</x>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Label" version="1.0">
+    <visible>true</visible>
+    <vertical_alignment>1</vertical_alignment>
+    <auto_size>false</auto_size>
+    <scripts />
+    <height>20</height>
+    <name>Label</name>
+    <transparent>true</transparent>
+    <show_scrollbar>false</show_scrollbar>
+    <background_color>
+      <color red="255" green="255" blue="255" />
+    </background_color>
+    <foreground_color>
+      <color name="Gray_14" />
+    </foreground_color>
+    <widget_type>Label</widget_type>
+    <enabled>true</enabled>
+    <text>Mode</text>
+    <font>
+      <fontdata fontName="Sans" height="14" style="0" />
+    </font>
+    <width>100</width>
+    <border_style>0</border_style>
+    <rules />
+    <border_width>1</border_width>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <horizontal_alignment>1</horizontal_alignment>
+    <actions hook="false" />
+    <y>25</y>
+    <wrap_words>true</wrap_words>
+    <tooltip />
+    <x>5</x>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Label" version="1.0">
+    <visible>true</visible>
+    <vertical_alignment>1</vertical_alignment>
+    <auto_size>false</auto_size>
+    <scripts />
+    <height>20</height>
+    <name>Label</name>
+    <transparent>true</transparent>
+    <show_scrollbar>false</show_scrollbar>
+    <background_color>
+      <color red="255" green="255" blue="255" />
+    </background_color>
+    <foreground_color>
+      <color name="Gray_14" />
+    </foreground_color>
+    <widget_type>Label</widget_type>
+    <enabled>true</enabled>
+    <text>Coarse/Fine</text>
+    <font>
+      <fontdata fontName="Sans" height="14" style="0" />
+    </font>
+    <width>130</width>
+    <border_style>0</border_style>
+    <rules />
+    <border_width>1</border_width>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <horizontal_alignment>1</horizontal_alignment>
+    <actions hook="false" />
+    <y>0</y>
+    <wrap_words>true</wrap_words>
+    <tooltip />
+    <x>0</x>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.MenuButton" version="1.0">
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <visible>true</visible>
+    <actions_from_pv>false</actions_from_pv>
+    <scripts />
+    <height>30</height>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <name>Menu Button</name>
+    <transparent>false</transparent>
+    <pv_name />
+    <background_color>
+      <color name="callup_bg" />
+    </background_color>
+    <foreground_color>
+      <color name="Gray_0" />
+    </foreground_color>
+    <widget_type>Menu Button</widget_type>
+    <enabled>true</enabled>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <font>
+      <opifont.name>Default</opifont.name>
+    </font>
+    <width>25</width>
+    <border_style>6</border_style>
+    <label>?</label>
+    <rules />
+    <border_width>1</border_width>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <y>35</y>
+    <actions hook="false">
+      <action type="OPEN_OPI_IN_VIEW">
+        <path>CoarseFineMotorHelp.opi</path>
+        <macros>
+          <include_parent_macros>true</include_parent_macros>
+        </macros>
+        <Position>1</Position>
+        <description>help</description>
+      </action>
+    </actions>
+    <tooltip>$(pv_name)
+$(pv_value)</tooltip>
+    <x>102</x>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.MenuButton" version="1.0">
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <visible>true</visible>
+    <actions_from_pv>false</actions_from_pv>
+    <scripts />
+    <height>15</height>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <name>Menu Button</name>
+    <transparent>false</transparent>
+    <pv_name />
+    <background_color>
+      <color name="Gray_2" />
+    </background_color>
+    <foreground_color>
+      <color name="Gray_10" />
+    </foreground_color>
+    <widget_type>Menu Button</widget_type>
+    <enabled>true</enabled>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <font>
+      <opifont.name>Default</opifont.name>
+    </font>
+    <width>40</width>
+    <border_style>6</border_style>
+    <label>DEBUG</label>
+    <rules />
+    <border_width>1</border_width>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <y>85</y>
+    <actions hook="false">
+      <action type="OPEN_OPI_IN_VIEW">
+        <path>../calc/yyTransform_full.opi</path>
+        <macros>
+          <include_parent_macros>true</include_parent_macros>
+          <T>limitProc</T>
+        </macros>
+        <Position>1</Position>
+        <description>limitProc</description>
+      </action>
+      <action type="OPEN_OPI_IN_VIEW">
+        <path>../calc/yyTransform_full.opi</path>
+        <macros>
+          <include_parent_macros>true</include_parent_macros>
+          <T>moveCF</T>
+        </macros>
+        <Position>1</Position>
+        <description>moveCF</description>
+      </action>
+      <action type="OPEN_OPI_IN_VIEW">
+        <path>../calc/yyCalcoutRecord.opi</path>
+        <macros>
+          <include_parent_macros>true</include_parent_macros>
+          <C>closeGate</C>
+        </macros>
+        <Position>1</Position>
+        <description>closeGate calc</description>
+      </action>
+      <action type="OPEN_OPI_IN_VIEW">
+        <path>../calc/yyCalcoutRecord.opi</path>
+        <macros>
+          <include_parent_macros>true</include_parent_macros>
+          <C>fineModeCalc</C>
+        </macros>
+        <Position>1</Position>
+        <description>fineModeCalc</description>
+      </action>
+      <action type="OPEN_OPI_IN_VIEW">
+        <path>../calc/yyCalcoutRecord.opi</path>
+        <macros>
+          <include_parent_macros>true</include_parent_macros>
+          <C>doneCalc</C>
+        </macros>
+        <Position>1</Position>
+        <description>done calc</description>
+      </action>
+      <action type="OPEN_OPI_IN_VIEW">
+        <path>../calc/yyCalcoutRecord.opi</path>
+        <macros>
+          <include_parent_macros>true</include_parent_macros>
+          <C>RBV</C>
+        </macros>
+        <Position>1</Position>
+        <description>RBV calc</description>
+      </action>
+    </actions>
+    <tooltip>$(pv_name)
+$(pv_value)</tooltip>
+    <x>430</x>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Label" version="1.0">
+    <visible>true</visible>
+    <vertical_alignment>1</vertical_alignment>
+    <auto_size>false</auto_size>
+    <scripts />
+    <height>20</height>
+    <name>Label</name>
+    <transparent>true</transparent>
+    <show_scrollbar>false</show_scrollbar>
+    <background_color>
+      <color red="255" green="255" blue="255" />
+    </background_color>
+    <foreground_color>
+      <color name="Gray_14" />
+    </foreground_color>
+    <widget_type>Label</widget_type>
+    <enabled>true</enabled>
+    <text>F</text>
+    <font>
+      <fontdata fontName="Sans" height="14" style="0" />
+    </font>
+    <width>10</width>
+    <border_style>0</border_style>
+    <rules />
+    <border_width>1</border_width>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <horizontal_alignment>1</horizontal_alignment>
+    <actions hook="false" />
+    <y>27</y>
+    <wrap_words>true</wrap_words>
+    <tooltip />
+    <x>213</x>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.Label" version="1.0">
+    <visible>true</visible>
+    <vertical_alignment>1</vertical_alignment>
+    <auto_size>false</auto_size>
+    <scripts />
+    <height>20</height>
+    <name>Label</name>
+    <transparent>true</transparent>
+    <show_scrollbar>false</show_scrollbar>
+    <background_color>
+      <color red="255" green="255" blue="255" />
+    </background_color>
+    <foreground_color>
+      <color name="Gray_14" />
+    </foreground_color>
+    <widget_type>Label</widget_type>
+    <enabled>true</enabled>
+    <text>C</text>
+    <font>
+      <fontdata fontName="Sans" height="14" style="0" />
+    </font>
+    <width>10</width>
+    <border_style>0</border_style>
+    <rules />
+    <border_width>1</border_width>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <horizontal_alignment>1</horizontal_alignment>
+    <actions hook="false" />
+    <y>57</y>
+    <wrap_words>true</wrap_words>
+    <tooltip />
+    <x>163</x>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.progressbar" version="1.0">
+    <level_lo>20.0</level_lo>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <visible>true</visible>
+    <color_fillbackground>
+      <color red="200" green="200" blue="200" />
+    </color_fillbackground>
+    <color_hihi>
+      <color red="255" green="0" blue="0" />
+    </color_hihi>
+    <show_lo>false</show_lo>
+    <scripts />
+    <height>25</height>
+    <major_tick_step_hint>50</major_tick_step_hint>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <background_color>
+      <color red="240" green="240" blue="240" />
+    </background_color>
+    <enabled>true</enabled>
+    <widget_type>Progress Bar</widget_type>
+    <show_minor_ticks>true</show_minor_ticks>
+    <font>
+      <opifont.name>Default</opifont.name>
+    </font>
+    <width>150</width>
+    <show_lolo>false</show_lolo>
+    <border_style>0</border_style>
+    <effect_3d>true</effect_3d>
+    <show_markers>true</show_markers>
+    <show_hi>false</show_hi>
+    <maximum>100.0</maximum>
+    <border_width>1</border_width>
+    <horizontal>true</horizontal>
+    <log_scale>false</log_scale>
+    <minimum>0.0</minimum>
+    <show_hihi>false</show_hihi>
+    <scale_format />
+    <show_scale>true</show_scale>
+    <color_lo>
+      <color red="255" green="128" blue="0" />
+    </color_lo>
+    <name>Progress Bar</name>
+    <color_hi>
+      <color red="255" green="128" blue="0" />
+    </color_hi>
+    <pv_name>$(PM)$(FM).RBV</pv_name>
+    <origin_ignored>true</origin_ignored>
+    <foreground_color>
+      <color red="0" green="0" blue="0" />
+    </foreground_color>
+    <show_label>true</show_label>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <level_hi>80.0</level_hi>
+    <scale_font>
+      <opifont.name>Default</opifont.name>
+    </scale_font>
+    <level_hihi>90.0</level_hihi>
+    <origin>0.0</origin>
+    <fill_color>
+      <color red="0" green="0" blue="255" />
+    </fill_color>
+    <color_lolo>
+      <color red="255" green="0" blue="0" />
+    </color_lolo>
+    <rules />
+    <value_label_format />
+    <transparent_background>true</transparent_background>
+    <limits_from_pv>true</limits_from_pv>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <level_lolo>10.0</level_lolo>
+    <y>27</y>
+    <actions hook="false" />
+    <x>230</x>
+    <tooltip>$(pv_name)
+$(pv_value)</tooltip>
+    <indicator_mode>true</indicator_mode>
+  </widget>
+  <widget typeId="org.csstudio.opibuilder.widgets.progressbar" version="1.0">
+    <level_lo>20.0</level_lo>
+    <border_alarm_sensitive>false</border_alarm_sensitive>
+    <visible>true</visible>
+    <color_fillbackground>
+      <color red="200" green="200" blue="200" />
+    </color_fillbackground>
+    <color_hihi>
+      <color red="255" green="0" blue="0" />
+    </color_hihi>
+    <show_lo>false</show_lo>
+    <scripts />
+    <height>25</height>
+    <major_tick_step_hint>50</major_tick_step_hint>
+    <forecolor_alarm_sensitive>false</forecolor_alarm_sensitive>
+    <background_color>
+      <color red="240" green="240" blue="240" />
+    </background_color>
+    <enabled>true</enabled>
+    <widget_type>Progress Bar</widget_type>
+    <show_minor_ticks>true</show_minor_ticks>
+    <font>
+      <opifont.name>Default</opifont.name>
+    </font>
+    <width>250</width>
+    <show_lolo>false</show_lolo>
+    <border_style>0</border_style>
+    <effect_3d>true</effect_3d>
+    <show_markers>true</show_markers>
+    <show_hi>false</show_hi>
+    <maximum>100.0</maximum>
+    <border_width>1</border_width>
+    <horizontal>true</horizontal>
+    <log_scale>false</log_scale>
+    <minimum>0.0</minimum>
+    <show_hihi>false</show_hihi>
+    <scale_format />
+    <show_scale>true</show_scale>
+    <color_lo>
+      <color red="255" green="128" blue="0" />
+    </color_lo>
+    <name>Progress Bar_1</name>
+    <color_hi>
+      <color red="255" green="128" blue="0" />
+    </color_hi>
+    <pv_name>$(PM)$(CM).RBV</pv_name>
+    <origin_ignored>true</origin_ignored>
+    <foreground_color>
+      <color red="0" green="0" blue="0" />
+    </foreground_color>
+    <show_label>true</show_label>
+    <backcolor_alarm_sensitive>false</backcolor_alarm_sensitive>
+    <level_hi>80.0</level_hi>
+    <scale_font>
+      <opifont.name>Default</opifont.name>
+    </scale_font>
+    <level_hihi>90.0</level_hihi>
+    <origin>0.0</origin>
+    <fill_color>
+      <color red="0" green="0" blue="255" />
+    </fill_color>
+    <color_lolo>
+      <color red="255" green="0" blue="0" />
+    </color_lolo>
+    <rules />
+    <value_label_format />
+    <transparent_background>true</transparent_background>
+    <limits_from_pv>true</limits_from_pv>
+    <border_color>
+      <color red="0" green="128" blue="255" />
+    </border_color>
+    <level_lolo>10.0</level_lolo>
+    <y>57</y>
+    <actions hook="false" />
+    <x>180</x>
+    <tooltip>$(pv_name)
+$(pv_value)</tooltip>
+    <indicator_mode>true</indicator_mode>
+  </widget>
+</display>

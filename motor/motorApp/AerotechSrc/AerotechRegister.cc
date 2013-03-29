@@ -2,10 +2,10 @@
 FILENAME...	AerotechRegister.cc
 USAGE...	Register Aerotech motor device driver shell commands.
 
-Version:        $Revision$
-Modified By:    $Author$
-Last Modified:  $Date$
-HeadURL:        $URL$
+Version:        $Revision: 11729 $
+Modified By:    $Author: sluiter $
+Last Modified:  $Date: 2010-10-06 14:43:18 -0500 (Wed, 06 Oct 2010) $
+HeadURL:        $URL: https://subversion.xor.aps.anl.gov/synApps/motor/tags/R6-7-1/motorApp/AerotechSrc/AerotechRegister.cc $
 */
 
 /*****************************************************************
@@ -34,12 +34,6 @@ static const iocshArg configArg0 = {"Card being configured", iocshArgInt};
 static const iocshArg configArg1 = {"asyn port name", iocshArgString};
 static const iocshArg configArg2 = {"asyn address", iocshArgInt};
 
-static const iocshArg * const EnsembleSetupArgs[2]  = {&setupArg0, &setupArg1};
-static const iocshArg * const EnsembleConfigArgs[3] = {&configArg0, &configArg1, &configArg2};
-
-static const iocshFuncDef setupEnsemble  = {"EnsembleSetup",  2, EnsembleSetupArgs};
-static const iocshFuncDef configEnsemble = {"EnsembleConfig", 2, EnsembleConfigArgs};
-
 static const iocshArg * const SoloistSetupArgs[2]  = {&setupArg0, &setupArg1};
 static const iocshArg * const SoloistConfigArgs[3] = {&configArg0, &configArg1, &configArg2};
 
@@ -67,15 +61,6 @@ static const iocshArg * const EnsembleAsynConfigArgs[6] = {&asynConfigArg0,
 static const iocshFuncDef setupEnsembleAsyn = {"EnsembleAsynSetup",1, EnsembleAsynSetupArgs};
 static const iocshFuncDef configEnsembleAsyn = {"EnsembleAsynConfig", 6, EnsembleAsynConfigArgs};
 
-static void setupEnsembleCallFunc(const iocshArgBuf *args)
-{
-    EnsembleSetup(args[0].ival, args[1].ival);
-}
-static void configEnsembleCallFunc(const iocshArgBuf *args)
-{
-    EnsembleConfig(args[0].ival, args[1].sval, args[2].ival);
-}
-
 static void setupSoloistCallFunc(const iocshArgBuf *args)
 {
     SoloistSetup(args[0].ival, args[1].ival);
@@ -97,8 +82,6 @@ static void configEnsembleAsynCallFunc(const iocshArgBuf *args)
 
 static void AerotechRegister(void)
 {
-    iocshRegister(&setupEnsemble, setupEnsembleCallFunc);
-    iocshRegister(&configEnsemble, configEnsembleCallFunc);
     iocshRegister(&setupSoloist, setupSoloistCallFunc);
     iocshRegister(&configSoloist, configSoloistCallFunc);
     iocshRegister(&setupEnsembleAsyn, setupEnsembleAsynCallFunc);

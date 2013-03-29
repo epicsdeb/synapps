@@ -67,6 +67,11 @@ grecord(ao,"$(P)$(R)Time") {
     field(VAL, "10.")
     field(PREC, "3")
 }
+grecord(ao,"$(P)$(R)ElapsedTime") {
+    field(DESC,"Elapsed time")
+    field(VAL, "0.")
+    field(PREC, "3")
+}
 grecord(ao,"$(P)$(R)TimeScale") {
     field(DESC,"Trajectory time scaling")
     field(VAL, "1.")
@@ -82,12 +87,45 @@ grecord(waveform,"$(P)$(R)TimeTraj") {
     field(FTVL,"DOUBLE")
     field(PREC, "3")
 }
+grecord(waveform,"$(P)$(R)realTimeTrajectory") {
+    field(DESC,"Time at element")
+    field(NELM,"$(NELM)")
+    field(FTVL,"DOUBLE")
+    field(PREC, "3")
+}
 grecord(ao,"$(P)$(R)Accel") {
     field(DESC,"Trajectory Acceleration")
     field(VAL, "0.5")
     field(PREC, "3")
 }
 
+grecord(longout,"$(P)$(R)OutBitNum") {
+    field(VAL, "-1")
+    field(DESC,"Output-Bit Number")
+}
+
+grecord(longout,"$(P)$(R)InBitNum") {
+    field(VAL, "-1")
+    field(DESC,"Input-Bit Number")
+}
+grecord(ao,"$(P)$(R)OverrideFactor") {
+    field(DESC,"velocity override factor")
+    field(VAL, "0.1")
+    field(PREC, "3")
+}
+grecord(mbbo,"$(P)$(R)UpdateFreq") {
+    field(DESC,"Move mode")
+    field(VAL, "0")
+    field(PINI, "YES")
+    field(ZRVL, "1")
+    field(ZRST, "1024")
+    field(ONVL, "2")
+    field(ONST, "2048")
+    field(TWVL, "4")
+    field(TWST, "4096")
+    field(THVL, "8")
+    field(THST, "8192")
+}
 #
 # PVs controlling which motors will move
 #
@@ -457,6 +495,78 @@ grecord(ao,"$(P)$(R)M8Current") {
     field(PREC, "4")
 }
 
+#
+# PVs to set minimum motor speed (MAXV only)
+#
+grecord(ao,"$(P)$(R)M1MinSpeed") {
+    field(DESC,"M1 min speed")
+    field(PREC, "4")
+}
+grecord(ao,"$(P)$(R)M2MinSpeed") {
+    field(DESC,"M2 min speed")
+    field(PREC, "4")
+}
+grecord(ao,"$(P)$(R)M3MinSpeed") {
+    field(DESC,"M3 min speed")
+    field(PREC, "4")
+}
+grecord(ao,"$(P)$(R)M4MinSpeed") {
+    field(DESC,"M4 min speed")
+    field(PREC, "4")
+}
+grecord(ao,"$(P)$(R)M5MinSpeed") {
+    field(DESC,"M5 min speed")
+    field(PREC, "4")
+}
+grecord(ao,"$(P)$(R)M6MinSpeed") {
+    field(DESC,"M6 min speed")
+    field(PREC, "4")
+}
+grecord(ao,"$(P)$(R)M7MinSpeed") {
+    field(DESC,"M7 min speed")
+    field(PREC, "4")
+}
+grecord(ao,"$(P)$(R)M8MinSpeed") {
+    field(DESC,"M8 min speed")
+    field(PREC, "4")
+}
+
+
+#
+# PVs to set maximum motor speed (MAXV only)
+#
+grecord(ao,"$(P)$(R)M1MaxSpeed") {
+    field(DESC,"M1 max speed")
+    field(PREC, "4")
+}
+grecord(ao,"$(P)$(R)M2MaxSpeed") {
+    field(DESC,"M2 max speed")
+    field(PREC, "4")
+}
+grecord(ao,"$(P)$(R)M3MaxSpeed") {
+    field(DESC,"M3 max speed")
+    field(PREC, "4")
+}
+grecord(ao,"$(P)$(R)M4MaxSpeed") {
+    field(DESC,"M4 max speed")
+    field(PREC, "4")
+}
+grecord(ao,"$(P)$(R)M5MaxSpeed") {
+    field(DESC,"M5 max speed")
+    field(PREC, "4")
+}
+grecord(ao,"$(P)$(R)M6MaxSpeed") {
+    field(DESC,"M6 max speed")
+    field(PREC, "4")
+}
+grecord(ao,"$(P)$(R)M7MaxSpeed") {
+    field(DESC,"M7 max speed")
+    field(PREC, "4")
+}
+grecord(ao,"$(P)$(R)M8MaxSpeed") {
+    field(DESC,"M8 max speed")
+    field(PREC, "4")
+}
 
 #
 # PVs for control of maximum speed change 

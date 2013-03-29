@@ -1,840 +1,776 @@
-/**************************************************************************
-			GTA PROJECT   AT division
-	Copyright, 1990, The Regents of the University of California.
-		 Los Alamos National Laboratory
- 	gen_ss_code.c,v 1.2 1995/06/27 15:25:43 wright Exp
-	DESCRIPTION: gen_ss_code.c -- routines to generate state set code
-	ENVIRONMENT: UNIX
-	HISTORY:
-19nov91,ajk	Changed find_var() to findVar().
-28apr92,ajk	Implemented efClear() & efTestAndClear().
-01mar94,ajk	Changed table generation to the new structures defined 
-		in seqCom.h.
-09aug96,wfl	Supported pvGetQ().
-13aug96,wfl	Supported pvFreeQ().
-23jun97,wfl	Avoided SEGV if variable or event flag was undeclared.
-13jan98,wfl     Fixed handling of compound expressions, using E_COMMA.
-29apr99,wfl     Avoided compilation warnings.
-29apr99,wfl	Removed unnecessary include files.
-06jul99,wfl	Cosmetic changes to improve look of generated C code
-07sep99,wfl	Added support for local declarations (not yet complete);
-		Added support for "pvName", "pvMessage" and pvPutComplete";
-		Supported "pv" functions with array length and optional parms;
-		Added sequencer variable name to generated seq_pv*() calls
-22sep99,grw	Supported entry and exit actions
-18feb00,wfl	More partial support for local declarations (still not done)
-31mar00,wfl	Put 'when' code in a block (allows local declarations);
-		supported entry handler
-***************************************************************************/
+/*************************************************************************\
+Copyright (c) 1990      The Regents of the University of California
+                        and the University of Chicago.
+                        Los Alamos National Laboratory
+Copyright (c) 2010-2012 Helmholtz-Zentrum Berlin f. Materialien
+                        und Energie GmbH, Germany (HZB)
+This file is distributed subject to a Software License Agreement found
+in the file LICENSE that is included with this distribution.
+\*************************************************************************/
+/*************************************************************************\
+                State set code generation
+\*************************************************************************/
 #include	<stdio.h>
 #include	<string.h>
+#include	<assert.h>
 
-#include	"parse.h"
-#include	"proto.h"
+#include	"expr.h"
+#include	"analysis.h"
+#include	"gen_code.h"
+#include	"main.h"
+#include	"builtin.h"
+#include	"gen_ss_code.h"
 
-#ifndef TRUE
-#define TRUE    1
-#define FALSE   0
-#endif  /*TRUE*/
+static const int impossible = 0;
 
-/* func_name_to_code - convert function name to a code */
-enum	fcode { F_DELAY, F_EFSET, F_EFTEST, F_EFCLEAR, F_EFTESTANDCLEAR,
-		F_PVGET, F_PVGETQ, F_PVFREEQ, F_PVPUT, F_PVTIMESTAMP, F_PVASSIGN,
-		F_PVMONITOR, F_PVSTOPMONITOR, F_PVCOUNT, F_PVINDEX, F_PVNAME,
-		F_PVSTATUS, F_PVSEVERITY, F_PVMESSAGE, F_PVFLUSH, F_PVERROR,
-		F_PVGETCOMPLETE, F_PVASSIGNED, F_PVCONNECTED, F_PVPUTCOMPLETE,
-		F_PVCHANNELCOUNT, F_PVCONNECTCOUNT, F_PVASSIGNCOUNT,
-		F_PVDISCONNECT, F_SEQLOG, F_MACVALUEGET, F_OPTGET,
-		F_NONE };
+static void gen_local_var_decls(Expr *scope, int level);
+static void gen_state_func(
+	const char *ss_name,
+	uint ss_num,
+	const char *state_name,
+	Expr *xp,
+	void (*gen_body)(Expr *xp),
+	const char *title,
+	const char *prefix,
+	const char *rettype,
+	const char *extra_args
+);
+static void gen_entry_body(Expr *xp);
+static void gen_exit_body(Expr *xp);
+static void gen_delay_body(Expr *xp);
+static void gen_event_body(Expr *xp);
+static void gen_action_body(Expr *xp);
+static int gen_delay(Expr *ep, Expr *scope, void *parg);
+static void gen_expr(int context, Expr *ep, int level);
+static void gen_ef_func(int context, Expr *ep, const char *func_name, uint ef_action_only);
+static void gen_pv_func(int context, Expr *ep,
+	const char *func_name, uint add_length, uint num_params, uint ef_args);
+static int gen_builtin_func(int context, Expr *ep);
+static int gen_builtin_const(Expr *ep);
 
-char	*fcode_str[] = { "delay", "efSet", "efTest", "efClear", "efTestAndClear",
-		"pvGet", "pvGetQ", "pvFreeQ", "pvPut", "pvTimeStamp", "pvAssign",
-		"pvMonitor", "pvStopMonitor", "pvCount", "pvIndex", "pvName",
-		"pvStatus", "pvSeverity", "pvMessage", "pvFlush", "pvError",
-		"pvGetComplete", "pvAssigned", "pvConnected", "pvPutComplete",
-		"pvChannelCount", "pvConnectCount", "pvAssignCount",
-		"pvDisconnect", "seqLog", "macValueGet", "optGet",
-		NULL };
+static void gen_prog_func(
+	Expr *prog,
+	const char *name,
+	Expr *xp,
+	void (*gen_body)(Expr *xp));
+static void gen_prog_init_func(Expr *prog, int opt_reent);
 
-void gen_delay_func(Expr *sp, Expr *ssp);
-void eval_delay(Expr *ep, Expr *sp);
-void gen_action_func(Expr *sp, Expr *ssp);
-void gen_event_func(Expr *sp, Expr *ssp);
-void eval_expr(int stmt_type, Expr *ep, Expr *sp, int level);
-void indent(int level);
-void gen_ef_func(int stmt_type,Expr *ep,Expr *sp,char *fname,
-    enum fcode func_code);
-void gen_pv_func(int stmt_type,Expr *ep,Expr *sp,
-    char *fname,enum fcode func_code,int add_length,int num_params);
-void gen_entry_handler(void);
-void gen_exit_handler(void);
-void gen_change_func(Expr *sp,Expr *ssp);
-void gen_entry_func(Expr *sp,Expr *ssp );
-void gen_exit_func(Expr *sp,Expr *ssp );
-
-int state_block_index_from_name(Expr *ssp,char *state_name);
-int special_func(int stmt_type,Expr *ep,Expr *sp);
-
-/*+************************************************************************
-*  NAME: gen_ss_code
-*
-*  CALLING SEQUENCE
-*	type		argument	I/O	description
-*	---------------------------------------------------
-*
-*  RETURNS:
-*
-*  FUNCTION: Generate state set C code from tables.
-*
-*  NOTES: All inputs are external globals.
-*-*************************************************************************/
-/*#define	DEBUG		1*/
-
-#define	EVENT_STMT	1
-#define	ACTION_STMT	2
-#define	DELAY_STMT	3
-#define	ENTRY_STMT	4
-#define	EXIT_STMT	5
-
-void gen_ss_code()
+/*
+ * Expression context. Certain nodes of the syntax tree are
+ * interpreted differently depending on the context in which
+ * they appear. For instance, the state change command is only
+ * allowed in transition action context (C_TRANS).
+ */
+enum expr_context
 {
-	extern Expr		*ss_list;
-	Expr			*ssp;
-	Expr			*sp;
+	C_COND,		/* when() condition */
+	C_TRANS,	/* state transition actions */
+	C_ENTRY,	/* entry block */
+	C_EXIT,		/* exit block */
+	C_INIT		/* variable initialization */
+};
 
-	/* Generate entry handler code */
-	gen_entry_handler();
+/*
+ * HACK: use global variables to make program options and
+ * symbol table available to subroutines
+ */
+static int global_opt_reent;
+static SymTable global_sym_table;
+
+void init_gen_ss_code(Program *program)
+{
+	/* HACK: intialise globals */
+	global_opt_reent = program->options.reent;
+	global_sym_table = program->sym_table;
+}
+
+/* Generate state set C code from analysed syntax tree */
+void gen_ss_code(Program *program)
+{
+	Expr	*prog = program->prog;
+	Expr	*ssp;
+	Expr	*sp;
+	uint	ss_num = 0;
+
+	/* Generate program init func */
+	gen_prog_init_func(prog, program->options.reent);
+
+	/* Generate program entry func */
+	if (prog->prog_entry)
+		gen_prog_func(prog, "entry", prog->prog_entry, gen_entry_body);
 
 	/* For each state set ... */
-	for (ssp = ss_list; ssp != NULL; ssp = ssp->next)
+	foreach (ssp, prog->prog_statesets)
 	{
 		/* For each state ... */
-		for (sp = ssp->left; sp != NULL; sp = sp->next)
+		foreach (sp, ssp->ss_states)
 		{
-			printf("\f/* Code for state \"%s\" in state set \"%s\" */\n",
-			 sp->value, ssp->value);
+			printf("\n/****** Code for state \"%s\" in state set \"%s\" ******/\n",
+				sp->value, ssp->value);
 
 			/* Generate entry and exit functions */
-                        gen_change_func(sp, ssp);
-
+			if (sp->state_entry != 0)
+				gen_state_func(ssp->value, ss_num, sp->value, 
+					sp->state_entry, gen_entry_body,
+					"Entry", "I", "void", "");
+			if (sp->state_exit != 0)
+				gen_state_func(ssp->value, ss_num, sp->value,
+					sp->state_exit, gen_exit_body,
+					"Exit", "O", "void", "");
 			/* Generate function to set up for delay processing */
-			gen_delay_func(sp, ssp);
-
+			gen_state_func(ssp->value, ss_num, sp->value,
+				sp->state_whens, gen_delay_body,
+				"Delay", "D", "void", "");
 			/* Generate event processing function */
-			gen_event_func(sp, ssp);
-
+			gen_state_func(ssp->value, ss_num, sp->value,
+				sp->state_whens, gen_event_body,
+				"Event", "E", "seqBool",
+				", int *pTransNum, int *pNextState");
 			/* Generate action processing function */
-			gen_action_func(sp, ssp);
+			gen_state_func(ssp->value, ss_num, sp->value,
+				sp->state_whens, gen_action_body,
+				"Action", "A", "void",
+                                ", int transNum, int *pNextState");
 		}
+		ss_num++;
 	}
 
-	/* Generate exit handler code */
-	gen_exit_handler();
+	/* Generate program exit func */
+	if (prog->prog_exit)
+		gen_prog_func(prog, "exit", prog->prog_exit, gen_exit_body);
 }
-/* Generate functions for each state which perform the state entry and 
-  * exit actions. 
-  */
-void gen_change_func(Expr *sp,Expr *ssp)
+
+/* Generate a local C variable declaration for each variable declared
+   inside the body of an entry, exit, when, or compound statement block. */
+static void gen_local_var_decls(Expr *scope, int level)
 {
-        Expr		*ep;
-	int isEntry = FALSE, isExit = FALSE;
+	Var	*vp;
+	VarList	*var_list;
 
-	/* Don't write code for an entry or exit function unless there
-	   was at least one entry or exit statement */
+	var_list = *pvar_list_from_scope(scope);
 
-	for ( ep = sp->left; ep != NULL; ep = ep->next )
+	/* Convert internal type to `C' type */
+	foreach (vp, var_list->first)
 	{
-		if ( ep->type == E_ENTRY )
-		       isEntry = TRUE;
-		else if ( ep->type == E_EXIT )
-		       isExit = TRUE;
-	}
-	if (isEntry) gen_entry_func( sp, ssp );
-	if (isExit) gen_exit_func( sp, ssp );
-}
-
-void gen_entry_func(Expr *sp,Expr *ssp )
-{	
-        Expr	*ep,			/* Entry expression */
-		*xp;			/* statement expression walker */
-	int	entryI =  0, line_num = -1;
-
-	/* Entry function declaration */
-	printf("\n/* Entry function for state \"%s\" in state set \"%s\" */\n",
- 		sp->value, ssp->value);
-	printf("static void I_%s_%s(SS_ID ssId, struct UserVar *pVar)\n{\n",
-		ssp->value, sp->value);
-
-	for ( ep = sp->left; ep != NULL; ep = ep->next )
-	{
-		if ( ep->type == E_ENTRY )
+		if (vp->decl && vp->type->tag != V_NONE)
 		{
-			printf("/* Entry %d: */\n", ++entryI);
-			for (xp = ep->right; xp != NULL; xp = xp->next)
-		        {
-		                 if (line_num != xp->line_num) 
-                                 { 
-                                         print_line_num(xp->line_num, xp->src_file); 
-                                         line_num = xp->line_num; 
-                                 } 
-				 eval_expr(ACTION_STMT, xp, sp, 1);
+			gen_line_marker(vp->decl);
+			indent(level);
+			gen_var_decl(vp);
+
+			/* optional initialisation */
+			if (vp->init)
+			{
+				printf(" = ");
+				gen_expr(C_INIT, vp->init, level);
 			}
+			printf(";\n");
 		}
 	}
-
-	/* end of function */
-	printf("}\n");
-	return;
 }
 
-void gen_exit_func(Expr *sp,Expr *ssp )
-{	
-        Expr	*ep,			/* Entry expression */
-		*xp;			/* statement expression walker */
-	int	exitI =  0, line_num = -1;
-
-	/* Exit function declaration */
-	printf("\n/* Exit function for state \"%s\" in state set \"%s\" */\n",
- 		sp->value, ssp->value);
-	printf("static void O_%s_%s(SS_ID ssId, struct UserVar *pVar)\n{\n",
-		ssp->value, sp->value);
-
-	for ( ep = sp->left; ep != NULL; ep = ep->next )
-	{
-		if ( ep->type == E_EXIT )
-		{
- 			 printf("/* Exit %d: */\n", ++exitI);
-			 for (xp = ep->right; xp != NULL; xp = xp->next)
-			 {
-		                 if (line_num != xp->line_num) 
-                                 { 
-                                         print_line_num(xp->line_num, xp->src_file); 
-                                         line_num = xp->line_num; 
-                                 } 
-				 eval_expr(ACTION_STMT, xp, sp, 1);
-			 }
-		}
-	}
-	/* end of function */
-	printf("}\n");
-	return;
-}
-
-/* Generate a function for each state that sets up delay processing:
- * This function gets called prior to the event function to guarantee
- * that the initial delay value specified in delay() calls are used.
- * Each delay() call is assigned a unique id.  The maximum number of
- * delays is recorded in the state set structure.
- */
-void gen_delay_func(Expr *sp, Expr *ssp)
+static void gen_type_default(Type *type)
 {
-	Expr		*tp;
+	uint n;
 
-	printf("\n/* Delay function for state \"%s\" in state set \"%s\" */\n",
-	 sp->value, ssp->value);
-	printf("static void D_%s_%s(SS_ID ssId, struct UserVar *pVar)\n{\n", ssp->value, sp->value);
-
-	/* For each transition: */
-	for (tp = sp->left; tp != NULL; tp = tp->next)
+	assert(type);
+	switch(type->tag)
 	{
-       		if ( tp->type == E_WHEN )
+	case V_STRING:
+		printf("\"\"");
+		break;
+	case V_ARRAY:
+		printf("{");
+		for (n=0; n<type->val.array.num_elems; n++)
 		{
-		        print_line_num(tp->line_num, tp->src_file);
-		        traverseExprTree(tp, E_FUNC, "delay", eval_delay, sp);
+			gen_type_default(type->val.array.elem_type);
+			if (n+1<type->val.array.num_elems) printf(",");
 		}
+		printf("}");
+		break;
+	default:
+		printf("0");
 	}
+}
+
+void gen_var_init(Var *vp, int level)
+{
+	assert(vp);
+
+	if (vp->init)
+		gen_expr(C_INIT, vp->init, level);
+	else
+		gen_type_default(vp->type);
+}
+
+static void gen_state_func(
+	const char *ss_name,
+	uint ss_num,
+	const char *state_name,
+	Expr *xp,
+	void (*gen_body)(Expr *xp),
+	const char *title,
+	const char *prefix,
+	const char *rettype,
+	const char *extra_args
+)
+{
+	printf("\n/* %s function for state \"%s\" in state set \"%s\" */\n",
+ 		title, state_name, ss_name);
+	printf("static %s %s_%s_%d_%s(SS_ID ssId, struct %s *pVar%s)\n{\n",
+		rettype, prefix, ss_name, ss_num, state_name, VAR_PREFIX, extra_args);
+	gen_body(xp);
 	printf("}\n");
 }
 
-/* Evaluate the expression within a delay() function and generate
- * a call to seq_delayInit().  Adds ssId, delay id parameters and cast to
- * double.
- * Example:  seq_delayInit(ssId, 1, (double)(<some expression>));
- */
-void eval_delay(Expr *ep, Expr *sp)
+static void gen_entry_body(Expr *xp)
 {
-	int		delay_id;
+	Expr	*ep;
 
-#ifdef	DEBUG
-	fprintf(stderr, "eval_delay: type=%s\n", stype[ep->type]);
-#endif	/*DEBUG*/
+	assert(xp->type == D_ENTRY);
+	gen_local_var_decls(xp, 1);
+	gen_defn_c_code(xp, 1);
+	foreach (ep, xp->entry_stmts)
+	{
+		gen_expr(C_ENTRY, ep, 1);
+	}
+}
 
+static void gen_exit_body(Expr *xp)
+{
+	Expr	*ep;
+
+	assert(xp->type == D_EXIT);
+	gen_local_var_decls(xp, 1);
+	gen_defn_c_code(xp, 1);
+	foreach (ep, xp->exit_stmts)
+	{
+		gen_expr(C_ENTRY, ep, 1);
+	}
+}
+
+/* Generate a function for each state that sets up delay processing:
+   This function gets called prior to the event function to guarantee
+   that the initial delay value specified in delay() calls are used.
+   Each delay() call is assigned a (per state) unique id.  The maximum
+   number of delays is recorded in the state set structure. */
+static void gen_delay_body(Expr *xp)
+{
+	Expr	*tp;
+
+	/* for each transition */
+	foreach (tp, xp)
+	{
+		assert(tp->type == D_WHEN);
+		traverse_expr_tree(tp->when_cond, 1<<E_DELAY, 0, 0, gen_delay, 0);
+	}
+}
+
+/* Generate call to seq_delayInit() with extra arguments ssId and delay id,
+   and cast the argument proper to double.
+   Example:  seq_delayInit(ssId, 1, (double)(<some expression>)); */
+static int gen_delay(Expr *ep, Expr *scope, void *parg)
+{
+	assert(ep->type == E_DELAY);
+	gen_line_marker(ep);
 	/* Generate 1-st part of function w/ 1-st 2 parameters */
-	delay_id = (int)ep->right; /* delay id was previously assigned */
-	printf("\tseq_delayInit(ssId, %d, (", delay_id);
-
-	/* Evaluate & generate the 3-rd parameter (an expression) */
-	eval_expr(EVENT_STMT, ep->left, sp, 0);
-
+	indent(1); printf("seq_delayInit(ssId, %d, (", ep->extra.e_delay);
+	/* generate the 3-rd parameter (an expression) */
+	gen_expr(C_COND, ep->delay_args, 0);
 	/* Complete the function call */
 	printf("));\n");
+	return FALSE;	/* no sense descending into children, as delay cannot be nested */
 }
 
-
-
-/* Generate action processing functions:
+/* Generate action processing functions:
    Each state has one action routine.  It's name is derived from the
-   state set name and the state name.
-*/
-void gen_action_func(Expr *sp, Expr *ssp)
+   state set name and the state name. */
+static void gen_action_body(Expr *xp)
 {
 	Expr		*tp;
-	Expr		*ap;
 	int		trans_num;
-	extern int	line_num;
-
-	/* Action function declaration */
-	printf("\n/* Action function for state \"%s\" in state set \"%s\" */\n",
-	 sp->value, ssp->value);
-	printf("static void A_%s_%s(SS_ID ssId, struct UserVar *pVar, short transNum)\n{\n",
-	 ssp->value, sp->value);
+	const int	level = 1;
 
 	/* "switch" statment based on the transition number */
-	printf("\tswitch(transNum)\n\t{\n");
+	indent(level); printf("switch(transNum)\n");
+	indent(level); printf("{\n");
 	trans_num = 0;
-	line_num = 0;
+
 	/* For each transition ("when" statement) ... */
-	for (tp = sp->left; tp != NULL; tp = tp->next)
+	foreach (tp, xp)
 	{
-		/* local declarations are handled as text */
-		if (tp->type == E_TEXT)
+		Expr *ap;
+
+		assert(tp->type == D_WHEN);
+		/* one case for each transition */
+		indent(level); printf("case %d:\n", trans_num);
+
+		/* block within case permits local variables */
+		indent(level+1); printf("{\n");
+		/* for each definition insert corresponding code */
+		gen_local_var_decls(tp, level+2);
+		gen_defn_c_code(tp, level+2);
+		if (tp->when_defns)
+			printf("\n");
+		/* for each action statement insert action code */
+		foreach (ap, tp->when_stmts)
 		{
-			printf("\t\t%s\n", tp->left);
+			gen_expr(C_TRANS, ap, level+2);
 		}
+		/* end of block */
+		indent(level+1); printf("}\n");
 
-	        else if (tp->type == E_WHEN) 
-		{
-		         /* "case" for each transition */ 
-		         printf("\tcase %d:\n", trans_num); 
-
-			 /* block within case permits local variables */
-		         printf("\t\t{\n"); 
-
-		         /* For each action statement insert action code */
-		         for (ap = tp->right; ap != NULL; ap = ap->next) 
-                         { 
-		                 if (line_num != ap->line_num) 
-                                 { 
-                                         print_line_num(ap->line_num, ap->src_file); 
-                                         line_num = ap->line_num; 
-                                 } 
-                                 /* Evaluate statements */ 
-                                 eval_expr(ACTION_STMT, ap, sp, 3); 
-			 } 
-
-			 /* end of block */
-		         printf("\t\t}\n"); 
-
-                         /* end of case */ 
-                         printf("\t\treturn;\n"); 
-                         trans_num++;
-		}
+		/* end of case */
+		indent(level+1); printf("return;\n");
+		trans_num++;
 	}
 	/* end of switch stmt */
-	printf("\t}\n");
-	/* end of function */
-	printf("}\n");
-	return;
+	indent(level); printf("}\n");
 }
 
 /* Generate a C function that checks events for a particular state */
-void gen_event_func(Expr *sp, Expr *ssp)
+static void gen_event_body(Expr *xp)
 {
 	Expr		*tp;
-	int		index, trans_num;
+	int		trans_num;
+	const int	level = 1;
 
-	printf("\n/* Event function for state \"%s\" in state set \"%s\" */\n",
-	 sp->value, ssp->value);
-	printf("static long E_%s_%s(SS_ID ssId, struct UserVar *pVar, short *pTransNum, short *pNextState)\n{\n",
-	 ssp->value, sp->value);
 	trans_num = 0;
 	/* For each transition generate an "if" statement ... */
-	for (tp = sp->left; tp != NULL; tp = tp->next)
+	foreach (tp, xp)
 	{
-	        if (tp->type == E_WHEN) 
+		Expr *next_sp;
+
+		assert(tp->type == D_WHEN);
+		if (tp->when_cond != 0)
+			gen_line_marker(tp->when_cond);
+		indent(level); printf("if (");
+		if (tp->when_cond == 0)
+			printf("TRUE");
+		else
+			gen_expr(C_COND, tp->when_cond, 0);
+		printf(")\n");
+		indent(level); printf("{\n");
+
+		next_sp = tp->extra.e_when->next_state;
+		if (!next_sp)
 		{
-		        print_line_num(tp->line_num, tp->src_file);
-			printf("\tif (");
-			if (tp->left == 0)
-			      printf("TRUE");
-			else
-			      eval_expr(EVENT_STMT, tp->left, sp, 0);
-			printf(")\n\t{\n");
-			/* index is the transition number (0, 1, ...) */
-			index = state_block_index_from_name(ssp, tp->value);
-			if (index < 0)
-			{
-			       fprintf(stderr, "Line %d: ", tp->line_num);
-			       fprintf(stderr, "No state %s in state set %s\n",
-				       tp->value, ssp->value);
-			       index = 0; /* default to 1-st state */
-			       printf("\t\t/* state %s does not exist */\n",
-				      tp->value);
-			}
-			printf("\t\t*pNextState = %d;\n", index);
-			printf("\t\t*pTransNum = %d;\n", trans_num);
-			printf("\t\treturn TRUE;\n\t}\n");
-			trans_num++;
+			/* "when(...) {...} exit" -> exit from program */
+			indent(level+1);
+			printf("seq_exit(ssId);\n");
 		}
+		else
+		{
+			indent(level+1);
+			printf("*pNextState = %d;\n", next_sp->extra.e_state->index);
+		}
+		indent(level+1);printf("*pTransNum = %d;\n", trans_num);
+		indent(level+1); printf("return TRUE;\n");
+		indent(level); printf("}\n");
+		trans_num++;
 	}
-	printf("\treturn FALSE;\n");
-	printf("}\n");
+	indent(level); printf("return FALSE;\n");
 }
 
-/* Given a state name and state set struct, find the corresponding
-   state struct and return its index (1-st one is 0) */
-int state_block_index_from_name(Expr *ssp,char *state_name)
+static void gen_var_access(Var *vp)
 {
-	Expr		*sp;
-	int		index;
+	const char *pre = global_opt_reent ? "pVar->" : "";
 
-	index = 0;
-	for (sp = ssp->left; sp != NULL; sp = sp->next)
+	assert(vp);
+	assert(vp->scope);
+
+#ifdef DEBUG
+	report("var_access: %s, scope=(%s,%s)\n",
+		vp->name, expr_type_name(vp->scope), vp->scope->value);
+#endif
+	assert((1<<vp->scope->type) & scope_mask);
+
+	if (vp->type->tag == V_EVFLAG)
 	{
-		if (strcmp(state_name, sp->value) == 0)
-			return index;
-		index++;
+		printf("%d/*%s*/", vp->chan.evflag->index, vp->name);
 	}
-	return -1; /* State name non-existant */
+	else if (vp->type->tag == V_NONE)
+	{
+		printf("%s", vp->name);
+	}
+	else if (vp->scope->type == D_PROG)
+	{
+		printf("%s%s", pre, vp->name);
+	}
+	else if (vp->scope->type == D_SS)
+	{
+		printf("%s%s_%s.%s", pre, VAR_PREFIX, vp->scope->value, vp->name);
+	}
+	else if (vp->scope->type == D_STATE)
+	{
+		printf("%s%s_%s.%s_%s.%s", pre, VAR_PREFIX,
+			vp->scope->extra.e_state->var_list->parent_scope->value,
+			VAR_PREFIX, vp->scope->value, vp->name);
+	}
+	else	/* compound or when stmt => generate a local C variable */
+	{
+		printf("%s", vp->name);
+	}
 }
-/* Evaluate an expression.
-*/
-void eval_expr(int stmt_type, Expr *ep, Expr *sp, int level)
-/*
-    stmt_type - EVENT_STMT, ACTION_STMT, or DELAY_STMT
-    ep 	  - ptr to expression
-    sp 	  - ptr to current State struct
-    level 	  - indentation level
-*/
+
+/* Recursively generate code for an expression (tree) */
+static void gen_expr(
+	int context,
+	Expr *ep,		/* expression to generate code for */
+	int level		/* indentation level */
+)
 {
-	Expr		*epf;
-	int		nexprs;
-	extern int	reent_opt;
-	extern int	line_num;
+	Expr	*cep;		/* child expression */
 
 	if (ep == 0)
 		return;
 
+#ifdef	DEBUG
+	report("gen_expr(%s,%s)\n", expr_type_name(ep), ep->value);
+#endif
+
 	switch(ep->type)
 	{
-	case E_DECL:
-		indent(level);
-		printf("%s ",ep->value);
-		eval_expr(stmt_type, ep->left, sp, 0);
-		if (ep->right != 0)
-		{
-			printf(" = ");
-			eval_expr(stmt_type, ep->right, sp, 0);
-		}
-		printf(";\n");
-		line_num += 1;
-		break;
-	case E_CMPND:
+	/* Statements */
+	case S_CMPND:
 		indent(level);
 		printf("{\n");
-		line_num += 1;
-		for (epf = ep->left; epf != 0;	epf = epf->next)
+		gen_local_var_decls(ep, level+1);
+		gen_defn_c_code(ep, level+1);
+		foreach (cep, ep->cmpnd_stmts)
 		{
-			eval_expr(stmt_type, epf, sp, level+1);
+			gen_expr(context, cep, level+1);
 		}
 		indent(level);
 		printf("}\n");
-		line_num += 1;
 		break;
-	case E_STMT:
+	case S_STMT:
+		gen_line_marker(ep);
 		indent(level);
-		eval_expr(stmt_type, ep->left, sp, 0);
+		gen_expr(context, ep->stmt_expr, 0);
 		printf(";\n");
-		line_num += 1;
 		break;
-	case E_IF:
-	case E_WHILE:
+	case S_IF:
+		gen_line_marker(ep);
 		indent(level);
-		if (ep->type == E_IF)
-			printf("if (");
-		else
-			printf("while (");
-		eval_expr(stmt_type, ep->left, sp, 0);
+		printf("if (");
+		gen_expr(context, ep->if_cond, 0);
 		printf(")\n");
-		line_num += 1;
-		epf = ep->right;
-		if (epf->type == E_CMPND)
-			eval_expr(stmt_type, ep->right, sp, level);
-		else
-			eval_expr(stmt_type, ep->right, sp, level+1);
+		cep = ep->if_then;
+		gen_expr(context, cep, cep->type == S_CMPND ? level : level+1);
+		if (ep->if_else != 0)
+		{
+			indent(level);
+			printf("else\n");
+			cep = ep->if_else;
+			gen_expr(context, cep, cep->type == S_CMPND ? level : level+1);
+		}
 		break;
-	case E_FOR:
+	case S_WHILE:
+		gen_line_marker(ep);
+		indent(level);
+		printf("while (");
+		gen_expr(context, ep->while_cond, 0);
+		printf(")\n");
+		cep = ep->while_stmt;
+		gen_expr(context, cep, cep->type == S_CMPND ? level : level+1);
+		break;
+	case S_FOR:
+		gen_line_marker(ep);
 		indent(level);
 		printf("for (");
-		eval_expr(stmt_type, ep->left->left, sp, 0);
+		gen_expr(context, ep->for_init, 0);
 		printf("; ");
-		eval_expr(stmt_type, ep->left->right, sp, 0);
+		gen_expr(context, ep->for_cond, 0);
 		printf("; ");
-		eval_expr(stmt_type, ep->right->left, sp, 0);
+		gen_expr(context, ep->for_iter, 0);
 		printf(")\n");
-		line_num += 1;
-		epf = ep->right->right;
-		if (epf->type == E_CMPND)
-			eval_expr(stmt_type, epf, sp, level);
-		else
-			eval_expr(stmt_type, epf, sp, level+1);
+		cep = ep->for_stmt;
+		gen_expr(context, cep, cep->type == S_CMPND ? level : level+1);
 		break;
-	case E_ELSE:
+	case S_JUMP:
 		indent(level);
-		printf("else\n");
-		line_num += 1;
-		epf = ep->left;
-		/* Is it "else if" ? */
-		if (epf->type == E_IF || epf->type == E_CMPND)
-			eval_expr(stmt_type, ep->left, sp, level);
-		else
-			eval_expr(stmt_type, ep->left, sp, level+1);
+		printf("%s;\n", ep->value);
 		break;
-	case E_VAR:
-#ifdef	DEBUG
-		fprintf(stderr, "E_VAR: %s\n", ep->value);
-		fprintf(stderr, "ep->left is %s\n",ep->left ? "non-null" : "null");
-#endif	/*DEBUG*/
-		if(reent_opt)
-		{	/* Make variables point to allocated structure */
-			Var		*vp;
-			vp = (Var *)ep->left;
-			if (vp->type != V_NONE && vp->type != V_EVFLAG)
-				printf("(pVar->%s)", ep->value);
-			else
-				printf("%s", ep->value);
+	case S_CHANGE:
+		if (context != C_TRANS)
+		{
+			error_at_expr(ep, "state change statement not allowed here\n");
+			break;
 		}
-		else
-			printf("%s", ep->value);
+		indent(level);
+		printf("{*pNextState = %d; return;}\n", ep->extra.e_change->extra.e_state->index);
+		break;
+	/* Expressions */
+	case E_VAR:
+		gen_var_access(ep->extra.e_var);
+		break;
+	case E_SUBSCR:
+		gen_expr(context, ep->subscr_operand, 0);
+		printf("[");
+		gen_expr(context, ep->subscr_index, 0);
+		printf("]");
 		break;
 	case E_CONST:
+		if (gen_builtin_const(ep))
+			break;
 		printf("%s", ep->value);
 		break;
 	case E_STRING:
 		printf("\"%s\"", ep->value);
 		break;
-	case E_BREAK:
-		indent(level);
-		printf("break;\n");
-		line_num += 1;
-		break;
+	case E_DELAY:
 	case E_FUNC:
-#ifdef	DEBUG
-		fprintf(stderr, "E_FUNC: %s\n", ep->value);
-#endif	/*DEBUG*/
-		if (special_func(stmt_type, ep, sp))
+		if (gen_builtin_func(context, ep))
 			break;
 		printf("%s(", ep->value);
-		eval_expr(stmt_type, ep->left, sp, 0);
+		foreach (cep, ep->func_args)
+		{
+			gen_expr(context, cep, 0);
+			if (cep->next)
+				printf(", ");
+		}
 		printf(")");
 		break;
-	case E_COMMA:
-		for (epf = ep->left, nexprs = 0; epf != 0; epf = epf->next, nexprs++)
+	case E_INIT:
+		printf("{");
+		foreach (cep, ep->init_elems)
 		{
-			if (nexprs > 0)
+			gen_expr(context, cep, 0);
+			if (cep->next)
 				printf(", ");
-			eval_expr(stmt_type, epf, sp, 0);
 		}
+		printf("}");
 		break;
-	case E_ASGNOP:
+	case E_TERNOP:
+		gen_expr(context, ep->ternop_cond, 0);
+		printf(" ? ");
+		gen_expr(context, ep->ternop_then, 0);
+		printf(" : ");
+		gen_expr(context, ep->ternop_else, 0);
+		break;
 	case E_BINOP:
-		eval_expr(stmt_type, ep->left, sp, 0);
+		gen_expr(context, ep->binop_left, 0);
 		printf(" %s ", ep->value);
-		eval_expr(stmt_type, ep->right, sp, 0);
+		gen_expr(context, ep->binop_right, 0);
 		break;
 	case E_PAREN:
 		printf("(");
-		eval_expr(stmt_type, ep->left, sp, 0);
+		gen_expr(context, ep->paren_expr, 0);
 		printf(")");
-		break;
-	case E_UNOP:
-		printf("%s", ep->value);
-		eval_expr(stmt_type, ep->left, sp, 0);
 		break;
 	case E_PRE:
 		printf("%s", ep->value);
-		eval_expr(stmt_type, ep->left, sp, 0);
+		gen_expr(context, ep->pre_operand, 0);
 		break;
 	case E_POST:
-		eval_expr(stmt_type, ep->left, sp, 0);
+		gen_expr(context, ep->post_operand, 0);
 		printf("%s", ep->value);
 		break;
-	case E_SUBSCR:
-		eval_expr(stmt_type, ep->left, sp, 0);
-		printf("[");
-		eval_expr(stmt_type, ep->right, sp, 0);
-		printf("]");
-		break;
-	case E_TEXT:
-		printf("%s\n", ep->left);
-		line_num += 1;
+	/* C-code can be either definition, statement, or expression */
+	case T_TEXT:
+		indent(level);
+		printf("%s\n", ep->value);
 		break;
 	default:
-		if (stmt_type == EVENT_STMT)
-			printf("TRUE"); /* empty event statement defaults to TRUE */
-		else
-			printf(" ");
-		break;
+		assert(impossible);
+#ifdef DEBUG
+		report_at_expr(ep, "unhandled expression (%s:%s)\n",
+			expr_type_name(ep), ep->value);
+#endif
 	}
 }
 
-void indent(int level)
+static int gen_builtin_const(Expr *ep)
 {
-	while (level-- > 0)
-		printf("\t");
-}
-
+	char	*const_name = ep->value;
+	struct const_symbol *sym = lookup_builtin_const(global_sym_table, const_name);
 
-enum fcode func_name_to_code(fname)
-char	*fname;
-{
-	int		i;
-
-	for (i = 0; fcode_str[i] != NULL; i++)
-	{
-		if (strcmp(fname, fcode_str[i]) == 0)
-			return (enum fcode)i;
-	}
-			
-	return F_NONE;
+	if (sym == NULL)
+		return CT_NONE;
+	printf("%s", const_name);
+	return sym->type;
 }
 
-/* Process special function (returns TRUE if this is a special function)
-	Checks for one of the following special functions:
-	 - event flag functions, e.g. pvSet()
-	 - process variable functions, e.g. pvPut()
-	 - delay()
-	 - macValueGet()
-	 - seqLog()
-*/
-int special_func(int stmt_type,Expr *ep,Expr *sp)
-/*
-    int		stmt_type;	 ACTION_STMT or EVENT_STMT
-    Expr	*ep;		 ptr to function in the expression
-    Expr	*sp;		 current State struct
-*/
+/* Generate builtin function call */
+static int gen_builtin_func(int context, Expr *ep)
 {
-	char		*fname; /* function name */
-	Expr		*ep1; /* parameters */
-	enum		fcode func_code;
-	int		delay_id;
+	char	*func_name = ep->value;	/* function name */
+	Expr	*ap;			/* argument expr */
+	struct func_symbol *sym = lookup_builtin_func(global_sym_table, func_name);
 
-	fname = ep->value;
-	func_code = func_name_to_code(fname);
-	if (func_code == F_NONE)
-		return FALSE; /* not a special function */
+	if (sym == NULL)
+		return FALSE;	/* not a special function */
 
 #ifdef	DEBUG
-	fprintf(stderr, "special_func: func_code=%d\n", func_code);
-#endif	/*DEBUG*/
-	switch (func_code)
+	report("gen_builtin_func: name=%s, type=%u, add_length=%u, "
+		"default_args=%u, ef_action_only=%u, ef_args=%u\n",
+		func_name, sym->type, sym->add_length, sym->default_args,
+		sym->ef_action_only, sym->ef_args);
+#endif
+	/* All builtin functions require ssId as 1st parameter */
+	printf("seq_%s(ssId", func_name);
+	switch (sym->type)
 	{
-	    case F_DELAY:
-		delay_id = (int)ep->right;
-		printf("seq_delay(ssId, %d)", delay_id);
-		return TRUE;
-
-	    case F_EFSET:
-	    case F_EFTEST:
-	    case F_EFCLEAR:
-	    case F_EFTESTANDCLEAR:
-		/* Event flag funtions */
-		gen_ef_func(stmt_type, ep, sp, fname, func_code);
-		return TRUE;
-
-	    case F_PVGETQ:
-	    case F_PVFREEQ:
-	    case F_PVTIMESTAMP:
-	    case F_PVGETCOMPLETE:
-	    case F_PVNAME:
-	    case F_PVSTATUS:
-	    case F_PVSEVERITY:
-	    case F_PVMESSAGE:
-	    case F_PVCONNECTED:
-	    case F_PVASSIGNED:
-	    case F_PVMONITOR:
-	    case F_PVSTOPMONITOR:
-	    case F_PVCOUNT:
-	    case F_PVINDEX:
-	    case F_PVDISCONNECT:
-	    case F_PVASSIGN:
-		/* DB functions requiring a channel id */
-		gen_pv_func(stmt_type, ep, sp, fname, func_code, FALSE, 0);
-		return TRUE;
-
-	    case F_PVPUT:
-	    case F_PVGET:
-		/* DB functions requiring a channel id and defaulted
-		   last 1 parameter */
-		gen_pv_func(stmt_type, ep, sp, fname, func_code, FALSE, 1);
-		return TRUE;
-
-	    case F_PVPUTCOMPLETE:
-		/* DB functions requiring a channel id, an array length and
-		   defaulted last 2 parameters */
-		gen_pv_func(stmt_type, ep, sp, fname, func_code, TRUE, 2);
-		return TRUE;
-
-	    case F_PVFLUSH:
-	    case F_PVERROR:
-	    case F_PVCHANNELCOUNT:
-	    case F_PVCONNECTCOUNT:
-	    case F_PVASSIGNCOUNT:
-		/* DB functions NOT requiring a channel structure */
-		printf("seq_%s(ssId)", fname);
-		return TRUE;
-
-	    case F_SEQLOG:
-	    case F_MACVALUEGET:
-	    case F_OPTGET:
-		/* Any funtion that requires adding ssID as 1st parameter.
-		 * Note:  name is changed by prepending "seq_". */
-		printf("seq_%s(ssId", fname);
-		/* now fill in user-supplied paramters */
-		ep1 = ep->left;
-		if (ep1 != 0 && ep1->type == E_COMMA)
-			ep1 = ep1->left;
-		for (; ep1 != 0; ep1 = ep1->next)
+	case FT_DELAY:
+		printf(", %d)", ep->extra.e_delay);
+		break;
+	case FT_EVENT:
+		/* Event flag functions */
+		gen_ef_func(context, ep, func_name, sym->ef_action_only);
+		break;
+	case FT_PV:
+		gen_pv_func(context, ep, func_name, sym->add_length,
+			sym->default_args, sym->ef_args);
+		break;
+	case FT_OTHER:
+		/* just fill in user-supplied parameters */
+		foreach (ap, ep->func_args)
 		{
 			printf(", ");
-			eval_expr(stmt_type, ep1, sp, 0);
+			gen_expr(context, ap, 0);
 		}
 		printf(")");
-		return TRUE;
-
-	    default:
-		/* Not a special function */
-		return FALSE;
+		break;
+	default:
+		assert(impossible);
 	}
+	return TRUE;
+}
+
+/* Check an event flag argument */
+static void gen_ef_arg(
+	const char	*func_name,	/* function name */
+	Expr		*ap,		/* argument expression */
+	int		index		/* argument index */
+)
+{
+	Var	*vp;
+
+	assert(ap);
+	if (ap->type != E_VAR)
+	{
+		error_at_expr(ap,
+		  "argument %d to built-in function %s must be an event flag\n",
+		  index, func_name);
+		return;
+	}
+	vp = ap->extra.e_var;
+	assert(vp->type);
+	if (vp->type->tag != V_EVFLAG)
+	{
+		error_at_expr(ap,
+		  "argument to built-in function %s must be an event flag\n", func_name);
+		return;
+	}
+	gen_var_access(vp);
 }
 
 /* Generate code for all event flag functions */
-void gen_ef_func(int stmt_type,Expr *ep,Expr *sp,char *fname,enum fcode func_code)
-/*
-    int		stmt_type;	 ACTION_STMT or EVENT_STMT 
-    Expr	*ep;		 ptr to function in the expression 
-    Expr	*sp;		 current State struct 
-    char	*fname;		 function name 
-    enum	fcode func_code; function code 
-*/
+static void gen_ef_func(
+	int		context,
+	Expr		*ep,		/* function call expression */
+	const char	*func_name,	/* function name */
+	uint		action_only	/* not allowed in cond */
+)
 {
-	Expr		*ep1;
-	Var		*vp;
+	Expr	*ap;			/* argument expression */
 
-	ep1 = ep->left; /* ptr to 1-st parameters */
-	if (ep1 != 0 && ep1->type == E_COMMA)
-		ep1 = ep1->left;
-	if ( (ep1 != 0) && (ep1->type == E_VAR) )
-		vp = (Var *)findVar(ep1->value);
-	else
-		vp = 0;
-		if (vp == 0 || vp->type != V_EVFLAG)
-	{
-		fprintf(stderr, "Line %d: ", ep->line_num);
-		fprintf(stderr,
-		 "Parameter to \"%s\" must be an event flag\n", fname);
-	}
-	else if (func_code == F_EFSET && stmt_type == EVENT_STMT)
-	{
-		fprintf(stderr, "Line %d: ", ep->line_num);
-		fprintf(stderr,
-		 "efSet() cannot be used as an event.\n");
-	}
-	else
-	{
-		printf("seq_%s(ssId, %s)", fname, vp->name);
-	}
+	ap = ep->func_args;
 
-	return;
+	if (action_only && context == C_COND)
+	{
+		error_at_expr(ep,
+		  "calling %s is not allowed inside a when condition\n", func_name);
+		return;
+	}
+	if (!ap)
+	{
+		error_at_expr(ep,
+		  "built-in function %s requires an argument\n", func_name);
+		return;
+	}
+	printf(", ");
+	gen_ef_arg(func_name, ap, 1);
+	printf(")");
 }
-
-/* Generate code for pv functions requiring a database variable.
- * The channel id (index into channel array) is substituted for the variable
- *
- * "add_length" => the array length (1 if not an array) follows the channel id 
- * "num_params > 0" => add default (zero) parameters up to the spec. number
- */
-void gen_pv_func(int stmt_type,Expr *ep,Expr *sp,
-    char *fname,enum fcode func_code,int add_length,int num_params)
-/*
-    int		stmt_type;	 ACTION_STMT or EVENT_STMT 
-    Expr	*ep;		 ptr to function in the expression 
-    Expr	*sp;		 current State struct 
-    char	*fname;		 function name 
-    enum	fcode func_code; function code 
-    int		add_length;	 add array length after channel id 
-    int		num_params;	 number of params to add (if omitted) 
-*/
-{
-	Expr		*ep1, *ep2, *ep3;
-	Var		*vp;
-	char		*vn;
-	int		id;
-	Chan		*cp;
-	int		num;
 
-	ep1 = ep->left; /* ptr to 1-st parameter in the function */
-	if (ep1 != 0 && ep1->type == E_COMMA)
-		ep1 = ep1->left;
-	if (ep1 == 0)
+/* Generate code for pv functions requiring a database variable.
+   The channel id (index into channel array) is substituted for the variable.
+   "add_length" => the array length (1 if not an array) follows the channel id 
+   "num_params > 0" => add default (zero) parameters up to the spec. number */
+static void gen_pv_func(
+	int		context,
+	Expr		*ep,		/* function call expression */
+	const char	*func_name,	/* function name */
+	uint		add_length,	/* add array length after channel id */
+	uint		num_params,	/* number of params to add (if omitted) */
+	uint		ef_args		/* extra args are event flags */
+)
+{
+	Expr	*ap, *subscr = 0;
+	Var	*vp = NULL;
+	uint	num_extra_parms = 0;
+
+	ap = ep->func_args;
+	/* first parameter is always */
+	if (ap == 0)
 	{
-		fprintf(stderr, "Line %d: ", ep->line_num);
-		fprintf(stderr,
-		 "Function \"%s\" requires a parameter.\n", fname);
+		error_at_expr(ep,
+			"function '%s' requires a parameter\n", func_name);
 		return;
 	}
 
-	vp = 0;
-	vn = "?";
-	id = -1;
-	if (ep1->type == E_VAR)
+	if (ap->type == E_VAR)
 	{
-		vp = (Var *)findVar(ep1->value);
+		vp = ap->extra.e_var;
 	}
-	else if (ep1->type == E_SUBSCR)
-	{	/* Form should be: <db variable>[<expression>] */
-		ep2 = ep1->left;	/* variable */
-		ep3 = ep1->right;	/* subscript */
-		if ( ep2->type == E_VAR )
+	else if (ap->type == E_SUBSCR)
+	{
+		/* Form should be: <pv variable>[<expression>] */
+		Expr *operand = ap->subscr_operand;
+		subscr = ap->subscr_index;
+		if (operand->type == E_VAR)
 		{
-			vp = (Var *)findVar(ep2->value);
+			vp = operand->extra.e_var;
 		}
 	}
-
 	if (vp == 0)
 	{
-		fprintf(stderr, "Line %d: ", ep->line_num);
-		fprintf(stderr,
-		 "Parameter to \"%s\" is not a defined variable.\n", fname);
-		cp=0;
+		error_at_expr(ep,
+		  "parameter 1 to '%s' must be a variable or subscripted variable\n",
+		  func_name);
+		return;
 	}
-		
+
+#ifdef	DEBUG
+	report("gen_pv_func: fun=%s, var=%s\n", ep->value, vp->name);
+#endif
+	printf(", ");
+	if (vp->assign == M_NONE)
+	{
+		error_at_expr(ep,
+			"parameter 1 to '%s' was not assigned to a pv\n", func_name);
+		printf("?/*%s*/", vp->name);
+	}
+	else if (ap->type == E_SUBSCR && vp->assign != M_MULTI)
+	{
+		error_at_expr(ep,
+			"parameter 1 to '%s' is subscripted but the variable "
+			"it refers to has not been assigned to multiple pvs\n", func_name);
+		printf("%d/*%s*/", vp->index, vp->name);
+	}
 	else
 	{
-#ifdef	DEBUG
-		fprintf(stderr, "gen_pv_func: var=%s\n", ep1->value);
-#endif	/*DEBUG*/
-		vn = vp->name;
-		cp = vp->chan;
-		if (cp == 0)
-		{
-			fprintf(stderr, "Line %d: ", ep->line_num);
-			fprintf(stderr,
-			 "Parameter to \"%s\" must be DB variable.\n", fname);
-		}
-		else
-		{
-			id = cp->index;
-		}
+		printf("%d/*%s*/", vp->index, vp->name);
 	}
 
-	printf("seq_%s(ssId, %d /* %s */", fname, id, vn);
-
-	if (ep1->type == E_SUBSCR) /* subscripted variable? */
-	{	/* e.g. pvPut(xyz[i+2]); => seq_pvPut(ssId, 3 + (i+2)); */
-		printf(" + (");
-		/* evalute the subscript expression */
-		eval_expr(stmt_type, ep3, sp, 0);
+	if (ap->type == E_SUBSCR)
+	{
+		/* e.g. pvPut(xyz[i+2]); => seq_pvPut(ssId, 3 + (i+2)); */
+		printf(" + (VAR_ID)(");
+		/* generate the subscript expression */
+		gen_expr(context, subscr, 0);
 		printf(")");
 	}
 
@@ -842,9 +778,9 @@ void gen_pv_func(int stmt_type,Expr *ep,Expr *sp,
 	   length is always 1) */
 	if (add_length)
 	{
-		if (vp != 0 && ep1->type != E_SUBSCR)
+		if (ap->type != E_SUBSCR)
 		{
-			printf(", %d", vp->length1);
+			printf(", %d", type_array_length1(vp->type));
 		}
 		else
 		{
@@ -853,70 +789,146 @@ void gen_pv_func(int stmt_type,Expr *ep,Expr *sp,
 	}
 
 	/* Add any additional parameter(s) */
-	num = 0;
-	ep1 = ep1->next;
-	while (ep1 != 0)
+	foreach (ap, ap->next)
 	{
-		Expr *ep;
-
+		num_extra_parms++;
 		printf(", ");
-		eval_expr(stmt_type, ep1, sp, 0);
-
-		/* Count parameters (makes use of knowledge that parameter
-		   list will be tree with nodes of type E_COMMA, arguments
-		   in "left" and next E_COMMA in "left->next") */
-		ep = ep1;
-		while (ep->type == E_COMMA)
+		if (ef_args)
 		{
-			num++;
-			ep = ep->left->next;
+			/* special case: constant NOEVFLAG */
+			if (ap->type == E_CONST)
+			{
+				if (gen_builtin_const(ap)!=CT_EVFLAG)
+					error_at_expr(ap,
+					  "argument %d to built-in function %s must be an event flag\n",
+					  num_extra_parms+1, func_name);
+			}
+			else
+				gen_ef_arg(func_name, ap, num_extra_parms+1);
 		}
-		num++;
-
-		/* Advance to next parameter (always zero? multiple parameters
-		   are always handled as compound expressions?) */
-		ep1 = ep1->next;
+		else
+		{
+			gen_expr(context, ap, 0);
+		}
 	}
 
 	/* If not enough additional parameter(s) were specified, add
 	   extra zero parameters */
-	for (; num < num_params; num++)
+	while (num_extra_parms < num_params)
 	{
 		printf(", 0");
+		num_extra_parms++;
 	}
 
 	/* Close the parameter list */
 	printf(")");
-
-	return;
+#ifdef	DEBUG
+	report("gen_pv_func: done (fun=%s, var=%s)\n", ep->value, vp->name);
+#endif
 }
 
-/* Generate entry handler code */
-void gen_entry_handler()
+/* Generate initializer for the UserVar structs. */
+void gen_ss_user_var_init(Expr *ssp, int level)
 {
-	extern Expr	*entry_code_list;
-	Expr		*ep;
+	Var *vp;
+	Expr *sp;
 
-	printf("\n/* Entry handler */\n");
-	printf("static void entry_handler(SS_ID ssId, struct UserVar *pVar)\n{\n");
-	for (ep = entry_code_list; ep != 0; ep = ep->next)
+	assert(ssp->type == D_SS);
+	printf("{\n");
+	foreach(vp, ssp->extra.e_ss->var_list->first)
 	{
-		eval_expr(ENTRY_STMT, ep, (Expr *)NULL, 1);
+		if (vp->init) gen_line_marker(vp->init);
+		indent(level+1); gen_var_init(vp, level+1); printf(",\n");
 	}
-	printf("}\n\n");
+	foreach (sp, ssp->ss_states)
+	{
+		int s_empty;
+
+		assert(sp->type == D_STATE);
+		s_empty = !sp->extra.e_state->var_list->first;
+		if (!s_empty)
+		{
+			indent(level+1); printf("{\n");
+			foreach (vp, sp->extra.e_state->var_list->first)
+			{
+				if (vp->init) gen_line_marker(vp->init);
+				indent(level+2); gen_var_init(vp, level+2);
+				printf("%s\n", vp->next ? "," : "");
+			}
+			indent(level+1);
+			printf("}%s\n", sp->next ? "," : "");
+		}
+	}
+	indent(level); printf("}");
 }
 
-/* Generate exit handler code */
-void gen_exit_handler()
+/* Generate initializer for the UserVar structs. */
+static void gen_user_var_init(Expr *prog, int level)
 {
-	extern Expr	*exit_code_list;
-	Expr		*ep;
+	Var *vp;
+	Expr *ssp;
 
-	printf("\n/* Exit handler */\n");
-	printf("static void exit_handler(SS_ID ssId, struct UserVar *pVar)\n{\n");
-	for (ep = exit_code_list; ep != 0; ep = ep->next)
+	assert(prog->type == D_PROG);
+	printf("{\n");
+	/* global variables */
+	foreach(vp, prog->extra.e_prog->first)
 	{
-		eval_expr(EXIT_STMT, ep, (Expr *)NULL, 1);
+		if (vp->type->tag >= V_CHAR)
+		{
+			if (vp->init) gen_line_marker(vp->init);
+			indent(level+1); gen_var_init(vp, level+1); printf(",\n");
+		}
 	}
-	printf("}\n\n");
+
+	foreach (ssp, prog->prog_statesets)
+	{
+		Expr *sp;
+		int ss_empty = !ssp->extra.e_ss->var_list->first;
+		if (ss_empty)
+		{
+			foreach (sp, ssp->ss_states)
+			{
+				if (sp->extra.e_state->var_list->first)
+				{
+					ss_empty = 0;
+					break;
+				}
+			}
+		}
+		if (!ss_empty)
+		{
+			indent(level+1);
+			gen_ss_user_var_init(ssp, level+1);
+			printf("%s\n", ssp->next ? "," : "");
+		}
+	}
+	indent(level); printf("}");
+}
+
+static void gen_prog_init_func(Expr *prog, int opt_reent)
+{
+	assert(prog->type == D_PROG);
+	printf("\n/* Program init func */\n");
+	printf("static void G_prog_init(struct %s *pVar)\n{\n", VAR_PREFIX);
+	if (opt_reent)
+	{
+		indent(1); printf("static struct %s pVarInit = ", VAR_PREFIX);
+		gen_user_var_init(prog, 1); printf(";\n");
+		indent(1); printf("*pVar = pVarInit;\n");
+	}
+	printf("}\n");
+}
+
+static void gen_prog_func(
+	Expr *prog,
+	const char *name,
+	Expr *xp,
+	void (*gen_body)(Expr *xp))
+{
+	assert(prog->type == D_PROG);
+	printf("\n/* Program %s func */\n", name);
+	printf("static void G_prog_%s(SS_ID ssId, struct %s *pVar)\n{\n",
+		name, VAR_PREFIX);
+	if (xp && gen_body) gen_body(xp);
+	printf("}\n");
 }

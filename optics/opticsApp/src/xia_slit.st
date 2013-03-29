@@ -343,7 +343,8 @@ PV(string, errMsg, "{P}{HSC}errMsg", NoMon);
 char    myChar;
 char*   SNLtaskName;
 double  dScratch;
-long    numWords;
+/*long    numWords;*/
+int    numWords;
 string  word1;
 string  word2;
 string  word3; 
@@ -354,14 +355,22 @@ int     hCSW;
 int     vCSW;
 int     h_isMoving;
 int     v_isMoving;
-long    pos_a;
-long    pos_b;
+/*long    pos_a;*/
+/*long    pos_b;*/
+int    pos_a;
+int    pos_b;
 double  pos_ag;
 double  pos_bg;
+/*
 long    l_raw;
 long    r_raw;
 long    t_raw;
 long    b_raw;
+*/
+int    l_raw;
+int    r_raw;
+int    t_raw;
+int    b_raw;
 string  id;
 short   hasID;
 string  hscErrors[14];
@@ -667,17 +676,17 @@ ss xiahsc {
         error++;
       }
 
-      if (sscanf (hID, "XIAHSC-%c-%ld%s", &myChar, &numWords, scratch) != 2) { 
-        if (sscanf (hID, "%c-%ld%s", &myChar, &numWords, scratch) != 2) { 
-          if (sscanf (hID, "%c%ld%s", &myChar, &numWords, scratch) != 2) { 
+      if (sscanf (hID, "XIAHSC-%c-%d%s", &myChar, &numWords, scratch) != 2) { 
+        if (sscanf (hID, "%c-%d%s", &myChar, &numWords, scratch) != 2) { 
+          if (sscanf (hID, "%c%d%s", &myChar, &numWords, scratch) != 2) { 
             PVPUTSTR(errMsg, "H ID not a valid HSC ID");
             error++;
           }
         }
       }
-      if (sscanf (vID, "XIAHSC-%c-%ld%s", &myChar, &numWords, scratch) != 2) { 
-        if (sscanf (vID, "%c-%ld%s", &myChar, &numWords, scratch) != 2) { 
-          if (sscanf (vID, "%c%ld%s", &myChar, &numWords, scratch) != 2) {
+      if (sscanf (vID, "XIAHSC-%c-%d%s", &myChar, &numWords, scratch) != 2) { 
+        if (sscanf (vID, "%c-%d%s", &myChar, &numWords, scratch) != 2) { 
+          if (sscanf (vID, "%c%d%s", &myChar, &numWords, scratch) != 2) {
             PVPUTSTR(errMsg, "V ID not a valid HSC ID");
             error++;
           }
@@ -943,7 +952,7 @@ ss xiahsc {
       }
       pos_a = DIAL_TO_RAW (pos_ag, hOrigin);	/* convert to raw (motor) coordinates */
       pos_b = DIAL_TO_RAW (pos_bg, hOrigin);	/* convert to raw (motor) coordinates */
-      sprintf (scratch, "M %ld %ld", pos_a, pos_b);
+      sprintf (scratch, "M %d %d", pos_a, pos_b);
       DEBUG_PRINT(2,"start_H_move: writing to motor");
       WRITE_HSC(TMOD_WRITE, hID, scratch);
     } state idle
@@ -976,7 +985,7 @@ ss xiahsc {
       }
       pos_a = DIAL_TO_RAW (pos_ag, vOrigin);	/* convert to raw (motor) coordinates */
       pos_b = DIAL_TO_RAW (pos_bg, vOrigin);	/* convert to raw (motor) coordinates */
-      sprintf (scratch, "M %ld %ld", pos_a, pos_b);
+      sprintf (scratch, "M %d %d", pos_a, pos_b);
       WRITE_HSC(TMOD_WRITE, vID, scratch);
     } state idle
 
@@ -1025,7 +1034,7 @@ ss xiahsc {
           word1, word2, word3, word4, word5, word6);
       hasID = sscanf (word1, "%%%s", id);
       if (debug_flag >= 5 && (numWords>0)) {
-        printf("xia_slit:fifo_read: (%ld words)...\n'%s'\n", numWords, scratch);
+        printf("xia_slit:fifo_read: (%d words)...\n'%s'\n", numWords, scratch);
       }
     } state process_response
 
@@ -1227,7 +1236,7 @@ ss xiahsc {
  */
   state process_response {
     entry {
-      DEBUG_PRINT1(5, "process_response:entry numWords=%ld", numWords);
+      DEBUG_PRINT1(5, "process_response:entry numWords=%d", numWords);
     }
     /*
      * various error messages
@@ -1282,34 +1291,34 @@ ss xiahsc {
      */
     when ( (numWords == 4) && (!strcmp(word4, "DONE;")) ) { 
       /* position info received */
-      sscanf (word2, "%ld", &pos_a);
-      sscanf (word3, "%ld", &pos_b);
+      sscanf (word2, "%d", &pos_a);
+      sscanf (word3, "%d", &pos_b);
       if (error) { /* don't update unless previous error exists */
         PVPUT(error, 0);
         PVPUTSTR(errMsg, "no error");
       }
       /* did we get where we want to go? */
       if (!strcmp(id, hID)) {
-        DEBUG_PRINT2(5,"hDONE: pos_a = %ld, pos_b = %ld", pos_a, pos_b);
+        DEBUG_PRINT2(5,"hDONE: pos_a = %d, pos_b = %d", pos_a, pos_b);
         pos_ag = RAW_TO_DIAL(pos_a, hOrigin);
         pos_bg = RAW_TO_DIAL(pos_b, hOrigin);
         h_isMoving = 0;
         l_raw = DIAL_TO_RAW(l, hOrigin);
         r_raw = DIAL_TO_RAW(r, hOrigin);
-        DEBUG_PRINT2(10,"hRaw; l=%ld, r=%ld", l_raw, r_raw);
+        DEBUG_PRINT2(10,"hRaw; l=%d, r=%d", l_raw, r_raw);
         if (hOrient == ORIENT_LEFT_RIGHT) { 
           if ((pos_a == l_raw) && (pos_b == r_raw)) PVPUT(h_BusyOff, 0);
         } else { 
           if ((pos_a == r_raw) && (pos_b == l_raw)) PVPUT(h_BusyOff, 0);
         }
       } else if (!strcmp(id, vID)){
-        DEBUG_PRINT2(5,"vDONE: pos_a = %ld, pos_b = %ld", pos_a, pos_b);
+        DEBUG_PRINT2(5,"vDONE: pos_a = %d, pos_b = %d", pos_a, pos_b);
         pos_ag = RAW_TO_DIAL(pos_a, vOrigin);
         pos_bg = RAW_TO_DIAL(pos_b, vOrigin);
         v_isMoving = 0;
         t_raw = DIAL_TO_RAW(t, vOrigin);
         b_raw = DIAL_TO_RAW(b, vOrigin);
-        DEBUG_PRINT2(10,"vRaw; t=%ld, b=%ld", t_raw, b_raw);
+        DEBUG_PRINT2(10,"vRaw; t=%d, b=%d", t_raw, b_raw);
         if (vOrient == ORIENT_TOP_BOTTOM) { 
           if ((pos_a == t_raw) && (pos_b == b_raw)) PVPUT(v_BusyOff, 0);
         } else { 
@@ -1320,8 +1329,8 @@ ss xiahsc {
 
     when ( (numWords == 5) && (!strcmp(word2, "OK")) ) { 
       /* position info received */
-      sscanf (word3, "%ld", &pos_a);
-      sscanf (word4, "%ld", &pos_b);
+      sscanf (word3, "%d", &pos_a);
+      sscanf (word4, "%d", &pos_b);
       if (error) { /* don't update unless previous error exists */
         PVPUT(error, 0);
         PVPUTSTR(errMsg, "no error");

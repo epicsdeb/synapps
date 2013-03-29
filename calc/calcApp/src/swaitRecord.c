@@ -110,6 +110,13 @@
 #include "recDynLink.h"
 #include <epicsExport.h>
 
+#include <epicsVersion.h>
+#ifndef EPICS_VERSION_INT
+#define VERSION_INT(V,R,M,P) ( ((V)<<24) | ((R)<<16) | ((M)<<8) | (P))
+#define EPICS_VERSION_INT VERSION_INT(EPICS_VERSION, EPICS_REVISION, EPICS_MODIFICATION, EPICS_PATCH_LEVEL)
+#endif
+#define LT_EPICSBASE(V,R,M,P) (EPICS_VERSION_INT < VERSION_INT((V),(R),(M),(P)))
+
 #define PRIVATE_FUNCTIONS 1	/* normal:1, debug:0 */
 #if PRIVATE_FUNCTIONS
 #define STATIC static
@@ -120,21 +127,21 @@
 /* Create RSET - Record Support Entry Table*/
 #define report NULL
 #define initialize NULL
-STATIC long init_record();
-STATIC long process();
-STATIC long special();
+STATIC long init_record(swaitRecord	*pwait, int pass);
+STATIC long process(swaitRecord	*pwait);
+STATIC long special(DBADDR *paddr, int after);
 #define get_value NULL
 #define cvt_dbaddr NULL
 #define get_array_info NULL 
 #define put_array_info NULL 
 #define get_units NULL 
-STATIC long get_precision();
+STATIC long get_precision(DBADDR *paddr, long *precision);
 #define get_enum_str NULL
 #define get_enum_strs NULL 
 #define put_enum_str NULL
-STATIC long get_graphic_double();
+STATIC long get_graphic_double(DBADDR *paddr, struct dbr_grDouble *pgd);
 #define get_control_double NULL 
-STATIC long get_alarm_double(); 
+STATIC long get_alarm_double(DBADDR *paddr, struct dbr_alDouble *pad);
  
 rset swaitRSET={
 	RSETNUMBER,
@@ -161,7 +168,7 @@ epicsExportAddress(rset, swaitRSET);
 /* Create DSET for "soft channel" to allow for IO Event (this is to implement
    the feature of processing the record when an input changes) */
 
-static long get_ioint_info();
+STATIC long get_ioint_info(int cmd, swaitRecord *pwait, IOSCANPVT *ppvt);
 typedef struct {
         long            number;
         DEVSUPFUN       dev_report;
@@ -217,10 +224,7 @@ typedef struct recDynLinkPvt {
 } recDynLinkPvt;
 
 
-STATIC long get_ioint_info(cmd,pwait,ppvt)
-    int                     cmd;
-    swaitRecord       *pwait;
-    IOSCANPVT               *ppvt;
+STATIC long get_ioint_info(int cmd, swaitRecord *pwait, IOSCANPVT *ppvt)
 {
     *ppvt = (((struct cbStruct *)pwait->cbst)->ioscanpvt);
     return(0);
@@ -235,13 +239,14 @@ struct qStruct {
 
 
 int    swaitRecordDebug=0;
+epicsExportAddress(int, swaitRecordDebug);
 int    swaitRecordCacheMode=0;
 STATIC void schedOutput(swaitRecord *pwait);
 static void doOutputCallback(CALLBACK *pcallback);
 STATIC void execOutput(swaitRecord *pwait);
 STATIC int fetch_values(swaitRecord *pwait);
 STATIC void monitor(swaitRecord *pwait);
-STATIC long initSiml();
+STATIC long initSiml(swaitRecord *pwait);
 STATIC void ioIntProcess(CALLBACK *pioProcCb);
 
 STATIC void pvSearchCallback(recDynLink *precDynLink);
@@ -258,9 +263,7 @@ static int isBlank(char *name)
 	return((i>0));
 }
 
-STATIC long init_record(pwait,pass)
-    swaitRecord	*pwait;
-    int pass;
+STATIC long init_record(swaitRecord	*pwait, int pass)
 {
     struct cbStruct *pcbst;
     long    status = 0;
@@ -331,17 +334,32 @@ STATIC long init_record(pwait,pass)
 
     /* check all dynLinks for non-NULL  */
     for(i=0;i<NUM_LINKS; i++, pPvStat++, ppvn += PVN_SIZE) {
+		if (swaitRecordDebug >= 5) {
+			printf("%s:init_record: ppvn='%s' for link %d\n", pwait->name, ppvn, i);
+		}
 		if (isBlank(ppvn)) {
 			ppvn[0] = '\0';
+			if (swaitRecordDebug >= 2) {
+				printf("%s:init_record: resetting blank PV to null for caLinkStruck[%d] (%p)\n",
+					pwait->name, i, &pcbst->caLinkStruct[i]);
+			}
 			db_post_events(pwait, ppvn, DBE_VALUE);
 			*pPvStat = NO_PV;
 		} else if (ppvn[0] != 0) {
             *pPvStat = PV_NC;
             if (i<OUT_INDEX) {
+				if (swaitRecordDebug >= 2) {
+					printf("%s: calling recDynLinkAddInput for caLinkStruck[%d] (%p, '%s')\n",
+						pwait->name, i, &pcbst->caLinkStruct[i], ppvn);
+				}
                 recDynLinkAddInput(&pcbst->caLinkStruct[i], ppvn, 
                  DBR_DOUBLE, rdlSCALAR, pvSearchCallback, inputChanged);
             }
             else {
+				if (swaitRecordDebug >= 2) {
+					printf("%s: calling recDynLinkAddOutput for caLinkStruck[%d] (%p, '%s')\n",
+						pwait->name, i, &pcbst->caLinkStruct[i], ppvn);
+				}
                 recDynLinkAddOutput(&pcbst->caLinkStruct[i], ppvn,
                 DBR_DOUBLE, rdlSCALAR, pvSearchCallback);
             }
@@ -460,9 +478,7 @@ STATIC long process(swaitRecord	*pwait)
 	return(0);
 }
 
-STATIC long special(paddr,after)
-    struct dbAddr *paddr;
-    int	   	  after;
+STATIC long special(DBADDR *paddr, int after)
 {
     swaitRecord  	*pwait = (swaitRecord *)(paddr->precord);
     struct cbStruct     *pcbst = (struct cbStruct *)pwait->cbst;
@@ -490,7 +506,11 @@ STATIC long special(paddr,after)
         index = fieldIndex - swaitRecordINAN; /* array index of input */
         pPvStat = &pwait->inav + index; /* pointer arithmetic */
         oldStat = *pPvStat;
-        ppvn = &pwait->inan[0] + (index*PVN_SIZE); 
+        ppvn = &pwait->inan[0] + (index*PVN_SIZE);
+		if (swaitRecordDebug >= 2) {
+			printf("%s:special: ppvn = '%s' for caLinkStruck[%d] (%p)\n",
+				pwait->name, ppvn, index, &pcbst->caLinkStruct[index]);
+		}
 		if (isBlank(ppvn)) {
 			ppvn[0] = '\0';
 			db_post_events(pwait, ppvn, DBE_VALUE);
@@ -504,10 +524,18 @@ STATIC long special(paddr,after)
                 db_post_events(pwait,pPvStat,DBE_VALUE);
             }
             if (index<OUT_INDEX) {
+				if (swaitRecordDebug >= 2) {
+					printf("%s:special: calling recDynLinkAddInput for caLinkStruck[%d] (%p, '%s')\n",
+						pwait->name, index, &pcbst->caLinkStruct[index], ppvn);
+				}
                 recDynLinkAddInput(&pcbst->caLinkStruct[index], ppvn, 
                 DBR_DOUBLE, rdlSCALAR, pvSearchCallback, inputChanged);
             }
             else {
+				if (swaitRecordDebug >= 2) {
+					printf("%s:special: calling recDynLinkAddOutput for caLinkStruck[%d] (%p, '%s')\n",
+						pwait->name, index, &pcbst->caLinkStruct[index], ppvn);
+				}
                 recDynLinkAddOutput(&pcbst->caLinkStruct[index], ppvn,
                 DBR_DOUBLE, rdlSCALAR, pvSearchCallback);
             }
@@ -518,6 +546,10 @@ STATIC long special(paddr,after)
             if (*pPvStat != oldStat) {
                 db_post_events(pwait,pPvStat,DBE_VALUE);
             }
+			if (swaitRecordDebug >= 2) {
+				printf("%s:special: calling recDynLinkClear for caLinkStruck[%d] (%p, no pvname)\n",
+					pwait->name, index, &pcbst->caLinkStruct[index]);
+			}
             recDynLinkClear(&pcbst->caLinkStruct[index]);
         }
         return(0);
@@ -545,9 +577,7 @@ STATIC long special(paddr,after)
     }
 }
 
-STATIC long get_precision(paddr,precision)
-    struct dbAddr *paddr;
-    long	  *precision;
+STATIC long get_precision(DBADDR *paddr, long *precision)
 {
     swaitRecord	*pwait=(swaitRecord *)paddr->precord;
 
@@ -561,9 +591,7 @@ STATIC long get_precision(paddr,precision)
     return(0);
 }
 
-STATIC long get_graphic_double(paddr,pgd)
-    struct dbAddr *paddr;
-    struct dbr_grDouble	*pgd;
+STATIC long get_graphic_double(DBADDR *paddr, struct dbr_grDouble *pgd)
 {
     swaitRecord *pwait=(swaitRecord *)paddr->precord;
 
@@ -574,16 +602,13 @@ STATIC long get_graphic_double(paddr,pgd)
     return(0);
 }
 
-STATIC long get_alarm_double(paddr,pad)
-    struct dbAddr *paddr;
-    struct dbr_alDouble *pad;
+STATIC long get_alarm_double(DBADDR *paddr, struct dbr_alDouble *pad)
 {
     recGblGetAlarmDouble(paddr,pad);
     return(0);
 }
 
-STATIC void monitor(pwait)
-    swaitRecord   *pwait;
+STATIC void monitor(swaitRecord *pwait)
 {
         unsigned short  monitor_mask;
         double          delta;
@@ -628,8 +653,7 @@ STATIC void monitor(pwait)
 }
 
 
-STATIC long initSiml(pwait)
-swaitRecord   *pwait;
+STATIC long initSiml(swaitRecord *pwait)
 { 
 
     /* swait.siml must be a CONSTANT or a PV_LINK or a DB_LINK */
@@ -645,8 +669,7 @@ swaitRecord   *pwait;
     return(0);
 }
 
-STATIC int fetch_values(pwait)
-swaitRecord *pwait;
+STATIC int fetch_values(swaitRecord *pwait)
 {
         struct cbStruct *pcbst = (struct cbStruct *)pwait->cbst;
         double          *pvalue;

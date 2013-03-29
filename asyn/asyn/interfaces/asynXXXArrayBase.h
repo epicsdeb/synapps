@@ -29,7 +29,7 @@ static asynStatus registerInterruptUser(void *drvPvt,asynUser *pasynUser, \
 static asynStatus cancelInterruptUser(void *drvPvt, asynUser *pasynUser, \
                                void *registrarPvt); \
  \
- \
+ \
 asynStatus initialize(const char *portName, asynInterface *pdriver) \
 { \
     INTERFACE *pInterface = (INTERFACE *)pdriver->pinterface; \
@@ -55,7 +55,7 @@ static asynStatus writeDefault(void *drvPvt, asynUser *pasynUser, \
     status = pasynManager->getAddr(pasynUser,&addr); \
     if(status!=asynSuccess) return status; \
     epicsSnprintf(pasynUser->errorMessage,pasynUser->errorMessageSize, \
-        "write is not supported\n"); \
+        "write is not supported"); \
     asynPrint(pasynUser,ASYN_TRACE_ERROR, \
         "%s %d write is not supported\n",portName,addr); \
     return asynError; \
@@ -73,13 +73,13 @@ static asynStatus readDefault(void *drvPvt, asynUser *pasynUser, \
     status = pasynManager->getAddr(pasynUser,&addr); \
     if(status!=asynSuccess) return status; \
     epicsSnprintf(pasynUser->errorMessage,pasynUser->errorMessageSize, \
-        "write is not supported\n"); \
+        "write is not supported"); \
     asynPrint(pasynUser,ASYN_TRACE_ERROR, \
         "%s %d read is not supported\n",portName,addr); \
     return asynError; \
 } \
  \
- \
+ \
 static asynStatus registerInterruptUser(void *drvPvt,asynUser *pasynUser, \
       INTERRUPT_CALLBACK callback, void *userPvt,void **registrarPvt) \
 { \

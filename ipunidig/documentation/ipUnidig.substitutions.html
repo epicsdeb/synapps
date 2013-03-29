@@ -1,0 +1,97 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title></title>
+<meta name="generator" content="HTML::TextToHTML v2.51"/>
+</head>
+<body>
+<pre>
+# Set the SCAN field of the longin record and bi record #2 to ".1 second", rather than I/O
+# interrupt, because the quadEM toggles input #2 at 800Hz, and that is too much load on the IOC
+
+file "$(IPUNIDIG)/ipUnidigApp/Db/IpUnidigLi.db"
+{
+pattern
+{P,       R,       PORT,       SCAN}
+{13LAB:,  UnidigLi,  Unidig1, "1 second"}
+}
+
+file "$(IPUNIDIG)/ipUnidigApp/Db/IpUnidigBi.db"
+{
+pattern
+{P,       R,         PORT,    MASK,        SCAN}
+{13LAB:, UnidigBi0,  Unidig1, 0x000001, "I/O Intr"}
+{13LAB:, UnidigBi1,  Unidig1, 0x000002, "I/O Intr"}
+{13LAB:, UnidigBi2,  Unidig1, 0x000004, "1 second"}
+{13LAB:, UnidigBi3,  Unidig1, 0x000008, "I/O Intr"}
+{13LAB:, UnidigBi4,  Unidig1, 0x000010, "I/O Intr"}
+{13LAB:, UnidigBi5,  Unidig1, 0x000020, "I/O Intr"}
+{13LAB:, UnidigBi6,  Unidig1, 0x000040, "I/O Intr"}
+{13LAB:, UnidigBi7,  Unidig1, 0x000080, "I/O Intr"}
+{13LAB:, UnidigBi8,  Unidig1, 0x000100, "I/O Intr"}
+{13LAB:, UnidigBi9,  Unidig1, 0x000200, "I/O Intr"}
+{13LAB:, UnidigBi10, Unidig1, 0x000400, "I/O Intr"}
+{13LAB:, UnidigBi11, Unidig1, 0x000800, "I/O Intr"}
+{13LAB:, UnidigBi12, Unidig1, 0x001000, "I/O Intr"}
+{13LAB:, UnidigBi13, Unidig1, 0x002000, "I/O Intr"}
+{13LAB:, UnidigBi14, Unidig1, 0x004000, "I/O Intr"}
+{13LAB:, UnidigBi15, Unidig1, 0x008000, "I/O Intr"}
+{13LAB:, UnidigBi16, Unidig1, 0x010000, "I/O Intr"}
+{13LAB:, UnidigBi17, Unidig1, 0x020000, "I/O Intr"}
+{13LAB:, UnidigBi18, Unidig1, 0x040000, "I/O Intr"}
+{13LAB:, UnidigBi19, Unidig1, 0x080000, "I/O Intr"}
+{13LAB:, UnidigBi20, Unidig1, 0x100000, "I/O Intr"}
+{13LAB:, UnidigBi21, Unidig1, 0x200000, "I/O Intr"}
+{13LAB:, UnidigBi22, Unidig1, 0x400000, "I/O Intr"}
+{13LAB:, UnidigBi23, Unidig1, 0x800000, "I/O Intr"}
+}
+
+# Test info feature for queue size on interrupt callbacks
+file "./IpUnidigBiInfo.db"
+{
+pattern
+{P,       R,         PORT,    MASK,     SCAN}
+{13LAB:, UnidigBi0,  Unidig1, 0x000001, "I/O Intr"}
+{13LAB:, UnidigBi22, Unidig1, 0x400000, "I/O Intr"}
+}
+
+file "$(IPUNIDIG)/ipUnidigApp/Db/IpUnidigBo.db"
+{
+pattern
+{P,       R,        PORT,    MASK}
+{13LAB:, UnidigBo0,  Unidig1, 0x000001}
+{13LAB:, UnidigBo1,  Unidig1, 0x000002}
+{13LAB:, UnidigBo2,  Unidig1, 0x000004}
+{13LAB:, UnidigBo3,  Unidig1, 0x000008}
+{13LAB:, UnidigBo4,  Unidig1, 0x000010}
+{13LAB:, UnidigBo5,  Unidig1, 0x000020}
+{13LAB:, UnidigBo6,  Unidig1, 0x000040}
+{13LAB:, UnidigBo7,  Unidig1, 0x000080}
+{13LAB:, UnidigBo8,  Unidig1, 0x000100}
+{13LAB:, UnidigBo9,  Unidig1, 0x000200}
+{13LAB:, UnidigBo10, Unidig1, 0x000400}
+{13LAB:, UnidigBo11, Unidig1, 0x000800}
+{13LAB:, UnidigBo12, Unidig1, 0x001000}
+{13LAB:, UnidigBo13, Unidig1, 0x002000}
+{13LAB:, UnidigBo14, Unidig1, 0x004000}
+{13LAB:, UnidigBo15, Unidig1, 0x008000}
+{13LAB:, UnidigBo16, Unidig1, 0x010000}
+{13LAB:, UnidigBo17, Unidig1, 0x020000}
+{13LAB:, UnidigBo18, Unidig1, 0x040000}
+{13LAB:, UnidigBo19, Unidig1, 0x080000}
+{13LAB:, UnidigBo20, Unidig1, 0x100000}
+{13LAB:, UnidigBo21, Unidig1, 0x200000}
+{13LAB:, UnidigBo22, Unidig1, 0x400000}
+{13LAB:, UnidigBo23, Unidig1, 0x800000}
+}
+
+file "$(IPUNIDIG)/ipUnidigApp/Db/IpUnidigLo.db"
+{
+pattern
+{P,       R,       PORT}
+{13LAB:,  UnidigLo,  Unidig1}
+}
+</pre>
+</body>
+</html>

@@ -1,0 +1,103 @@
+# Database for the NCD R2X series Single/Dual RS-232 Relay Controllers 
+# Developed and tested with the R23DPDTCNRS:
+# http://www.controlanything.com/Relay/Device/R23DPDTCNRS
+
+############  SVN Repository information  #############
+# $Date: 2011-09-28 16:47:03 -0500 (Wed, 28 Sep 2011) $
+# $Author: kpetersn $
+# $Revision: 13794 $
+# $HeadURL: https://subversion.xor.aps.anl.gov/synApps/ip/tags/R2-13/ipApp/Db/NCD_R2X.db $
+# $Id: NCD_R2X.db 13794 2011-09-28 21:47:03Z kpetersn $
+#######################################################
+
+record(bo, "$(P)$(R)r1ctrl")
+{
+  field(DTYP, "stream")
+  field(OUT,  "@NCD_R2X.proto relay1control $(PORT)")
+  field(ZNAM, "Off")
+  field(ONAM, "On")
+  field(PINI, "YES")
+  field(FLNK, "$(P)$(R)r1statCalc  PP MS")
+}
+record(bo, "$(P)$(R)r2ctrl")
+{
+  field(DTYP, "stream")
+  field(OUT,  "@NCD_R2X.proto relay2control $(PORT)")
+  field(ZNAM, "Off")
+  field(ONAM, "On")
+  field(PINI, "YES")
+  field(FLNK, "$(P)$(R)r2statCalc  PP MS")
+}
+record(bi, "$(P)$(R)r1status")
+{
+  field(DTYP, "stream")
+  field(ZNAM, "Off")
+  field(ONAM, "On")
+  field(INP,  "@NCD_R2X.proto relay1query $(PORT)")
+  field(PINI, "YES")
+}
+record(bi, "$(P)$(R)r2status")
+{
+  field(DTYP, "stream")
+  field(ZNAM, "Off")
+  field(ONAM, "On")
+  field(INP,  "@NCD_R2X.proto relay2query $(PORT)")
+  field(PINI, "YES")
+}
+record(stringout, "$(P)$(R)enable")
+{
+  field(DTYP, "stream")
+  field(OUT,  "@NCD_R2X.proto enableAll $(PORT)")
+}
+
+record(bo, "$(P)$(R)autoStatus")
+{
+  field(DTYP, "Soft Channel")
+  field(ZNAM, "Off")
+  field(ONAM, "On")
+  field(VAL,  "1")
+  field(PINI, "YES")
+}
+
+record(calcout, "$(P)$(R)r1statCalc")
+{
+  field(DTYP, "Soft Channel")
+  field(INPA, "$(P)$(R)autoStatus  NPP MS")
+  field(CALC, "A")
+  field(OUT,  "$(P)$(R)r1status.PROC  PP MS")
+  field(DOPT, "Use CALC")
+  field(OOPT, "When Non-zero")
+}
+
+record(calcout, "$(P)$(R)r2statCalc")
+{
+  field(DTYP, "Soft Channel")
+  field(INPA, "$(P)$(R)autoStatus  NPP MS")
+  field(CALC, "A")
+  field(OUT,  "$(P)$(R)r2status.PROC  PP MS")
+  field(DOPT, "Use CALC")
+  field(OOPT, "When Non-zero")
+}
+
+record(calcout, "$(P)$(R)autoWatch")
+{
+  field(DTYP, "Soft Channel")
+  field(INPA, "$(P)$(R)autoStatus  CP MS")
+  field(CALC, "A")
+  field(OUT,  "$(P)$(R)updateAll.PROC  PP MS")
+  field(DOPT, "Use CALC")
+  field(OOPT, "Transition to Non-zero")
+}
+
+record(fanout, "$(P)$(R)updateAll")
+{
+  field(DTYP, "Soft Channel")
+  field(LNK1, "$(P)$(R)r1statCalc")
+  field(LNK2, "$(P)$(R)r2statCalc")
+}
+
+#record(stringin, "$(P)$(R)getDevNum")
+#{
+#  field(DTYP, "stream")
+#  field(INP,  "@NCD_R2X.proto getDevNum $(PORT)")
+#}

@@ -23,8 +23,17 @@ SRCS += devOms.cc drvOms.cc
 # The following is required for the OMS VME58 (i.e., devOms58) device driver.
 SRCS += devOms58.cc drvOms58.cc
 
-# The following is required for the OMS MAXv device driver.
+# OMS MAXv device driver support.
+# Choose one; either "standard" or "trajectory".
+
+# Standard MAXv
 SRCS += devMAXv.cc drvMAXv.cc
+
+# Trajectory support for MAXV controller
+ifdef SNCSEQ
+#!SRCS += MAX_trajectoryScan.st
+endif
+#!SRCS_vxWorks += devMAXv.cc drvMAXv_trajectory.cc
 
 # The following is required for all OMS device drivers.
 SRCS += devOmsCom.cc
@@ -33,6 +42,13 @@ oms_LIBS += motor
 ifdef ASYN
 oms_LIBS += asyn
 endif
+
+# MAXV_trajectoryScan.st needs the following:
+ifdef SNCSEQ
+oms_LIBS += seq pv
+endif
+
+
 oms_LIBS += $(EPICS_BASE_IOC_LIBS)
 
 include $(TOP)/configure/RULES

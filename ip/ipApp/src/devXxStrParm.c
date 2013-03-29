@@ -504,8 +504,13 @@ static long completeIOCommon(dbCommon *pr)
             case recTypeSi: {
                stringinRecord *psi = (stringinRecord *)pr;
                if (pPvt->nread && !rc && (pPvt->bufferStartIndex < pPvt->nread)) {
-                  strncpy(psi->val,&pPvt->buffer[pPvt->bufferStartIndex],
-                          sizeof(psi->val));
+                  char *source = &pPvt->buffer[pPvt->bufferStartIndex];
+                  size_t len = strlen(source);
+                  if (len >= sizeof(psi->val)) {
+                      len = sizeof(psi->val)-1;
+                      source[len] = 0;
+                  }
+                  strcpy(psi->val, source);
                   psi->udf=0;
                } else {
                   psi->val[0]='\0';

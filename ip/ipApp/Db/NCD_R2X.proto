@@ -1,0 +1,46 @@
+# Protocol file for the NCD R2X series Single/Dual RS-232 Relay Controllers 
+# Developed and tested with the R23DPDTCNRS:
+# http://www.controlanything.com/Relay/Device/R23DPDTCNRS
+
+############  SVN Repository information  #############
+# $Date: 2011-09-28 16:47:03 -0500 (Wed, 28 Sep 2011) $
+# $Author: kpetersn $
+# $Revision: 13794 $
+# $HeadURL: https://subversion.xor.aps.anl.gov/synApps/ip/tags/R2-13/ipApp/Db/NCD_R2X.proto $
+# $Id: NCD_R2X.proto 13794 2011-09-28 21:47:03Z kpetersn $
+#######################################################
+
+OutTerminator = CR;
+InTerminator = "";
+
+#
+relay1query {
+    out "\254\04";
+    in "%#{\000=0|\001=1}";
+    @mismatch { out "\254\04"; in "%#{\000=0|\001=1}"; }
+}
+
+relay2query {
+    out "\254\05";
+    in "%#{\000=0|\001=1}";
+    @mismatch { out "\254\05"; in "%#{\000=0|\001=1}"; }
+}
+
+relay1control {
+    out "\254%{\00|\01}";
+    @init { out "\254\04"; in "%#{\000=0|\001=1}"; }
+}
+
+relay2control {
+    out "\254%{\02|\03}";
+    @init { out "\254\05"; in "%#{\000=0|\001=1}"; }
+}
+
+enableAll {
+    out "\254\248";
+}
+
+#getDevNum {
+#    out "\254\247";
+#    in "%c";
+#}

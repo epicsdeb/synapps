@@ -1,14 +1,18 @@
-/*seqPvt.h
- *
- *	DESCRIPTION: Definitions for the run-time sequencer.
+/*************************************************************************\
+Copyright (c) 1991-1993 The Regents of the University of California
+                        and the University of Chicago.
+                        Los Alamos National Laboratory
+Copyright (c) 2010-2012 Helmholtz-Zentrum Berlin f. Materialien
+                        und Energie GmbH, Germany (HZB)
+This file is distributed subject to a Software License Agreement found
+in the file LICENSE that is included with this distribution.
+\*************************************************************************/
+/*	Internal common definitions for the run-time sequencer library
  *
  *      Author:         Andy Kozubal
  *      Date:           
  *
  *      Experimental Physics and Industrial Control System (EPICS)
- *
- *      Copyright 1991,2,3, the Regents of the University of California,
- *      and the University of Chicago Board of Governors.
  *
  *      This software was produced under  U.S. Government contracts:
  *      (W-7405-ENG-36) at the Los Alamos National Laboratory,
@@ -25,221 +29,235 @@
  *              Accelerator Systems Division
  *              Advanced Photon Source
  *              Argonne National Laboratory
- *
- * Modification Log:
- * -----------------
- * 07mar91,ajk	Changed SSCB semaphore id names.
- * 05jul91,ajk	Added function prototypes.
- * 16dec91,ajk	Setting up for VxWorks version 5.
- * 27apr92,ajk	Changed to new event flag mode (SSCB & PROG changed).
- * 27apr92,ajk	Removed getSemId from CHAN.
- * 28apr92,ajk	Implemented new event flag mode.
- * 17feb93,ajk	Fixed some functions prototypes.
- * 10jun93,ajk	Removed VxWorks V4/V5 conditional compile.
- * 20jul93,ajk	Removed non-ANSI function definitions.
- * 21mar94,ajk	Implemented new i/f with snc (see seqCom.h).
- * 21mar94,ajk	Implemented assignment of array elements to db.  Also,
- *		allow "unlimited" number of channels.
- * 28mar94,ajk	Added time stamp support.
- * 29mar94,ajk	Added dbOffset in db_channel structure; allows faster processing
- *		of values returned with monitors and pvGet().
- * 09aug96,wfl	Added syncQ queue support.
- * 30apr99,wfl	Replaced VxWorks dependencies with OSI.
- * 17may99,wfl	Changed FUNCPTR etc to SEQFUNCPTR; corrected sequencer() proto.
- * 07sep99,wfl	Added putComplete, message and putSemId to SSCB.
- * 22sep99,grw  Supported entry and exit actions; supported state options.
- * 18feb00,wfl	Added 'auxiliary_args' typedef (for seqAuxThread).
- * 29feb00,wfl	Converted to new OSI; defs for new thread death scheme etc.
- * 06mar00,wfl	Added function prototypes for global routines.
- * 31mar00,wfl	Made caSemId a mutex; added seqFindProgXxx() prototypes.
- * 22mar01,mrk	mover to seqPvt.h from seq.h for stupid windows problem
  */
 #ifndef	INCLseqPvth
 #define	INCLseqPvth
 
-#define		OK 0
-#define		ERROR (-1)
-#define		LOCAL static
+#include "seqCom.h"
+#define boolean seqBool
+#define bitMask seqMask
 
-typedef		void (*SEQVOIDFUNCPTR) (); /* used for task watchdog only */
+#include "seq_queue.h"
 
-/* global variable for PV system context */
-#ifdef		DECLARE_PV_SYS
-		void *pvSys;
-#else
-		extern void *pvSys;
+#define valPtr(ch,ss)		((char*)(ss)->var+(ch)->offset)
+#define bufPtr(ch)		((char*)(ch)->sprog->var+(ch)->offset)
+
+#define ssNum(ss)		((ss)-(ss)->sprog->ss)
+#define chNum(ch)		((ch)-(ch)->sprog->chan)
+
+#define metaPtr(ch,ss) (				\
+	(ch)->dbch					\
+	?(((ch)->sprog->options&OPT_SAFE)		\
+		?((ch)->dbch->ssMetaData+ssNum(ss))	\
+		:(&(ch)->dbch->metaData))		\
+	:0						\
+)
+
+/* Generic iteration on lists */
+#define foreach(e,l)		for (e = l; e != 0; e = e->next)
+
+/* Generic min and max */
+#ifndef min
+#define min(x, y)		(((x) < (y)) ? (x) : (y))
 #endif
 
-/* Structure to hold information about database channels */
-struct	db_channel
-{
-	/* These are supplied by SNC */
-	char		*dbAsName;	/* channel name from assign statement */
-	char		*pVar;		/* ptr to variable */
-	char		*pVarName;	/* variable name string */
-	char		*pVarType;	/* variable type string (e.g. ("int") */
-	long		count;		/* number of elements in array */
-	long		efId;		/* event flag id if synced */
-	long		eventNum;	/* event number */
-	epicsBoolean	monFlag;	/* TRUE if channel is to be monitored */
-	int		queued;		/* TRUE if queued via syncQ */
-#define MAX_QUEUE_SIZE 100		/* default max_queue_size */
-	int		maxQueueSize;	/* max syncQ queue size (0 => def) */
-	int		queueIndex;	/* syncQ queue index */
+#ifndef max
+#define max(x, y)		(((x) < (y)) ? (y) : (x))
+#endif
 
-	/* These are filled in at run time */
-	char		*dbName;	/* channel name after macro expansion */
-	long		index;		/* index in array of db channels */
-	void		*pvid;		/* PV (process variable) id */
-	epicsBoolean	assigned;	/* TRUE only if channel is assigned */
-	epicsBoolean	connected;	/* TRUE only if channel is connected */
-	epicsBoolean	getComplete;	/* TRUE if previous pvGet completed */
-	epicsBoolean	putComplete;	/* TRUE if previous pvPut completed */
-	epicsBoolean	putWasComplete;	/* previous value of putComplete */
-	short		dbOffset;	/* offset to value in db access struct*/
-	short		status;		/* last db access status code */
+#define free(p)			{DEBUG("%s:%d:free(%p)\n",__FILE__,__LINE__,p); if(p){free(p); p=0;}}
+
+/* Generic allocation */
+#define newArray(type,count)	(DEBUG("%s:%d:calloc(%u,%u)\n",__FILE__,__LINE__,count,sizeof(type)),(type *)calloc(count, sizeof(type)))
+#define new(type)		newArray(type,1)
+
+typedef struct db_channel	DBCHAN;
+typedef struct channel		CHAN;
+typedef seqState		STATE;
+typedef struct macro		MACRO;
+typedef struct state_set	SSCB;
+typedef struct program_instance	SPROG;
+typedef struct pvreq		PVREQ;
+typedef const struct pv_type	PVTYPE;
+typedef struct pv_meta_data	PVMETA;
+
+/* Channel, i.e. an assigned variable */
+struct channel
+{
+	/* static channel data (assigned once on startup) */
+	size_t		offset;		/* offset to value (e.g. in sprog->var) */
+	const char	*varName;	/* variable name */
+	unsigned	count;		/* number of elements in array */
+	unsigned	eventNum;	/* event number */
+	PVTYPE		*type;		/* request type info */
+	SPROG		*sprog;		/* state program that owns this struct*/
+
+	/* dynamic channel data (assigned at runtime) */
+	DBCHAN		*dbch;		/* channel assigned to a named db pv */
+	EV_ID		syncedTo;	/* event flag id if synced */
+	CHAN		*nextSynced;	/* next channel synced to same flag */
+	QUEUE		queue;		/* queue if queued */
+	boolean		monitored;	/* whether channel is monitored */
+	/* buffer access, only used in safe mode */
+	epicsMutexId	varLock;	/* mutex for locking access to shared
+					   var buffer and meta data */
+};
+
+struct pv_type
+{
+	const char	*typeStr;
+	pvType		putType;
+	pvType		getType;
+	size_t		size;
+};
+
+/* Meta data received from pv layer per request/monitor */
+struct pv_meta_data
+{
 	epicsTimeStamp	timeStamp;	/* time stamp */
-	long		dbCount;	/* actual count for db access */
-	short		severity;	/* last db access severity code */
-	short		size;		/* size (in bytes) of single var elem */
-	short		getType;	/* db get type (e.g. DBR_STS_INT) */
-	short		putType;	/* db put type (e.g. DBR_INT) */
-	char		*message;	/* last db access error message */
-        epicsBoolean    gotFirstMonitor;
-        epicsBoolean    gotFirstConnect;
-	epicsBoolean	monitored;	/* TRUE if channel IS monitored */
-	void		*evid;		/* event id (supplied by PV lib) */
-	struct state_program *sprog;	/* state program that owns this struct*/
-	struct state_set_control_block *sset; /* current state-set (temp.) */
+	pvStat		status;		/* status code */
+	pvSevr		severity;	/* severity code */
+	const char	*message;	/* error message */
 };
-typedef	struct db_channel CHAN;
 
-/* Structure for syncQ queue entry */
-struct	queue_entry
+/* Channel assigned to a named (database) pv */
+struct db_channel
 {
-	ELLNODE		node;		/* linked list node */
-	CHAN		*pDB;		/* ptr to db channel info */
-	pvValue		value;		/* value, time stamp etc */
+	char		*dbName;	/* channel name after macro expansion */
+	void		*pvid;		/* PV (process variable) id */
+	unsigned	dbCount;	/* actual count for db access */
+	boolean		connected;	/* whether channel is connected */
+	void		*monid;		/* monitor id (supplied by PV lib) */
+	boolean		gotOneMonitor;	/* whether got at least one monitor */
+	PVMETA		metaData;	/* meta data (shared buffer) */
+	PVMETA		*ssMetaData;	/* array of meta data,
+					   one for each state set (safe mode) */
 };
-typedef struct queue_entry QENTRY;
 
-
-/* Structure to hold information about a state */
-struct	state_info_block
+struct state_set
 {
-	char		*pStateName;	/* state name */
-	ACTION_FUNC	actionFunc;	/* ptr to action rout. for this state */
-	EVENT_FUNC	eventFunc;	/* ptr to event rout. for this state */
-	DELAY_FUNC	delayFunc;	/* ptr to delay rout. for this state */
-        ENTRY_FUNC	entryFunc;      /* ptr to entry rout. for this state */
-	EXIT_FUNC	exitFunc;       /* ptr to exit rout. for this state */
-	bitMask		*pEventMask;	/* event mask for this state */
-        bitMask         options;        /* options mask for this state */
-};
-typedef	struct	state_info_block STATE;
-
-#define	MAX_NDELAY	20	/* max # delays allowed in each SS */
-/* Structure to hold information about a State Set */
-struct	state_set_control_block
-{
-	char		*pSSName;	/* state set name (for debugging) */
+	/* static state set data (assigned once on startup) */
+	const char	*ssName;	/* state set name (for debugging) */
 	epicsThreadId	threadId;	/* thread id */
-	unsigned int	threadPriority;	/* thread priority */
-	unsigned int	stackSize;	/* stack size */
-	epicsEventId	allFirstConnectAndMonitorSemId;
-	epicsEventId	syncSemId;	/* semaphore for event sync */
-	epicsEventId	getSemId;	/* semaphore id for async get */
-	epicsEventId	putSemId;	/* semaphore id for async put */
-	epicsEventId	death1SemId;	/* semaphore id for death (#1) */
-	epicsEventId	death2SemId;	/* semaphore id for death (#2) */
-	epicsEventId	death3SemId;	/* semaphore id for death (#3) */
-	epicsEventId	death4SemId;	/* semaphore id for death (#4) */
-	long		numStates;	/* number of states */
-	STATE		*pStates;	/* ptr to array of state blocks */
-	short		currentState;	/* current state index */
-	short		nextState;	/* next state index */
-	short		prevState;	/* previous state index */
-	short		errorState;	/* error state index (-1 if none defd)*/
-	short		transNum;	/* highest prio trans. # triggered */
-	bitMask		*pMask;		/* current event mask */
-	long		numDelays;	/* number of delays activated */
-	double		delay[MAX_NDELAY]; /* queued delay value in secs */
-	epicsBoolean	delayExpired[MAX_NDELAY]; /* TRUE if delay expired */
+	unsigned	numStates;	/* number of states */
+	STATE		*states;	/* ptr to array of state blocks */
+	unsigned	maxNumDelays;	/* max. number of delays */
+	SPROG		*sprog;		/* ptr back to state program block */
+
+	/* dynamic state set data (assigned at runtime) */
+	int		currentState;	/* current state index, -1 if none */
+	int		nextState;	/* next state index, -1 if none */
+	int		prevState;	/* previous state index, -1 if none */
+	const bitMask	*mask;		/* current event mask */
+	unsigned	numDelays;	/* number of delays activated */
+	double		*delay;		/* queued delay values in secs (array) */
+	boolean		*delayExpired;	/* whether delay expired (array) */
 	double		timeEntered;	/* time that a state was entered */
-	struct state_program *sprog;	/* ptr back to state program block */
+	epicsEventId	syncSemId;	/* semaphore for event sync */
+	epicsEventId	dead;		/* event to signal state set exit done */
+	/* these are arrays, one for each channel */
+	epicsEventId	*getSemId;	/* semaphores for async get */
+	epicsEventId	*putSemId;	/* semaphores for async put */
+	/* safe mode */
+	boolean		*dirty;		/* array of flags, one for each channel */
+	USER_VAR	*var;		/* variable value block */
 };
-typedef	struct	state_set_control_block SSCB;
 
-/* Macro table */
-typedef	struct	macro {
-	char	*pName;
-	char	*pValue;
-} MACRO;
-
-/* All information about a state program.
-	The address of this structure is passed to the run-time sequencer:
- */
-struct	state_program
+struct program_instance
 {
-	char		*pProgName;	/* program name (for debugging) */
-	epicsThreadId	threadId;	/* thread id (main thread) */
-	unsigned int	threadPriority;	/* thread priority */
-	unsigned int	stackSize;	/* stack size */
-	epicsMutexId	caSemId;	/* mutex for locking CA events */
-	CHAN		*pChan;		/* table of channels */
-	long		numChans;	/* number of db channels, incl. unass */
-	long		assignCount;	/* number of db channels assigned */
-	long		connCount;	/* number of channels connected */
-	long		firstConnectCount;
-        long		numMonitoredChans;
-        long		firstMonitorCount;
-        epicsBoolean	allFirstConnectAndMonitor;
-	SSCB		*pSS;		/* array of state set control blocks */
-	long		numSS;		/* number of state sets */
-	char		*pVar;		/* ptr to user variable area */
-	long		varSize;	/* # bytes in user variable area */
-	MACRO		*pMacros;	/* ptr to macro table */
-	char		*pParams;	/* program paramters */
-	bitMask		*pEvents;	/* event bits for event flags & db */
-	long		numEvents;	/* number of events */
-	long		options;	/* options (bit-encoded) */
-	ENTRY_FUNC	entryFunc;	/* entry function */
-	EXIT_FUNC	exitFunc;	/* exit function */
-	epicsMutexId	logSemId;	/* logfile locking semaphore */
-	FILE		*logFd;		/* logfile file descr. */
-	char		*pLogFile;	/* logfile name */
-	int		numQueues;	/* number of syncQ queues */
-	ELLLIST		*pQueues;	/* ptr to syncQ queues */
+	/* static program data (assigned once on startup) */
+	const char	*progName;	/* program name (for messages) */
+	int		instance;	/* program instance number */
+	unsigned	threadPriority;	/* thread priority (all threads) */
+	unsigned	stackSize;	/* stack size (all threads) */
+	void		*pvSys;		/* pv system handle */
+	char		*pvSysName;	/* pv system name ("ca", "ktl", ...) */
+	int		debug;		/* pv system debug level */
+	CHAN		*chan;		/* table of channels */
+	unsigned	numChans;	/* number of channels */
+	QUEUE		*queues;	/* array of syncQ queues */
+	unsigned	numQueues;	/* number of syncQ queues */
+	SSCB		*ss;		/* array of state set control blocks */
+	unsigned	numSS;		/* number of state sets */
+	USER_VAR	*var;		/* user variable area (shared buffer) */
+	size_t		varSize;	/* size of user variable area */
+	MACRO		*macros;	/* ptr to macro table */
+	char		*params;	/* program parameters */
+	unsigned	options;	/* options (bit-encoded) */
+	INIT_FUNC	*initFunc;	/* init function */
+	ENTRY_FUNC	*entryFunc;	/* entry function */
+	EXIT_FUNC	*exitFunc;	/* exit function */
+	unsigned	numEvFlags;	/* number of event flags */
 
+	/* dynamic program data (assigned at runtime) */
+	epicsMutexId	programLock;	/* mutex for locking dynamic program data */
+        /* the following five members must always be protected by programLock */
+	bitMask		*evFlags;	/* event bits for event flags & channels */
+	CHAN		**syncedChans;	/* for each event flag, start of synced list */
+	unsigned	assignCount;	/* number of channels assigned to ext. pv */
+	unsigned	connectCount;	/* number of channels connected */
+	unsigned	monitorCount;	/* number of channels monitored */
+	unsigned	firstMonitorCount; /* number of channels that received
+					   at least one monitor event */
+
+	void		*pvReqPool;	/* freeList for pv requests (has own lock) */
+	boolean		die;		/* flag set when seqStop is called */
+	epicsEventId	ready;		/* all channels connected & got 1st monitor */
+	epicsEventId	dead;		/* event to signal exit of main thread done */
+	SPROG		*next;		/* next element in program list (global lock) */
 };
-typedef	struct state_program SPROG;
 
-/* Auxiliary thread arguments */
-struct	auxiliary_args
+/* Request data for pvPut and pvGet */
+struct pvreq
 {
-        char		*pPvSysName;	/* PV system ("ca", "ktl", ...) */
-        long		debug;		/* debug level */
+	CHAN		*ch;		/* requested variable */
+	SSCB		*ss;		/* state set that made the request */
 };
-typedef struct auxiliary_args AUXARGS;
-
-/* Macro parameters */
-#define	MAX_MACROS	50
 
 /* Thread parameters */
 #define THREAD_NAME_SIZE	32
 #define THREAD_STACK_SIZE	epicsThreadStackBig
 #define THREAD_PRIORITY		epicsThreadPriorityMedium
 
-/* Function declarations for internal sequencer funtions */
-void	seqWakeup (SPROG *, long);
-void	seqFree (SPROG *);
-long	sequencer (SPROG *);
-long	sprogDelete (long);
-long	seqMacParse (char *, SPROG *);
-char	*seqMacValGet (MACRO *, char *);
-void	seqMacEval (char *, char *, long, MACRO *);
-epicsStatus seq_log ();
-SPROG	*seqFindProg (epicsThreadId);
-SPROG  *seqFindProg(epicsThreadId tid);
+/* Internal procedures */
+
+/* seq_task.c */
+void sequencer (void *arg);
+void ss_write_buffer(CHAN *ch, void *val, PVMETA *meta, boolean dirtify);
+void ss_read_buffer(SSCB *ss, CHAN *ch, boolean dirty_only);
+void ss_read_buffer_selective(SPROG *sp, SSCB *ss, EV_ID ev_flag);
+void seqWakeup(SPROG *sp, unsigned eventNum);
+void seqCreatePvSys(SPROG *sp);
+/* seq_mac.c */
+void seqMacParse(SPROG *sp, const char *macStr);
+char *seqMacValGet(SPROG *sp, const char *name);
+void seqMacEval(SPROG *sp, const char *inStr, char *outStr, size_t maxChar);
+void seqMacFree(SPROG *sp);
+/* seq_ca.c */
+void seq_get_handler(void *var, pvType type, unsigned count,
+	pvValue *value, void *arg, pvStat status);
+void seq_put_handler(void *var, pvType type, unsigned count,
+	pvValue *value, void *arg, pvStat status);
+void seq_mon_handler(void *var, pvType type, unsigned count,
+	pvValue *value, void *arg, pvStat status);
+void seq_conn_handler(void *var,int connected);
+pvStat seq_connect(SPROG *sp, boolean wait);
+void seq_disconnect(SPROG *sp);
+pvStat seq_monitor(CHAN *ch, boolean on);
+/* seq_prog.c */
+typedef int seqTraversee(SPROG *prog, void *param);
+void seqTraverseProg(seqTraversee *func, void *param);
+SSCB *seqFindStateSet(epicsThreadId threadId);
+SPROG *seqFindProg(epicsThreadId threadId);
+void seqDelProg(SPROG *sp);
+void seqAddProg(SPROG *sp);
+/* seqCommands.c */
+typedef int sequencerProgramTraversee(SPROG **sprog, seqProgram *pseq, void *param);
+int traverseSequencerPrograms(sequencerProgramTraversee *traversee, void *param);
+/* seq_main.c */
+void seq_free(SPROG *sp);
+/* debug/query support */
+typedef int pr_fun(const char *format,...);
+void print_channel_value(pr_fun *, CHAN *ch, void *val);
 
 #endif	/*INCLseqPvth*/

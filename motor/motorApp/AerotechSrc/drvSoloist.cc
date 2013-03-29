@@ -2,10 +2,10 @@
 * FILENAME... drvSoloist.cc
 * USAGE...    Motor record driver level support for Aerotech Soloist.
 *
-* Version:        $Revision: 11153 $
+* Version:        $Revision: 14155 $
 * Modified By:    $Author: sluiter $
-* Last Modified:  $Date: 2010-06-09 14:40:42 -0500 (Wed, 09 Jun 2010) $
-* HeadURL:        $URL: https://subversion.xor.aps.anl.gov/synApps/motor/tags/R6-5-2/motorApp/AerotechSrc/drvSoloist.cc $
+* Last Modified:  $Date: 2011-11-29 14:50:00 -0600 (Tue, 29 Nov 2011) $
+* HeadURL:        $URL: https://subversion.xor.aps.anl.gov/synApps/motor/tags/R6-7-1/motorApp/AerotechSrc/drvSoloist.cc $
 */
 
 /*
@@ -77,17 +77,18 @@
 #define TIMEOUT 20.0 /* Command timeout in sec. */
 
 /*----------------debugging-----------------*/
-#ifdef __GNUG__
-#ifdef  DEBUG
-#define Debug(l, f, args...) { if (l<=drvSoloistdebug) printf(f,## args); }
-#else
-#define Debug(l, f, args...)
-#endif
-#else
-#define Debug()
-#endif
 volatile int drvSoloistdebug = 0;
 extern "C" {epicsExportAddress(int, drvSoloistdebug);}
+static inline void Debug(int level, const char *format, ...) {
+  #ifdef DEBUG
+    if (level < drvSoloistdebug) {
+      va_list pVar;
+      va_start(pVar, format);
+      vprintf(format, pVar);
+      va_end(pVar);
+    }
+  #endif
+}
 
 /* --- Local data. --- */
 int Soloist_num_cards = 0;

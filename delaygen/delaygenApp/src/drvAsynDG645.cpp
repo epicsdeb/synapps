@@ -347,7 +347,8 @@ static Command commandTable[] =
     {0,    12,      0,      NULL,   "TSRC?",    readParam,      cvtStrInt,      "TSRC%d",       writeIntParam,      "Trigger Source"},
     {0,    13,      0,      NULL,   "INHB?",    readParam,      cvtStrInt,      "INHB%d",       writeIntParam,      "Trigger Inhibit"},
     {0,    14,      0,      NULL,   "",         readSink,       cvtSink,        "*TRG",         writeCommandOnly,   "Trigger Delay"},
-                                                                
+    {0,    15,      0,      NULL,   "PRES?0",   readParam,      cvtStrInt,      "PRES 0,%d",    writeIntParam,      "Trigger Prescale"},
+
     // Burst mode related commands
     {0,    20,      0,      NULL,   "BURM?",    readParam,      cvtStrInt,      "BURM%d",       writeIntParam,      "Burst Mode"},
     {0,    21,      0,      NULL,   "BURC?",    readParam,      cvtStrInt,      "BURC%d",       writeIntParam,      "Burst Count"},
@@ -383,7 +384,8 @@ static Command commandTable[] =
     {0,   102,      2,      NULL,   "",         readSink,       cvtSink,        "SPDL 2,0",     writeCommandOnly,   "Channel A step delay minus"},
     {0,   103,      2,      NULL,   "",         readSink,       cvtSink,        "SPDL 2,1",     writeCommandOnly,   "Channel A step delay plus"},
     {0,   104,      2,      NULL,   "SSDL?2",   readParam,      cvtStrFloat,    "SSDL 2,%e",    writeFloatParam,    "Channel A step delay size"},
-                                                                
+    {0,   105,      0,      NULL,   "PRES?1",   readParam,      cvtStrInt,      "PRES 1,%d",    writeIntParam,      "Channel AB Prescale"},
+
     // Delay channel B related commands
     {0,   110,      3,      NULL,   "DLAY?3",   readParam,      cvtChanRef,     "DLAY 3,%d,%e", writeChannelRef,    "Channel B ref"},
     {0,   111,      3,      NULL,   "DLAY?3",   readParam,      cvtChanDelay,   "DLAY 3,%d,%e", writeChannelDelay,  "Channel B delay"},
@@ -397,7 +399,8 @@ static Command commandTable[] =
     {0,   122,      4,      NULL,   "",         readSink,       cvtSink,        "SPDL 4,0",     writeCommandOnly,   "Channel C step delay minus"},
     {0,   123,      4,      NULL,   "",         readSink,       cvtSink,        "SPDL 4,1",     writeCommandOnly,   "Channel C step delay plus"},
     {0,   124,      4,      NULL,   "SSDL?4",   readParam,      cvtStrFloat,    "SSDL 4,%e",    writeFloatParam,    "Channel C step delay size"},
-                                                                
+    {0,   125,      0,      NULL,   "PRES?2",   readParam,      cvtStrInt,      "PRES 2,%d",    writeIntParam,      "Channel CD Prescale"},
+
     // Delay channel D related commands
     {0,   130,      5,      NULL,   "DLAY?5",   readParam,      cvtChanRef,     "DLAY 5,%d,%e", writeChannelRef,    "Channel D ref"},
     {0,   131,      5,      NULL,   "DLAY?5",   readParam,      cvtChanDelay,   "DLAY 5,%d,%e", writeChannelDelay,  "Channel D delay"},
@@ -411,7 +414,8 @@ static Command commandTable[] =
     {0,   142,      6,      NULL,   "",         readSink,       cvtSink,        "SPDL 6,0",     writeCommandOnly,   "Channel E step delay minus"},
     {0,   143,      6,      NULL,   "",         readSink,       cvtSink,        "SPDL 6,1",     writeCommandOnly,   "Channel E step delay plus"},
     {0,   144,      6,      NULL,   "SSDL?6",   readParam,      cvtStrFloat,    "SSDL 6,%e",    writeFloatParam,    "Channel E step delay size"},
-                                                                
+    {0,   145,      0,      NULL,   "PRES?3",   readParam,      cvtStrInt,      "PRES 3,%d",    writeIntParam,      "Channel EF Prescale"},
+
     // Delay channel F related commands
     {0,   150,      7,      NULL,   "DLAY?7",   readParam,      cvtChanRef,     "DLAY 7,%d,%e", writeChannelRef,    "Channel F ref"},
     {0,   151,      7,      NULL,   "DLAY?7",   readParam,      cvtChanDelay,   "DLAY 7,%d,%e", writeChannelDelay,  "Channel F delay"},
@@ -425,7 +429,8 @@ static Command commandTable[] =
     {0,   162,      8,      NULL,   "",         readSink,       cvtSink,        "SPDL 8,0",     writeCommandOnly,   "Channel G step delay minus"},
     {0,   163,      8,      NULL,   "",         readSink,       cvtSink,        "SPDL 8,1",     writeCommandOnly,   "Channel G step delay plus"},
     {0,   164,      8,      NULL,   "SSDL?8",   readParam,      cvtStrFloat,    "SSDL 8,%e",    writeFloatParam,    "Channel G step delay size"},
-                                                                
+    {0,   165,      0,      NULL,   "PRES?4",   readParam,      cvtStrInt,      "PRES 4,%d",    writeIntParam,      "Channel GH Prescale"},
+
     // Delay channel H related commands
     {0,   170,      9,      NULL,   "DLAY?9",   readParam,      cvtChanRef,     "DLAY 9,%d,%e", writeChannelRef,    "Channel H ref"},
     {0,   171,      9,      NULL,   "DLAY?9",   readParam,      cvtChanDelay,   "DLAY 9,%d,%e", writeChannelDelay,  "Channel H delay"},

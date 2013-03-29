@@ -50,12 +50,12 @@ int tyGSAsynInit(char *port, char *moduleName, int channel, int baud, char parit
         printf("tyGSAsynInit: error calling asynOctetConnect\n");
         return(ERROR);
     }
-    status = asynOctetSetInputEos(port, 0, inputEos, NULL);
+    status = asynOctetSetInputEos(port, 0, inputEos);
     if (status) {
         printf("tyGSAsynInit: error calling asynOctetSetInputEos\n");
         return(ERROR);
     }
-    status = asynOctetSetOutputEos(port, 0, outputEos, NULL);
+    status = asynOctetSetOutputEos(port, 0, outputEos);
     if (status) {
         printf("tyGSAsynInit: error calling asynOctetSetOutputEos\n");
         return(ERROR);

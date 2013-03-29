@@ -2,11 +2,11 @@
 #include <cantProceed.h>
 #include <epicsString.h>
 #include <errlog.h>
-#include <epicsExport.h>
 #include <iocsh.h>
 #include <asynDriver.h>
 #include <asynDrvUser.h>
 #include <XPSAsynInterpose.h>
+#include <epicsExport.h>
 
 typedef struct {
     XPSCommand command;
@@ -14,8 +14,8 @@ typedef struct {
 } XPSCommandStruct;
 
 static XPSCommandStruct XPSCommands[XPS_NUM_PARAMS] = {
-    {minJerkTime,     "MIN_JERK_TIME"},
-    {maxJerkTime,     "MAX_JERK_TIME"},
+    {minJerkTime,     "XPS_MIN_JERK"},
+    {maxJerkTime,     "XPS_MAX_JERK"},
     {XPSStatus,       "XPS_STATUS"}
 };
 

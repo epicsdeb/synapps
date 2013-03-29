@@ -37,7 +37,6 @@
 #endif
 
 #include <iocsh.h>
-#include <epicsExport.h>
 #include <epicsThread.h>
 #include <epicsString.h>
 #include <epicsTimer.h>
@@ -58,9 +57,10 @@
 #include <drvSup.h>
 #include <registryDriverSupport.h>
 
-#include "asynMotorDriver.h"
+#include "asynMotorController.h"
 #include "motor_interface.h"
 #include <limits.h>
+#include <epicsExport.h>
 
 /* Message queue size */
 #define MAX_MESSAGES 100
@@ -84,11 +84,12 @@ typedef enum {
     motorPgain = motorAxisPGain,
     motorIgain = motorAxisIGain,
     motorDgain = motorAxisDGain,
-    motorHighLim = motorAxisHighLimit,
-    motorLowLim = motorAxisLowLimit,
+    motorHighLimit = motorAxisHighLimit,
+    motorLowLimit = motorAxisLowLimit,
     motorSetClosedLoop = motorAxisClosedLoop,
     motorEncoderPosition = motorAxisEncoderPosn,
     motorDeferMoves = motorAxisDeferMoves,
+    motorMoveToHome = motorAxisMoveToHome,
     /* Status bits split out */
     motorStatusDirection=motorAxisDirection,
     motorStatusDone, motorStatusHighLimit, motorStatusAtHome,
@@ -126,10 +127,11 @@ static motorCommandStruct motorCommands[] = {
     {motorPgain,                motorPgainString},
     {motorIgain,                motorIgainString},
     {motorDgain,                motorDgainString},
-    {motorHighLim,              motorHighLimString},
-    {motorLowLim,               motorLowLimString},
+    {motorHighLimit,            motorHighLimitString},
+    {motorLowLimit,             motorLowLimitString},
     {motorSetClosedLoop,        motorSetClosedLoopString},
     {motorDeferMoves,           motorDeferMovesString},
+    {motorMoveToHome,           motorMoveToHomeString},
     {motorStatus,               motorStatusString},
     {motorUpdateStatus,         motorUpdateStatusString},
     {motorStatusDirection,      motorStatusDirectionString}, 
@@ -739,8 +741,8 @@ static asynStatus writeFloat64(void *drvPvt, asynUser *pasynUser,
     case motorPgain:
     case motorIgain:
     case motorDgain:
-    case motorHighLim:
-    case motorLowLim:
+    case motorHighLimit:
+    case motorLowLimit:
     default:
 	status = (*pPvt->drvset->setDouble)(pAxis->axis, command, value);
 	break;
@@ -778,14 +780,14 @@ static asynStatus readGenericPointer(void *drvPvt, asynUser *pasynUser,
 	(*pPvt->drvset->getDouble)(pAxis->axis, motorPosition,
 				   &(value->position));
 	(*pPvt->drvset->getDouble)(pAxis->axis, motorEncoderPosition,
-				   &(value->encoder_posn));
+				   &(value->encoderPosition));
 	(*pPvt->drvset->getDouble)(pAxis->axis, motorVelocity,
 				   &(value->velocity));
     }
 						     
     asynPrint(pasynUser, ASYN_TRACEIO_DRIVER,
               "drvMotorAsyn::readMotorStatus, [%08x,%f,%f,%f]\n",
-	      value->status, value->position, value->encoder_posn,
+	      value->status, value->position, value->encoderPosition,
 	      value->velocity);
     return(asynSuccess);
 }
@@ -857,7 +859,7 @@ static void intCallback(void *axisPvt, unsigned int nChanged,
 	}
 	if (changed[i] == motorEncoderPosition) {
 	    (*pPvt->drvset->getDouble)(pAxis->axis, changed[i], 
-				       &(pAxis->status.encoder_posn));
+				       &(pAxis->status.encoderPosition));
 	}
 	/*	if (changed[i] == motorVelocity) {
 	    (*pPvt->drvset->getDouble)(pAxis->axis, changed[i], 

@@ -106,7 +106,6 @@
 #include    <recSup.h>
 #include    <recGbl.h>
 #include    <special.h>
-#include    <tsDefs.h>
 #include    <menuYesNo.h> 
 
 #define GEN_SIZE_OFFSET
@@ -366,7 +365,9 @@ field to all listeners.  monitor() does this.
         DATA_TYPE *pb, *pbg = (DATA_TYPE *)pmca->pbg;\
         DATA_TYPE *plo, *phi;\
         sum = net = 0.0;\
-        lo = proi->lo; hi = proi->hi;\
+        lo = proi->lo; \
+        hi = proi->hi;\
+        if (hi > max) hi = max; \
         if (lo >= 0 && hi >= lo) {\
             bg_lo = bg_hi = 0.0;\
             if (proi->nbg >= 0) {\
@@ -392,20 +393,19 @@ field to all listeners.  monitor() does this.
                 net += *p - *pb;\
             }\
             MARK(M_BG);\
+        }\
+        if ((sum != psum->sum) || (net != psum->net)) ROI_MARK(M_R0<<i);\
+        psum->sum = sum;\
+        psum->net = net;\
+        if (proi->isPreset) *preset_reached |= psum->net >= psum->preset;\
+        NEWR_UNMARK(M_R0<<i);\
     }\
-    if ((sum != psum->sum) || (net != psum->net)) ROI_MARK(M_R0<<i);\
-    psum->sum = sum;\
-    psum->net = net;\
-    if (proi->isPreset) *preset_reached |= psum->net >= psum->preset;\
-    NEWR_UNMARK(M_R0<<i);\
-    }\
-\
     proi = (struct roi *)&pmca->r0lo;\
     for (i=0; i<NUM_ROI; i++, proi++) {\
         DATA_TYPE *pbg = (DATA_TYPE *)pmca->pbg;\
         if (proi->lo >= 0 && proi->hi >= proi->lo) {\
             pbg[proi->lo] = pbg[proi->hi] = ymax;\
-    }\
+        }\
     }\
 
 
@@ -459,8 +459,7 @@ static long init_record(mcaRecord *pmca, int pass)
     }
     /* Initialize hardware to agree with the record */
     status = (*pdset->send_msg)
-                (pmca, (pmca->chas==mcaCHAS_Internal) ?
-                mcaChannelAdvanceInternal : mcaChannelAdvanceExternal, NULL);
+                (pmca, mcaChannelAdvanceSource, (void*)(&pmca->chas));
     status = (*pdset->send_msg)
                 (pmca,  mcaNumChannels, (void *)(&pmca->nuse));
     status = (*pdset->send_msg)
@@ -481,18 +480,8 @@ static long init_record(mcaRecord *pmca, int pass)
                 (pmca,  mcaPresetHighChannel, (void *)(&pmca->pcth));
     status = (*pdset->send_msg)
                 (pmca,  mcaPresetSweeps, (void *)(&pmca->pswp));
-    switch (pmca->mode) {
-      case mcaMODE_PHA:
-      default:
-         status = (*pdset->send_msg) (pmca, mcaModePHA, NULL);
-         break;
-      case mcaMODE_MCS:
-         status = (*pdset->send_msg) (pmca, mcaModeMCS, NULL);
-         break;
-      case mcaMODE_List:
-         status = (*pdset->send_msg) (pmca, mcaModeList, NULL);
-         break;
-    }
+    status = (*pdset->send_msg) 
+                (pmca, mcaAcquireMode, (void *)(&pmca->mode));
     return(0);
 }
 
@@ -534,8 +523,7 @@ reprocess:
         if (NEWV_MARKED(M_CHAS)) {
             MARK(M_CHAS);
             status = (*pdset->send_msg)
-                (pmca, (pmca->chas==mcaCHAS_Internal) ?
-                mcaChannelAdvanceInternal : mcaChannelAdvanceExternal, NULL);
+                (pmca, mcaChannelAdvanceSource, (void *)(&pmca->chas), NULL);
             if (status) {pmca->nack = 1; MARK(M_NACK);}
             NEWV_UNMARK(M_CHAS);
         }
@@ -614,17 +602,10 @@ reprocess:
             status = (*pdset->send_msg)
                 (pmca,  mcaErase, NULL);
             if (status) {pmca->nack = 1; MARK(M_NACK);}
-            /* Use TimeStamp to record beginning of acquisition */
-            recGblGetTimeStamp(pmca);
-            tsStampToText(&pmca->time, TS_TEXT_MONDDYYYY,
-                           pmca->stim);
 
             /* Reset NORD */
             pmca->nord = 0;
             MARK(M_NORD);
-            /* Trim STIM to 25 characters = .001 sec precision */
-            pmca->stim[25]='\0';
-            MARK(M_STIM);
             /* Erase the data array.  Do this inside the record rather than
              * forcing a read from device support for perfomance reasons. */
             memset(pmca->bptr, 0, pmca->nuse*sizeofTypes[pmca->ftvl]);
@@ -643,18 +624,7 @@ reprocess:
         }
         if (NEWV_MARKED(M_MODE)) {
             MARK(M_MODE);
-            switch (pmca->mode) {
-            case mcaMODE_PHA:
-            default:
-                status = (*pdset->send_msg) (pmca, mcaModePHA, NULL);
-                break;
-            case mcaMODE_MCS:
-                status = (*pdset->send_msg) (pmca, mcaModeMCS, NULL);
-                break;
-            case mcaMODE_List:
-                status = (*pdset->send_msg) (pmca, mcaModeList, NULL);
-                break;
-            }
+            status = (*pdset->send_msg) (pmca, pmca->mode, NULL);
             if (status) {pmca->nack = 1; MARK(M_NACK);}
             NEWV_UNMARK(M_MODE);
         }
@@ -677,15 +647,6 @@ reprocess:
           pmca->erst = 0;
           MARK(M_ERST);
           NEWV_UNMARK(M_ERST);
-       }
-       /* Use TimeStamp to record beginning of acquisition */
-       /* Don't reset the clock if we are already acquiring */
-       if (!pmca->acqg) {
-          recGblGetTimeStamp(pmca);
-          tsStampToText(&pmca->time, TS_TEXT_MONDDYYYY, pmca->stim);
-          /* Trim STIM to 25 characters = .001 sec precision */
-          pmca->stim[25]='\0';
-          MARK(M_STIM);
        }
     }
     if (pmca->stop) {
@@ -842,6 +803,14 @@ read_data:
     }
     pmca->udf = FALSE;
 
+    if (!pmca->acqg) {
+        /* Use TimeStamp to record end of acquisition */
+        recGblGetTimeStamp(pmca);
+	epicsTimeToStrftime(pmca->stim, 25, "%b %d, %Y %H:%M:%S.%03f", &pmca->time);
+        /* Trim STIM to 25 characters = .001 sec precision */
+        pmca->stim[25]='\0';
+        MARK(M_STIM);
+    }
     mcaAlarm(pmca);
     monitor(pmca);
 
@@ -895,6 +864,7 @@ static long get_array_info(struct dbAddr *paddr, long *no_elements, long *offset
     mcaRecord *pmca=(mcaRecord *)paddr->precord;
 
     *no_elements =  pmca->nord;
+    if (*no_elements == 0) *no_elements = 1;
     *offset = 0;
     return(0);
 }

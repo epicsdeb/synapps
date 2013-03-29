@@ -1,7 +1,7 @@
 
 file {
-	name="/home/oxygen12/DKLINE/EPICS/dev/synApps/support/delaygen/work/delaygenApp/op/adl/srsDG645.adl"
-	version=030101
+   name="/remote/apex/software/epics/R3.14.12/modules/R0/soft/synApps_5_5/support/delaygen-1-0-6/delaygenApp/op/adl/srsDG645.adl"
+   version=030105
 }
 display {
 	object {
@@ -2002,4 +2002,248 @@ rectangle {
 	clr=14
 	bclr=2
 	label="-ASYN RECORD"
+}
+text {
+   object {
+	   x=329
+	   y=490
+	   width=200
+	   height=16
+   }
+   "basic attribute" {
+	   clr=14
+	   fill="outline"
+   }
+   textix="Trigger Prescale"
+   align="horiz. centered"
+}
+text {
+   object {
+	   x=327
+	   y=540
+	   width=20
+	   height=14
+   }
+   "basic attribute" {
+	   clr=14
+	   fill="outline"
+   }
+   textix="AB"
+   align="horiz. right"
+}
+"text entry" {
+   object {
+	   x=441
+	   y=536
+	   width=80
+	   height=22
+   }
+   control {
+	   chan="$(P)$(R)abTriggerPrescaleLO"
+	   clr=14
+	   bclr=51
+   }
+   limits {
+   }
+}
+"text update" {
+   object {
+	   x=352
+	   y=540
+	   width=80
+	   height=15
+   }
+   monitor {
+	   chan="$(P)$(R)abTriggerPrescaleLI"
+	   clr=14
+	   bclr=1
+   }
+   clrmod="alarm"
+   align="horiz. right"
+   limits {
+   }
+}
+text {
+   object {
+	   x=327
+	   y=566
+	   width=20
+	   height=14
+   }
+   "basic attribute" {
+	   clr=14
+	   fill="outline"
+   }
+   textix="CD"
+   align="horiz. right"
+}
+"text entry" {
+   object {
+	   x=441
+	   y=562
+	   width=80
+	   height=22
+   }
+   control {
+	   chan="$(P)$(R)cdTriggerPrescaleLO"
+	   clr=14
+	   bclr=51
+   }
+   limits {
+   }
+}
+"text update" {
+   object {
+	   x=352
+	   y=566
+	   width=80
+	   height=15
+   }
+   monitor {
+	   chan="$(P)$(R)cdTriggerPrescaleLI"
+	   clr=14
+	   bclr=1
+   }
+   clrmod="alarm"
+   align="horiz. right"
+   limits {
+   }
+}
+text {
+   object {
+	   x=327
+	   y=514
+	   width=20
+	   height=14
+   }
+   "basic attribute" {
+	   clr=14
+	   fill="outline"
+   }
+   textix="N"
+   align="horiz. right"
+}
+"text entry" {
+   object {
+	   x=441
+	   y=510
+	   width=80
+	   height=22
+   }
+   control {
+	   chan="$(P)$(R)triggerPrescaleLO"
+	   clr=14
+	   bclr=51
+   }
+   limits {
+   }
+}
+"text update" {
+   object {
+	   x=352
+	   y=513
+	   width=80
+	   height=15
+   }
+   monitor {
+	   chan="$(P)$(R)triggerPrescaleLI"
+	   clr=14
+	   bclr=1
+   }
+   clrmod="alarm"
+   align="horiz. right"
+   limits {
+   }
+}
+text {
+   object {
+	   x=327
+	   y=592
+	   width=20
+	   height=14
+   }
+   "basic attribute" {
+	   clr=14
+	   fill="outline"
+   }
+   textix="EF"
+   align="horiz. right"
+}
+"text entry" {
+   object {
+	   x=441
+	   y=588
+	   width=80
+	   height=22
+   }
+   control {
+	   chan="$(P)$(R)efTriggerPrescaleLO"
+	   clr=14
+	   bclr=51
+   }
+   limits {
+   }
+}
+"text update" {
+   object {
+	   x=352
+	   y=592
+	   width=80
+	   height=15
+   }
+   monitor {
+	   chan="$(P)$(R)efTriggerPrescaleLI"
+	   clr=14
+	   bclr=1
+   }
+   clrmod="alarm"
+   align="horiz. right"
+   limits {
+   }
+}
+text {
+   object {
+	   x=327
+	   y=618
+	   width=20
+	   height=14
+   }
+   "basic attribute" {
+	   clr=14
+	   fill="outline"
+   }
+   textix="GH"
+   align="horiz. right"
+}
+"text entry" {
+   object {
+	   x=441
+	   y=614
+	   width=80
+	   height=22
+   }
+   control {
+	   chan="$(P)$(R)ghTriggerPrescaleLO"
+	   clr=14
+	   bclr=51
+   }
+   limits {
+   }
+}
+"text update" {
+   object {
+	   x=352
+	   y=618
+	   width=80
+	   height=15
+   }
+   monitor {
+	   chan="$(P)$(R)ghTriggerPrescaleLI"
+	   clr=14
+	   bclr=1
+   }
+   clrmod="alarm"
+   align="horiz. right"
+   limits {
+   }
 }

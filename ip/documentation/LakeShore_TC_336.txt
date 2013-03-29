@@ -1,0 +1,41 @@
+Lakeshore 336 Temperature Controller:
+
+- ether.cmd (IOC)
+
+# Lakeshore 336 Temperature Controller
+drvAsynIPPortConfigure("ether1", "<TC336 IP>:7777", 0, 0, 0)
+#asynOctetConnect("ether1", "ether1")
+asynOctetSetInputEos("ether1",0,"\n")
+asynOctetSetOutputEos("ether1",0,"\n")
+
+epicsEnvSet ("STREAM_PROTOCOL_PATH", "<full stream protocol file path>")
+dbLoadRecords("$(TOP)/xxxApp/Db/LakeShore336.db", "P=xxx:,Q=TC1,PORT=ether100,ADDR=0")
+
+
+- In top level medm screen, related display button:
+
+	display[3] {
+		label="LakeShore 336 (TC1)"
+		name="LakeShore336.adl"
+		args="P=xxx:,Q=TC1"
+	}
+
+
+
+***** Notes on Control Parameters that are unique             
+***** to the LakeShore 336 (versus other LS models). 
+
+The 'Manual' setting (percentage override of the power output)  sets 
+the output power in 'Open Loop' mode. The 'SetPoint' parameter is ignored.
+
+Zone Mode is basically 'Closed Loop' but with a internal LS 336 table that changes
+the Control Settings based on crossing Setpoint thresholds.
+
+Loop 3 and 4 are voltage (+/-10.00) outputs that can be used to control external
+power supplies. They don't do closed loop control.
+
+Loop 3 and 4 Only Modes:
+'Monitor Output' causes Loop 3 and 4 output to track the selected input (See ANALOG command).
+
+'Warmup Supply' is used to output a constant voltage (Loop 3 and 4) UNTIL the 'Setpoint'
+is reached. (see WARMUP command).

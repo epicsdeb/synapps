@@ -1,14 +1,14 @@
 
 file {
-	name="C:\cygwin\home\mooney\epics\synApps\support\all_adl\calcArrayExamples.adl"
-	version=030004
+	name="/home/oxygen/MOONEY/epics/synApps/support/calc/calcApp/op/adl/calcArrayExamples.adl"
+	version=030105
 }
 display {
 	object {
 		x=192
 		y=38
 		width=240
-		height=720
+		height=820
 	}
 	clr=14
 	bclr=1
@@ -865,27 +865,97 @@ text {
 	}
 	textix="FIT TO 2ND ORDER POLYNOMIAL"
 }
-text {
+composite {
 	object {
 		x=5
 		y=695
+		width=230
+		height=25
+	}
+	"composite name"=""
+	children {
+		text {
+			object {
+				x=5
+				y=695
+				width=230
+				height=14
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="FITMPOLY(AA,BB)"
+		}
+		text {
+			object {
+				x=15
+				y=710
+				width=220
+				height=10
+			}
+			"basic attribute" {
+				clr=47
+			}
+			textix="FITPOLY, IGNORING AA[I] IF BB[I]==0"
+		}
+	}
+}
+composite {
+	object {
+		x=5
+		y=725
+		width=230
+		height=25
+	}
+	"composite name"=""
+	children {
+		text {
+			object {
+				x=5
+				y=725
+				width=230
+				height=14
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="AA>>10"
+		}
+		text {
+			object {
+				x=15
+				y=740
+				width=220
+				height=10
+			}
+			"basic attribute" {
+				clr=47
+			}
+			textix="MOVE ARRAY ELEMENTS FORWARD IN ARRAY"
+		}
+	}
+}
+text {
+	object {
+		x=5
+		y=755
 		width=230
 		height=14
 	}
 	"basic attribute" {
 		clr=14
 	}
-	textix="FITMPOLY(AA,BB)"
+	textix="AA<<10"
 }
 text {
 	object {
 		x=15
-		y=710
+		y=770
 		width=220
 		height=10
 	}
 	"basic attribute" {
 		clr=47
 	}
-	textix="FITPOLY, IGNORING AA[I] IF BB[I]==0"
+	textix="MOVE ARRAY ELEMENTS BACKWARD IN ARRAY"
 }

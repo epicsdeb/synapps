@@ -1,81 +1,17 @@
+/*************************************************************************\
+* Copyright (c) 2010 UChicago Argonne LLC, as Operator of Argonne
+*     National Laboratory.
+* Copyright (c) 2002 The Regents of the University of California, as
+*     Operator of Los Alamos National Laboratory.
+* EPICS BASE is distributed subject to a Software License Agreement found
+* in file LICENSE that is included with this distribution. 
+\*************************************************************************/
 /* sCalcPerform.c,v 1.7 2004/08/30 19:03:40 mooney Exp */
 /*
- *	Author: Julie Sander and Bob Dalesio
- *	Date:	07-27-87
- *
- *	Experimental Physics and Industrial Control System (EPICS)
- *
- *	Copyright 1991, the Regents of the University of California,
- *	and the University of Chicago Board of Governors.
- *
- *	This software was produced under  U.S. Government contracts:
- *	(W-7405-ENG-36) at the Los Alamos National Laboratory,
- *	and (W-31-109-ENG-38) at Argonne National Laboratory.
- *
- *	Initial development by:
- *		The Controls and Automation Group (AT-8)
- *		Ground Test Accelerator
- *		Accelerator Technology Division
- *		Los Alamos National Laboratory
- *
- *	Co-developed with
- *		The Controls and Computing Group
- *		Accelerator Systems Division
- *		Advanced Photon Source
- *		Argonne National Laboratory
- *
- * Modification Log:
- * -----------------
- * 03-18-98 tmm Essentially rewritten to support string operators
- * 05-21-98 tmm fixed ?: operator
- * 11-12-98 tmm v4.3 added array operators @, @@ 
- * 10-27-01 mlr added BYTE operator
- * 05-13-03 tmm extensive modifications to improve performance, decrease
- *              threat of memory fragmentation, and add new operator type.
- *              Fixed-size strings are allocated in place on the value
- *              stack, rather than continually being allocated and freed.
- *              Added FETCH_A..FETCH_L symbols, in addition to FETCH followed
- *              by an argument.  Variable-argument operators (MAX, MIN) put
- *              NaN on the value stack to indicate end of args.  Use isnan
- *              from EPICS base.  Added checkXxxElement(), which compile to
- *              nothing if DEBUG=0.
- * 03-03-06 tmm Added TR_ESC function, which applies dbTranslateEscape() to
- *              its argument, and ESC function, which applies
- *              epicsStrSnPrintEscaped() to its argument.
- * 10-23-06 tmm Added CRC16 and MODBUS functions, calculate modbus 16-bit CRC
- *              from string, and either return it, or append it.
- * 10-24-06 tmm Added LRC, AMODBUS, XOR8 and ADD_XOR8 functions
+ *	Original Author: Julie Sander and Bob Dalesio
+ *	Date:	         07-27-87
  */
-
-/* This module contains the code for processing the arithmetic
- * expressions defined in calculation records. postfix must be called
- * to convert a valid infix expression to postfix. sCalcPerform
- * calculates the postfix expression.
- *
- * Subroutines
- *
- *	Public
- *
- * sCalcPerform		perform the calculation
- *  args
- *    double *parg       address of arguments
- *    int    numArgs     number of arguments in pargs array
- *    double *psarg      address of string arguments
- *    int    numSArgs    number of string arguments in psargs array
- *    double *presult    address of double result
- *    char   *psresult   address of string-result buffer
- *    int    lenSresult  length of string-result buffer
- *    char   *rpcl       address of postfix buffer
- *  returns
- *    0   fetched successfully
- *    -1  fetch failed
- *
- * Private routine for sCalcPerform
- * local_random  random number generator
- *  returns
- *    double value between 0.00 and 1.00
- */
-
+
 #ifdef vxWorks
 #include <vxWorks.h>
 #endif
@@ -87,6 +23,7 @@
 #include	<ctype.h>	/* for isdigit() */
 
 #include	"dbDefs.h"
+#include "epicsMath.h"
 #include	"cvtFast.h"
 #include	"epicsString.h"
 #include	"epicsStdio.h"	/* for  epicsSnprintf() */
@@ -97,39 +34,40 @@
 #include <epicsExport.h>
 
 static double	local_random();
-extern void getOpString(char code, char* opString);
+static int cond_search(const unsigned char **ppinst, int match);
 
 #define myNINT(a) ((int)((a) >= 0 ? (a)+0.5 : (a)-0.5))
 #ifndef PI
-#define PI 3.141592654
+#define PI 3.14159265358979323
 #endif
-#define MAX(a,b) (a)>(b)?(a):(b)
-#define MIN(a,b) (a)<(b)?(a):(b)
+#define myMAX(a,b) (a)>(b)?(a):(b)
+#define myMIN(a,b) (a)<(b)?(a):(b)
+#define SMALL 1.e-11
 
-#define OVERRIDESTDCALC 0
 #define DEBUG 1
+#define INIT_STACK 1
 volatile int sCalcPerformDebug = 0;
 epicsExportAddress(int, sCalcPerformDebug);
+volatile int sCalcLoopMax = 1000;
+epicsExportAddress(int, sCalcLoopMax);
 
-#if DEBUG
 int sCalcStackHW = 0;	/* high-water mark */
 int sCalcStackLW = 0;	/* low-water mark */
+epicsExportAddress(int, sCalcStackHW);
+epicsExportAddress(int, sCalcStackLW);
+#if DEBUG
 #define INC(ps) {if ((int)(++(ps)-top) > sCalcStackHW) sCalcStackHW = (int)((ps)-top);}
 #define DEC(ps) {if ((int)(--(ps)-top) < sCalcStackLW) sCalcStackLW = (int)((ps)-top);}
-#define checkDoubleElement(pd,op) {if (isnan(*(pd))) printf("sCalcPerform: unexpected NaN in op %d\n", (op));}
-#define checkStackElement(ps,op) {if (((ps)->s == NULL) && isnan((ps)->d)) printf("sCalcPerform: unexpected NaN in op %d\n", (op));}
 #else
 #define INC(ps) ++ps
 #define DEC(ps) ps--
-#define checkDoubleElement(pd,op)
-#define checkStackElement(ps,op)
 #endif
 
 /* strncpy sucks (may copy extra characters, may not null-terminate) */
 #define strNcpy(dest, src, N) {			\
 	int ii;								\
-	char *dd=dest, *ss=src;				\
-	for (ii=0; *ss && ii < N-1; ii++)	\
+	char *dd=(dest), *ss=(src);				\
+	for (ii=0; *ss && ii < (N)-1; ii++)	\
 		*dd++ = *ss++;					\
 	*dd = '\0';							\
 }
@@ -289,28 +227,31 @@ int crc16(char *output, char *rawInput)
 	return(0);
 }
 
+/* try this for modbus/Ascii*/
+int hex(char c) {
+	if (isxdigit((int) c)) {
+		if (isdigit((int)c))
+			return((int)c - (int)'0');
+		else
+			return(10 + toupper((int)c) - (int)'A');
+	}
+	return(0);
+}
+
 int lrc(char *output, char *rawInput)
 {
-	int i, len;
+	int i;
 	unsigned int lrc;
-	unsigned char tranInput[100];
 
-	len = dbTranslateEscape((char *)tranInput, rawInput);
-	if (len == 0) return(-1);
-	if (sCalcPerformDebug>=5) {
-		printf("input string(len=%d): ", len);
-		for (i=0; i<len; i++) printf("0x%02x ", tranInput[i]);
-		printf("\n");
+	for (i=0, lrc=0; i<strlen(rawInput)-1; i+=2) {
+		lrc += hex(rawInput[i])*0x10 + hex(rawInput[i+1]);
+		if (sCalcPerformDebug>=20) printf("lrc: adding %d\n", rawInput[i]*0x10 + rawInput[i+1]);
 	}
-	lrc = 0;
-	/* Loop through the translated input string */
-	for (i=0; i<len; i++) {
-		lrc += (unsigned int)tranInput[i];
-	}
+	lrc &= 0xff;
 	lrc = -lrc;
 	if (sCalcPerformDebug>=10) printf("lrc=0x%04x\n", lrc);
 	/* put the LRC into the output string, escaped */
-	sprintf(output, "\\x%02x", lrc&0xff);
+	sprintf(output, "%02X", lrc&0xff);
 	return(0);
 }
 
@@ -338,81 +279,112 @@ int xor8(char *output, char *rawInput)
 	return(0);
 }
 
-
-#if OVERRIDESTDCALC
-/* Override standard EPICS expression evaluator (if we're loaded after it) */
-long epicsShareAPI 
-	calcPerform(double *parg, double *presult, char *post)
-{
-	return(sCalcPerform(parg, 12, NULL, 0, presult, NULL, 0, post));
+void showStack_usesString(struct stackElement *ps) {
+	int i;
+	printf("stack: ");
+	for (i=0; i<3; i++, ps--) {
+		if (isDouble(ps))
+			printf("%f ", ps->d);
+		else 
+			printf("'%s' ", ps->s);
+	}
+	printf("\n");
 }
-#endif
+
+void showStack_noString(double *pd) {
+	int i;
+	printf("stack: ");
+	for (i=0; i<3; i++, pd--) {
+		printf("%f ", *pd);
+	}
+	printf("\n");
+}
+
+struct until_struct {
+	const unsigned char *until_loc;
+	const unsigned char *until_end_loc;
+	double *pd;
+	struct stackElement *ps;
+};
 
 #define TMPSTR_SIZE 1000
-long epicsShareAPI 
-	sCalcPerform(double *parg, int numArgs, char **psarg, int numSArgs, double *presult, char *psresult, int lenSresult, char *post)
+epicsShareFunc long 
+	sCalcPerform(double *parg, int numArgs, char **psarg, int numSArgs, double *presult, char *psresult,
+	int lenSresult, const unsigned char *postfix)
 {
-	struct stackElement stack[STACKSIZE], *top;
+	struct stackElement stack[SCALC_STACKSIZE], *top;
 	struct stackElement *ps, *ps1, *ps2;
-	char				*s2, tmpstr[TMPSTR_SIZE], currSymbol;
+	char				*s2, tmpstr[TMPSTR_SIZE], tmpstr10[10];
 	char				*s, *s1, c;
 	int					i, j, k;
-	long				l;
+	long				l = 0L;
 	unsigned short		ui;
-	unsigned long		ul;
+	unsigned long		ul = 0UL;
 	float				f;
 	double				d;
-	double				*topd, *pd;
-	short 				h, got_if, cvt_to_double;
-	DOUBLE64_2LONG32	*pu;
+	double				*topd, *pd, *pd1, *save_pd;
+	short 				h;
+	int					op, nargs;
+	const unsigned char *post = postfix;
+	struct until_struct	until_scratch[10];
+	int					loopsDone = 0;
 
-#if DEBUG
-	if (sCalcPerformDebug>=10) {
-		int	more;
-		printf("sCalcPerform: postfix:");
-		s = post;
-		for (more=1; more;) {
-			if (*s >= FETCH_A && *s <= FETCH_L) {
-				printf("%c ", 'a' + (*s-FETCH_A));
-				s++;
-			} else {
-				switch (*s) {
-				case END_STACK:
-					more = 0;
-					break;
-				case LITERAL:
-					printf("(0x");
-					for (i=0, s++; i<8; i++, s++)
-						printf("%2x ", (unsigned int)(unsigned char)*s);
-					printf(") ");
-					break;
-				case SLITERAL:
-					s++; /* point past code */
-					printf("'");
-					while (*s) printf("%c", *s++);
-					printf("' ");
-					s++;
-					break;
-				case FETCH:
-					s++; /* point past code */
-					printf("@%d ", *s++);
-					break;
-				case SFETCH:
-					s++; /* point past code */
-					printf("$%d ", *s++);
-					break;
-				default:
-					getOpString(*s, tmpstr);
-					printf("%s ", tmpstr);
-					if (*s == BAD_EXPRESSION) more=0;
-					s++;
+	for (i=0; i<10; i++) {
+		until_scratch[i].until_loc = NULL;
+		until_scratch[i].until_end_loc = NULL;
+		until_scratch[i].ps = NULL;
+		until_scratch[i].pd = NULL;
+	}
+	/* find all UNTIL operators in postfix, noting their locations */
+	for (i=0, post=postfix; *post != END_EXPRESSION; post++) {
+		if (sCalcPerformDebug > 10) printf("\tsCalcPerform: *post=%d\n", *post);
+		switch (*post) {
+		case LITERAL_DOUBLE:
+			post += sizeof(double);
+			break;
+		case LITERAL_INT:
+			post += sizeof(int);
+			break;
+		case LITERAL_STRING:
+			++post;
+			post += strlen((char *)post)+1;
+			break;
+		case UNTIL:
+			/*printf("sCalcPerform: UNTIL at index %d\n", (int)(post-postfix));*/
+			until_scratch[i].until_loc = post;
+			i++;
+			if (i>9) {
+				printf("sCalcPerform: too many UNTILs\n");
+				return(-1);
+			}
+			break;
+		case UNTIL_END:
+			for (k=i-1; k>=0; k--) {
+				if (until_scratch[k].until_end_loc == NULL) {
+					/* found unclaimed UNTIL */
+					/* printf("sCalcPerform: UNTIL_END at index %d, matches UNTIL at index %d (k=%d)\n",
+						(int)(post-postfix), (int)(until_scratch[k].until_loc-postfix), k);*/
+					until_scratch[k].until_end_loc = post;
 					break;
 				}
 			}
+			if (k<0) {
+				printf("unmatched UNTIL_END\n");
+				return(-1);
+			}
+			break;
 		}
+	}
+
+	post = postfix;
+
+#if DEBUG
+	if (sCalcPerformDebug>=10) {
+		printf("sCalcPerform: postfix:\n");
+		sCalcExprDump(post);
 
 		printf("\nsCalcPerform: args:\n");
-		for (i=0; i<12; i++) {
+		for (i=0; i<numArgs; i++) {
 			if (i%4 == 0) printf("     ");
 			printf("%c=%f\t", 'a'+i, parg[i]);
 			if (i%4 == 3) printf("\n");
@@ -420,41 +392,64 @@ long epicsShareAPI
 	}
 #endif
 
-	if (*post == BAD_EXPRESSION) return(-1);
+	if (*post == END_EXPRESSION) return(-1);
 
 
 	if (*post++ != USES_STRING) {
+		/* Don't use stack as an array of struct stackElement; just use the memory as an array of double. */
 
-		topd = pd = (double *)&stack[10];
+#if INIT_STACK
+		for (i=0, pd = (double *)stack; i<SCALC_STACKSIZE; i++, pd++) {
+			*pd = 0;
+		}
+#endif
+
+		topd = pd = save_pd = (double *)&stack[1];
 		pd--;
 
 		/* No string expressions */
-		while (*post != END_STACK) {
+	    while ((op = *post++) != END_EXPRESSION){
+			if (sCalcPerformDebug) sCalcPrintOp(op);
+			if (sCalcPerformDebug>=15) showStack_noString(pd);
 
-			switch (*post){
+			switch (op) {
 
-			case FETCH:
-				++pd;
-				++post;
-				*pd = (*post < numArgs) ? parg[(int)*post] : 0;
+			case FETCH_A: case FETCH_B: case FETCH_C: case FETCH_D: case FETCH_E: case FETCH_F:
+			case FETCH_G: case FETCH_H: case FETCH_I: case FETCH_J: case FETCH_K: case FETCH_L:
+			case FETCH_M: case FETCH_N: case FETCH_O: case FETCH_P: 
+				if (numArgs > (op - FETCH_A)) {
+			    	*++pd = parg[op - FETCH_A];
+				} else {
+					/* caller didn't supply a large enough array */
+					*++pd = 0.;
+				}
 				break;
 
-			case FETCH_A: *(++pd) = parg[0]; break;
-			case FETCH_B: *(++pd) = parg[1]; break;
-			case FETCH_C: *(++pd) = parg[2]; break;
-			case FETCH_D: *(++pd) = parg[3]; break;
-			case FETCH_E: *(++pd) = parg[4]; break;
-			case FETCH_F: *(++pd) = parg[5]; break;
-			case FETCH_G: *(++pd) = parg[6]; break;
-			case FETCH_H: *(++pd) = parg[7]; break;
-			case FETCH_I: *(++pd) = parg[8]; break;
-			case FETCH_J: *(++pd) = parg[9]; break;
-			case FETCH_K: *(++pd) = parg[10]; break;
-			case FETCH_L: *(++pd) = parg[11]; break;
+			case STORE_A: case STORE_B: case STORE_C: case STORE_D: case STORE_E: case STORE_F:
+			case STORE_G: case STORE_H: case STORE_I: case STORE_J: case STORE_K: case STORE_L:
+			case STORE_M: case STORE_N: case STORE_O: case STORE_P:
+				if (numArgs > (op - STORE_A)) {
+	    			parg[op - STORE_A] = *pd--;
+				} else {
+					/* caller didn't supply a large enough array */
+					pd--;
+				}
+			    break;
 
-			case STORE:
-				/* not implemented */
-				return(-1);
+			case A_STORE:
+				pd1 = pd--;
+				i = (int)*pd--;
+				if (numArgs > i) {
+	    			parg[i] = *pd1;
+				} else {
+					/* caller didn't supply a large enough array */
+					;
+				}
+				break;
+
+			case FETCH_VAL:
+				*++pd = *presult;
+				break;
 
 			case CONST_PI:
 				++pd;
@@ -482,108 +477,64 @@ long epicsShareAPI
 				break;
 
 			case ADD:
-				checkDoubleElement(pd, *post);
 				--pd;
-				checkDoubleElement(pd, *post);
 				*pd = *pd + pd[1];
 				break;
 
 			case SUB:
-				checkDoubleElement(pd, *post);
 				--pd;
-				checkDoubleElement(pd, *post);
 				*pd = *pd - pd[1];
 				break;
 
 			case MULT:
-				checkDoubleElement(pd, *post);
 				--pd;
-				checkDoubleElement(pd, *post);
 				*pd = *pd * pd[1];
 				break;
 
 			case DIV:
-				checkDoubleElement(pd, *post);
 				--pd;
-				checkDoubleElement(pd, *post);
 				if (pd[1] == 0) /* can't divide by zero */
 					return(-1);
 				*pd = *pd / pd[1];
 				break;
 
 			case COND_IF:
-				/* if false condition then skip true expression */
-				checkDoubleElement(pd, *post);
-				if (*pd == 0.0) {
-					/* skip to matching COND_ELSE */
-					for (got_if=1; got_if>0 && post[1] != END_STACK; ++post) {
-						switch(post[1]) {
-						case LITERAL: post+=8; break;
-						case COND_IF: got_if++; break;
-						case COND_ELSE: got_if--; break;
-						case FETCH: post++; break;
-						}
-					}
-					if (got_if) {
-#if DEBUG
-						if (sCalcPerformDebug)
-							printf("sCalcPerform: '?' without matching ':'\n");
-#endif
-						return(-1);
-					}
-				}
-				/* remove condition from stack top */
-				--pd;
+				if (*pd-- == 0.0 &&	cond_search(&post, COND_ELSE)) return -1;
 				break;
 				
 			case COND_ELSE:
-				/* result, true condition is on stack so skip false condition  */
-				/* skip to matching COND_END */
-				for (got_if=1; got_if>0 && post[1] != END_STACK; ++post) {
-					switch(post[1]) {
-					case LITERAL: post+=8; break;
-					case COND_IF: got_if++; break;
-					case COND_END: got_if--; break;
-					case FETCH: post++; break;
-					}
-				}
+				if (cond_search(&post, COND_END)) return -1;
 				break;
 
 			case COND_END:
 				break;
 
 			case ABS_VAL:
-				checkDoubleElement(pd, *post);
 				if (*pd < 0 ) *pd *= -1;
 				break;
 
 			case UNARY_NEG:
-				checkDoubleElement(pd, *post);
 				*pd *= -1;
 				break;
 
 			case SQU_RT:
 				/* check for neg number */
-				checkDoubleElement(pd, *post);
 				if (*pd < 0) return(-1);	
 				*pd = sqrt(*pd);
 				break;
 
 			case EXP:
-				checkDoubleElement(pd, *post);
 				*pd = exp(*pd);
 				break;
 
 			case LOG_10:
 				/* check for neg number */
-				checkDoubleElement(pd, *post);
 				if (*pd < 0) return(-1);
 				*pd = log10(*pd);
 				break;
 
 			case LOG_E:
 				/* check for neg number */
-				checkDoubleElement(pd, *post);
 				if (*pd < 0) return(-1);
 				*pd = log(*pd);
 				break;
@@ -598,11 +549,9 @@ long epicsShareAPI
 				*pd = sqrt(-2*log(local_random())) * cos(2*PI*local_random());
 				break;
 
-			case EXPON:
-				checkDoubleElement(pd, *post);
+			case POWER:
 				--pd;
-				checkDoubleElement(pd, *post);
-				if (*pd == 0) break;
+				if (fabs(*pd) < SMALL) break;
 				if (*pd < 0) {
 					i = (int) pd[1];
 					/* is exponent an integer? */
@@ -616,274 +565,269 @@ long epicsShareAPI
 				break;
 
 			case MODULO:
-				checkDoubleElement(pd, *post);
 				--pd;
-				checkDoubleElement(pd, *post);
 				if ((int)(pd[1]) == 0)
 					return(-1);
 				*pd = (double)((int)(*pd) % (int)(pd[1]));
 				break;
 
 			case REL_OR:
-				checkDoubleElement(pd, *post);
 				--pd;
-				checkDoubleElement(pd, *post);
 				*pd = *pd || pd[1];
 				break;
 
 			case REL_AND:
-				checkDoubleElement(pd, *post);
 				--pd;
-				checkDoubleElement(pd, *post);
 				*pd = *pd && pd[1];
 				break;
 
 			case BIT_OR:
 				/* force double values into integers and or them */
-				checkDoubleElement(pd, *post);
 				--pd;
-				checkDoubleElement(pd, *post);
-				*pd = (int)(pd[1]) | (int)(*pd);
+				*pd = (long)(pd[1]) | (long)(*pd);
 				break;
 
 			case BIT_AND:
 				/* force double values into integers and and them */
-				checkDoubleElement(pd, *post);
 				--pd;
-				checkDoubleElement(pd, *post);
-				*pd = (int)(pd[1]) & (int)(*pd);
+				*pd = (long)(pd[1]) & (long)(*pd);
 				break;
 
 			case BIT_EXCL_OR:
 				/* force double values to integers to exclusive or them */
-				checkDoubleElement(pd, *post);
 				--pd;
-				checkDoubleElement(pd, *post);
-				*pd = (int)(pd[1]) ^ (int)(*pd);
+				*pd = (long)(pd[1]) ^ (long)(*pd);
 				break;
 
 			case GR_OR_EQ:
-				checkDoubleElement(pd, *post);
 				--pd;
-				checkDoubleElement(pd, *post);
-				*pd = *pd >= pd[1];
+				*pd = (fabs(*pd-pd[1]) < SMALL) || (*pd > pd[1]);
 				break;
 
 			case GR_THAN:
-				checkDoubleElement(pd, *post);
 				--pd;
-				checkDoubleElement(pd, *post);
-				*pd = *pd > pd[1];
+				*pd = (*pd - pd[1]) > SMALL;
 				break;
 
 			case LESS_OR_EQ:
-				checkDoubleElement(pd, *post);
 				--pd;
-				checkDoubleElement(pd, *post);
-				*pd = *pd <= pd[1];
+				*pd = (fabs(*pd-pd[1]) < SMALL) || (*pd < pd[1]);
 				break;
 
 			case LESS_THAN:
-				checkDoubleElement(pd, *post);
 				--pd;
-				checkDoubleElement(pd, *post);
-				*pd = *pd < pd[1];
+				*pd = (pd[1] - *pd) > SMALL;
 				break;
 
 			case NOT_EQ:
-				checkDoubleElement(pd, *post);
 				--pd;
-				checkDoubleElement(pd, *post);
-				*pd = *pd != pd[1];
+				*pd = (fabs(*pd-pd[1]) > SMALL);
 				break;
 
 			case EQUAL:
-				checkDoubleElement(pd, *post);
 				--pd;
-				checkDoubleElement(pd, *post);
-				*pd = *pd == pd[1];
+				*pd = (fabs(*pd-pd[1]) < SMALL);
 				break;
 
 			case RIGHT_SHIFT:
-				checkDoubleElement(pd, *post);
 				--pd;
-				checkDoubleElement(pd, *post);
-				*pd = (int)(*pd) >> (int)(pd[1]);
+				*pd = (long)(*pd) >> (long)(pd[1]);
 				break;
 
 			case LEFT_SHIFT:
-				checkDoubleElement(pd, *post);
 				--pd;
-				checkDoubleElement(pd, *post);
-				*pd = (int)(*pd) << (int)(pd[1]);
+				*pd = (long)(*pd) << (long)(pd[1]);
 				break;
 
 			case MAX_VAL:
-				checkDoubleElement(pd, *post);
 				--pd;
-				checkDoubleElement(pd, *post);
 				if (*pd < pd[1]) *pd = pd[1];
 				break;
  
 			case MIN_VAL:
-				checkDoubleElement(pd, *post);
 				--pd;
-				checkDoubleElement(pd, *post);
 				if (*pd > pd[1]) *pd = pd[1];
 				break;
 
 			case ACOS:
-				checkDoubleElement(pd, *post);
 				*pd = acos(*pd);
 				break;
 
 			case ASIN:
-				checkDoubleElement(pd, *post);
 				*pd = asin(*pd);
 				break;
 
 			case ATAN:
-				checkDoubleElement(pd, *post);
 				*pd = atan(*pd);
 				break;
 
 	 		case ATAN2:
-				checkDoubleElement(pd, *post);
 				--pd;
-				checkDoubleElement(pd, *post);
 	 			*pd = atan2(pd[1], *pd);
 	 			break;
 
 			case COS:
-				checkDoubleElement(pd, *post);
 				*pd = cos(*pd);
 				break;
 
 			case SIN:
-				checkDoubleElement(pd, *post);
 				*pd = sin(*pd);
 				break;
 
 			case TAN:
-				checkDoubleElement(pd, *post);
 				*pd = tan(*pd);
 				break;
 
 			case COSH:
-				checkDoubleElement(pd, *post);
 				*pd = cosh(*pd);
 				break;
 
 			case SINH:
-				checkDoubleElement(pd, *post);
 				*pd = sinh(*pd);
 				break;
 
 			case TANH:
-				checkDoubleElement(pd, *post);
 				*pd = tanh(*pd);
 				break;
 
 			case CEIL:
-				checkDoubleElement(pd, *post);
 				*pd = ceil(*pd);
 				break;
 
 			case FLOOR:
-				checkDoubleElement(pd, *post);
 				*pd = floor(*pd);
 				break;
 
+			case FINITE:
+				nargs = *post++;
+				d = finite(*pd);
+				while (--nargs) {
+					--pd;
+					d = d && finite(*pd);
+				}
+				*pd = d;
+				break;
+
+			case ISINF:
+				*pd = isinf(*pd);
+				break;
+
+			case ISNAN:
+				nargs = *post++;
+				d = isnan(*pd);
+				while (--nargs) {
+					--pd;
+					d = d || isnan(*pd);
+				}
+				*pd = d;
+				break;
+
 			case NINT:
-				checkDoubleElement(pd, *post);
 				d = *pd;
 				*pd = (double)(long)(d >= 0 ? d+0.5 : d-0.5);
 				break;
 
 			case REL_NOT:
-				checkDoubleElement(pd, *post);
 				*pd = (*pd ? 0 : 1);
 				break;
 
 			case BIT_NOT:
-				checkDoubleElement(pd, *post);
-				*pd = ~(int)(*pd);
+				*pd = ~(long)(*pd);
 				break;
 
 			case A_FETCH:
-				checkDoubleElement(pd, *post);
 				d = *pd;
 				i = (int)(d >= 0 ? d+0.5 : 0);
-				*pd = (i < numArgs) ? parg[i] : 0;
+				if (i >= numArgs || i < 0) {
+					printf("sCalcPerform: fetch index, %d, out of range.\n", i);
+					*pd = 0;
+				} else {
+					*pd = parg[i];
+				}
 				break;
 
-			case LITERAL:
+			case LITERAL_DOUBLE:
 				++pd;
-				++post;
-				if (post == NULL) {
-					++post;
-					printf("%.7s bad constant in expression\n", post);
-					*pd = 0.;
-					break;
-				}
-				memcpy((void *)&(*pd),post,8);
-				post += 7;
+				memcpy((void *)&(*pd),post,sizeof(double));
+				post += sizeof(double);
 				break;
 
-			case MAXV_VAL:
-#if DEBUG
-				if (sCalcPerformDebug>=10) {
-					printf("val stack:");
-					for (i=0; topd+i <= pd; i++) printf("%f ", topd[i]);
-					printf("\n");
+			case LITERAL_INT:
+				++pd;
+				memcpy((void *)&i,post,sizeof(int));
+				*pd = (double)i;
+				post += sizeof(int);
+				break;
+
+			case MAX:
+				nargs = *post++;
+				while (--nargs) {
+					d = *pd--;
+					if (*pd < d || isnan(d))
+						*pd = d;
 				}
-#endif
-				checkDoubleElement(pd, *post);
-				--pd;
-				checkDoubleElement(pd, *post);
-				for (i=0; i<MAX_VARGS && !isnan(*pd); --pd) {
-					if (*pd < pd[1]) *pd = pd[1];
-				}
-				if (i == MAX_VARGS) {
-					printf("sCalcPerform: too many arguments to MAX\n");
-					return(-1);
-				}
-				*pd = pd[1];	/* replace NaN marker with result */
 				break;
  
-			case MINV_VAL:
-				checkDoubleElement(pd, *post);
-				--pd;
-				checkDoubleElement(pd, *post);
-				for (i=0; i<MAX_VARGS && !isnan(*pd); --pd) {
-					if (*pd > pd[1]) *pd = pd[1];
+			case MIN:
+				nargs = *post++;
+				while (--nargs) {
+					d = *pd--;
+					if (*pd > d || isnan(d))
+						*pd = d;
 				}
-				if (i == MAX_VARGS) {
-					printf("sCalcPerform: too many arguments to MAX\n");
-					return(-1);
-				}
-				*pd = pd[1];	/* replace NaN marker with result */
 				break;
 
-			case VARG_TERM:
-				/* put a NaN on the value stack to mark the end of arguments */
-				++pd;
-				pu = (DOUBLE64_2LONG32 *)pd;
-				pu->l[0] = pu->l[1] = 0xffffffff;
+			case UNTIL:
+				if (sCalcPerformDebug) printf("\tUNTIL:*pd=%f\n", *pd);
+				if (sCalcPerformDebug) printf("\tpost-1=%p\n", post-1);
+				for (i=0; i<10; i++) {
+					/* find ourselves in post, remembering that post was incremented at loop top */
+					if (sCalcPerformDebug > 10) printf("\tuntil_scratch[i].until_loc=%p\n", until_scratch[i].until_loc);
+					if (until_scratch[i].until_loc == post-1) {
+						until_scratch[i].pd = pd;
+						break;
+					}
+				}
+				if (i==10) {
+					printf("sCalcPerform: UNTIL not found\n");
+					return(-1);
+				}
+				break;
+
+			case UNTIL_END:
+				if (sCalcPerformDebug) printf("\tUNTIL_END:*pd=%f\n", *pd);
+				if (++loopsDone > sCalcLoopMax)
+					break;
+				if (*pd==0) {
+					/* reset postfix to matching UNTIL code, stack to its loc at that time */
+					--post;
+					for (i=0; i<10; i++) {
+						if (until_scratch[i].until_end_loc == post) {
+							pd = until_scratch[i].pd;
+							post = until_scratch[i].until_loc;
+							if (sCalcPerformDebug) printf("--loop--\n");
+							break;
+						}
+					}
+					if (i==10) {
+						printf("sCalcPerform: UNTIL not found\n");
+						return(-1);
+					}
+					break;
+				}
 				break;
 
 			default:
 				break;
 			}
 
-			/* move ahead in postfix expression */
-			++post;
 		}
 
 		/* if everything is peachy,the stack should end at its first position */
 		if (pd != topd) {
 #if DEBUG
-			if (sCalcPerformDebug>=10) printf("sCalcPerform: stack error\n");
+			if (sCalcPerformDebug>=10)
+				printf("sCalcPerform: stack error (pd-topd=%d)\n", (int)(pd-topd));
 #endif
 			return(-1);
 		}
@@ -901,48 +845,102 @@ long epicsShareAPI
 	} else {
 
 		/*** expression requires string operations ***/
-
+#if INIT_STACK
+		for (i=0, ps=stack; i<SCALC_STACKSIZE; i++, ps++) {
+			ps->d = 0;
+			ps->s = NULL;
+		}
+#endif
 		top = ps = &stack[10];
 		ps--;  /* Expression handler assumes ps is pointing to a filled element */
 		ps->d = 1.23456; ps->s = NULL;	/* telltale */
 
 		/* string expressions and values handled */
-		while (*post != END_STACK) {
+	    while ((op = *post++) != END_EXPRESSION){
+			if (sCalcPerformDebug) sCalcPrintOp(op);
 
-			currSymbol = *post;
-			switch (currSymbol) {
+			switch (op) {
 
-			case FETCH:
-				INC(ps);
-				++post;
-				ps->s = NULL;
-				ps->d = (*post < numArgs) ? parg[(int)*post] : 0;
+			case FETCH_A: case FETCH_B: case FETCH_C: case FETCH_D: case FETCH_E: case FETCH_F:
+			case FETCH_G: case FETCH_H: case FETCH_I: case FETCH_J: case FETCH_K: case FETCH_L:
+			case FETCH_M: case FETCH_N: case FETCH_O: case FETCH_P: 
+				if (numArgs > (op - FETCH_A)) {
+					INC(ps); ps->s = NULL; ps->d = parg[op - FETCH_A];
+				} else {
+					/* caller didn't supply a large enough array */
+					INC(ps);
+				}
 				break;
 
-			case FETCH_A: INC(ps); ps->s = NULL; ps->d = parg[0]; break;
-			case FETCH_B: INC(ps); ps->s = NULL; ps->d = parg[1]; break;
-			case FETCH_C: INC(ps); ps->s = NULL; ps->d = parg[2]; break;
-			case FETCH_D: INC(ps); ps->s = NULL; ps->d = parg[3]; break;
-			case FETCH_E: INC(ps); ps->s = NULL; ps->d = parg[4]; break;
-			case FETCH_F: INC(ps); ps->s = NULL; ps->d = parg[5]; break;
-			case FETCH_G: INC(ps); ps->s = NULL; ps->d = parg[6]; break;
-			case FETCH_H: INC(ps); ps->s = NULL; ps->d = parg[7]; break;
-			case FETCH_I: INC(ps); ps->s = NULL; ps->d = parg[8]; break;
-			case FETCH_J: INC(ps); ps->s = NULL; ps->d = parg[9]; break;
-			case FETCH_K: INC(ps); ps->s = NULL; ps->d = parg[10]; break;
-			case FETCH_L: INC(ps); ps->s = NULL; ps->d = parg[11]; break;
-
-			case SFETCH:	/* fetch from string variable */
+			case FETCH_AA: case FETCH_BB: case FETCH_CC: case FETCH_DD: case FETCH_EE: case FETCH_FF:
+			case FETCH_GG: case FETCH_HH: case FETCH_II: case FETCH_JJ: case FETCH_KK: case FETCH_LL:
 				INC(ps);
-				++post;
 				ps->s = &(ps->local_string[0]);
 				ps->s[0] = '\0';
-				if (*post < numSArgs) strncpy(ps->s, psarg[(int)*post], LOCAL_STRING_SIZE);
+				if (numSArgs > (op - FETCH_AA)) {
+					strncpy(ps->s, psarg[op - FETCH_AA], SCALC_STRING_SIZE);
+				} else {
+					/* caller didn't supply a large enough array */
+				}
 				break;
 
-			case STORE:
-				/* not implemented */
-				return(-1);
+			case STORE_A: case STORE_B: case STORE_C: case STORE_D: case STORE_E: case STORE_F:
+			case STORE_G: case STORE_H: case STORE_I: case STORE_J: case STORE_K: case STORE_L:
+			case STORE_M: case STORE_N: case STORE_O: case STORE_P:
+				toDouble(ps);
+				if (numArgs > (op - STORE_A)) {
+	    			parg[op - STORE_A] = ps->d;
+				}
+				DEC(ps);
+			    break;
+
+			case STORE_AA: case STORE_BB: case STORE_CC: case STORE_DD: case STORE_EE: case STORE_FF:
+			case STORE_GG: case STORE_HH: case STORE_II: case STORE_JJ: case STORE_KK: case STORE_LL:
+				toString(ps);
+				if (numSArgs > (op - STORE_AA)) {
+					strncpy(psarg[op - STORE_AA], ps->s, SCALC_STRING_SIZE);
+				}
+				DEC(ps);
+				break;
+
+			case A_STORE:
+				toDouble(ps);
+				ps1 = ps; DEC(ps);
+				toDouble(ps);
+				i = (int)(ps->d); DEC(ps);
+				if (numArgs > i) {
+	    			parg[i] = ps1->d;
+				} else {
+					/* caller didn't supply a large enough array */
+					;
+				}
+				break;
+
+			case A_SSTORE:
+				toString(ps);
+				ps1 = ps; DEC(ps);
+				toDouble(ps);
+				i = (int)(ps->d); DEC(ps);
+				if (numSArgs > i) {
+					strncpy(psarg[i], ps1->s, SCALC_STRING_SIZE);
+				} else {
+					/* caller didn't supply a large enough array */
+					;
+				}
+				break;
+
+			case FETCH_VAL:
+				INC(ps);
+				ps->s = NULL;
+				ps->d = *presult;
+				break;
+
+			case FETCH_SVAL:
+				INC(ps);
+				ps->s = &(ps->local_string[0]);
+				ps->s[0] = '\0';
+				strncpy(ps->s, psresult, SCALC_STRING_SIZE);
+				break;
 
 			case CONST_PI:
 				INC(ps);
@@ -975,10 +973,8 @@ long epicsShareAPI
 				break;
 
 			case ADD:
-				checkStackElement(ps, *post);
 				ps1 = ps;
 				DEC(ps);
-				checkStackElement(ps, *post);
 				if (isDouble(ps)) {
 					toDouble(ps1);
 					ps->d = ps->d + ps1->d;
@@ -987,16 +983,14 @@ long epicsShareAPI
 					ps->d = ps->d + ps1->d;
 				} else {
 					/* concatenate two strings */
-					strncat(ps->s, ps1->s, strlen(ps->s)-LOCAL_STRING_SIZE-1);
+					strncat(ps->s, ps1->s, strlen(ps->s)-SCALC_STRING_SIZE-1);
 				}
 				break;
 
 			case SUB:
 			case SUBLAST:
-				checkStackElement(ps, *post);
 				ps1 = ps;
 				DEC(ps);
-				checkStackElement(ps, *post);
 				if (isDouble(ps)) {
 					toDouble(ps1);
 					ps->d = ps->d - ps1->d;
@@ -1006,14 +1000,15 @@ long epicsShareAPI
 				} else {
 					/* subtract ps1->s from ps->s */
 					if (ps1->s[0]) {
-						if (currSymbol == SUB) {
+						if (op == SUB) {
 							/* first occurrence of ps1->s */
 							s = strstr(ps->s, ps1->s);
 						} else {
 							/* last occurrence of ps1->s */
-							s1 = ps->s+strlen(ps->s)-strlen(ps1->s);
-							for (s = NULL; s == NULL && s1 > ps->s; s1--) {
-								if (strncmp(s1, ps1->s, strlen(ps1->s))) {
+							s1 = ps->s + strlen(ps->s) - strlen(ps1->s);
+							for (s = NULL; (s == NULL) && (s1 > ps->s); s1--) {
+								printf("comparing '%s' with '%s'\n", s1, ps1->s);
+								if (strncmp(s1, ps1->s, strlen(ps1->s))==0) {
 									s = s1;
 								}
 							}
@@ -1028,20 +1023,16 @@ long epicsShareAPI
 				break;
 
 			case MULT:
-				checkStackElement(ps, *post);
 				ps1 = ps;
 				DEC(ps);
-				checkStackElement(ps, *post);
 				toDouble(ps1);
 				toDouble(ps);
 				ps->d = ps->d * ps1->d;
 				break;
 
 			case DIV:
-				checkStackElement(ps, *post);
 				ps1 = ps;
 				DEC(ps);
-				checkStackElement(ps, *post);
 				toDouble(ps1);
 				toDouble(ps);
 				if (ps1->d == 0) /* can't divide by zero */
@@ -1050,63 +1041,30 @@ long epicsShareAPI
 				break;
 
 			case COND_IF:
-				/* if false condition then skip true expression */
-				checkStackElement(ps, *post);
 				toDouble(ps);
-				if (ps->d == 0.0) {
-					/* skip to matching COND_ELSE */
-					for (got_if=1; got_if>0 && post[1] != END_STACK; ++post) {
-						switch(post[1]) {
-						case LITERAL:	post+=8; break;
-						case SLITERAL:	post++; while (post[1]) post++; break;
-						case COND_IF:	got_if++; break;
-						case COND_ELSE: got_if--; break;
-						case FETCH: case SFETCH: post++; break;
-						}
-					}
-					if (got_if) {
-#if DEBUG
-						if (sCalcPerformDebug)
-							printf("sCalcPerform: '?' without matching ':'\n");
-#endif
-						return(-1);
-					}
-				}
-				/* remove condition from stack top */
+				d = ps->d;
 				DEC(ps);
+ 				if (d == 0.0 &&	cond_search(&post, COND_ELSE)) return -1;
 				break;
 				
 			case COND_ELSE:
-				/* result, true condition is on stack so skip false condition  */
-				/* skip to matching COND_END */
-				for (got_if=1; got_if>0 && post[1] != END_STACK; ++post) {
-					switch(post[1]) {
-					case LITERAL:	post+=8; break;
-					case SLITERAL:	post++; while (post[1]) post++; break;
-					case COND_IF:	got_if++; break;
-					case COND_END:	got_if--; break;
-					case FETCH: case SFETCH: post++; break;
-					}
-				}
+				if (cond_search(&post, COND_END)) return -1;
 				break;
 
 			case COND_END:
 				break;
 
 			case ABS_VAL:
-				checkStackElement(ps, *post);
 				toDouble(ps);
 				if (ps->d < 0 ) ps->d *= -1;
 				break;
 
 			case UNARY_NEG:
-				checkStackElement(ps, *post);
 				toDouble(ps);
 				ps->d *= -1;
 				break;
 
 			case SQU_RT:
-				checkStackElement(ps, *post);
 				toDouble(ps);
 				/* check for neg number */
 				if (ps->d < 0) return(-1);	
@@ -1114,13 +1072,11 @@ long epicsShareAPI
 				break;
 
 			case EXP:
-				checkStackElement(ps, *post);
 				toDouble(ps);
 				ps->d = exp(ps->d);
 				break;
 
 			case LOG_10:
-				checkStackElement(ps, *post);
 				toDouble(ps);
 				/* check for neg number */
 				if (ps->d < 0) return(-1);
@@ -1128,7 +1084,6 @@ long epicsShareAPI
 				break;
 
 			case LOG_E:
-				checkStackElement(ps, *post);
 				toDouble(ps);
 				/* check for neg number */
 				if (ps->d < 0) return(-1);
@@ -1147,11 +1102,9 @@ long epicsShareAPI
 				ps->s = NULL;
 				break;
 
-			case EXPON:
-				checkStackElement(ps, *post);
+			case POWER:
 				ps1 = ps;
 				DEC(ps);
-				checkStackElement(ps, *post);
 				toDouble(ps1);
 				toDouble(ps);
 				if (ps->d == 0) break;
@@ -1168,32 +1121,26 @@ long epicsShareAPI
 				break;
 
 			case MODULO:
-				checkStackElement(ps, *post);
 				ps1 = ps;
 				DEC(ps);
-				checkStackElement(ps, *post);
 				toDouble(ps1);
 				toDouble(ps);
-				if ((int)ps1->d == 0)
+				if ((long)ps1->d == 0)
 					return(-1);
-				ps->d = (double)((int)ps->d % (int)ps1->d);
+				ps->d = (double)((long)ps->d % (long)ps1->d);
 				break;
 
 			case REL_OR:
-				checkStackElement(ps, *post);
 				ps1 = ps;
 				DEC(ps);
-				checkStackElement(ps, *post);
 				toDouble(ps1);
 				toDouble(ps);
 				ps->d = ps->d || ps1->d;
 				break;
 
 			case REL_AND:
-				checkStackElement(ps, *post);
 				ps1 = ps;
 				DEC(ps);
-				checkStackElement(ps, *post);
 				toDouble(ps1);
 				toDouble(ps);
 				ps->d = ps->d && ps1->d;
@@ -1201,48 +1148,42 @@ long epicsShareAPI
 
 			case BIT_OR:
 				/* force double values into integers and or them */
-				checkStackElement(ps, *post);
 				ps1 = ps;
 				DEC(ps);
-				checkStackElement(ps, *post);
 				toDouble(ps1);
 				toDouble(ps);
-				ps->d = (int)(ps1->d) | (int)(ps->d);
+				ps->d = (long)(ps1->d) | (long)(ps->d);
 				break;
 
 			case BIT_AND:
 				/* force double values into integers and and them */
-				checkStackElement(ps, *post);
 				ps1 = ps;
 				DEC(ps);
-				checkStackElement(ps, *post);
 				toDouble(ps1);
 				toDouble(ps);
-				ps->d = (int)(ps1->d) & (int)(ps->d);
+				ps->d = (long)(ps1->d) & (long)(ps->d);
 				break;
 
 			case BIT_EXCL_OR:
 				/* force double values to integers to exclusive or them */
-				checkStackElement(ps, *post);
 				ps1 = ps;
 				DEC(ps);
-				checkStackElement(ps, *post);
 				toDouble(ps1);
 				toDouble(ps);
-				ps->d = (int)(ps1->d) ^ (int)(ps->d);
+				ps->d = (long)(ps1->d) ^ (long)(ps->d);
 				break;
 
 			case GR_OR_EQ:
-				checkStackElement(ps, *post);
 				ps1 = ps;
 				DEC(ps);
-				checkStackElement(ps, *post);
 				if (isDouble(ps)) {
 					toDouble(ps1);
-					ps->d = ps->d >= ps1->d;
+					/* ps->d = ps->d >= ps1->d; */
+					ps->d = (fabs(ps->d - ps1->d) < SMALL) || (ps->d > ps1->d);
 				} else if (isDouble(ps1)) {
 					to_double(ps);
-					ps->d = ps->d >= ps1->d;
+					/* ps->d = ps->d >= ps1->d; */
+					ps->d = (fabs(ps->d - ps1->d) < SMALL) || (ps->d > ps1->d);
 				} else {
 					/* compare ps->s to ps1->s */
 					ps->d = (double)(strcmp(ps->s, ps1->s) >= 0);
@@ -1251,16 +1192,16 @@ long epicsShareAPI
 				break;
 
 			case GR_THAN:
-				checkStackElement(ps, *post);
 				ps1 = ps;
 				DEC(ps);
-				checkStackElement(ps, *post);
 				if (isDouble(ps)) {
 					toDouble(ps1);
-					ps->d = ps->d > ps1->d;
+					/* ps->d = ps->d > ps1->d; */
+					ps->d = (ps->d - ps1->d) > SMALL;
 				} else if (isDouble(ps1)) {
 					to_double(ps);
-					ps->d = ps->d > ps1->d;
+					/* ps->d = ps->d > ps1->d; */
+					ps->d = (ps->d - ps1->d) > SMALL;
 				} else {
 					/* compare ps->s to ps1->s */
 					ps->d = (double)(strcmp(ps->s, ps1->s) > 0);
@@ -1269,16 +1210,16 @@ long epicsShareAPI
 				break;
 
 			case LESS_OR_EQ:
-				checkStackElement(ps, *post);
 				ps1 = ps;
 				DEC(ps);
-				checkStackElement(ps, *post);
 				if (isDouble(ps)) {
 					toDouble(ps1);
-					ps->d = ps->d <= ps1->d;
+					/* ps->d = ps->d <= ps1->d; */
+					ps->d = (fabs(ps->d - ps1->d) < SMALL) || (ps->d < ps1->d);
 				} else if (isDouble(ps1)) {
 					to_double(ps);
-					ps->d = ps->d <= ps1->d;
+					/* ps->d = ps->d <= ps1->d; */
+					ps->d = (fabs(ps->d - ps1->d) < SMALL) || (ps->d < ps1->d);
 				} else {
 					/* compare ps->s to ps1->s */
 					ps->d = (double)(strcmp(ps->s, ps1->s) <= 0);
@@ -1287,16 +1228,16 @@ long epicsShareAPI
 				break;
 
 			case LESS_THAN:
-				checkStackElement(ps, *post);
 				ps1 = ps;
 				DEC(ps);
-				checkStackElement(ps, *post);
 				if (isDouble(ps)) {
 					toDouble(ps1);
-					ps->d = ps->d < ps1->d;
+					/* ps->d = ps->d < ps1->d; */
+					ps->d = (ps1->d - ps->d) > SMALL;
 				} else if (isDouble(ps1)) {
 					to_double(ps);
-					ps->d = ps->d < ps1->d;
+					/* ps->d = ps->d < ps1->d; */
+					ps->d = (ps1->d - ps->d) > SMALL;
 				} else {
 					/* compare ps->s to ps1->s */
 					ps->d = (double)(strcmp(ps->s, ps1->s) < 0);
@@ -1305,16 +1246,16 @@ long epicsShareAPI
 				break;
 
 			case NOT_EQ:
-				checkStackElement(ps, *post);
 				ps1 = ps;
 				DEC(ps);
-				checkStackElement(ps, *post);
 				if (isDouble(ps)) {
 					toDouble(ps1);
-					ps->d = ps->d != ps1->d;
+					/* ps->d = ps->d != ps1->d; */
+					ps->d = (fabs(ps->d - ps1->d) > SMALL);
 				} else if (isDouble(ps1)) {
 					to_double(ps);
-					ps->d = ps->d != ps1->d;
+					/* ps->d = ps->d != ps1->d; */
+					ps->d = (fabs(ps->d - ps1->d) > SMALL);
 				} else {
 					/* compare ps->s to ps1->s */
 					ps->d = (double)(strcmp(ps->s, ps1->s) != 0);
@@ -1323,16 +1264,16 @@ long epicsShareAPI
 				break;
 
 			case EQUAL:
-				checkStackElement(ps, *post);
 				ps1 = ps;
 				DEC(ps);
-				checkStackElement(ps, *post);
 				if (isDouble(ps)) {
 					toDouble(ps1);
-					ps->d = ps->d == ps1->d;
+					/* ps->d = ps->d == ps1->d; */
+					ps->d = (fabs(ps->d - ps1->d) < SMALL);
 				} else if (isDouble(ps1)) {
 					to_double(ps);
-					ps->d = ps->d == ps1->d;
+					/* ps->d = ps->d == ps1->d; */
+					ps->d = (fabs(ps->d - ps1->d) < SMALL);
 				} else if ((isString(ps)) && (isString(ps1))) {
 					/* compare ps->s to ps1->s */
 					ps->d = (double)(strcmp(ps->s, ps1->s) == 0);
@@ -1341,30 +1282,41 @@ long epicsShareAPI
 				break;
 
 			case RIGHT_SHIFT:
-				checkStackElement(ps, *post);
-				ps1 = ps;
-				DEC(ps);
-				checkStackElement(ps, *post);
-				toDouble(ps1);
-				toDouble(ps);
-				ps->d = (int)(ps->d) >> (int)(ps1->d);
-				break;
-
 			case LEFT_SHIFT:
-				checkStackElement(ps, *post);
 				ps1 = ps;
-				DEC(ps);
-				checkStackElement(ps, *post);
 				toDouble(ps1);
-				toDouble(ps);
-				ps->d = (int)(ps->d) << (int)(ps1->d);
+				j = myNINT(ps1->d);
+				j = myMIN(j,SCALC_STRING_SIZE);
+				DEC(ps);
+				if (isDouble(ps)) {
+					/* numeric variable: bit shift by integer amount */
+					if (op == RIGHT_SHIFT) {
+						ps->d = (int)(ps->d) >> (int)(ps1->d);
+					} else {
+						ps->d = (int)(ps->d) << (int)(ps1->d);
+					}
+				} else {
+					/* string variable: shift array elements */
+					if (op == RIGHT_SHIFT) {
+						for (i=SCALC_STRING_SIZE-1; i>=0; i--) {
+							ps->s[i] = (i>=j)?ps->s[i-j]:' ';
+						}
+						ps->s[SCALC_STRING_SIZE-1] = '\0';
+					} else {
+						if (j==SCALC_STRING_SIZE) {
+							ps->s[0] = '\0';
+						} else {
+							for (i=0; i < (SCALC_STRING_SIZE-j); i++) {
+								ps->s[i] = ps->s[i+j];
+							}
+						}
+					}
+				}
 				break;
 
 			case MAX_VAL:
-				checkStackElement(ps, *post);
 				ps1 = ps;
 				DEC(ps);
-				checkStackElement(ps, *post);
 				if (isDouble(ps)) {
 					toDouble(ps1);
 					if (ps->d < ps1->d) ps->d = ps1->d;
@@ -1380,10 +1332,8 @@ long epicsShareAPI
 				break;
  
 			case MIN_VAL:
-				checkStackElement(ps, *post);
 				ps1 = ps;
 				DEC(ps);
-				checkStackElement(ps, *post);
 				if (isDouble(ps)) {
 					toDouble(ps1);
 					if (ps->d > ps1->d) ps->d = ps1->d;
@@ -1399,83 +1349,98 @@ long epicsShareAPI
 				break;
 
 			case ACOS:
-				checkStackElement(ps, *post);
 				toDouble(ps);
 				ps->d = acos(ps->d);
 				break;
 
 			case ASIN:
-				checkStackElement(ps, *post);
 				toDouble(ps);
 				ps->d = asin(ps->d);
 				break;
 
 			case ATAN:
-				checkStackElement(ps, *post);
 				toDouble(ps);
 				ps->d = atan(ps->d);
 				break;
 
 	 		case ATAN2:
-				checkStackElement(ps, *post);
 				ps1 = ps;
 				DEC(ps);
-				checkStackElement(ps, *post);
 				toDouble(ps1);
 				toDouble(ps);
 	 			ps->d = atan2(ps1->d, ps->d);
 	 			break;
 
 			case COS:
-				checkStackElement(ps, *post);
 				toDouble(ps);
 				ps->d = cos(ps->d);
 				break;
 
 			case SIN:
-				checkStackElement(ps, *post);
 				toDouble(ps);
 				ps->d = sin(ps->d);
 				break;
 
 			case TAN:
-				checkStackElement(ps, *post);
 				toDouble(ps);
 				ps->d = tan(ps->d);
 				break;
 
 			case COSH:
-				checkStackElement(ps, *post);
 				toDouble(ps);
 				ps->d = cosh(ps->d);
 				break;
 
 			case SINH:
-				checkStackElement(ps, *post);
 				toDouble(ps);
 				ps->d = sinh(ps->d);
 				break;
 
 			case TANH:
-				checkStackElement(ps, *post);
 				toDouble(ps);
 				ps->d = tanh(ps->d);
 				break;
 
 			case CEIL:
-				checkStackElement(ps, *post);
 				toDouble(ps);
 				ps->d = ceil(ps->d);
 				break;
 
 			case FLOOR:
-				checkStackElement(ps, *post);
 				toDouble(ps);
 				ps->d = floor(ps->d);
 				break;
 
+			case FINITE:
+				nargs = *post++;
+				toDouble(ps);
+				d = finite(ps->d);
+				while (--nargs) {
+					DEC(ps);
+					toDouble(ps);
+					d = d && finite(ps->d);
+				}
+				ps->d = d;
+				break;
+
+			case ISINF:
+				toDouble(ps);
+				ps->d = isinf(ps->d);
+				break;
+
+			case ISNAN:
+				nargs = *post++;
+				toDouble(ps);
+				d = isnan(ps->d);
+				while (--nargs) {
+					DEC(ps);
+					toDouble(ps);
+					d = d || isnan(ps->d);
+				}
+				ps->d = d;
+				break;
+
 			case NINT:
-				checkStackElement(ps, *post);
 				if (isDouble(ps)) {
 					d = ps->d;
 				} else {
@@ -1490,19 +1455,16 @@ long epicsShareAPI
 				break;
 
 			case REL_NOT:
-				checkStackElement(ps, *post);
 				toDouble(ps);
 				ps->d = (ps->d ? 0 : 1);
 				break;
 
 			case BIT_NOT:
-				checkStackElement(ps, *post);
 				toDouble(ps);
 				ps->d = ~(int)(ps->d);
 				break;
 
 			case A_FETCH:
-				checkStackElement(ps, *post);
 				if (isDouble(ps)) {
 					d = ps->d;
 				} else {
@@ -1514,7 +1476,6 @@ long epicsShareAPI
 				break;
 
 			case A_SFETCH:
-				checkStackElement(ps, *post);
 				if (isDouble(ps)) {
 					d = ps->d;
 				} else {
@@ -1524,45 +1485,37 @@ long epicsShareAPI
 				ps->s[0] = '\0';
 				i = (int)(d >= 0 ? d+0.5 : 0);
 				if (i < numSArgs)
-					strNcpy(ps->s, psarg[i], LOCAL_STRING_SIZE);
+					strNcpy(ps->s, psarg[i], SCALC_STRING_SIZE);
 				break;
 
-			case LITERAL:
+			case LITERAL_DOUBLE:
 				INC(ps);
-				++post;
-				if (post == NULL) {
-					++post;
-					printf("%.7s bad constant in expression\n",post);
-					ps->s = NULL;
-					ps->d = 0.;
-					break;
-				}
-				memcpy((void *)&(ps->d),post,8);
+				memcpy((void *)&(ps->d),post,sizeof(double));
 				ps->s = NULL;
-				post += 7;
+				post += sizeof(double);
 				break;
 
-			case SLITERAL:
+			case LITERAL_INT:
 				INC(ps);
-				++post;
-				if (post == NULL) {
-					++post;
-					printf("%.7s bad constant in expression\n",post);
-					ps->s = NULL;
-					ps->d = 0.;
-					break;
-				}
+				memcpy((void *)&i,post,sizeof(int));
+				ps->d = (double)i;
+				ps->s = NULL;
+				post += sizeof(int);
+				break;
+
+			case LITERAL_STRING:
+				INC(ps);
 				ps->s = &(ps->local_string[0]);
 				s = ps->s;
-				for (i=0; (i<LOCAL_STRING_SIZE-1) && *post; )
-					*s++ = *post++;
+				for (i=0; (i<SCALC_STRING_SIZE-1) && *post; )
+					*s++ = (char)*post++;
 				*s = '\0';
-				/* skip to end of string */
+				/* skip to end of string, if we haven't already */
 				while (*post) post++;
+				post++;
 				break;
 
 			case TO_DOUBLE:
-				checkStackElement(ps, *post);
 				if (isString(ps)) {
 					/* hunt down number and convert */
 					s = strpbrk(ps->s,"0123456789");
@@ -1574,21 +1527,18 @@ long epicsShareAPI
 				break;
 
 			case TO_STRING:
-				checkStackElement(ps, *post);
 				toString(ps);
 				break;
 
 			case LEN:
-				checkStackElement(ps, *post);
 				toString(ps);
-				for (i=0; (i < LOCAL_STRING_SIZE) && ps->s[i]; i++)
+				for (i=0; (i < SCALC_STRING_SIZE) && ps->s[i]; i++)
 					;
 				ps->d = (double)i;
 				ps->s = NULL;
 				break;
 
 			case BYTE:
-				checkStackElement(ps, *post);
 				if (isString(ps)) {
 					ps->d = ps->s[0];
 					ps->s = NULL;
@@ -1596,10 +1546,8 @@ long epicsShareAPI
 				break;
 
 	 		case PRINTF:
-				checkStackElement(ps, *post);
 				ps1 = ps;
 				DEC(ps);
-				checkStackElement(ps, *post);
 				if (isDouble(ps))
 					return(-1);
 				s = ps->s;
@@ -1628,14 +1576,12 @@ long epicsShareAPI
 						break;
 					}
 				}
-				strNcpy(ps->s, tmpstr, LOCAL_STRING_SIZE-1);
+				strNcpy(ps->s, tmpstr, SCALC_STRING_SIZE-1);
 				break;
 
 	 		case BIN_WRITE:
-				checkStackElement(ps, *post);
 				ps1 = ps;
 				DEC(ps);
-				checkStackElement(ps, *post);
 				if (isDouble(ps))
 					return(-1);
 				s = ps->s;
@@ -1693,17 +1639,15 @@ long epicsShareAPI
 						return(-1);
 					}
 				}
-		 		i = epicsStrSnPrintEscaped(tmpstr, LOCAL_STRING_SIZE-1, ps->s, j);
-				i = MIN(i, LOCAL_STRING_SIZE);
+		 		i = epicsStrSnPrintEscaped(tmpstr, SCALC_STRING_SIZE-1, ps->s, j);
+				i = myMIN(i, SCALC_STRING_SIZE);
 				tmpstr[i] = '\0'; /* make sure it's terminated */
-				strNcpy(ps->s, tmpstr, LOCAL_STRING_SIZE-1);
+				strNcpy(ps->s, tmpstr, SCALC_STRING_SIZE-1);
 				break;
 
 	 		case SSCANF:
-				checkStackElement(ps, *post);
 				ps1 = ps;
 				DEC(ps);
-				checkStackElement(ps, *post);
 				if (isDouble(ps) || isDouble(ps1))
 					return(-1);
 				s = findConversionIndicator(ps1->s);
@@ -1715,11 +1659,17 @@ long epicsShareAPI
 					return(-1);
 				case 'd': case 'i':
 					if (s[-1] == 'h') {
+						h = 0;
 		 				i = sscanf(ps->s, ps1->s, &h);
 						ps->d = (double)h;
-					} else {
+					} else if (s[-1] == 'l') {
+						l = 0L;
 		 				i = sscanf(ps->s, ps1->s, &l);
 						ps->d = (double)l;
+					} else {
+						j = 0;
+		 				i = sscanf(ps->s, ps1->s, &j);
+						ps->d = (double)j;
 					}
 					ps->s = NULL;
 					break;
@@ -1744,7 +1694,7 @@ long epicsShareAPI
 					break;
 				case 'c': case '[': case 's':
 		 			i = sscanf(ps->s, ps1->s, tmpstr);
-					strNcpy(ps->s, tmpstr, LOCAL_STRING_SIZE-1);
+					strNcpy(ps->s, tmpstr, SCALC_STRING_SIZE-1);
 					break;
 				}
 				if (i != 1) {
@@ -1754,10 +1704,8 @@ long epicsShareAPI
 				break;
 
 	 		case BIN_READ:
-				checkStackElement(ps, *post);
 				ps1 = ps;
 				DEC(ps);
-				checkStackElement(ps, *post);
 				if (isDouble(ps) || isDouble(ps1))
 					return(-1);
 				/* find first conversion indicator that is not assign suppressed */
@@ -1861,42 +1809,33 @@ long epicsShareAPI
 				break;
 
 			case TR_ESC:
-				checkStackElement(ps, *post);
 				if (isString(ps)) {
 		 			i = dbTranslateEscape(tmpstr, ps->s);
-#if 0 /* No use doing this, since no function reads past end-of-string */
-					if (i > LOCAL_STRING_SIZE-1) i = LOCAL_STRING_SIZE-1;
-					memcpy(ps->s, tmpstr, i);
-					ps->s[i] = '\0';
-#else
-					strNcpy(ps->s, tmpstr, LOCAL_STRING_SIZE-1);
-#endif
+					strNcpy(ps->s, tmpstr, SCALC_STRING_SIZE-1);
 				}
 				break;
 
 			case ESC:
-				checkStackElement(ps, *post);
 				if (isString(ps)) {
 					/* Find length of input string.  Null terminates string.*/
-					for (j=0; j<LOCAL_STRING_SIZE && ps->s[j] != '\0'; j++) {
+					for (j=0; j<SCALC_STRING_SIZE && ps->s[j] != '\0'; j++) {
 						;
 					}
-		 			i = epicsStrSnPrintEscaped(tmpstr, LOCAL_STRING_SIZE-1, ps->s, j);
-					i = MIN(i, LOCAL_STRING_SIZE);
+		 			i = epicsStrSnPrintEscaped(tmpstr, SCALC_STRING_SIZE-1, ps->s, j);
+					i = myMIN(i, SCALC_STRING_SIZE);
 					tmpstr[i] = '\0'; /* make sure it's terminated */
-					strNcpy(ps->s, tmpstr, LOCAL_STRING_SIZE-1);
+					strNcpy(ps->s, tmpstr, SCALC_STRING_SIZE-1);
 				}
 				break;
 
 			case CRC16:
 			case MODBUS:
-				checkStackElement(ps, *post);
 				if (isString(ps)) {
 		 			if (crc16(tmpstr, ps->s) == 0) {
-						if (currSymbol==CRC16) {
-							strNcpy(ps->s, tmpstr, LOCAL_STRING_SIZE-1);
+						if (op==CRC16) {
+							strNcpy(ps->s, tmpstr, SCALC_STRING_SIZE-1);
 						} else {
-							strncat(ps->s, tmpstr, strlen(ps->s)-LOCAL_STRING_SIZE-1);
+							strncat(ps->s, tmpstr, strlen(ps->s)-SCALC_STRING_SIZE-1);
 						}
 					}
 				}
@@ -1904,23 +1843,24 @@ long epicsShareAPI
 
 			case LRC:
 			case AMODBUS:
-				/* Note that this isn't complete:  Ascii modbus has to have its LRC
-				 * computed while the command string is still binary, then the
-				 * (binary) LRC is appended, then ':' is prepended and <cr><lf> is appended
-				 * Example: To send the binary command string "F7 03 13 89 00 0A" (hex,
-				 * obviously), you calculate the LRC (0x60), append to the command string,
+				/* Ascii modbus has to have its LRC computed on the binary command string, then the
+				 * (binary) LRC is converted to hex characters and appended, then ':' is prepended.
+				 * Example: To send the binary command "F7031389000A" (six hex bytes),
+				 * you calculate the LRC (0x60), append to the command string,
 				 * and convert hex character by character to ASCII, yielding
 				 * "46 37 30 33 31 33 38 39 30 30 30 41 36 30"
 				 * then you prepend ':' (0x3a) and append <cr><lf> (0x0d0a), yielding
 				 * "3A 46 37 30 33 31 33 38 39 30 30 30 41 36 30 0D 0A"
 				 */
-				checkStackElement(ps, *post);
 				if (isString(ps)) {
-		 			if (lrc(tmpstr, ps->s) == 0) {
-						if (currSymbol==LRC) {
-							strNcpy(ps->s, tmpstr, LOCAL_STRING_SIZE-1);
+		 			if (lrc(tmpstr10, ps->s) == 0) {
+						if (op==LRC) {
+							strNcpy(ps->s, tmpstr10, SCALC_STRING_SIZE-1);
 						} else {
-							strncat(ps->s, tmpstr, strlen(ps->s)-LOCAL_STRING_SIZE-1);
+							strcpy(tmpstr, ":");
+							strcat(tmpstr, ps->s);
+							strNcpy(ps->s, tmpstr, strlen(ps->s)-SCALC_STRING_SIZE-1);
+							strncat(ps->s, tmpstr10, strlen(ps->s)-SCALC_STRING_SIZE-1);
 						}
 					}
 				}
@@ -1928,26 +1868,22 @@ long epicsShareAPI
 
 			case XOR8:
 			case ADD_XOR8:
-				checkStackElement(ps, *post);
 				if (isString(ps)) {
 		 			if (xor8(tmpstr, ps->s) == 0) {
-						if (currSymbol==XOR8) {
-							strNcpy(ps->s, tmpstr, LOCAL_STRING_SIZE-1);
+						if (op==XOR8) {
+							strNcpy(ps->s, tmpstr, SCALC_STRING_SIZE-1);
 						} else {
-							strncat(ps->s, tmpstr, strlen(ps->s)-LOCAL_STRING_SIZE-1);
+							strncat(ps->s, tmpstr, strlen(ps->s)-SCALC_STRING_SIZE-1);
 						}
 					}
 				}
 				break;
 
 			case SUBRANGE:
-				checkStackElement(ps, *post);
 				ps2 = ps;
 				DEC(ps);
-				checkStackElement(ps, *post);
 				ps1 = ps;
 				DEC(ps);
-				checkStackElement(ps, *post);
 				toString(ps);
 				k = strlen(ps->s);
 				if (isDouble(ps1)) {
@@ -1968,8 +1904,8 @@ long epicsShareAPI
 						j = k;
 					}
 				}
-				i = MAX(MIN(i,k),0);
-				j = MIN(j,k);
+				i = myMAX(myMIN(i,k),0);
+				j = myMIN(j,k);
 				s = ps->s;
 				for (s1=s+i, s2=s+j ; *s1 && s1 <= s2; ) {
 					*s++ = *s1++;
@@ -1978,10 +1914,8 @@ long epicsShareAPI
 				break;
  
 			case REPLACE:
-				checkStackElement(ps, *post);
 				ps2 = ps;
 				DEC(ps);
-				checkStackElement(ps, *post);
 				ps1 = ps;
 				DEC(ps);
 				toString(ps);					/* host string */
@@ -1995,88 +1929,108 @@ long epicsShareAPI
 						strcpy(tmpstr, s);
 						s = tmpstr;
 					}
-					for (s2 = ps2->s; *s2 && (i < (LOCAL_STRING_SIZE-1)); i++)
+					for (s2 = ps2->s; *s2 && (i < (SCALC_STRING_SIZE-1)); i++)
 						*s1++ = *s2++;
-					while (*s && (i++ < (LOCAL_STRING_SIZE-1)))
+					while (*s && (i++ < (SCALC_STRING_SIZE-1)))
 						*s1++ = *s++;
 					*s1 = '\0';
 				}
 				break;
  
 
-			case MAXV_VAL:
-			case MINV_VAL:
-#if DEBUG
-				if (sCalcPerformDebug>=10) {
-					printf("val stack:");
-					for (ps1=top; ps1 <= ps; ps1++) {
-						if (isString(ps1))
-							printf("%s ", ps1->s);
-						else
-							printf("%f ", ps1->d);
-					}
-					printf("\n");
-				}
-#endif
-				/* make sure we have >= 2 args before NaN marker */
-				checkStackElement(ps, *post);
-				ps1 = ps;
-				DEC(ps);
-				checkStackElement(ps, *post);
-				for (i=0, ps=ps1, cvt_to_double=0; i<MAX_VARGS && !isnan(ps->d); ) {
-					if (isDouble(ps)) cvt_to_double = 1;
-					DEC(ps);
-				}
-				if (i == MAX_VARGS)
-					return(-1);
-				/* convert all operands to the same type */
-				for (ps=ps1; !isnan(ps->d); ) {
-					if (cvt_to_double) {
+			case MAX:
+				nargs = *post++;
+				for(i=0, j=0; i<nargs; j |= isDouble(ps-i), i++);
+				if (j) {
+					/* an arg is double.  coerce all to double */
+					toDouble(ps);
+					while (--nargs) {
+						d = ps->d;
+						DEC(ps);
 						toDouble(ps);
-					} else {
-						toString(ps);
+						if (ps->d < d || isnan(d))
+							ps->d = d;
 					}
-					DEC(ps);
-				}
-				/* find max or min */
-				for (ps=ps1-1; !isnan(ps->d); ) {
-					if (cvt_to_double) {
-						if ((ps->d < ps[1].d) == (currSymbol == MAXV_VAL))
-							ps->d = ps[1].d;
-					} else {
-						/* compare ps->s to ps[1].s */
-						if ((strcmp(ps->s, ps[1].s) < 0) == (currSymbol == MAXV_VAL)) {
-							s = ps->s;
-							ps->s = ps[1].s;
-							ps[1].s = s;
+				} else {
+					/* all args are string */
+					while (--nargs) {
+						ps1 = ps;
+						DEC(ps);
+						if (strcmp(ps->s, ps1->s) < 0) {
+							strcpy(ps->s, ps1->s);
 						}
 					}
-					DEC(ps);
 				}
-				/* replace NaN marker with result */
-				if (cvt_to_double) {
-					ps->d = ps[1].d;
+				break;
+
+			case MIN:
+				nargs = *post++;
+				for(i=0, j=0; i<nargs; j |= isDouble(ps-i), i++);
+				if (j) {
+					/* an arg is double.  coerce all to double */
+					toDouble(ps);
+					while (--nargs) {
+						d = ps->d;
+						DEC(ps);
+						toDouble(ps);
+						if (ps->d > d || isnan(d))
+							ps->d = d;
+					}
 				} else {
-					ps->s = ps[1].s;
-					ps->d = 0.;
-					ps[1].s = NULL;
+					/* all args are string */
+					while (--nargs) {
+						ps1 = ps;
+						DEC(ps);
+						if (strcmp(ps->s, ps1->s) > 0) {
+							strcpy(ps->s, ps1->s);
+						}
+					}
 				}
 				break;
  
-			case VARG_TERM:
-				/* put a NaN on the value stack to mark the end of arguments */
-				INC(ps);
-				ps->s = NULL;
-				pu = (DOUBLE64_2LONG32 *)&ps->d;
-				pu->l[0] = pu->l[1] = 0xffffffff;
+ 			case UNTIL:
+				if (sCalcPerformDebug) printf("\tUNTIL:ps->d=%f\n", ps->d);
+				if (sCalcPerformDebug) printf("\tpost-1=%p\n", post-1);
+				for (i=0; i<10; i++) {
+					/* find ourselves in post, remembering that post was incremented at loop top */
+					if (sCalcPerformDebug > 10) printf("\tuntil_scratch[i].until_loc=%p\n", until_scratch[i].until_loc);
+					if (until_scratch[i].until_loc == post-1) {
+						until_scratch[i].ps = ps;
+						break;
+					}
+				}
+				if (i==10) {
+					printf("sCalcPerform: UNTIL not found\n");
+					return(-1);
+				}
+				break;
+
+			case UNTIL_END:
+				if (sCalcPerformDebug) printf("\tUNTIL_END:ps->d=%f\n", ps->d);
+				if (++loopsDone > sCalcLoopMax)
+					break;
+				if (ps->d==0) {
+					/* reset postfix to matching UNTIL code, stack to its loc at that time */
+					--post;
+					for (i=0; i<10; i++) {
+						if (until_scratch[i].until_end_loc == post) {
+							ps = until_scratch[i].ps;
+							post = until_scratch[i].until_loc;
+							if (sCalcPerformDebug) printf("--loop--\n");
+							break;
+						}
+					}
+					if (i==10) {
+						printf("sCalcPerform: UNTIL not found\n");
+						return(-1);
+					}
+					break;
+				}
 				break;
 
 			default:
 				break;
 			}
-
-			/* move ahead in postfix expression */
-			++post;
 		}
 
 		/* if everything is peachy,the stack should end at its first position */
@@ -2116,7 +2070,6 @@ long epicsShareAPI
 	} /* if (*post++ != USES_STRING) {} else */
 }
 
-
 /*
  * RAND
  *
@@ -2139,4 +2092,58 @@ static double local_random()
 	/* randy = (float) seed / 65535.0; */
 	randy = (float) (seed+1) / 65536.0;	/* exclude zero */
 	return(randy);
+}
+
+/* Search the instruction stream for a matching operator, skipping any
+ * other conditional instructions found, and leave *ppinst pointing to
+ * the next instruction to be executed.
+ */
+static int cond_search(const unsigned char **ppinst, int match)
+{
+	const unsigned char *pinst = *ppinst;
+	int count = 1;
+	int op;
+
+	if (sCalcPerformDebug) {
+		printf("cond_search:entry:\n");
+		sCalcExprDump(pinst);
+		printf("\t-----\n");
+	}
+	while ((op = *pinst++) != END_EXPRESSION) {
+		if (op == match && --count == 0) {
+			if (sCalcPerformDebug) {
+				printf("cond_search:exit:\n");
+				sCalcExprDump(pinst);
+				printf("\t-----\n");
+			}
+			*ppinst = pinst;
+			return 0;
+		}
+		switch (op) {
+		case LITERAL_DOUBLE:
+			pinst += sizeof(double);
+			break;
+		case LITERAL_INT:
+			pinst += sizeof(int);
+			break;
+		case LITERAL_STRING:
+			pinst += strlen((char *)pinst)+1;
+			if (0 && sCalcPerformDebug) {
+				printf("cond_search:LITERAL_STRING:\n");
+				sCalcExprDump(pinst);
+				printf("\t-----\n");
+			}
+			break;
+		case MIN:
+		case MAX:
+		case FINITE:
+		case ISNAN:
+			pinst++;
+			break;
+		case COND_IF:
+			count++;
+			break;
+		}
+	}
+	return 1;
 }

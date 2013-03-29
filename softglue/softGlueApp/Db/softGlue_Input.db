@@ -5,32 +5,6 @@ record(stringout,"$(P)$(H)$(SIG)_Signal") {
 	field(OUT,"@asynMask($(PORT),$(ADDR),0x6f)")
 	info(softGlueIO,"IN")
 }
-record(mbbo,"$(P)$(H)$(SIG)_Show") {
-	field(FLNK,"$(P)$(H)$(SIG)_DoShow")
-	field(ZRVL,"1")
-	field(ONVL,"2")
-	field(ZRST,"0")
-	field(ONST,"1")
-}
-record(sseq,"$(P)$(H)$(SIG)_DoShow") {
-	field(SELM,"Specified")
-	field(SELL,"$(P)$(H)$(SIG)_Show.RVAL")
-	field(STR1,"")
-	field(DOL1,"$(P)$(H)NullSigName")
-	field(LNK1,"$(P)$(H)SignalToShow PP")
-	field(DOL2,"$(P)$(H)$(SIG)_Signal")
-	field(LNK2,"$(P)$(H)SignalToShow PP")
-}
-record(scalcout,"$(P)$(H)$(SIG)_SigMatch") {
-	field(INAA,"$(P)$(H)$(SIG)_Signal NPP")
-	field(INBB,"$(P)$(H)SignalToShow CP")
-	field(CALC,"aa[0,'*']==bb[0,'*']")
-}
-record(calcout,"$(P)$(H)$(SIG)_SigShow") {
-	field(INPA,"$(P)$(H)SignalBlink CP")
-	field(INPB,"$(P)$(H)$(SIG)_SigMatch.VAL CP")
-	field(CALC,"b&&a")
-}
 record(bi,"$(P)$(H)$(SIG)_BI") {
 	field(DTYP,"asynUInt32Digital")
 	field(INP,"@asynMask($(PORT),$(ADDR),0x10)")
@@ -41,4 +15,12 @@ record(bo,"$(P)$(H)$(SIG)_SCAN") {
 	field(SCAN,"Event")
 	field(EVNT,"$(READEVENT)")
 	field(FLNK,"$(P)$(H)$(SIG)_BI")
+}
+record(bo,"$(P)$(H)$(SIG)_SigShow") {
+	field(DTYP,"softGlueShow")
+	field(OUT,"@MATCH $(P)$(H)$(SIG)_Signal")
+}
+record(bo,"$(P)$(H)$(SIG)_Show") {
+	field(DTYP,"softGlueShow")
+	field(OUT,"@SHOW $(P)$(H)$(SIG)_Signal")
 }

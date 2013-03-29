@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 
-from ca_util import *
+#from ca_util import *
+import epics
 from math import *
 from string import *
+import time
 
 import os
 #os.environ['EPICS_CA_ADDR_LIST'] = "164.54.53.99"
@@ -40,10 +42,13 @@ HH = "string 8"
 II = "string 9"
 JJ = "string 10"
 KK = "string 11"
-LL = "string 12"
+LL = "xxx:scan1.EXSC"
+
+epics.caput(calc, "0")
+
 for i in range(12):
-	caput(sCalcRecord + "." + A2L[i], eval(A2L[i]))
-	caput(sCalcRecord + "." + A2L[i] + A2L[i], eval(A2L[i]+A2L[i]) )
+	epics.caput(sCalcRecord + "." + A2L[i], eval(A2L[i]))
+	epics.caput(sCalcRecord + "." + A2L[i] + A2L[i], eval(A2L[i]+A2L[i]) )
 
 # List of expressions for testing
 # exp = [(sCalc_expression, equivalent_python_expression), ...]
@@ -59,9 +64,9 @@ exp = [
 	("A?B:C", "(B,C)[A==0]"),
 	("A&&B", "(A and B) != 0"),
 	("A||B", "(A or B) != 0"),
-#	("AA[0,'.']", "AA[0:find(AA,'.')]"),
+	("LL[0,'.']", "LL[0:LL.find('.')]"),
 	("A>B", None),
-	("A>B?BB:AA[A,A]", "(BB,AA[nint(A):nint(A+1)])[(A>B)==0]"),
+	("A>B?BB:AA[A,A]", "(AA[nint(A):nint(A+1)],BB)[A>B]"),
 	("A>=4", None),
 	("A=0?1:0", "(0,1)[A==0]"),
 	("A+B", None),
@@ -100,7 +105,7 @@ exp = [
 	("A?A+(B|C|D|E):F", "(A+(int(round(B))|int(round(C))|int(round(D))|int(round(E))),F)[A==0]"),
 	("D?4:C?3:B?2:A?1:0", "(4,((3,(2,(1,0)[A==0])[B==0])[C==0]))[D==0]"),
 	("a>0?1:0", "(1,0)[(A>0)==0]"),
-#	("(AA['.',-1]=='EXSC') && A", None),
+	("(LL['.',-1]=='EXSC') && A", "(LL[LL.find('.')+1:]=='EXSC') and A"),
 	("AA + BB", None),
 	("A?'A':'!A'", "('A','!A')[A==0]"),
 	("'$(P)$(SM)CalcMove.CALC PP MS'", None),
@@ -111,28 +116,32 @@ exp = [
 	("A&&C?A-1:B", "(A-1,B)[(A and C)==0]"),
 	("C+(A/D)*(B-C)", None),
 	("nint(4095*((A-C)/(B-C)))", None),
-#	("SSCANF(AA,'%*14c%f')", "?"),
+	("SSCANF(AA,'%*6c%f')", "1"),
 	(".005*A/8", None),
 	("A=0||a=2", "A==0 or A==2"),
 	("A?2:1", "(2,1)[A==0]"),
 	("AA+(BB)+CC", None),
 	("A*1.0", None),
 	("$P('RSET %d;RSET?',A)", "'RSET %d;RSET?' % A"),
-#	("INT(AA)", atoi(AA)),
-#	("DBL(AA)", "float(AA)"),
+	('INT("1234")', 'atoi("1234")'),
+	('DBL("1234")', 'float("1234")'),
 	("$P('SETP %5.2f;SETP?',A)", "'SETP %5.2f;SETP?' % A"),
 	("$P('RAMP %d;RAMP?',A)", "'RAMP %d;RAMP?' % A"),
 	("$P('RAMPR %5.2f;RAMPR?',A)", "'RAMPR %5.2f;RAMPR?' % A"),
-#	("DBL(AA[14,17])", "float(AA[14,17+1])"),
+	('DBL("12345678"[4,7])', 'float("12345678"[4:7+1])'),
 	("DD+AA+EE+BB", None),
 	("log(A)", None),
-	("-(-2)**2", None),
+	("-(-2)**2", "--2**2"),
 	("--2**2", None),
-	("-(-2)^2", "-(-2)**2"),
 	("A--B",None),
 	("A--B*C",None),
 	("A+B*C",None),
-	("D*((A-B)/C)", None)
+	("D*((A-B)/C)", None),
+	('SSCANF("-1","%d")', "-1"),
+	('SSCANF("-1","%hd")', "-1"),
+	('SSCANF("-1","%ld")', "-1"),
+	('"abcdef"{"bc","gh"}', '"aghdef"'),
+	("'yyy:'+'xxx:abc'-'xxx:'", '"yyy:abc"')
 ]
 
 def nint(x):
@@ -141,9 +150,10 @@ def nint(x):
 def test():
 	numErrors = 0
 	for e in exp:
-		caput(calc,e[0])
-		rtry = caget(result)
-		stry = caget(sresult)
+		epics.caput(calc,e[0], wait=True)
+		time.sleep(.1)
+		rtry = epics.caget(result)
+		stry = epics.caget(sresult)
 		if (e[1]):
 			r = eval(e[1])
 			print "\n", e[0], "-->", e[1]

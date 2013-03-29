@@ -1,0 +1,28 @@
+To run this example on a host IOC:
+    cd <top>/examples/cmdButtons
+    ../../bin/$EPICS_HOST_ARCH/cmdButtons stcmd.host
+
+To run this example on vxWorks IOC:
+    Set startup script to <top>/examples/cmdButtons/st.cmd
+    Note st.cmd is loading for vxWorks-68040. You may have to change it.
+
+
+For example, running on linux should produce:
+
+wmoore> ../../bin/linux-x86/cmdButtons stcmd.host
+dbLoadDatabase "../../dbd/cmdButtons.dbd"
+cmdButtons_registerRecordDeviceDriver(pdbbase)
+dbLoadRecords "cmdButtons.db" "P=cmdBtns:"
+iocInit
+Starting iocInit
+############################################################################
+## EPICS R3.14.12.2 $Date: Mon 2011-12-12 14:09:32 -0600$
+## EPICS Base built Jul 24 2012
+############################################################################
+iocRun: All initialization complete
+seq &seqCmdBtns "P=cmdBtns:"
+Sequencer release 2.1.9, compiled Mon Jul 23 17:17:09 2012
+Spawning sequencer program "seqCmdBtns", thread 0x88237d0: "seqCmdBtns"
+seqCmdBtns: All channels connected.
+epics> 
+

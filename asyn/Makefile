@@ -11,13 +11,15 @@ testApp_DEPEND_DIRS = asyn
 DIRS += testGpibApp
 testGpibApp_DEPEND_DIRS = testApp
 DIRS += testGpibSerialApp
-testGpibSerialApp_DEPEND_DIRS = testApp
+testGpibSerialApp_DEPEND_DIRS = testApp testGpibApp
 DIRS += testEpicsApp
 testEpicsApp_DEPEND_DIRS = testApp
 DIRS += testManagerApp
 testManagerApp_DEPEND_DIRS = asyn
 DIRS += testAsynPortDriverApp
 testAsynPortDriverApp_DEPEND_DIRS = asyn
+DIRS += testErrorsApp
+testErrorsApp_DEPEND_DIRS = asyn
 
 ifdef SNCSEQ
 DIRS += testIPServerApp

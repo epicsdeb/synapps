@@ -90,7 +90,7 @@ static int int32DriverInit(const char *dn,int low,int high)
     drvPvt    *pdrvPvt;
     char       *portName;
     asynStatus status;
-    int        nbytes;
+    size_t     nbytes;
     int        addr;
     asynInt32  *pasynInt32;
     asynFloat64 *pasynFloat64;
@@ -175,7 +175,7 @@ static asynStatus getAddr(drvPvt *pdrvPvt,asynUser *pasynUser,
     if(*paddr>=-1 && *paddr<NCHANNELS) return asynSuccess;
     if(!portOK && *paddr>=0) return asynSuccess;
     epicsSnprintf(pasynUser->errorMessage,pasynUser->errorMessageSize,
-        "%s addr %d is illegal; Must be >= %d and < %d\n",
+        "%s addr %d is illegal; Must be >= %d and < %d",
         pdrvPvt->portName,*paddr,
         (portOK ? -1 : 0),NCHANNELS);
     return asynError;
@@ -297,7 +297,7 @@ static asynStatus int32Write(void *pvt,asynUser *pasynUser,
         asynPrint(pasynUser,ASYN_TRACE_ERROR,
             "%s int32Driver:read not connected\n",pdrvPvt->portName);
         epicsSnprintf(pasynUser->errorMessage,pasynUser->errorMessageSize,
-            "%s int32Driver:read not connected\n",pdrvPvt->portName);
+            "%s int32Driver:read not connected",pdrvPvt->portName);
         return asynError;
     }
     epicsMutexMustLock(pdrvPvt->lock);
@@ -329,19 +329,19 @@ static asynStatus int32Read(void *pvt,asynUser *pasynUser,
     status = getAddr(pdrvPvt,pasynUser,&addr,0);
     if(status!=asynSuccess) return status;
     asynPrint(pasynUser, ASYN_TRACE_FLOW,
-        "%s int32Driver:readInt32 value %d\n",pdrvPvt->portName,value);
+        "%s int32Driver:readInt32 value %p\n",pdrvPvt->portName,value);
     if(!pdrvPvt->connected) {
         asynPrint(pasynUser,ASYN_TRACE_ERROR,
             "%s int32Driver:read  not connected\n",pdrvPvt->portName);
         epicsSnprintf(pasynUser->errorMessage,pasynUser->errorMessageSize,
-            "%s int32Driver:read not connected\n",pdrvPvt->portName);
+            "%s int32Driver:read not connected",pdrvPvt->portName);
         return asynError;
     }
     epicsMutexMustLock(pdrvPvt->lock);
     *value = pdrvPvt->channel[addr].value;
     epicsMutexUnlock(pdrvPvt->lock);
     asynPrint(pasynUser,ASYN_TRACEIO_DRIVER,
-        "%s read %d\n",pdrvPvt->portName,value);
+        "%s read %d\n",pdrvPvt->portName,*value);
     return asynSuccess;
 }
 static asynStatus int32GetBounds(void *pvt, asynUser *pasynUser,
@@ -372,7 +372,7 @@ static asynStatus float64Write(void *pvt,asynUser *pasynUser,
     epicsMutexUnlock(pdrvPvt->lock);
     epicsEventSignal(pdrvPvt->waitWork);
     asynPrint(pasynUser,ASYN_TRACEIO_DRIVER,
-        "%s addr %d write %d\n",pdrvPvt->portName,addr,value);
+        "%s addr %d write %f\n",pdrvPvt->portName,addr,value);
     pasynManager->interruptStart(pdrvPvt->asynFloat64Pvt, &pclientList);
     pnode = (interruptNode *)ellFirst(pclientList);
     while (pnode) {
@@ -402,14 +402,14 @@ static asynStatus float64Read(void *pvt,asynUser *pasynUser,
         asynPrint(pasynUser,ASYN_TRACE_ERROR,
             "%s uint32DigitalDriver:read  not connected\n",pdrvPvt->portName);
         epicsSnprintf(pasynUser->errorMessage,pasynUser->errorMessageSize,
-            "%s uint32DigitalDriver:read not connected\n",pdrvPvt->portName);
+            "%s uint32DigitalDriver:read not connected",pdrvPvt->portName);
         return asynError;
     }
     epicsMutexMustLock(pdrvPvt->lock);
     *value = pdrvPvt->interruptDelay;
     epicsMutexUnlock(pdrvPvt->lock);
     asynPrint(pasynUser,ASYN_TRACEIO_DRIVER,
-        "%s read %d\n",pdrvPvt->portName,value);
+        "%s read %f\n",pdrvPvt->portName,*value);
     return asynSuccess;
 }
 
@@ -458,7 +458,7 @@ static asynStatus create(void *drvPvt,asynUser *pasynUser,
 error:
     printf("asynDrvUser failed. got |%s| expecting reason(<int>)\n",drvInfo);
     epicsSnprintf(pasynUser->errorMessage,pasynUser->errorMessageSize,
-        "asynDrvUser failed. got |%s| expecting reason(<int>)\n",drvInfo);
+        "asynDrvUser failed. got |%s| expecting reason(<int>)",drvInfo);
     return asynError;
 }
 

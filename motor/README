@@ -1,8 +1,8 @@
-Motor Record R6-5-2 Release Notice
+Motor Record R6-7-1 Release Notice
 ===============================================================================
 
 The motor record software in this release is compatible with EPICS base
-R3-14-11. See the <motor>/configure/RELEASE file for support module version
+R3-14-12-1. See the <motor>/configure/RELEASE file for support module version
 dependencies.
 
 
@@ -107,15 +107,17 @@ Known Problems
         reverse encoder wires when the motor and encoder direction are
         reversed.
 
-        There is a peculiarity with the OMS controller boards when they are
-        configured with MRES and ERES of opposite polarity.  Since both the
-        commanded and feedback positions are set with the same command (LP),
-        the user must enter the opposite polarity when setting the OMS motor
-        controllers position.
+        There is a peculiarity with the OMS (sans MAXv) controller boards when
+        they are configured with MRES and ERES of opposite polarity.  Since
+        both the commanded and feedback positions are set with the same command
+        (LP), the user must enter the opposite polarity when setting the OMS
+        motor controllers position.
 
         For example, if MRES is positive and ERES is negative and the user
         wants to set the current position to 10.00 inches, then -10.00 must be
         entered in the VAL or DVAL field.
+        
+        This limitation does not apply to the MAXv model after release R6-7.
 
 5) There are several known problems with the status update field (STUP);
         - the motor record gets stuck in the moving state (i.e., DMOV=0) if
@@ -133,50 +135,83 @@ Known Problems
         appear to the motor record as a following error causing a needless
         retry if retries are enabled.
 
+7) Backlash and retries do not work with the Physik Instrumente (PI) GmbH & Co.
+        model C-862 controller. The backlash and retry move commands are (for
+        some unknown reason) ignored and several subsequent status request
+        result in communication timeouts.
+
+8) The OMS VME58 controller ignores its' Velocity Base command (VB) on the up
+        ramp of a home search operation; but not on the down ramp.
 
 
-Modification Log from R6-5-1 to R6-5-2
-======================================
 
-1) The GNU preprocessor assertions in motor.h are deprecated with the VxWorks
-        6.x compiler.  Test for CPU macros that are compatible with VxWorks 6.x
-        have been added.  This change prevents an "Error: unknown bit order!"
-        compiler error with VxWorks 6.x.
+Modification Log for R6-7-1
+===========================
 
-        File modified: motorApp/MotorSrc/motor.h
+1) Bug fix for Aerotech Ensemble jog not terminating when jog request is
+        relinquished.  The FREERUN command does not activate PLANSTATUS's
+        move_active indicator.  The driver must check both PLANESTATUS and
+        AXISSTATUS for active move.
 
-2) Wang Xiaoqiang (PSI) bug fix for Aerotech Ensemble communication problem
-        with Ensemble firmware 2.54.004 and above.  Redundant EOS append in
-        sendAndReceive() removed.
-
-        File modified: drvEnsembleAsyn.cc
-
-3) Minor bug fix to ACS Motion Control, SPiiPlus controller.  Uninitialized
-        data area would sometimes cause a crash at iocInit time.
+        Restored home search from EPICS function.  The Aerotech Ensemble
+        example program, HomeAsync.abx, must be downloaded and the
+        Parameters>System>TaskExecutionSetup parameter must be set to enable
+        Auxiliary Task execution.
         
-        Files modified: AcsTech80Src/drvSPiiPlus.cc
-                        AcsTech80Src/Makefile
-                        
-4) Matthew Pearson's (Diamond) bug fix for deferred moves broken with Motor
-        Simulation (devMotorSim) device driver.
+        Replaced "stepSize > 0.0" test with ReverseMotionDirection parameter
+        to determine if the programming direction of an axis has been reversed.
 
-        File modified: MotorSimSrc/drvMotorSim.c
+        File modified: motorApp/AerotechSrc/drvEnsembleAsyn.cc
 
-5) Currently, the Aerotech Ensemble home search can not be aborted from EPICS.
-        Therefore, the home search command has been commented out of this
-        release until an Ensemble firmware update resolves this problem.
+2) Bug fix for Schneider Electric MDrive "PR PN" response overflows input
+        buffer. BUFF_SIZE increased from 13 to 80 bytes.  Increased timeout
+        from 1 to 2 seconds to accomodate slow "PR PN" response.  Buffer flush
+        added to accomodate extra "\r\n" from "PR PN" response.  Eliminated
+        compiler warnings on MDrive_axis[].
 
-        Files modified: devEnsemble.cc and drvEnsembleAsyn.cc
-
+        File modified: motorApp/ImsSrc/drvMDrive.cc
 
 
-Modification Log from R6-5 to R6-5-1
-====================================
+Modification Log for R6-7
+=========================
+
+1) Since the purpose of a Home search is to establish an absolute reference
+        position, the soft travel limits are not valid during a home search
+        operation.  Accordingly, the motor record's soft travel limit error
+        check is now disabled during a home search operation.
+        In addition, the motor record was not setting an acceleration rate for
+        a home search. It now uses the home velocity (HVEL), base velocity
+        (BVEL) and accel. time (ACCL) fields to set a home acceleration rate.
+        
+        File modified: motorApp/MotorSrc/motorRecord.cc
+
+2) If an OMS VME58 board rebooted (as described under item #12 R6-6), it could
+        end up in an endless loop in the driver's send_mess() function. Add
+        a counter to prevent the endless loop.
+        
+        File modified: motorApp/OmsSrc/drvOms58.cc
+
+3) Added OMS MAXv device drive support for MRES and ERES having different
+        polarities. See "Known Problems" item #4).
+
+        Files modified: motorApp/OmsSrc/devOmsCom.cc
+                        motorApp/OmsSrc/drvMAXv.cc
+
+4) With this release, the Aerotech Ensemble driver only supports 4.01.00
+        version firmware and above.
+   In order to support SCURVE trajectories, the move commands have been changed
+        from MOVE[ABS/INC] to LINEAR.  Currently, the SCURVE command can only
+        be set from an asyn record (e.g., SCURVE 75).
+
+        
+
+Modification Log from R6-5 to R6-6
+==================================
 
 1) Aerotech Ensemble asyn motor driver would crash the IOC at boot-up if the
         Ensemble was not powered up and able to communicate.
 
-        File modified: drvEnsembleAsyn.cc
+        Files modified: drvEnsembleAsyn.cc
 
 2) Aerotech Ensemble EOT limit switch status was not available except via an
         Ensemble fault condition.  With this release the status of the EOT
@@ -195,15 +230,15 @@ Modification Log from R6-5 to R6-5-1
         task and the console.  Since a watchdog timer trip indicates that the
         MAXv has rebooted and no longer has valid motor positions, the
         controller is disabled and is no longer available to EPICS until after
-        the VME crate has been power cycled.  Other MAXv boards in the system
-        are unaffected by this scenario.
+        the VME crate has been rebooted.  Other MAXv boards in the system are
+        unaffected by this scenario.
 
         To better communicate this problem to the user, several medm displays
         have been changed.  Small displays (motorx_tiny.adl, motorx.adl) will
         show a yellow border around their position readback values.  Larger
         displays (motorx_more.adl, motorx_all.adl) will display the message
         "Controller Error" in yellow.  The following error message at the
-        console and/or in the errlog is definitive;
+        console and/or in the IOC errlog is definitive;
 
         "***MAXv card #<card> Disabled*** Watchdog Timeout CTR =<ctr>"
 
@@ -213,6 +248,85 @@ Modification Log from R6-5 to R6-5-1
         Files modified: motordevCom.cc, drvMAXv.cc, motorx_tiny.adl,
                         motorx.adl, motorx_more.adl
 
+5) The GNU preprocessor assertions in motor.h are deprecated with the VxWorks
+        6.x compiler.  Test for CPU macros that are compatible with VxWorks 6.x
+        have been added.  This change prevents an "Error: unknown bit order!"
+        compiler error with VxWorks 6.x.
+
+        File modified: motorApp/MotorSrc/motor.h
+
+6) Wang Xiaoqiang (PSI) bug fix for Aerotech Ensemble communication problem
+        with Ensemble firmware 2.54.004 and above.  Redundant EOS append in
+        sendAndReceive() removed.
+
+        File modified: drvEnsembleAsyn.cc
+
+7) Minor bug fix to ACS Motion Control, SPiiPlus controller.  Uninitialized
+        data area would sometimes cause a crash at iocInit time.
+        
+        Files modified: AcsTech80Src/drvSPiiPlus.cc
+                        AcsTech80Src/Makefile
+
+8) Matthew Pearson's (Diamond) bug fix for deferred moves broken in the Motor
+        Simulation (devMotorSim) device driver.
+
+        File modified: MotorSimSrc/drvMotorSim.c
+
+9) Added error check for valid acceleration rate on STOP command to OMS device
+        support. This prevents "command error" messages when VBAS = VELO and a
+        STOP command is issued.
+
+        File modified: OmsSrc/devOmsCom.cc
+
+10) There is a problem with initiating a home search with the Aerotech Ensemble
+        motor controller with EPICS.  The problem is that the EPICS Ensemble
+        driver uses Aerotech's ASCII communication protocol and that protocol
+        blocks all communication on ASCII communication ports during a home
+        search.  Consequently, once a home search is started from EPICS, it is
+        unable to stop it.
+
+        With this release, the home search function is commented out of the
+        Ensemble driver.  Users that need to perform a home search should do it
+        from Aerotech's IDE software, which can abort a home search.
+
+        File modified: AerotechSrc/drvEnsembleAsyn.cc
+
+11) Since the Ensemble network connection requires period communication from
+        the host to prevent the Ensemble from closing the network socket, the
+        Ensemble support based on the old device driver architecture (phase 1)
+        was removed with this release.  The asyn motor architecture supports
+        continuous, periodic updates; the old architecture does not.
+
+        Files deleted: AerotechSrc/[devEnsemble.cc, drvEnsemble.cc,
+                                    drvEnsemble.h]
+        Files modified: AerotechSrc/[AerotechRegister.h, Makefile,
+                                     devAerotech.dbd]
+
+12) A reboot error check was added to the OMS VME58 device driver.  When the
+        reboot error check detects that a VME58 board has rebooted since the
+        last power-cycle or VME SysReset, and no longer has valid motor
+        positions, the controller is disabled and is no longer available to
+        EPICS until after the VME crate has been rebooted.  Other VME58
+        boards in the system are unaffected by this scenario.  The following
+        error message is sent to the IOC error log;
+
+        ***VME58 card #0 Disabled*** Reboot Detected.
+        
+        Files modified: OmsSrc/[drvOms58.cc, drvOms58.h]
+
+13) Michael Davidsaver (BNL) discovered buffer overflow vulnerabilities in the
+        OMS MAXv driver.  Added buffer overflow error checks in MAXvConfig()'s
+        configuration string argument and in readbuf(). Added a counter to
+        send_mess()'s "waiting for message acknowledgement" loop to prevent
+        infinite loop when MAXv board is not responding.
+        
+        File modified: OmsSrc/drvMAXv.cc        
+
+14) OMS MAXv
+        - Increase maximum configuration string size from 150 to 300 bytes.
+        - Increase all receive buffer sizes to same 300 bytes.
+        - Add error checks for buffer overflow in MAXvConfig() and in readbuf().
+        - Buffer overflow error checks
 
 
 Modification Log from R6-4 to R6-5

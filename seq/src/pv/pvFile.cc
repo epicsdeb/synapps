@@ -1,6 +1,4 @@
-/* $Id: pvFile.cc,v 1.1.1.1 2000-04-04 03:22:15 wlupton Exp $
- *
- * Implementation of demonstration EPICS sequencer file library (pvFile)
+/* Implementation of demonstration EPICS sequencer file library (pvFile)
  *
  * William Lupton, W. M. Keck Observatory
  */
@@ -9,9 +7,6 @@
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
-
-#include <sys/time.h>
-#include <sys/types.h>
 
 #include "pvFile.h"
 
@@ -191,7 +186,7 @@ fileVariable::~fileVariable()
  *
  * Description:
  */
-pvStat fileVariable::get( pvType type, int count, pvValue *value )
+pvStat fileVariable::get( pvType type, unsigned count, pvValue *value )
 {
     if ( getDebug() > 0 )
         printf( "%8p: fileVariable::get( %d, %d )\n", this, type, count );
@@ -209,7 +204,7 @@ pvStat fileVariable::get( pvType type, int count, pvValue *value )
  *
  * Description:
  */
-pvStat fileVariable::getNoBlock( pvType type, int count, pvValue *value )
+pvStat fileVariable::getNoBlock( pvType type, unsigned count, pvValue *value )
 {
     if ( getDebug() > 0 )
         printf( "%8p: fileVariable::getNoBlock( %d, %d )\n", this,
@@ -227,7 +222,7 @@ pvStat fileVariable::getNoBlock( pvType type, int count, pvValue *value )
  *
  * Description:
  */
-pvStat fileVariable::getCallback( pvType type, int count,
+pvStat fileVariable::getCallback( pvType type, unsigned count,
 			          pvEventFunc func, void *arg )
 {
     if ( getDebug() > 0 )
@@ -249,7 +244,7 @@ pvStat fileVariable::getCallback( pvType type, int count,
  *
  * Description:
  */
-pvStat fileVariable::put( pvType type, int count, pvValue *value )
+pvStat fileVariable::put( pvType type, unsigned count, pvValue *value )
 {
     if ( getDebug() > 0 )
         printf( "%8p: fileVariable::put( %d, %d )\n", this, type, count );
@@ -266,7 +261,7 @@ pvStat fileVariable::put( pvType type, int count, pvValue *value )
  *
  * Description:
  */
-pvStat fileVariable::putNoBlock( pvType type, int count, pvValue *value )
+pvStat fileVariable::putNoBlock( pvType type, unsigned count, pvValue *value )
 {
     if ( getDebug() > 0 )
         printf( "%8p: fileVariable::putNoBlock( %d, %d )\n", this,
@@ -282,7 +277,7 @@ pvStat fileVariable::putNoBlock( pvType type, int count, pvValue *value )
  *
  * Description:
  */
-pvStat fileVariable::putCallback( pvType type, int count, pvValue *value,
+pvStat fileVariable::putCallback( pvType type, unsigned count, pvValue *value,
 			          pvEventFunc func, void *arg )
 {
     if ( getDebug() > 0 )
@@ -301,7 +296,7 @@ pvStat fileVariable::putCallback( pvType type, int count, pvValue *value,
  *
  * Description:
  */
-pvStat fileVariable::monitorOn( pvType type, int count, pvEventFunc func,
+pvStat fileVariable::monitorOn( pvType type, unsigned count, pvEventFunc func,
 			        void *arg, pvCallback **pCallback )
 {
     if ( getDebug() > 0 )
@@ -331,7 +326,10 @@ pvStat fileVariable::monitorOff( pvCallback *callback )
 }
 
 /*
- * $Log: not supported by cvs2svn $
+ * pvFile.cc,v
+ * Revision 1.1.1.1  2000/04/04 03:22:15  wlupton
+ * first commit of seq-2-0-0
+ *
  * Revision 1.1  2000/03/31 23:00:06  wlupton
  * initial insertion
  *

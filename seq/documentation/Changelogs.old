@@ -1,0 +1,372 @@
+src/snc/snc_main.c
+------------------
+20nov91,ajk     Removed call to init_snc().
+20nov91,ajk     Removed some debug stuff.
+28apr92,ajk     Implemented new event flag mode.
+29oct93,ajk     Added 'v' (vxWorks include) option.
+17may94,ajk     Changed setlinebuf() to setvbuf().
+17may94,ajk     Removed event flag option (-e).
+17feb95,ajk     Changed yyparse() to Global_yyparse(), because FLEX makes
+                yyparse() static.
+02mar95,ajk     Changed bcopy () to strcpy () in 2 places.
+26jun95,ajk     Due to popular demand, reinstated event flag (-e) option.
+29apr99,wfl     Avoided compilation warnings.
+29apr99,wfl     Removed unused vx_opt option.
+06jul99,wfl     Supported "+m" (main) option; minor cosmetic changes.
+
+src/snc/parse.h
+---------------
+18nov91,ajk     Replaced lstLib stuff with in-line links.
+28oct93,ajk     Added support for assigning array elements to pv's.
+28oct93,ajk     Added support for pointer declarations (see VC_*)
+05nov93,ajk     Changed structures var & db_chan to handle array assignments.
+05nov93,ajk     changed malloc() to calloc() 3 places.
+20jul95,ajk     Added unsigned types (V_U...).
+08aug96,wfl     Added syncQ variables to var struct.
+01sep99,grw      Added E_OPTION, E_ENTRY, E_EXIT.
+07sep99,wfl     Added E_DECL (for local variable declarations).
+
+src/snc/parse.c
+---------------
+19nov91,ajk     Replaced lstLib calls with built-in links.
+20nov91,ajk     Removed snc_init() - no longer did anything useful.
+20nov91,ajk     Added option_stmt() routine.
+28apr92,ajk     Implemented new event flag mode.
+29opc93,ajk     Implemented assignment of pv's to array elements.
+29oct93,ajk     Implemented variable class (VC_SIMPLE, VC_ARRAY, & VC_POINTER).
+29oct93,ajk     Added 'v' (vxWorks include) option.
+17may94,ajk     Removed old event flag (-e) option.
+08aug96,wfl     Added new syncq_stmt() routine.
+29apr99,wfl     Avoided compilation warnings; removed unused vx_opt option.
+17may99,wfl     Fixed crash in debug output.
+06jul99,wfl     Added "+m" (main) option.
+07sep99,wfl     Added E_DECL expression type (for local declarations).
+22sep99,grw     Supported entry and exit actions; supported state options.
+06mar00,wfl     Avoided NULL pointer crash when DEBUG is enabled.
+31mar00,wfl     Supported entry handler.
+
+src/snc/gen_tables.c
+--------------------
+28apr92,ajk     Implemented new event flag mode.
+01mar94,ajk     Implemented new interface to sequencer (see seqCom.h).
+01mar94,ajk     Implemented assignment of array elements to db channels.
+17may94,ajk     removed old event flag (-e) option.
+25may95,ajk     re-instated old event flag (-e) option.
+20jul95,ajk     Added unsigned types.
+22jul96,ajk     Added castS to action, event, delay, and exit functions.
+08aug96,wfl     Added emission of code for syncQ queues.
+11mar98,wfl     Corrected calculation of number of event words.
+29apr99,wfl     Avoided compilation warnings.
+29apr99,wfl     Removed unnecessary include files and unused vx_opt option.
+06jul99,wfl     Supported "+m" (main) option; minor cosmetic changes.
+07sep99,wfl     Set all event bits when array referenced in "when" test.
+22sep99,grw     Supported entry and exit actions; supported state options;
+                avoided warnings when no variables are mapped to channels.
+18feb00,wfl     Partial support for local declarations (not yet complete).
+31mar00,wfl     Supported entry handler.
+
+src/snc/gen_ss_code.c
+---------------------
+19nov91,ajk     Changed find_var() to findVar().
+28apr92,ajk     Implemented efClear() & efTestAndClear().
+01mar94,ajk     Changed table generation to the new structures defined $
+                in seqCom.h.
+09aug96,wfl     Supported pvGetQ().
+13aug96,wfl     Supported pvFreeQ().
+23jun97,wfl     Avoided SEGV if variable or event flag was undeclared.
+13jan98,wfl     Fixed handling of compound expressions, using E_COMMA.
+29apr99,wfl     Avoided compilation warnings.
+29apr99,wfl     Removed unnecessary include files.
+06jul99,wfl     Cosmetic changes to improve look of generated C code
+07sep99,wfl     Added support for local declarations (not yet complete);
+                Added support for "pvName", "pvMessage" and pvPutComplete";
+                Supported "pv" functions with array length and optional parms;
+                Added sequencer variable name to generated seq_pv*() calls
+22sep99,grw     Supported entry and exit actions
+18feb00,wfl     More partial support for local declarations (still not done)
+31mar00,wfl     Put 'when' code in a block (allows local declarations);
+                supported entry handler
+
+src/snc/gen_code.c
+------------------
+19nov91,ajk     Replaced lstLib calls with built-in linked list.
+19nov91,ajk     Removed extraneous "static" from "UserVar" declaration.
+01mar94,ajk     Implemented new interface to sequencer (seqCom.h).
+01mar94,ajk     Implemented assignment of array elements to db channels.
+01mar94,ajk     Changed algorithm for assigning event bits.
+20jul95,ajk     Added unsigned types.
+11aug96,wfl     Supported syncQ queues.
+13jan98,wfl     Supported E_COMMA token (for compound expressions).
+01oct98,wfl     Supported setting initial value on declaration.
+29apr99,wfl     Avoided compilation warnings; removed unused include files.
+17may99,wfl     Added main program under UNIX.
+06jul99,wfl     Changed to use "+m" (main) option; minor cosmetic changes.
+07sep99,wfl     Added ASYNC/SYNC defns in generated output;
+                Supported E_DECL (for local declarations).
+22sep99,grw     Supported entry and exit actions.
+18feb00,wfl     More partial support for local declarations (still not done).
+29feb00,wfl     Added errlogInit() and taskwdInit() to Unix main program.
+06mar00,wfl     Added threadInit() to main program; removed ASYNC/SYNC #defines.
+17mar00,wfl     Added necessary includes for C main program.
+31mar00,wfl     Supported entry handler.
+
+src/seq/seq.h
+----------------
+07mar91,ajk     Changed SSCB semaphore id names.
+05jul91,ajk     Added function prototypes.
+16dec91,ajk     Setting up for VxWorks version 5.
+27apr92,ajk     Changed to new event flag mode (SSCB & PROG changed).
+27apr92,ajk     Removed getSemId from CHAN.
+28apr92,ajk     Implemented new event flag mode.
+17feb93,ajk     Fixed some functions prototypes.
+10jun93,ajk     Removed VxWorks V4/V5 conditional compile.
+20jul93,ajk     Removed non-ANSI function definitions.
+21mar94,ajk     Implemented new i/f with snc (see seqCom.h).
+21mar94,ajk     Implemented assignment of array elements to db.  Also,
+                allow "unlimited" number of channels.
+28mar94,ajk     Added time stamp support.
+29mar94,ajk     Added dbOffset in db_channel structure; allows faster processing
+                of values returned with monitors and pvGet().
+09aug96,wfl     Added syncQ queue support.
+30apr99,wfl     Replaced VxWorks dependencies with OSI.
+17may99,wfl     Changed FUNCPTR etc to SEQFUNCPTR; corrected sequencer() proto.
+07sep99,wfl     Added putComplete, message and putSemId to SSCB.
+22sep99,grw     Supported entry and exit actions; supported state options.
+18feb00,wfl     Added 'auxiliary_args' typedef (for seqAuxThread).
+29feb00,wfl     Converted to new OSI; defs for new thread death scheme etc.
+06mar00,wfl     Added function prototypes for global routines.
+31mar00,wfl     Made caSemId a mutex; added seqFindProgXxx() prototypes.
+
+src/seq/seqCom.h
+----------------
+11jul96,ajk     Changed all int types to long.
+22jul96,ajk     Changed PFUNC to ACTION_FUNC, EVENT_FUNC, DELAY_FUNC, EXIT_FUNC.
+08aug96,wfl     Changed magic number; added syncQ queue support.
+13aug96,wfl     Added pvFreeQ() declaration.
+29apr99,wfl     Tidied, removed tsDefs.h, used SEQ_TIME_STAMP; removed vx_opt.
+17may99,wfl     Added stdlib.h and seq() prototype.
+06jul99,wfl     Replaced OPT_TIME with OPT_MAIN; made bitMask unsigned long.
+07sep99,wfl     Changed magic number (arg lists have changed);
+                added SYNC/ASYNC arguments to seq_pvGet() and seq_pvPut();
+                added seq_pvXxx() (Xxx=Name,Message,PutComplete).
+22sep99,grw     Supported entry and exit actions; supported state options.
+29feb00,wfl     Converted to new OSI; new magic number.
+31mar00,wfl     Included pvAlarm.h; added entry function; new magic number.
+
+src/seq/seqPvt.h
+----------------
+07mar91,ajk     Changed SSCB semaphore id names.
+05jul91,ajk     Added function prototypes.
+16dec91,ajk     Setting up for VxWorks version 5.
+27apr92,ajk     Changed to new event flag mode (SSCB & PROG changed).
+27apr92,ajk     Removed getSemId from CHAN.
+28apr92,ajk     Implemented new event flag mode.
+17feb93,ajk     Fixed some functions prototypes.
+10jun93,ajk     Removed VxWorks V4/V5 conditional compile.
+20jul93,ajk     Removed non-ANSI function definitions.
+21mar94,ajk     Implemented new i/f with snc (see seqCom.h).
+21mar94,ajk     Implemented assignment of array elements to db.  Also,
+                allow "unlimited" number of channels.
+28mar94,ajk     Added time stamp support.
+29mar94,ajk     Added dbOffset in db_channel structure; allows faster processing
+                of values returned with monitors and pvGet().
+09aug96,wfl     Added syncQ queue support.
+30apr99,wfl     Replaced VxWorks dependencies with OSI.
+17may99,wfl     Changed FUNCPTR etc to SEQFUNCPTR; corrected sequencer() proto.
+07sep99,wfl     Added putComplete, message and putSemId to SSCB.
+22sep99,grw     Supported entry and exit actions; supported state options.
+18feb00,wfl     Added 'auxiliary_args' typedef (for seqAuxThread).
+29feb00,wfl     Converted to new OSI; defs for new thread death scheme etc.
+06mar00,wfl     Added function prototypes for global routines.
+31mar00,wfl     Made caSemId a mutex; added seqFindProgXxx() prototypes.
+22mar01,mrk     mover to seqPvt.h from seq.h for stupid windows problem
+
+src/seq/seq_ca.c
+----------------
+11dec91,ajk     Cosmetic changes (comments & names)
+13feb92,ajk     All seqLog() calls compile only if DEBUG is defined.
+28apr92,ajk     Implemented new event flag mode.
+21may92,ajk     Will periodically announce number of connected channels
+                if waiting form some to connect.
+17feb93,ajk     Implemented code to allow sharing of a single CA task by
+                all state programs.  Added seq_disconnect() and ca_import_
+                cancel(). DB name resolution was moved to seq_main.c.
+19feb93,ajk     Added patched version of VxWorks 5.02b taskVarDelete().
+01mar94,ajk     Moved "seq_pv*()" functions to seq_if.c.
+28mar94,ajk     Restructured event& callback handlers to call proc_db_events().
+29mar94,ajk     Removed getPtrToValue().  Offset is now in db_channel structure.
+08apr94,ajk     Added support for time stamp.
+17jan96,ajk     Removed ca_import_cancel(), which is now in channel access lib.
+17jan96,ajk     Many routines changed to use ANSI-style function headers.
+09aug96,wfl     Added support for syncQ queued values.
+30apr99,wfl     Replaced VxWorks task dependencies with OSI.
+17may99,wfl     Fixed errors in debug output; checked for NULL mask pointer
+                (NULL mask pointer bug had always been present).
+07sep99,wfl     Supported put completion (c.f. existing get completion);
+                Copied message text (returned via seq_pvMessage());
+                On completion, unconditionally give semaphore.
+18feb00,wfl     Supported simple types for putCallback (fixed bug...).
+29feb00,wfl     Converted to new OSI (and errlogPrintf).
+31mar00,wfl     Checked for NULL value returned on put completion.
+
+src/seq/seq_if.c
+----------------
+20jul95,ajk     Fixed seq_pvPut() so count <= NELM in db.
+09aug96,wfl     Added seq_pvGetQ() to support syncQ.
+13aug96,wfl     Added seq_pvFreeQ() to free entries on syncQ queue.
+23jun96,wfl     Added task wakeup code to seq_efClear() (like seq_efSet()).
+29apr99,wfl     Used SEQ_TIME_STAMP; removed unused vx_opt option.
+06jul99,wfl     Added freeing of queue entries; supported "+m" (main) option.
+07sep99,wfl     Supported per-call sync/async specification on get/put;
+                Supported setting of message on get/put completion;
+                Supported put completion (c.f. get completion);
+                Added seq_pvName() and seq_pvMessage().
+22sep99,grw     Supported not re-starting timers on transition to curr. state.
+18feb00,wfl     Changed to use pvVarGetMess() everywhere
+29feb00,wfl     Converted to new OSI; new macros for resource lock / unlock
+                (always lock if needed); completed "putComplete" logic
+31mar00,wfl     Used mutex for caSemId; fixed placement of flush calls
+
+src/seq/seq_mac.c
+-----------------
+01mar94,ajk	Added seq_macValueGet() as state program interface routine.
+29apr99,wfl     Avoided compilation warnings.
+17may99,wfl	Replaced VxWorks dependencies with OSI calls; avoided step
+		beyond end of macro definition string.
+29feb00,wfl	Converted to new OSI (and errlogPrintf).
+
+src/seq/seq_main.c
+------------------
+23apr91,ajk	Fixed problem with state program invoking the sequencer.
+01jul91,ajk	Added ANSI functional prototypes.
+05jul91,ajk	Changed semCreate() in three places to semBCreate.
+		Modified semTake() second param. to WAIT_FOREVER.
+		These provide VX5.0 compatability.  
+16aug91,ajk	Improved "magic number" error message.
+25oct91,ajk	Code to create semaphores "pSS->getSemId" was left out.
+		Added this code to init_sscb().
+25nov91,ajk	Removed obsolete seqLog() code dealing with global locking.
+04dec91,ajk	Implemented state program linked list, eliminating need for
+		task variables.
+11dec91,ajk	Cleaned up comments.
+05feb92,ajk	Decreased minimum allowable stack size to SPAWN_STACK_SIZE/2.
+24feb92,ajk	Print error code for log file failure.
+28apr92,ajk	Implemented new event flag mode.
+29apr92,ajk	Now alocates private program structures, even when reentry option
+		is not specified.  This avoids problems with seqAddTask().
+29apr92,ajk	Implemented mutual exclusion lock in seq_log().
+16feb93,ajk	Converted to single channel access task for all state programs.
+16feb93,ajk	Removed VxWorks pre-v5 stuff.
+17feb93,ajk	Evaluation of channel names moved here from seq_ca.c.
+19feb93,ajk	Fixed time stamp format for seq_log().
+16jun93,ajk	Fixed taskSpawn() to have 15 args per vx5.1.
+20jul93,ajk	Replaced obsolete delete() with remove() per vx5.1 release notes.
+20jul93,ajk	Removed #define ANSI
+15mar94,ajk	Implemented i/f to snc through structures in seqCom.h.
+15mar94,ajk	Allowed assignment of array elements to db.
+15mar94,ajk	Rearranged code that builds program structures.
+02may94,ajk	Performed initialization when sequencer is evoked, even w/o
+		parameters.
+19jul95,ajk	Added unsigned types (unsigned char, short, int, long).
+20jul95,ajk	Added priority specification at run time. 
+03aug95,ajk	Fixed problem with +r option: user variable space (pSP->pVar)
+		was not being allocated.
+03jun96,ajk	Now compiles with -wall and -pedantic switches.
+09aug96,wfl	Added initialization of syncQ queues.
+30apr99,wfl	Replaced VxWorks dependencies with OSI.
+17may99,wfl	Under UNIX, call OSIthreadJoinAll() rather than exiting.
+17may99,wfl	Moved misplaced event array initialization.
+06jul99,wfl	Slightly improved Unix command-line interpreter.
+07sep99,wfl	Added "-" Unix command (==seqChanShow("-"));
+		Unconditionally create get/put completion semaphores.
+22sep99,grw	Supported entry and exit actions; supported state options.
+18feb00,wfl	Re-worked args (inc. run-time debug level) for seqAuxThread;
+		Called sprog_delete() on Unix thread exit
+29feb00,wfl	Supported new OSI (and errlogPrintf); got rid of remaining
+		OS-dependencies; improved command-line interpreter
+31mar00,wfl	Supported 'shell' macro to run shell; made caSemId a mutex
+
+src/seq/seq_prog.c
+------------------
+09dec91,ajk	original
+29apr92,ajk	Added mutual exclusion locks	
+17Jul92,rcz	Changed semBCreate call for V5 vxWorks; should be semMCreate?
+18feb00,wfl	Avoided memory leak.
+29feb00,wfl	Supported new OSI.
+31mar00,wfl	Added seqFindProgByName().
+
+src/seq/seq_qry.c
+-----------------
+25nov91,ajk	Display task names(s) with id(s).
+		Display logfile name and file descriptor.
+		Moved wait_rtn() to top of loop.
+09dec91,ajk	Modified to used state program linked list.
+		Added option to display all programs when tid=0.
+19dec91,ajk	Allow task name as well as task id.
+25feb92,ajk	V5.0 accepts 0 as a valid task id: fixed it.
+26feb92,ajk	Fixed formatting of task/program listing.
+29apr92,ajk	Modified to interpret encoded options.
+21may92,ajk	Modified format for listing programs & tasks.
+21feb93,ajk	Some minor code cleanup.
+01mar94,ajk	Major changes to print more meaningful information.
+12aug96,wfl	Add syncQ queue reporting.
+22jan97,wfl	Fix seqChanShow() not to list unassigned channels with "-".
+17may99,wfl	Fixed missing declaration for debug output.
+06jul99,wfl	Supported "+m" (main) option.
+07sep99,wfl	Added put completion and message.
+18feb00,wfl	Tidied up, avoided prevState undefined crash, output time
+		stamp unconditionally.
+29feb00,wfl	Supported new OSI; removed remaining OS-dependencies.
+31mar00,wfl	Removed limitation on only printing 5 array elements.
+
+src/seq/seq_task.c
+------------------
+04dec91,ajk	Implemented linked list of state programs, eliminating task
+		variables.
+11dec91,ajk	Made cosmetic changes and cleaned up comments.
+19dec91,ajk	Changed algoritm in seq_getTimeout().
+29apr92,ajk	Implemented new event flag mode.
+30apr92,ajk	Periodically call ca_pend_event() to detect connection failures.
+21may92,ajk	In sprog_delete() wait for logging semaphore before suspending
+		tasks. Some minor changes in the way semaphores are deleted.
+18feb92,ajk	Changed to allow sharing of single CA task by all state
+		programs. Added seqAuxTask() and removed ca_pend_event() from
+		ss_entry().
+09aug93,ajk	Added calls to taskwdInsert() & taskwdRemove().
+24nov93,ajk	Added support for assigning array elements to db channels.
+24nov93,ajk	Changed implementation of event bits to support unlimited
+		channels.
+20may94,ajk	Changed sprog_delete() to spawn a separate cleanup task.
+19oct95,ajk/rmw Fixed bug which kept events from being cleared in old eventflag
+		mode.
+20jul95,ajk	Add user-specified task priority to taskSpwan().
+02may99,wfl	Replaced VxWorks dependencies with OSI.
+17may99,wfl	Changed interface to ss_entry() for single argument; used new
+		SEQFUNCPTR etc.
+?????96,joh 	Fixed problem with delay calculations.
+07sep99,wfl	Added destroy of put completion semaphore.
+22sep99,grw     Supported entry and exit actions; supported state options.
+15feb00,wfl	Fixed problem (introduced by wfl) with sequencer deletion.
+18feb00,wfl	Used struct for cleanup thread args (so can use under Unix);
+		ditto for aux thread args (so can pass debug flag)
+29feb00,wfl	Supported new OSI (and errlogPrintf); new use of DEBUG macro;
+		implemented new sequencer deletion method.
+31mar00,wfl	Changed caSemId to be a mutex.
+
+src/dev/devSequencer.c
+----------------------
+Revision 1.4  2003/08/07 14:34:37  mrk
+version obtained from Kukhee Kim,
+
+Revision 1.2  2003/05/23 18:44:22 KHKIM
+change to support I/O interrupt mode
+and to monitor more state variables
+
+Revision 1.1  2001/03/19 20:59:36  mrk
+changes for base 3.14
+
+Revision 1.1.1.1  2000/04/04 03:22:41  wlupton
+first commit of seq-2-0-0
+
+Revision 1.1  2000/03/29 01:57:50  wlupton
+initial insertion

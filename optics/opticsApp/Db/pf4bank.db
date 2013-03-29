@@ -3,14 +3,14 @@ record(ao,"$(P)$(H)trans$(B)")
 	field(VAL,"1")
 	field(DESC,"bank selected transmission")
 	field(EGU, "")
-	field(PREC,"4")
+	field(PREC,"3")
 }
 record(ao,"$(P)$(H)invTrans$(B)")
 {
 	field(VAL,"1")
 	field(DESC,"bank 1/transmission")
 	field(EGU, "")
-	field(PREC,"4")
+	field(PREC,"3")
 }
 record(mbbo,"$(P)$(H)debug$(B)")
 {
@@ -73,28 +73,28 @@ record(ao,"$(P)$(H)f1$(B)")
 	field(VAL,"0.1626")
 	field(DESC,"filter 1")
 	field(EGU, "mm")
-	field(PREC,"4")
+	field(PREC,"3")
 }
 record(ao,"$(P)$(H)f2$(B)")
 {
 	field(VAL,"0.3226")
 	field(DESC,"filter 2")
 	field(EGU, "mm")
-	field(PREC,"4")
+	field(PREC,"3")
 }
 record(ao,"$(P)$(H)f3$(B)")
 {
 	field(VAL,"0.6325")
 	field(DESC,"filter 3")
 	field(EGU, "mm")
-	field(PREC,"4")
+	field(PREC,"3")
 }
 record(ao,"$(P)$(H)f4$(B)")
 {
 	field(VAL,"1.27")
 	field(DESC,"filter 4")
 	field(EGU, "mm")
-	field(PREC,"4")
+	field(PREC,"3")
 }
 record(mbbo,"$(P)$(H)Z1$(B)")
 {
@@ -102,6 +102,7 @@ record(mbbo,"$(P)$(H)Z1$(B)")
 	field(ZRST,"Al")
 	field(ONST,"Ti")
 	field(TWST,"Glass")
+	field(THST,"Other")
 	field(DESC,"material filter 1")
 }
 record(mbbo,"$(P)$(H)Z2$(B)")
@@ -110,6 +111,7 @@ record(mbbo,"$(P)$(H)Z2$(B)")
 	field(ZRST,"Al")
 	field(ONST,"Ti")
 	field(TWST,"Glass")
+	field(THST,"Other")
 	field(DESC,"material filter 2")
 }
 record(mbbo,"$(P)$(H)Z3$(B)")
@@ -118,6 +120,7 @@ record(mbbo,"$(P)$(H)Z3$(B)")
 	field(ZRST,"Al")
 	field(ONST,"Ti")
 	field(TWST,"Glass")
+	field(THST,"Other")
 	field(DESC,"material filter 3")
 }
 record(mbbo,"$(P)$(H)Z4$(B)")
@@ -126,5 +129,38 @@ record(mbbo,"$(P)$(H)Z4$(B)")
 	field(ZRST,"Al")
 	field(ONST,"Ti")
 	field(TWST,"Glass")
+	field(THST,"Other")
 	field(DESC,"material filter 4")
+}
+record(stringout,"$(P)$(H)Other1$(B)") {
+}
+record(stringout,"$(P)$(H)Other2$(B)") {
+}
+record(stringout,"$(P)$(H)Other3$(B)") {
+}
+record(stringout,"$(P)$(H)Other4$(B)") {
+}
+record(transform, "$(P)$(H)ftweak$(B)") {
+	field(INPC, "$(P)$(H)fPos$(B)")
+	field(CLCD, "min(15,max(0,a?c+1:b?c-1:c))")
+	field(OUTD, "$(P)$(H)fPos$(B) PP")
+	field(OUTE, "$(P)$(H)ftweak$(B).A")
+	field(OUTF, "$(P)$(H)ftweak$(B).B")
+}
+record(longout,"$(P)$(H)OtherLegal1$(B)") {
+}
+record(longout,"$(P)$(H)OtherLegal2$(B)") {
+}
+record(longout,"$(P)$(H)OtherLegal3$(B)") {
+}
+record(longout,"$(P)$(H)OtherLegal4$(B)") {
+}
+
+record(bo,"$(P)$(H)displayBit1$(B)") {
+}
+record(bo,"$(P)$(H)displayBit2$(B)") {
+}
+record(bo,"$(P)$(H)displayBit3$(B)") {
+}
+record(bo,"$(P)$(H)displayBit4$(B)") {
 }

@@ -1,12 +1,12 @@
 
 file {
-	name="/home/oxygen/MOONEY/epics/synApps_5_5/support/softGlue/softGlueApp/op/adl/softGlueAll.adl"
-	version=030104
+	name="/home/oxygen/MOONEY/epics/synApps/support/softGlue/softGlueApp/op/adl/softGlueAll.adl"
+	version=030105
 }
 display {
 	object {
 		x=6
-		y=23
+		y=25
 		width=1355
 		height=1115
 	}
@@ -155,7 +155,7 @@ composite {
 		height=73
 	}
 	"composite name"=""
-	"composite file"="softGlue_DnCntr_bare.adl;P=$(P),H=$(H),N=3"
+	"composite file"="softGlue_DnCntr_bare.adl;P=$(P),H=$(H),N=4"
 }
 composite {
 	object {
@@ -497,6 +497,71 @@ composite {
 			}
 			"composite name"=""
 			"composite file"="softGlueFieldIOxx_small_bare.adl;P=$(P),H=$(H),N1=1,N2=2,N3=3,N4=4,N5=5,N6=6,N7=7,N8=8,N9=9,N10=10,N11=11,N12=12,N13=13,N14=14,N15=15,N16=16"
+		}
+	}
+}
+composite {
+	object {
+		x=511
+		y=733
+		width=350
+		height=20
+	}
+	"composite name"=""
+	children {
+		"text update" {
+			object {
+				x=831
+				y=733
+				width=30
+				height=20
+			}
+			monitor {
+				chan="$(P)$(H)availableSignals"
+				clr=54
+				bclr=2
+			}
+			limits {
+			}
+		}
+		text {
+			object {
+				x=511
+				y=733
+				width=160
+				height=20
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="#Signals In Use:"
+		}
+		text {
+			object {
+				x=721
+				y=733
+				width=110
+				height=20
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="#Remaining:"
+		}
+		"text update" {
+			object {
+				x=671
+				y=733
+				width=30
+				height=20
+			}
+			monitor {
+				chan="$(P)$(H)numSignalsInUse"
+				clr=54
+				bclr=2
+			}
+			limits {
+			}
 		}
 	}
 }

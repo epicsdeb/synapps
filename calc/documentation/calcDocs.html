@@ -28,6 +28,11 @@ supports string fields and calculations, and its output link can wait for comple
 into a single record.  The 16 calc expressions use a common set of 16
 value fields, but each calc expression writes to its own value field.
 
+<P><dt><a href="sseqRecord.html">sseqRecord.html</a>
+<dd>The <b>sseq</b> record is similar to the seq record in EPICS base, but it
+can write either to string or numeric fields, it can wait for completion after
+executing each output link, and the sequence can be aborted.
+
 <P><dt><a href="swaitRecord.html">swaitRecord.html</a>
 
 <dd>The <b>swait</b> record is much like the <b>calcout</b> record in EPICS
@@ -88,6 +93,13 @@ yyCalcoutRecord_full.adl
 <dd>The <b>calcout</b> record, in EPICS base, does not come with display files.  But,
 frequently, one would like to  be able to display and interact with a <b>calcout</b>
 record embedded in a database.  The files serve that purpose.
+<P><dt>
+interpNew.db<br>
+interpNew_settings.req<br>
+interpNew.adl
+
+<dd>This is a new version of interp, that requires the additional macro, Q, and
+that is easier to use.  <a href="interpNew.html">Details</a>
 
 
 <P><dt>
@@ -287,6 +299,19 @@ yyWaitRecord_full.adl
 userCalc, and a database to load a single <b>swait</b> record.  These files are
 retained mostly for backward compatibility.
 
+<P><dt>
+userStringSeqs10.db<br>
+userStringSeq*.adl
+
+<dd>Ten string-sequence records.
+
+
+<P><dt>
+yySseq.db<br>
+yySseq*.adl
+
+<dd>One string-sequence record.
+
 </dl>
 
 <h2 align="center">How to build and use</h2>
@@ -320,7 +345,6 @@ link to <code>libcalc</code>.
 <address>
     Suggestions and Comments to: <br>
     Tim Mooney (mooney@aps.anl.gov) <br>
-    Last modified: February 27, 2009 
 </address>
 </body>
 </html>

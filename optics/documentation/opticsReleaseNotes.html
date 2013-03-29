@@ -10,6 +10,61 @@
 <BODY LANG="en-US" BGCOLOR="#ffffff" DIR="LTR">
 <H1 ALIGN=CENTER>optics Release Notes</H1>
 
+<H2 ALIGN=CENTER>Release 2-8-1</H2>
+<ul>
+
+<li>hrSeq.db, hrCtl.st now permits min/max theta to be specified via PVs
+
+<li>Dropped __VAR_ARGS__ from sncqxbpm.st, because different compilers do this differently.
+</ul>
+
+<H2 ALIGN=CENTER>Release 2-8</H2>
+<ul>
+
+<li>2slit.db, 2slit.adl, 4slitGraphic.adl: Add CoordSys record, and
+	"RELTOCENTER" macro which controls its value. If CoordSys==0, the database
+	is backward compatible with previous versions, and both motors move in the
+	lab frame (both increase in the same direction).  Otherwise, both motors
+	increase as the slit opens.<br>
+	Also added autosave-request file 2slit_settings.req.
+
+<li>pf4 filter:
+	<ul>
+
+	<li>Extensive modifications to support additional filter materials, and to
+		avoid having to specify I/O and energy PVs to both the SNL program and
+		to the MEDM-display files.  Also, change the way I/O PVs are specified
+		('$(BP)$(Bn)' instead of '$(Bn)') to avoid vxWorks line-length
+		limitations.
+
+	<li>Added transmission factor for each bank separately
+
+	<li>For new filter materials, show user raw absorption data (mu) as a
+		function of energy
+
+	<li>Display digital I/O bits, so we can coexist with external software that
+		independently manages I/O bits.
+
+</ul>
+
+<li>Changes for 64-bit arch
+
+<li>tableRecord.c:  Compare user limits to (>SMALL), rather than to (==0)
+
+<li>xiahsc.st: Added the validateResponse patch to xiahsc.st that I wrote for
+	unicat to resolve the problem of temporary, incorrect, position readbacks.
+	<br>Modifications to build with seq 2.1.0: snc wasn't parsing sprintf call
+	correctly, so I put it behind '%%'.
+
+<li>Modified RELEASE; deleted RELEASE.arch
+
+<li>Added .opi display files for CSS-BOY
+
+<li>sncqxbpm.st: Modifications to build with seq 2.1.0: delete variable
+	assignment and comma separator within macro.
+
+</ul>
+
 <H2 ALIGN=CENTER>Release 2-7</H2>
 <ul>
 <li>SGM.db had some empty links that were specified as "0", which produced link errors.

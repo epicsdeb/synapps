@@ -3,16 +3,23 @@
 # Enable build of different process variable access methods
 PVCA   = TRUE
 PVFILE = FALSE
-PVTKL  = FALSE
+PVKTL  = FALSE
 
 # To restrict the architectures to cross-compile for, set this:
 #CROSS_COMPILER_TARGET_ARCHS = vxWorks-68040
 
 # To install somewhere other than $(TOP) set this:
-#INSTALL_LOCATION_APP = <install path>
+#INSTALL_LOCATION = <install path>
 
 # Use this when your IOC and the host use different paths
 # to access the application. Typically this will be 
 # used with the Microsoft FTP server or with NFS mounts.
 #IOCS_APPL_TOP = <IOC's path to TOP>
 
+# Lexer generator
+# You might want to change this to something like
+# RE2C = /path/to/your/re2c/installation/bin/re2c
+RE2C = re2c$(HOSTEXE)
+
+# Parser generator
+LEMON = $(call PATH_FILTER,$(INSTALL_HOST_BIN)/lemon$(HOSTEXE))

@@ -7,6 +7,38 @@
 <BODY LANG="en-US" BGCOLOR="#ffffff" DIR="LTR">
 <H2 ALIGN=CENTER>softGlue Release Notes</H2>
 
+<H2 ALIGN=LEFT>Release 2-2 (Aug 26, 2011)</H2>
+
+<ul>
+	<li>Significant rewrite, including new configuration functions, to support IP_EP20x modules
+	other than the IP_EP201.
+
+	<li>The number of used and available signal names (bus lines) is now displayed.
+
+	<li>macro arguments for some database files have changed, so old
+	softGlue.cmd files will not work without modification
+
+	<li>display of signal connections has been moved from the database to device
+	support, saving around 1MB of IOC  memory, and removing softGlue's dependence on the calc module.
+
+	<li>Added displays and FPGA add-on content ("octupole") for shift registers.
+
+	<li>Added displays for IP_EP202 and IP_EP203 field I/O
+
+	<li>Ring buffer size for interrupt dispatch can now be specified as the macro "FIFO",
+	supplied to softGlue_IntBit.db.  The default value (10) is used if FIFO is not specified.
+
+	<li>The SOPC address for field I/O register set components need no longer be supplied as
+	macros to softGlue_FPGAInt.db.
+
+	<li>The Divide-By-N's RESET signal now works.
+	
+	<li>In addition to MEDM displays, softGlue now includes CSS-BOY displays.
+	
+	<li>Added displays and FPGA add-on content ("Vgate") for up/down counters.
+	
+</ul>
+
 <H2 ALIGN=LEFT>Release 2-1 (Nov 11, 2010)</H2>
 
 <ul>

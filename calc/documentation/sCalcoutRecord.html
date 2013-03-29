@@ -150,7 +150,7 @@ truncates the result to fit into a 40-character string.
 </TR>
 
 <TR>
-<TD>INFLL</TD>
+<TD>INLL</TD>
 <TD>Input Link LL</TD>
 <TD>INLINK</TD>
 <TD>Yes</TD>
@@ -259,16 +259,18 @@ will be misinterpreted by the parser, which will interpret 'AA' as the name
 of a string variable.
 
 <A NAME="HEADING14-19"></A>
-<H2>
-4.1. Operands</H2>
-The expression can use the values retrieved from the input links as operands,
-though constants can also be used as operands. These values retrieved from
-the input links are stored in the A-L, and AA-LL fields. The values to
-be used in the expression are simply referenced by the field name. For
-example, the value obtained from the INPA link is stored in the field A,
-and the value obtained from INPB is stored in field B. The field names
-can be included in the expression which will operate on their respective
-values, as in "A+B".
+
+<H2> 4.1. Operands</H2>
+
+The expression can use as operands the values retrieved from the input links,
+and literal constants such as "abc", "1.5", and "23". (Numeric constants in
+expressions must be either floating-point numbers, or integers in base ten. 
+Numbers like "0x03" will not be understood by the expression parser.)  Values
+retrieved from the input links are stored in the A-L, and AA-LL fields. The
+values to be used in the expression are simply referenced by the field name. For
+example, the value obtained from the INPA link is stored in the field A, and the
+value obtained from INPB is stored in field B. The field names can be included
+in the expression which will operate on their respective values, as in "A+B".
 
 <P>
 <TABLE BORDER>
@@ -760,6 +762,7 @@ to evaluate expressions).  All but <code>RNDM</code> are constants.
 <A NAME="HEADING14-69"></A>
 <H2>
 4.7. Special Characters </H2>
+
 <P>Parentheses, and nested parentheses are permitted (sometimes required) in expressions.
 
 <P>The comma is required to separate the arguments of a binary function.
@@ -784,15 +787,17 @@ three octal digits.  \xhh is a two-digit hexadecimal number.
 <P><A NAME="HEADING14-72"></A>
 <H2>
 4.8. Conditional Expression</H2>
+
 The C language's question mark operator is supported. The format is:
 
 <PRE>&nbsp;&lt;expression&gt; ? &lt;expression-true result&gt; : &lt;expression-false  result&gt;</PRE>
 
 
 <P>
-<A NAME="HEADING14-74"></A>
+<A NAME="HEADING14-73"></A>
 <H2>
 4.9. String Functions/Operators</H2>
+
 Most two-argument string functions and binary string operators are "overloaded"
 numeric functions and operators that perform string operations only if
 both of their arguments/operands are strings.
@@ -876,6 +881,16 @@ function)
 <td align=center valign=top>==
 <td>Lexically equal to (binary)
 <td><code>'a'=='b' -> 0</code>
+
+<tr>
+<td align=center valign=top>&gt;&gt;
+<td>Right shift characters (fill behind with spaces). (binary)
+<td><code>'abc'&gt;&gt;2 -> '  abc'</code>
+
+<tr>
+<td align=center valign=top>&lt;&lt;
+<td>Left shift characters. (binary)
+<td><code>'abc'&lt;&lt;2 -> 'c'</code>
 
 <tr>
 <td align=center valign=top>DBL
@@ -1065,9 +1080,10 @@ this color are experimental.  The names or implementations may change in a futur
 version of this software.</font>
 </table>
 
-<A NAME="HEADING14-75"></A>
+<A NAME="HEADING14-74"></A>
 <H2>
 4.10. Array Operators</H2>
+
 <table border>
 
 <tr>
@@ -1089,10 +1105,42 @@ elements are numbered 0-11, and return the element whose number follows.  (unary
 
 </table>
 
+<A NAME="HEADING14-75"></A>
+<H2>
+4.11. Miscellaneous Operators</H2>
+
+<table border>
+
+<tr>
+<th align=center valign=top>Op
+<th valign=top>Description
+<th valign=top>Examples
+
+<tr>
+<td align=center valign=top>:=
+<td>Store value of right hand side in location specified by left hand side.  (binary)
+<td><code>A:=1.2</code>
+<code><BR>@7:='abc'</code>
+<code><BR>AA:='abc'</code>
+<code><BR>@@4:='abc'</code>
+
+<tr>
+<td align=center valign=top>UNTIL
+<td>Execute expression until its value is TRUE.  (binary)<br>
+
+The total number of iterations is limited to the ioc-shell variable
+sCalcLoopMax, which defaults to 1000.
+
+<td><code>until(1)</code>
+<code><BR>until(a:=a+1;b:=b-1;b<1)</code>
+
+</table>
 
 <A NAME="HEADING14-76"></A>
 <H2>
-4.11. Examples</H2>
+4.12. Examples</H2>
+
+<hr>
 <A NAME="HEADING14-77"></A>
 <H3>Algebraic</H3>
 
@@ -1101,6 +1149,7 @@ elements are numbered 0-11, and return the element whose number follows.  (unary
 <DD>Result is <CODE>A + B + 10</CODE>
 </DL>
 
+<hr>
 <P><A NAME="HEADING14-79"></A>
 <H3>Relational</H3>
 
@@ -1110,6 +1159,7 @@ elements are numbered 0-11, and return the element whose number follows.  (unary
 <BR>Result is <CODE>0</CODE> if <CODE>(A+B) >= (C+D)</CODE>
 </DL>
 
+<hr>
 <P><A NAME="HEADING14-83"></A>
 <H3>Question Mark</H3>
 
@@ -1123,6 +1173,7 @@ elements are numbered 0-11, and return the element whose number follows.  (unary
 <BR>Result is unchanged if <CODE>(A+B) >= (C+D)</CODE>
 </DL>
 
+<hr>
 <P><A NAME="HEADING14-91"></A>
 <H3>Logical</H3>
 
@@ -1138,6 +1189,7 @@ elements are numbered 0-11, and return the element whose number follows.  (unary
 </OL>
 </DL>
 
+<hr>
 <P><A NAME="HEADING14-92"></A>
 <H3>String</H3>
 <DL>
@@ -1204,10 +1256,10 @@ is <CODE>"no"</CODE>.
 <DD>Result is <CODE>"cd"</CODE>
 </DL>
 
-
+<hr>
 <A NAME="HEADING14-93"></A>
 <H3>
-Array</H3>
+Argument array</H3>
 
 <DL>
 <DT><B><CODE>@0</CODE></B>
@@ -1225,6 +1277,91 @@ of A and B.<P>
 <DD>
 <P>
 </DL>
+
+<hr>
+<A NAME="HEADING14-94"></A>
+<H3>
+Store</H3>
+
+The "Store" operator is the only string-calc operator that does not produce a
+value.  Thus, the expression <B><code>a:=0</code></B> is an incomplete and therefore illegal calc expression,
+because it leaves us with nothing to write to the record's <code>VAL</code> field.
+
+<DL>
+<DT><B><CODE>A:=A-1;7</CODE></B>
+
+<DD>Evaluate the expression <CODE>A-1</CODE>, store the result in the input
+variable <CODE>A</CODE>, and set the VAL field to 7.<P>
+
+<DT><B><CODE>@0:=A-1;7</CODE></B>
+<DD>Same as above, because <CODE>@0</CODE> is just another name for <CODE>A</CODE><P>
+
+<DT><B><CODE>D:=0;@D:=A-1;7</CODE></B>
+<DD>Same as above, because <CODE>D==0</CODE>.<P>
+
+<DT><B><CODE>AA:="abc";7</CODE></B>
+<DD>Overwrite the string input variable <CODE>AA</CODE> with the string 'abc', and set the VAL field to 7.<P>
+
+<DT><B><CODE>AA:="abc";b:=0;7</CODE></B>
+
+<DD>Multiple store expressions, separated by ';' terminators, are legal at top
+level, but - as always - the expression as a whole must produce a value.  This expression
+produces the value <code>7</code>.<P>
+
+<DT><B><CODE>A+(AA:="abc";b:=0;7)</CODE></B>
+
+<DD>Multiple store expressions are also legal within parentheses, and again the
+parenthesized subexpression must produce a value.  The parenthesized
+subexpression in this example produces the value <code>7</code>, which is added to
+<code>A</code>.
+
+</DL>
+
+<hr>
+<A NAME="HEADING14-95"></A>
+<H3>
+Loop ("UNTIL")</H3>
+
+The <code>UNTIL</code> function evaluates its expression repeatedly until the
+expression returns a nonzero value, or the allowed number of iterations
+<code>sCalcLoopMax</code> has been reached.  When looping is done, or aborted,
+the expression value is returned.
+
+<DL>
+<DT><B><CODE>UNTIL(1)</CODE></B>
+
+<DD>The expression 1 is evaluated, terminates the loop, and is returned.  This
+do-nothing expression is equivalent to <code>(1)</code>.<P>
+
+<DT><B><CODE>B:=10;UNTIL(B:=B-1;B<1)</CODE></B> <DD>This do-almost-nothing
+expression initializes B to 10, decrements it repeatedly until its value is
+zero, and returns the value 1 (True).<P>
+
+<DT><B><CODE>B:=9; AA:=''; UNTIL(AA:=AA+CC[B,B]; B:=B-1; B<0)</CODE></B>
+
+<DD>If we start with <CODE>CC='abcdefghij'</CODE>, this expression loops
+backwards through <CODE>CC</CODE>, appending characters to produce
+<CODE>AA='jihgfedcba'</CODE>.<P>
+
+<DT><B><CODE>B:=0;AA:='';UNTIL(AA:=AA+(CC[b,b]==','?'':CC[b,b]);B:=B+1;B>LEN(CC))</CODE></B>
+
+<DD>This expression copies CC to AA, leaving out the commas.<P>
+
+<DT><B><CODE>AA:='';B:=1;UNTIL(A:=0;C:=UNTIL(AA:=AA+(@@B)[A,A];A:=A+1;A>1);B:=B+1;B>12)</CODE></B>
+
+<dd>This nested loop copies the first two characters from each of the
+string-input fields BB-LL, and appends them to AA.  Note that the inner "UNTIL"
+function produces a value that must be discarded (by storing it to C), because
+it is part of the outer UNTIL function's expression.  That expression must
+produce a single value, which the UNTIL function uses to determine when it's
+done.
+
+</DL>
+
+
+
+
+
 
 <P>&nbsp;
 <HR><A NAME="HEADING14-98"></A>
@@ -2318,6 +2455,44 @@ the OUT link, and post the event in OEVT (if non-zero).</DD>
 
 
 <P>&nbsp;</DL>
+<A NAME="HEADING14-170"></A>
+<H2>
+12. Sample Database</H2>
+
+Here's a sample database fragment that illustrates how to include a constant
+literal string within a calc expression.  At run time, you could enter the
+expression below either as
+
+<pre>
+AA+printf(' %.3f',A)
+</pre>
+
+or as
+
+<pre>
+AA+printf(" %.3f",A)
+</pre>
+
+But in a database, you don't have that freedom, because the entire expression
+is the value of an EPICS field, which must be enclosed in double quotes:
+
+<blockquote>
+<pre>
+record(scalcout, "$(P)SRS810:$(N):SetPhas") {
+    field(DESC, "Create Phase Set Str")
+    field(CALC, "AA+printf(' %.3f',A)")
+    field(OUT, "$(P)SRS810:$(N):WritePhas.AOUT  PP MS")
+    field(PREC, "2")
+    field(AA, "PHAS")
+}
+</pre>
+</blockquote>
+
+
+
+</pre>
+
+<P>&nbsp;</DL>
 <!-- TOC -->
 <DL>
 <DT><A HREF="#HEADING14-1"><B>1. </B>- Introduction</A></DT>
@@ -2344,11 +2519,13 @@ the OUT link, and post the event in OEVT (if non-zero).</DD>
 
 <DT><A HREF="#HEADING14-72"><B>4.8. </B>- Conditional Expression</A></DT>
 
-<DT><A HREF="#HEADING14-74"><B>4.9. </B>- String Functions/Operators</A></DT>
+<DT><A HREF="#HEADING14-73"><B>4.9. </B>- String Functions/Operators</A></DT>
 
-<DT><A HREF="#HEADING14-75"><B>4.10. </B>- Array Operators</A></DT>
+<DT><A HREF="#HEADING14-74"><B>4.10. </B>- Array Operators</A></DT>
 
-<DT><A HREF="#HEADING14-76"><B>4.11. </B>- Examples</A></DT>
+<DT><A HREF="#HEADING14-75"><B>4.11. </B>- Miscellaneous Operators</A></DT>
+
+<DT><A HREF="#HEADING14-76"><B>4.12. </B>- Examples</A></DT>
 
 <DT><A HREF="#HEADING14-77">Algebraic</A></DT>
 
@@ -2360,7 +2537,11 @@ the OUT link, and post the event in OEVT (if non-zero).</DD>
 
 <DT><A HREF="#HEADING14-92">String</A></DT>
 
-<DT><A HREF="#HEADING14-93">Array</A></DT>
+<DT><A HREF="#HEADING14-93">Argument Array</A></DT>
+
+<DT><A HREF="#HEADING14-94">Store</A></DT>
+
+<DT><A HREF="#HEADING14-95">Loop</A></DT>
 
 <DT><A HREF="#HEADING14-98"><B>5. </B>- Output Parameters</A></DT>
 

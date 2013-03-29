@@ -1,75 +1,25 @@
-/* aCalcPostfix.c
+/*************************************************************************\
+* Copyright (c) 2010 UChicago Argonne LLC, as Operator of Argonne
+*     National Laboratory.
+* Copyright (c) 2002 The Regents of the University of California, as
+*     Operator of Los Alamos National Laboratory.
+* EPICS BASE is distributed subject to a Software License Agreement found
+* in file LICENSE that is included with this distribution. 
+\*************************************************************************/
+/* $Id: aCalcPostfix.c,v 1.19 2009-09-09 16:39:34 mooney Exp $
  * Subroutines used to convert an infix expression to a postfix expression
  *
- *	Author: Tim Mooney - derived from code written by Bob Dalesio
- *	Date:	03-21-06
- *
- *	Experimental Physics and Industrial Control System (EPICS)
- *
- * Modification Log:
- * -----------------
- * 03-21-06 tmm Derived from sCalcPostfix
+ *      Original Author: Bob Dalesio, as postfix.c in EPICS base
+ *      Date:            12-12-86
  */
-
-/* 
- * Subroutines
- *
- *	Public
- *
- * aCalcPostfix		convert an algebraic expression to symbolic postfix
- *	args
- *		pinfix		the algebraic expression
- *		p_postfix	symbolic postfix expression
- *      perror      error information
- *	returns
- *		0		successful
- *		-1		not successful
- * Private routines for calcPostfix
- *
- * find_element		finds a symbolic element in the expression element tbl
- *	args
- *		pbuffer		pointer to the infix expression element
- *		pelement	pointer to the expression element table entry
- *		pno_bytes	pointer to the size of this element
- *		parg		pointer to arg (used for fetch)
- *	returns
- *		TRUE		element found
- *		FALSE		element not found
- *
- * get_element		finds the next expression element in the infix expr
- *	args
- *		pinfix		pointer into the infix expression
- *		pelement	pointer to the expression element table
- *		pno_bytes	size of the element in the infix expression
- *		parg		pointer to argument (used for fetch)
- *	returns
- *		FINE		found an expression element
- *		VARIABLE	found a database reference
- *		UNKNOWN_ELEMENT	unknown element found in the infix expression
- *
- * functions unique to array calcs:
- *     AMAX, AMIN - max/min of array
- *     ARNDM      - randon array
- *     ARR        - convert to array
- *     AVG        - average of array
- *     IX         - constant array [0,1,2,3,...]
- * functions specialized behavior in array calcs:
- *     MAX, MIN   - only 2 args
- *     []         - subrange translated to index 0
- *     {}         - subrange in place
- *     <<, >>     - move array contents by index
- */
-
-#ifdef vxWorks
-#include  <vxWorks.h>
-#endif
 
-#include	<stdlib.h>
 #include	<stdio.h>
 #include	<string.h>
 #include	<ctype.h>
-#include	"dbDefs.h"
-#include        <epicsString.h>
+
+#include	<dbDefs.h>
+#include	<epicsStdlib.h>
+#include	<epicsString.h>
 #define epicsExportSharedSymbols
 #include	"aCalcPostfix.h"
 #include	"aCalcPostfixPvt.h"
@@ -81,38 +31,36 @@ epicsExportAddress(int, aCalcPostfixDebug);
 
 /* declarations for postfix */
 /* element types */
-#define	OPERAND			0
-#define UNARY_OPERATOR	1
-#define	BINARY_OPERATOR	2
-#define	EXPR_TERM		3
-#define	COND			4
-#define	CLOSE_PAREN		5
-#define	CONDITIONAL		6
-#define	ELSE			7
-#define	SEPARATOR		8
-#define	TRASH			9
-#define	FLOAT_PT_CONST	10
-#define	MINUS_OPERATOR	11
-#define	CLOSE_BRACKET	13
-#define	CLOSE_CURLY		14
 
-/* parsing return values */
-#define	FINE		0
-#define	UNKNOWN_ELEMENT	-1
-#define	END		-2
+typedef enum {
+	OPERAND,
+	LITERAL_OPERAND,
+	STORE_OPERATOR,
+	UNARY_OPERATOR,
+	VARARG_OPERATOR,
+	BINARY_OPERATOR,
+	SEPARATOR,
+	CLOSE_PAREN,
+	CONDITIONAL,
+	EXPR_TERMINATOR,
+	CLOSE_BRACKET,
+	CLOSE_CURLY,
+	UNTIL_OPERATOR
+} element_type;
 
 /*
  * element table
  *
  * structure of an element
  */
-struct	expression_element{
-	char	element[10];	/* character representation of an element */
-	char	in_stack_pri;	/* priority in translation stack */
-	char	in_coming_pri;	/* priority when first checking */
-	char	type;		/* element type */
-	char	code;		/* postfix representation */
-};
+typedef struct expression_element {
+	char *name; 	 /* character representation of an element */
+	char in_stack_pri;	 /* priority on translation stack */
+	char in_coming_pri;  /* priority in input string */
+	signed char runtime_effect; /* stack change, positive means push */
+	element_type type;	 /* element type */
+	aCalc_rpn_opcode code;	 /* postfix opcode */
+} ELEMENT;
 
 /*
  * NOTE: DO NOT CHANGE WITHOUT READING THIS NOTICE !!!!!!!!!!!!!!!!!!!!
@@ -123,721 +71,774 @@ struct	expression_element{
  * ':' receives special handling, so if you add an operator that includes
  * ':', you must modify that special handling.
  */
-#define UNARY_MINUS_I_S_P  7
-#define UNARY_MINUS_I_C_P  9
-#define UNARY_MINUS_CODE   UNARY_NEG
-#define BINARY_MINUS_I_S_P 5
-#define BINARY_MINUS_I_C_P 5
-#define BINARY_MINUS_CODE  SUB
 
-static struct expression_element elements[] = {
-/*
-element    i_s_p i_c_p type_element     internal_rep */
-{"ABS",    10,    11,    UNARY_OPERATOR,  ABS_VAL},   /* absolute value */
-{"NOT",    10,    11,    UNARY_OPERATOR,  UNARY_NEG},   /* unary negate */
-{"-",      10,    11,    MINUS_OPERATOR,  UNARY_NEG},   /* unary negate (or binary op) */
-{"SQRT",   10,    11,    UNARY_OPERATOR,  SQU_RT},      /* square root */
-{"SQR",    10,    11,    UNARY_OPERATOR,  SQU_RT},      /* square root */
-{"EXP",    10,    11,    UNARY_OPERATOR,  EXP},         /* exponential function */
-{"LOGE",   10,    11,    UNARY_OPERATOR,  LOG_E},       /* log E */
-{"LN",     10,    11,    UNARY_OPERATOR,  LOG_E},       /* log E */
-{"LOG",    10,    11,    UNARY_OPERATOR,  LOG_10},      /* log 10 */
-{"ACOS",   10,    11,    UNARY_OPERATOR,  ACOS},        /* arc cosine */
-{"ASIN",   10,    11,    UNARY_OPERATOR,  ASIN},        /* arc sine */
-{"ATAN2",  10,    11,    UNARY_OPERATOR,  ATAN2},       /* arc tangent */
-{"ATAN",   10,    11,    UNARY_OPERATOR,  ATAN},        /* arc tangent */
-{"MAX",    10,    11,    UNARY_OPERATOR,  MAXFUNC},     /* 2 args */
-{"MIN",    10,    11,    UNARY_OPERATOR,  MINFUNC},     /* 2 args */
-{"AMAX",   10,    11,    UNARY_OPERATOR,  AMAX},        /* 1 arg */
-{"AMIN",   10,    11,    UNARY_OPERATOR,  AMIN},        /* 1 args */
-{"CEIL",   10,    11,    UNARY_OPERATOR,  CEIL},        /* smallest integer >= */
-{"FLOOR",  10,    11,    UNARY_OPERATOR,  FLOOR},       /* largest integer <=  */
-{"NINT",   10,    11,    UNARY_OPERATOR,  NINT},        /* nearest integer */
-{"INT",    10,    11,    UNARY_OPERATOR,  NINT},        /* nearest integer */
-{"COSH",   10,    11,    UNARY_OPERATOR,  COSH},        /* hyperbolic cosine */
-{"COS",    10,    11,    UNARY_OPERATOR,  COS},         /* cosine */
-{"SINH",   10,    11,    UNARY_OPERATOR,  SINH},        /* hyperbolic sine */
-{"SIN",    10,    11,    UNARY_OPERATOR,  SIN},         /* sine */
-{"TANH",   10,    11,    UNARY_OPERATOR,  TANH},        /* hyperbolic tangent*/
-{"TAN",    10,    11,    UNARY_OPERATOR,  TAN},         /* tangent */
-{"AVG",    10,    11,    UNARY_OPERATOR,  AVERAGE},     /* array average */
-{"STD",    10,    11,    UNARY_OPERATOR,  STD_DEV},     /* standard deviation */
-{"FWHM",   10,    11,    UNARY_OPERATOR,  FWHM},        /* full width at half max */
-{"SMOO",   10,    11,    UNARY_OPERATOR,  SMOOTH},      /* smooth */
-{"NSMOO",  10,    11,    UNARY_OPERATOR,  NSMOOTH},     /* smooth (npts)*/
-{"DERIV",  10,    11,    UNARY_OPERATOR,  DERIV},       /* derivative */
-{"NDERIV", 10,    11,    UNARY_OPERATOR,  NDERIV},      /* derivative (npts)*/
-{"SUM",    10,    11,    UNARY_OPERATOR,  ARRSUM},      /* sum over array */
-{"FITPOLY",10,    11,    UNARY_OPERATOR,  FITPOLY},     /* polynomial fit */
-{"FITMPOLY",10,    11,    UNARY_OPERATOR,  FITMPOLY},     /* polynomial fit */
-{"!=",      4,     4,    BINARY_OPERATOR, NOT_EQ},      /* not equal */
-{"!",      10,    11,    UNARY_OPERATOR,  REL_NOT},     /* not */
-{"~",      10,    11,    UNARY_OPERATOR,  BIT_NOT},     /* bitwise not */
-{"DBL",    10,    11,    UNARY_OPERATOR,  TO_DOUBLE},   /* convert to double */
-{"ARR",    10,    11,    UNARY_OPERATOR,  TO_ARRAY},    /* convert to array */
-{"@@",     10,    11,    UNARY_OPERATOR,  A_AFETCH},    /* fetch array argument */
-{"@",      10,    11,    UNARY_OPERATOR,  A_FETCH},     /* fetch numeric argument */
-{"RNDM",    0,     0,    OPERAND,         RANDOM},      /* Random number */
-{"ARNDM",   0,     0,    OPERAND,         ARANDOM},     /* Random array */
-{"OR",      1,     1,    BINARY_OPERATOR, BIT_OR},      /* or */
-{"AND",     2,     2,    BINARY_OPERATOR, BIT_AND},     /* and */
-{"XOR",     1,     1,    BINARY_OPERATOR, BIT_EXCL_OR}, /* exclusive or */
-{"PI",      0,     0,    OPERAND,         CONST_PI},    /* pi */
-{"D2R",     0,     0,    OPERAND,         CONST_D2R},   /* pi/180 */
-{"R2D",     0,     0,    OPERAND,         CONST_R2D},   /* 180/pi */
-{"S2R",     0,     0,    OPERAND,         CONST_S2R},   /* arc-sec to radians: pi/(180*3600) */
-{"R2S",     0,     0,    OPERAND,         CONST_R2S},   /* radians to arc-sec: (180*3600)/pi */
-{"IX",      0,     0,    OPERAND,         CONST_IX},    /* array [0,1,2...] */
-{"0",       0,     0,    FLOAT_PT_CONST,  LITERAL},     /* flt pt constant */
-{"1",       0,     0,    FLOAT_PT_CONST,  LITERAL},     /* flt pt constant */
-{"2",       0,     0,    FLOAT_PT_CONST,  LITERAL},     /* flt pt constant */
-{"3",       0,     0,    FLOAT_PT_CONST,  LITERAL},     /* flt pt constant */
-{"4",       0,     0,    FLOAT_PT_CONST,  LITERAL},     /* flt pt constant */
-{"5",       0,     0,    FLOAT_PT_CONST,  LITERAL},     /* flt pt constant */
-{"6",       0,     0,    FLOAT_PT_CONST,  LITERAL},     /* flt pt constant */
-{"7",       0,     0,    FLOAT_PT_CONST,  LITERAL},     /* flt pt constant */
-{"8",       0,     0,    FLOAT_PT_CONST,  LITERAL},     /* flt pt constant */
-{"9",       0,     0,    FLOAT_PT_CONST,  LITERAL},     /* flt pt constant */
-{".",       0,     0,    FLOAT_PT_CONST,  LITERAL},     /* flt pt constant */
-{"?",       0,     0,    CONDITIONAL,     COND_IF},     /* conditional */
-{":",       0,     0,    CONDITIONAL,     COND_ELSE},   /* else */
-{"(",       0,     11,   UNARY_OPERATOR,  PAREN},       /* open paren */
-{"[",       0,     10,   BINARY_OPERATOR, SUBRANGE},    /* array subrange */
-{"{",       0,     10,   BINARY_OPERATOR, SUBRANGE_IP}, /* array subrange in place*/
-{"^",       8,     8,    BINARY_OPERATOR, EXPON},       /* exponentiation */
-{"**",      8,     8,    BINARY_OPERATOR, EXPON},       /* exponentiation */
-{"+",       5,     5,    BINARY_OPERATOR, ADD},         /* addition */
-#if 0 /* "-" operator is overloaded; may be unary or binary */
-{"-",       5,     5,    BINARY_OPERATOR, SUB},         /* subtraction */
-#endif
-{"*",       6,     6,    BINARY_OPERATOR, MULT},        /* multiplication */
-{"/",       6,     6,    BINARY_OPERATOR, DIV},         /* division */
-{"%",       6,     6,    BINARY_OPERATOR, MODULO},      /* modulo */
-{",",       0,     0,    SEPARATOR,       COMMA},       /* comma */
-{")",       0,     0,    CLOSE_PAREN,     PAREN},       /* close paren */
-{"]",       0,     0,    CLOSE_BRACKET,   SUBRANGE},    /* close bracket */
-{"}",       0,     0,    CLOSE_CURLY,     SUBRANGE_IP}, /* close curly bracket */
-{"||",      1,     1,    BINARY_OPERATOR, REL_OR},      /* logical or */
-{"|",       1,     1,    BINARY_OPERATOR, BIT_OR},      /* bitwise or */
-{"&&",      2,     2,    BINARY_OPERATOR, REL_AND},     /* logical and */
-{"&",       2,     2,    BINARY_OPERATOR, BIT_AND},     /* bitwise and */
-{">?",      3,     3,    BINARY_OPERATOR, MAX_VAL},     /* maximum of 2 args */
-{">>",      2,     2,    BINARY_OPERATOR, RIGHT_SHIFT}, /* right shift */
-{">=",      4,     4,    BINARY_OPERATOR, GR_OR_EQ},    /* greater or equal*/
-{">",       4,     4,    BINARY_OPERATOR, GR_THAN},     /* greater than */
-{"<?",      3,     3,    BINARY_OPERATOR, MIN_VAL},     /* minimum of 2 args */
-{"<<",      2,     2,    BINARY_OPERATOR, LEFT_SHIFT},  /* left shift */
-{"<=",      4,     4,    BINARY_OPERATOR, LESS_OR_EQ},  /* less or equal to*/
-{"<",       4,     4,    BINARY_OPERATOR, LESS_THAN},   /* less than */
-{"#",       4,     4,    BINARY_OPERATOR, NOT_EQ},      /* not equal */
-{"==",      4,     4,    BINARY_OPERATOR, EQUAL},       /* equal */
-{"=",       4,     4,    BINARY_OPERATOR, EQUAL},       /* equal */
-{""}
-};
-
-/*
- * Element-table entry for "fetch" operation.  This element is used for all
- * named variables.  Currently, letters A-Z (double) and AA-ZZ (array) are
- * allowed.  Lower and upper case letters mean the same thing.
+/* comparison of operator precedence here and in EPICS base:
+ * aCalcPostfix									postfix
+ *=======================================================
+ * 0, 0		constants							0, 0
+ * 1, 1		||, |, OR, XOR						1, 1
+ * 2, 2		AND, &&, &, >>, <<					2, 2
+ * 3, 3		>?, <?								<not used>
+ * 4, 4		>=, >, <=, <, #, !=, ==, =			3, 3
+ * 5, 5		-|, |-, -, +						4, 4
+ * 6, 6		*, /, %								5, 5
+ * 7, 7		^, **								6, 6
+ * 8, 9		ABS, NOT, etc.						7, 8
+ * 0,10		[, {								<not used>
  */
-static struct expression_element	fetch_element = {
-"A",		0,	0,	OPERAND,	FETCH,   /* fetch var */
+
+static const ELEMENT operands[] = {
+/* name			prio's	stack	element type		opcode */
+{"@",			9, 10,	0,		UNARY_OPERATOR,		A_FETCH},     /* fetch numeric argument */
+{"@@",			9, 10,	0,		UNARY_OPERATOR,		A_AFETCH},    /* fetch array argument */
+{"!",			9, 10,	0,		UNARY_OPERATOR,		REL_NOT},
+{"(",			0, 10,	0,		UNARY_OPERATOR,		NOT_GENERATED},
+{"-",			9, 10,	0,		UNARY_OPERATOR,		UNARY_NEG},
+{".",			0, 0,	1,		LITERAL_OPERAND,	LITERAL_DOUBLE},
+{"0",			0, 0,	1,		LITERAL_OPERAND,	LITERAL_DOUBLE},
+{"1",			0, 0,	1,		LITERAL_OPERAND,	LITERAL_DOUBLE},
+{"2",			0, 0,	1,		LITERAL_OPERAND,	LITERAL_DOUBLE},
+{"3",			0, 0,	1,		LITERAL_OPERAND,	LITERAL_DOUBLE},
+{"4",			0, 0,	1,		LITERAL_OPERAND,	LITERAL_DOUBLE},
+{"5",			0, 0,	1,		LITERAL_OPERAND,	LITERAL_DOUBLE},
+{"6",			0, 0,	1,		LITERAL_OPERAND,	LITERAL_DOUBLE},
+{"7",			0, 0,	1,		LITERAL_OPERAND,	LITERAL_DOUBLE},
+{"8",			0, 0,	1,		LITERAL_OPERAND,	LITERAL_DOUBLE},
+{"9",			0, 0,	1,		LITERAL_OPERAND,	LITERAL_DOUBLE},
+{"A",			0, 0,	1,		OPERAND,			FETCH_A},
+{"AA",			0, 0,	1,		OPERAND,			FETCH_AA},
+{"ABS",			9, 10,	0,		UNARY_OPERATOR,		ABS_VAL},
+{"ACOS",		9, 10,	0,		UNARY_OPERATOR,		ACOS},
+{"ARR",			9, 10,	0,		UNARY_OPERATOR,		TO_ARRAY},   /* convert to array */
+{"ARNDM",		0, 0,	1,		OPERAND,			ARANDOM},
+{"ASIN",		9, 10,	0,		UNARY_OPERATOR,		ASIN},
+{"ATAN",		9, 10,	0,		UNARY_OPERATOR,		ATAN},
+{"ATAN2",		9, 10,	-1,		UNARY_OPERATOR,		ATAN2},
+{"AVAL",		0, 0,	1,		OPERAND,			FETCH_AVAL},
+{"AVG",			9, 10,	0,		UNARY_OPERATOR,		AVERAGE},
+{"B",			0, 0,	1,		OPERAND,			FETCH_B},
+{"BB",			0, 0,	1,		OPERAND,			FETCH_BB},
+{"C",			0, 0,	1,		OPERAND,			FETCH_C},
+{"CC",			0, 0,	1,		OPERAND,			FETCH_CC},
+{"CEIL",		9, 10,	0,		UNARY_OPERATOR,		CEIL},
+{"COS",			9, 10,	0,		UNARY_OPERATOR,		COS},
+{"COSH",		9, 10,	0,		UNARY_OPERATOR,		COSH},
+{"D",			0, 0,	1,		OPERAND,			FETCH_D},
+{"DD",			0, 0,	1,		OPERAND,			FETCH_DD},
+{"DBL",			9, 10,	0,		UNARY_OPERATOR,		TO_DOUBLE},   /* convert to double */
+{"DERIV",		9, 10,	0,		UNARY_OPERATOR,		DERIV},
+{"D2R",			0, 0,	1,		OPERAND,			CONST_D2R},
+{"E",			0, 0,	1,		OPERAND,			FETCH_E},
+{"EE",			0, 0,	1,		OPERAND,			FETCH_EE},
+{"EXP",			9, 10,	0,		UNARY_OPERATOR,		EXP},
+{"F",			0, 0,	1,		OPERAND,			FETCH_F},
+{"FF",			0, 0,	1,		OPERAND,			FETCH_FF},
+{"FINITE",		9, 10,	0,		VARARG_OPERATOR,	FINITE},
+{"FITPOLY",		9, 10,	0,		UNARY_OPERATOR,		FITPOLY},
+{"FITMPOLY",	9, 10,	-1,		UNARY_OPERATOR,		FITMPOLY},
+{"FLOOR",		9, 10,	0,		UNARY_OPERATOR,		FLOOR},
+{"FWHM",		9, 10,	0,		UNARY_OPERATOR,		FWHM},
+{"G",			0, 0,	1,		OPERAND,			FETCH_G},
+{"GG",			0, 0,	1,		OPERAND,			FETCH_GG},
+{"H",			0, 0,	1,		OPERAND,			FETCH_H},
+{"HH",			0, 0,	1,		OPERAND,			FETCH_HH},
+{"I",			0, 0,	1,		OPERAND,			FETCH_I},
+{"II",			0, 0,	1,		OPERAND,			FETCH_II},
+{"INT",			9, 10,	0,		UNARY_OPERATOR,		NINT},
+{"ISINF",		9, 10,	0,		UNARY_OPERATOR,		ISINF},
+{"ISNAN",		9, 10,	0,		VARARG_OPERATOR,	ISNAN},
+{"IX",			0, 0,	1,		OPERAND,			CONST_IX},
+{"J",			0, 0,	1,		OPERAND,			FETCH_J},
+{"JJ",			0, 0,	1,		OPERAND,			FETCH_JJ},
+{"K",			0, 0,	1,		OPERAND,			FETCH_K},
+{"KK",			0, 0,	1,		OPERAND,			FETCH_KK},
+{"L",			0, 0,	1,		OPERAND,			FETCH_L},
+{"LL",			0, 0,	1,		OPERAND,			FETCH_LL},
+{"LN",			9, 10,	0,		UNARY_OPERATOR,		LOG_E},
+{"LOG",			9, 10,	0,		UNARY_OPERATOR,		LOG_10},
+{"LOGE",		9, 10,	0,		UNARY_OPERATOR,		LOG_E},
+{"M",			0, 0,	1,		OPERAND,			FETCH_M},
+{"AMAX",		9, 10,	0,		UNARY_OPERATOR,	AMAX},
+{"AMIN",		9, 10,	0,		UNARY_OPERATOR,	AMIN},
+{"MAX",			9, 10,	0,		VARARG_OPERATOR,	MAX},
+{"MIN",			9, 10,	0,		VARARG_OPERATOR,	MIN},
+{"N",			0, 0,	1,		OPERAND,			FETCH_N},
+{"NINT",		9, 10,	0,		UNARY_OPERATOR,		NINT},
+{"NDERIV",		9, 10,	-1,		UNARY_OPERATOR,		NDERIV},
+{"NOT",			9, 10,	0,		UNARY_OPERATOR,		BIT_NOT},
+{"NRNDM",		0, 0,	1,		OPERAND,			NORMAL_RNDM},   /* Normally Distributed Random Number */
+{"NSMOO",		9, 10,	-1,		UNARY_OPERATOR,		NSMOOTH},
+{"O",			0, 0,	1,		OPERAND,			FETCH_O},
+{"P",			0, 0,	1,		OPERAND,			FETCH_P},
+{"PI",			0, 0,	1,		OPERAND,			CONST_PI},
+{"R2D",			0, 0,	1,		OPERAND,			CONST_R2D},
+{"R2S",			0, 0,	1,		OPERAND,			CONST_R2S},
+{"RNDM",		0, 0,	1,		OPERAND,			RANDOM},
+{"SIN",			9, 10,	0,		UNARY_OPERATOR,		SIN},
+{"SINH",		9, 10,	0,		UNARY_OPERATOR,		SINH},
+{"SMOO",		9, 10,	0,		UNARY_OPERATOR,		SMOOTH},
+{"SQR",			9, 10,	0,		UNARY_OPERATOR,		SQU_RT},
+{"SQRT",		9, 10,	0,		UNARY_OPERATOR,		SQU_RT},
+{"STD",			9, 10,	0,		UNARY_OPERATOR,		STD_DEV},
+{"SUM",			9, 10,	0,		UNARY_OPERATOR,		ARRSUM},
+{"S2R",			0, 0,	1,		OPERAND,			CONST_S2R},
+{"TAN",			9, 10,	0,		UNARY_OPERATOR,		TAN},
+{"TANH",		9, 10,	0,		UNARY_OPERATOR,		TANH},
+{"VAL",			0, 0,	1,		OPERAND,			FETCH_VAL},
+{"LEN",			9, 10,	0,		UNARY_OPERATOR,		LEN},         /* Array length not implemented */
+{"UNTIL",		0, 10,	0,		UNTIL_OPERATOR,		UNTIL},
+{"~",			9, 10,	0,		UNARY_OPERATOR, 	BIT_NOT},
 };
 
-static struct expression_element	fetch_array_element = {
-"AA",		0,	0,	OPERAND,	AFETCH,   /* fetch var */
+static const ELEMENT operators[] = {
+/* name 		prio's	stack	element type		opcode */
+{"!=",			5, 5,	-1,		BINARY_OPERATOR,	NOT_EQ},
+{"#",			5, 5,	-1,		BINARY_OPERATOR,	NOT_EQ},
+{"%",			7, 7,	-1,		BINARY_OPERATOR,	MODULO},
+{"&",			3, 3,	-1,		BINARY_OPERATOR,	BIT_AND},
+{"&&",			3, 3,	-1,		BINARY_OPERATOR,	REL_AND},
+{")",			0, 0,	0,		CLOSE_PAREN,		NOT_GENERATED},
+{"[",			0, 11,	-1,		BINARY_OPERATOR,	SUBRANGE},    /* array subrange */
+{"{",			0, 11,	-1,		BINARY_OPERATOR,	SUBRANGE_IP},      /* array subrange in place */
+{"]",			0, 0,	0,		CLOSE_BRACKET,		NOT_GENERATED},
+{"}",			0, 0,	0,		CLOSE_CURLY,		NOT_GENERATED}, 
+{"*",			7, 7,	-1,		BINARY_OPERATOR,	MULT},
+{"**",			8, 8,	-1,		BINARY_OPERATOR,	POWER},
+{"+",			6, 6,	-1,		BINARY_OPERATOR,	ADD},
+{",",			0, 0,	0,		SEPARATOR,			NOT_GENERATED},
+{"-",			6, 6,	-1,		BINARY_OPERATOR,	SUB},
+{"/",			7, 7,	-1,		BINARY_OPERATOR,	DIV},
+{":",			0, 0,	-1,		CONDITIONAL,		COND_ELSE},
+{":=",			1, 0,	-1,		STORE_OPERATOR,		STORE_A},
+{";",			0, 0,	0,		EXPR_TERMINATOR,	NOT_GENERATED},
+{"<",			5, 5,	-1,		BINARY_OPERATOR,	LESS_THAN},
+{"<<",			3, 3,	-1,		BINARY_OPERATOR,	LEFT_SHIFT},
+{"<=",			5, 5,	-1,		BINARY_OPERATOR,	LESS_OR_EQ},
+{"=",			5, 5,	-1,		BINARY_OPERATOR,	EQUAL},
+{"==",			5, 5,	-1,		BINARY_OPERATOR,	EQUAL},
+{">",			5, 5,	-1,		BINARY_OPERATOR,	GR_THAN},
+{">=",			5, 5,	-1,		BINARY_OPERATOR,	GR_OR_EQ},
+{">>",			3, 3,	-1,		BINARY_OPERATOR,	RIGHT_SHIFT},
+{"?",			0, 0,	-1,		CONDITIONAL,		COND_IF},
+{"AND",			3, 3,	-1,		BINARY_OPERATOR,	BIT_AND},
+{"OR",			2, 2,	-1,		BINARY_OPERATOR,	BIT_OR},
+{"XOR",			2, 2,	-1,		BINARY_OPERATOR,	BIT_EXCL_OR},
+{"^",			8, 8,	-1,		BINARY_OPERATOR,	POWER},
+{"|",			2, 2,	-1,		BINARY_OPERATOR,	BIT_OR},
+{"||",			2, 2,	-1,		BINARY_OPERATOR,	REL_OR},
+{">?",			4, 4,	-1,		BINARY_OPERATOR,	MAX_VAL},     /* maximum of 2 args */
+{"<?",			4, 4,	-1,		BINARY_OPERATOR,	MIN_VAL},     /* minimum of 2 args */
 };
-
-#if 0
-#define INC(ps) {if ((int)(++ps-top)>STACKSIZE) return(-1);}
-#define DEC(ps) {if ((int)(--ps-top)<0) return(-1);}
-#else
-#define INC(ps) ++(ps)
-#define DEC(ps) --(ps)
-#endif
-long aCalcCheck(char *post, int forks_checked, int dir_mask)
+
+/* get_element
+ *
+ * find the next expression element in the infix expression
+ */
+static int
+	get_element(int opnd, const char **ppsrc, const ELEMENT **ppel)
 {
-	double 		stack[STACKSIZE], *top, *ps;
-	int			i, this_fork = 0;
-	int			dir;
-	short 		got_if=0;
-	char		*post_top = post;
-#if DEBUG
-	char		debug_prefix[10]="";
+	const ELEMENT *ptable, *pel;
 
-	if (aCalcPostfixDebug) {
-		for (i=0; i<=forks_checked; i++)
-			strcat(debug_prefix, (dir_mask&(1<<i))?"T":"F");
-		printf("aCalcCheck: entry: forks_checked=%d, dir_mask=0x%x\n",
-			forks_checked, dir_mask);
+	*ppel = NULL;
+
+	while (isspace((int) (unsigned char) **ppsrc)) ++*ppsrc;
+	if (**ppsrc == '\0') return FALSE;
+
+	if (opnd) {
+		ptable = operands;
+		pel = ptable + NELEMENTS(operands) - 1;
+	} else {
+		ptable = operators;
+		pel = ptable + NELEMENTS(operators) - 1;
 	}
-#endif
 
-	top = ps = &stack[1];
-	DEC(ps);  /* Expression handler assumes ps is pointing to a filled element */
+	while (pel >= ptable) {
+		size_t len = strlen(pel->name);
 
-	/* array expressions and values handled */
-	while (*post != END_STACK) {
-#if DEBUG
-		if (aCalcPostfixDebug) printf("aCalcCheck: %s *post=%d\n", debug_prefix, *post);
-#endif
-
-		switch (*post) {
-
-		case FETCH_A: case FETCH_B: case FETCH_C: case FETCH_D:
-		case FETCH_E: case FETCH_F: case FETCH_G: case FETCH_H:
-		case FETCH_I: case FETCH_J: case FETCH_K: case FETCH_L:
-			INC(ps);
-			*ps = 0;
-			break;
-
-		case FETCH:
-			INC(ps);
-			++post;
-			*ps = 0;
-			break;
-
-		case AFETCH:	/* fetch from array variable */
-			INC(ps);
-			++post;
-			*ps=0;
-			break;
-
-		case CONST_PI:	case CONST_D2R:	case CONST_R2D:	case CONST_S2R:
-		case CONST_R2S:	case RANDOM:	case ARANDOM:	case CONST_IX:
-			INC(ps);
-			*ps = 0;
-			break;
-
-		/* two-argument functions/operators */
-		case ADD:			case SUB:		case MAX_VAL:	case MIN_VAL:
-		case MULT:			case DIV:		case EXPON:		case MODULO:
-		case REL_OR:		case REL_AND:	case BIT_OR:	case BIT_AND:
-		case BIT_EXCL_OR:	case GR_OR_EQ:	case GR_THAN:	case LESS_OR_EQ:
-		case LESS_THAN:		case NOT_EQ:	case EQUAL:		case RIGHT_SHIFT:
-		case LEFT_SHIFT:	case ATAN2:		case MAXFUNC:	case MINFUNC:
-		case NSMOOTH:		case NDERIV:	case FITMPOLY:
-			DEC(ps);
-			*ps = 0;
-			break;
-
-		/* one-argument functions/operators */
-		case ABS_VAL:	case UNARY_NEG:	case SQU_RT:	case EXP:
-		case LOG_10:	case LOG_E:		case ACOS:		case ASIN:
-		case ATAN:		case COS:		case SIN:		case TAN:
-		case COSH:		case SINH:		case TANH:		case CEIL:
-		case FLOOR:		case NINT:		case REL_NOT:	case BIT_NOT:
-		case A_FETCH:	case TO_DOUBLE: case AMAX:		case AMIN:
-		case AVERAGE:	case STD_DEV:	case FWHM:		case SMOOTH:
-		case DERIV:		case ARRSUM:	case FITPOLY:
-			*ps = 0;
-			break;
-
-		case A_AFETCH:
-			*ps = 0;
-			break;
-
-		case LITERAL:
-			INC(ps);
-			++post;
-			if (post == NULL) {
-				++post;
-			} else {
-				post += 7;
-			}
-			*ps = 0;
-			break;
-
-		case SUBRANGE:
-		case SUBRANGE_IP:
-			DEC(ps);
-			DEC(ps);
-			*ps = 0;
-			break;
-
-		case TO_ARRAY:
-			*ps = 0;;
-			break;
-
-		case COND_IF:
-			/*
-			 * Recursively check all COND_IF forks:
-			 * Take the condition-false path, call aCalcCheck() to check the
-			 * condition-true path, giving instructions (forks_checked,
-			 * dir_mask) that will bring it to this fork and cause it to take
-			 * the condition-true path. 
-			 */
-			dir = (this_fork <= forks_checked) ? dir_mask&(1<<this_fork) : 0;
-			if (this_fork == forks_checked) {
-				if (dir == 0) {
-					if (aCalcCheck(post_top, this_fork, dir_mask|(1<<this_fork)))
-						return(-1);
-				}
-			} else if (this_fork > forks_checked) {
-				/* New fork, so dir has been set to 0 */
-				forks_checked++;
-				if (aCalcCheck(post_top, this_fork, dir_mask|(1<<this_fork)))
-					return(-1);
-#if DEBUG
-				if (aCalcPostfixDebug) strcat(debug_prefix, "F");
-#endif
-			}
-			this_fork++;  /* assuming we do, in fact, encounter another fork */
-
-			/* if false condition then skip true expression */
-			if (dir == 0) {
-				/* skip to matching COND_ELSE */
-				for (got_if=1; got_if>0 && *(post+1) != END_STACK; ++post) {
-					switch(post[1]) {
-					case LITERAL:	post+=8; break;
-					case COND_IF:	got_if++; break;
-					case COND_ELSE:	got_if--; break;
-					case FETCH: case AFETCH: post++; break;
-					}
-				}
-			}
-			/* remove condition from stack top */
-			DEC(ps);
-			break;
-
-		case COND_ELSE:
-			/* result, true condition is on stack so skip false condition  */
-			/* skip to matching COND_END */
-			for (got_if=1; got_if>0 && *(post+1) != END_STACK; ++post) {
-				switch(post[1]) {
-				case LITERAL:	post+=8; break;
-				case COND_IF:	got_if++; break;
-				case COND_END:	got_if--; break;
-				case FETCH: case AFETCH: post++; break;
-				}
-			}
-			break;
-
-		case COND_END:
-			break;
-
-		default:
-			break;
+		if (epicsStrnCaseCmp(*ppsrc, pel->name, len) == 0) {
+			*ppel = pel;
+			*ppsrc += len;
+			return TRUE;
 		}
-
-		/* move ahead in postfix expression */
-		++post;
+		--pel;
 	}
 
-#if DEBUG
-	if (ps != top) {
-		if (aCalcPostfixDebug>=10) {
-			printf("aCalcCheck: stack error: top=%p, ps=%p, ps-top=%ld, got_if=%d\n",
-				(void *)top, (void *)ps, (long)(ps-top), got_if);
-		}
-	}
-	if (aCalcPostfixDebug) printf("aCalcCheck: normal exit\n");
-#endif
-
-	/* If we have a stack error, and it's not attributable to '?' without ':', complain */
-	if ((ps != top) && ((top-ps) != got_if)) return(-1);
-	return(0);
+	return FALSE;
 }
 
-/*
- * FIND_ELEMENT
- *
- * find the pointer to an entry in the element table
- */
-static int find_element(pbuffer, pelement, pno_bytes, parg)
- register char	*pbuffer;
- register struct expression_element	**pelement;
- register short	*pno_bytes, *parg;
- {
-	*parg = 0;
-
- 	/* compare the string to each element in the element table */
- 	*pelement = &elements[0];
- 	while ((*pelement)->element[0] != 0){
- 		if (epicsStrnCaseCmp(pbuffer,(*pelement)->element, strlen((*pelement)->element)) == 0){
- 			*pno_bytes += strlen((*pelement)->element);
- 			return(TRUE);
- 		}
- 		*pelement += 1;
- 	}
-
-	/* look for a variable reference */
-	/* double variables: ["a" - "z"], numbered 1-26 */
-	if (isalpha((int)*pbuffer)) {
-		*pelement = &fetch_element; /* fetch means "variable reference" (fetch or store) */
-		*parg = *pbuffer - (isupper((int)*pbuffer) ? 'A' : 'a');
-		*pno_bytes += 1;
-		/* array variables: ["aa" - "zz"], numbered 1-26 */
-		if (pbuffer[1] == pbuffer[0]) {
-			*pelement = &fetch_array_element;
-			*pno_bytes += 1;
-		}
- 		return(TRUE);
-	}
-#if DEBUG
-	if (aCalcPostfixDebug) printf("find_element: can't find '%s'\n", pbuffer);
-#endif
- 	return(FALSE);
- }
- 
-/*
- * GET_ELEMENT
- *
- * get an expression element
- */
-static int get_element(pinfix, pelement, pno_bytes, parg)
-register char	*pinfix;
-register struct expression_element	**pelement;
-register short	*pno_bytes, *parg;
-{
-
-	/* get the next expression element from the infix expression */
-	if (*pinfix == 0) return(END);
-	*pno_bytes = 0;
-	while (*pinfix == 0x20){
-		*pno_bytes += 1;
-		pinfix++;
-	}
-	if (*pinfix == 0) return(END);
-	if (!find_element(pinfix, pelement, pno_bytes, parg))
-		return(UNKNOWN_ELEMENT);
-#if DEBUG
-	if (aCalcPostfixDebug > 5) printf("get_element: found element '%s', arg=%d\n", (*pelement)->element, *parg);
-#endif
-	return(FINE);
-
-	
-}
+static const char *opcodes[] = {
+	"End Expression",
+/* Operands */
+	"LITERAL_DOUBLE", "LITERAL_INT", "VAL", "AVAL",
+	"FETCH_A", "FETCH_B", "FETCH_C", "FETCH_D", "FETCH_E", "FETCH_F",
+	"FETCH_G", "FETCH_H", "FETCH_I", "FETCH_J", "FETCH_K", "FETCH_L",
+	"FETCH_M", "FETCH_N", "FETCH_O", "FETCH_P",
+	"FETCH_AA", "FETCH_BB", "FETCH_CC", "FETCH_DD", "FETCH_EE", "FETCH_FF",
+	"FETCH_GG", "FETCH_HH", "FETCH_II", "FETCH_JJ", "FETCH_KK", "FETCH_LL",
+/* Assignment */
+	"STORE_A", "STORE_B", "STORE_C", "STORE_D", "STORE_E", "STORE_F",
+	"STORE_G", "STORE_H", "STORE_I", "STORE_J", "STORE_K", "STORE_L",
+	"STORE_M", "STORE_N", "STORE_O", "STORE_P",
+	"STORE_AA", "STORE_BB", "STORE_CC", "STORE_DD", "STORE_EE", "STORE_FF",
+	"STORE_GG", "STORE_HH", "STORE_II", "STORE_JJ", "STORE_KK", "STORE_LL",
+/* Trigonometry Constants */
+	"CONST_PI", /* 61 */
+	"CONST_D2R",
+	"CONST_R2D",
+/* Arithmetic */
+	"UNARY_NEG",
+	"ADD",
+	"SUB",
+	"MULT",
+	"DIV",
+	"MODULO",
+	"POWER",
+/* Algebraic */
+	"ABS_VAL",
+	"EXP",
+	"LOG_10",
+	"LOG_E",
+	"MAX",
+	"MIN",
+	"SQU_RT",
+/* Trigonometric */
+	"ACOS", /* 78 */
+	"ASIN",
+	"ATAN",
+	"ATAN2",
+	"COS",
+	"COSH",
+	"SIN",
+	"SINH",
+	"TAN",
+	"TANH",
+/* Numeric */
+	"CEIL", /* 88 */
+	"FLOOR",
+	"FINITE",
+	"ISINF",
+	"ISNAN",
+	"NINT",
+	"RANDOM",
+/* Boolean */
+	"REL_OR",
+	"REL_AND",
+	"REL_NOT",
+/* Bitwise */
+	"BIT_OR",
+	"BIT_AND",
+	"BIT_EXCL_OR",
+	"BIT_NOT",
+	"RIGHT_SHIFT",
+	"LEFT_SHIFT",
+/* Relationals */
+	"NOT_EQ", /* 104 */
+	"LESS_THAN",
+	"LESS_OR_EQ",
+	"EQUAL",
+	"GR_OR_EQ",
+	"GR_THAN",
+/* Conditional */
+	"COND_IF", /* 110 */
+	"COND_ELSE",
+	"COND_END",
+/* Misc */
+	"NOT_GENERATED",
+/* array calc stuff */
+	"CONST_S2R", /* 114 */
+	"CONST_R2S",
+	"CONST_IX",
+	"LOG_2",
+	"PAREN",
+	"MAX_VAL", /* >? */
+	"MIN_VAL", /* <? */
+	"COMMA",
+	"TO_DOUBLE",
+	"SUBRANGE",
+	"SUBRANGE_IP",
+	"TO_ARRAY",
+	"A_FETCH",
+	"A_AFETCH",
+	"LEN",
+	"NORMAL_RNDM",
+	"A_STORE",
+	"A_ASTORE",
+	"UNTIL",
+	"UNTIL_END",
+	"AVERAGE",
+	"STD_DEV",
+	"FWHM",
+	"SMOOTH",
+	"NSMOOTH",
+	"DERIV",
+	"NDERIV",
+	"ARRSUM",
+	"AMAX",
+	"AMIN",
+	"FITPOLY",
+	"FITMPOLY",
+	"ARANDOM"
+};
 
 /*
  * aCalcPostFix
  *
  * convert an infix expression to a postfix expression
  */
-long epicsShareAPI aCalcPostfix(char *pinfix, char *ppostfix, short *perror)
+epicsShareFunc long
+	aCalcPostfix(const char *psrc, unsigned char * const ppostfix, short *perror)
 {
-	short no_bytes, operand_needed, new_expression;
-	struct expression_element stack[80], *pelement, *pstacktop;
-	double constant;
-	char in_stack_pri, in_coming_pri, code, c;
-	char *pposthold, *ppostfixStart;
-	short arg;
-	int badExpression;
+	ELEMENT stack[80];
+	ELEMENT *pstacktop = stack, *ps1;
+	const ELEMENT *pel;
+	int operand_needed = TRUE;
+	int runtime_depth = 0;
+	int cond_count = 0;
+	unsigned char *pout = ppostfix;
+	char *pnext;
+	double lit_d;
+	int lit_i;
+	int handled;
 
 #if DEBUG
 	if (aCalcPostfixDebug) printf("aCalcPostfix: entry\n");
 #endif
 
-	if (ppostfix == NULL) {
-		printf("aCalcPostfix: Caller did not provide a postfix buffer.\n");
-		return(-1);
+	if (psrc == NULL || pout == NULL || perror == NULL) {
+		if (perror) *perror = CALC_ERR_NULL_ARG;
+		if (pout) *pout = END_EXPRESSION;
+		return -1;
+	}
+	if (*psrc == '\0') {
+		if (pout) *pout = END_EXPRESSION;
+		return 0;
 	}
 
-	ppostfixStart = ppostfix;
+	/* place the expression elements into postfix */
+	*pout = END_EXPRESSION;
+	*perror = CALC_ERR_NONE;
 
-	*ppostfixStart = BAD_EXPRESSION;
-	*(++ppostfix) = END_STACK;
+	while (get_element(operand_needed, &psrc, &pel)) {
+		if (aCalcPostfixDebug) printf("\tget_element:%s (%s) runtime_depth=%d\n",
+			opcodes[(int) pel->code], pel->name, runtime_depth);
 
-	operand_needed = TRUE;
-	new_expression = TRUE;
-	*perror = 0;
-	if (*pinfix == 0) return(0);
-	pstacktop = &stack[0];
+		switch (pel->type) {
 
-	/*** place the expression elements into postfix ***/
+		case OPERAND:
+			*pout++ = pel->code;
+			runtime_depth += pel->runtime_effect;
+			operand_needed = FALSE;
+			break;
 
-	while (get_element(pinfix, &pelement, &no_bytes, &arg) != END){
-		pinfix += no_bytes;
+		case LITERAL_OPERAND:
+			runtime_depth += pel->runtime_effect;
 
-		switch (pelement->type){
-
-	    case OPERAND:
-			if (!operand_needed){
-				*perror = 5;
-				*ppostfixStart = BAD_EXPRESSION; return(-1);
+			psrc -= strlen(pel->name);
+			lit_d = epicsStrtod(psrc, &pnext);
+			if (pnext == psrc) {
+				if (aCalcPostfixDebug) printf("***LITERAL_OPERAND***\n");
+				*perror = CALC_ERR_BAD_LITERAL;
+				goto bad;
+			}
+			psrc = pnext;
+			lit_i = lit_d;
+			if (lit_d != (double) lit_i) {
+				*pout++ = pel->code;
+				memcpy(pout, (void *)&lit_d, sizeof(double));
+				pout += sizeof(double);
+			} else {
+				*pout++ = LITERAL_INT;
+				memcpy(pout, (void *)&lit_i, sizeof(int));
+				pout += sizeof(int);
 			}
 
-			/* add operand to the expression */
-			if (pelement->code == (char)FETCH) {
-				/*
-				 * Args A..L are required to exist, so we can code for an
-				 * optimized fetch.  For args M..Z, we code a parameterized
-				 * fetch; aCalcPerform() should check that the arg exists.
-				 */
-				if (arg < 12) {
-					*ppostfix++ = FETCH_A + arg;
+			operand_needed = FALSE;
+			break;
+
+		case STORE_OPERATOR:
+			handled = 0;
+			/* search stack for A_FETCH (@) or A_SFETCH (@@) */
+			for (ps1=pstacktop; ps1>stack; ps1--) {
+				if (aCalcPostfixDebug) printf("STORE_OPERATOR:stacktop code=%s (%d)\n",
+					opcodes[(int) ps1->code], ps1->code);
+				if ((ps1->code == A_FETCH) || (ps1->code == A_AFETCH)) break;
+			}
+			if (ps1->code == A_FETCH) {
+				handled = 1;
+				*ps1 = *pel; ps1->code = A_STORE;
+			} else if (ps1->code == A_AFETCH) {
+				handled = 1;
+				*ps1 = *pel; ps1->code = A_ASTORE;
+			}
+
+			if (!handled) {
+				/* convert FETCH_x or FETCH_xx (already posted to postfix string) */
+				if (pout > ppostfix && pout[-1] >= FETCH_A && pout[-1] <= FETCH_P) {
+					/* Convert fetch into a store on the stack */
+					pout--;
+					*++pstacktop = *pel;
+					pstacktop->code = STORE_A + *pout - FETCH_A;
+				} else if (pout > ppostfix && pout[-1] >= FETCH_AA && pout[-1] <= FETCH_LL) {
+					pout--;
+					*++pstacktop = *pel;
+					pstacktop->code = STORE_AA + *pout - FETCH_AA;
 				} else {
-					*ppostfix++ = FETCH;
-					*ppostfix++ = arg;
+					if (aCalcPostfixDebug) printf("***STORE_OPERATOR***\n");
+					*perror = CALC_ERR_BAD_ASSIGNMENT;
+					goto bad;
 				}
-			} else {
-				*ppostfix++ = pelement->code;
 			}
-
-			/* if this is an array variable reference, append variable number */
-			if (pelement->code == (char)AFETCH) {
-				*ppostfix++ = arg;
-			}
-
-			operand_needed = FALSE;
-			new_expression = FALSE;
-			break;
-
-		case FLOAT_PT_CONST:
-			if (!operand_needed){
-				*perror = 5;
-				*ppostfixStart = BAD_EXPRESSION; return(-1);
-			}
-
-			/* add constant to postfix expression */
-			*ppostfix++ = pelement->code;
-			pposthold = ppostfix;
-
-			pinfix -= no_bytes;
-			while (*pinfix == ' ') *ppostfix++ = *pinfix++;
-			while (TRUE) {
-				if ( ( *pinfix >= '0' && *pinfix <= '9' ) || *pinfix == '.' ) {
-					*ppostfix++ = *pinfix;
-					pinfix++;
-				} else if ( *pinfix == 'E' || *pinfix == 'e' ) {
-					*ppostfix++ = *pinfix;
-					pinfix++;
-						if (*pinfix == '+' || *pinfix == '-' ) {
-							*ppostfix++ = *pinfix;
-							pinfix++;
-						}
-				} else break;
-			}
-			*ppostfix++ = '\0';
-
-			ppostfix = pposthold;
-			if (sscanf(ppostfix,"%lg",&constant) != 1) {
-				*ppostfix = '\0';
-			} else {
-				memcpy(ppostfix,(void *)&constant,8);
-			}
-			ppostfix+=8;
-
-			operand_needed = FALSE;
-			new_expression = FALSE;
-			break;
-
-		case BINARY_OPERATOR:
-			if (operand_needed){
-				*perror = 4;
-				*ppostfixStart = BAD_EXPRESSION; return(-1);
-			}
-
-			/* add operators of higher or equal priority to	postfix expression */
-			while ((pstacktop->in_stack_pri >= pelement->in_coming_pri)
-					&& (pstacktop >= &stack[1])){
-				*ppostfix++ = pstacktop->code;
-				pstacktop--;
-			}
-
-			/* add new operator to stack */
-			pstacktop++;
-			*pstacktop = *pelement;
-
+			runtime_depth -= 1;
 			operand_needed = TRUE;
 			break;
 
 		case UNARY_OPERATOR:
-			if (!operand_needed){
-				*perror = 5;
-				*ppostfixStart = BAD_EXPRESSION; return(-1);
-			}
-
-			/* add operators of higher or equal priority to	postfix expression */
-			while ((pstacktop->in_stack_pri >= pelement->in_coming_pri)
-					&& (pstacktop >= &stack[1])){
-				*ppostfix++ = pstacktop->code;
-				pstacktop--;
-			}
-
-			/* add new operator to stack */
-			pstacktop++;
-			*pstacktop = *pelement;
-
-			new_expression = FALSE;
-			break;
-
-		case MINUS_OPERATOR:
-			if (operand_needed) {
-				/* then assume minus was intended as a unary operator */
-				in_coming_pri = UNARY_MINUS_I_C_P;
-				in_stack_pri = UNARY_MINUS_I_S_P;
-				code = UNARY_MINUS_CODE;
-				new_expression = FALSE;
-			} else {
-				/* then assume minus was intended as a binary operator */
-				in_coming_pri = BINARY_MINUS_I_C_P;
-				in_stack_pri = BINARY_MINUS_I_S_P;
-				code = BINARY_MINUS_CODE;
-				operand_needed = TRUE;
-			}
-
-			/* add operators of higher or equal priority to	postfix expression */
-			while ((pstacktop->in_stack_pri >= in_coming_pri)
-					&& (pstacktop >= &stack[1])){
-				*ppostfix++ = pstacktop->code;
-				pstacktop--;
-			}
-
-			/* add new operator to stack */
-			pstacktop++;
-			*pstacktop = *pelement;
-			pstacktop->in_stack_pri = in_stack_pri;
-			pstacktop->code = code;
-
-			break;
-
-		case SEPARATOR:
-			if (operand_needed){
-				*perror = 4;
-				*ppostfixStart = BAD_EXPRESSION; return(-1);
-			}
-
-			/* add operators to postfix until open paren */
-			while ((pstacktop->element[0] != '(') && (pstacktop->element[0] != '[')
-					&& (pstacktop->element[0] != '{')) {
-				if (pstacktop == &stack[1] || pstacktop == &stack[0]){
-					*perror = 6;
-					*ppostfixStart = BAD_EXPRESSION; return(-1);
+		case VARARG_OPERATOR:
+			/* Move operators of >= priority to the output */
+			while ((pstacktop > stack) &&
+				   (pstacktop->in_stack_pri >= pel->in_coming_pri)) {
+				*pout++ = pstacktop->code;
+				if (aCalcPostfixDebug) printf("UNARY/VARARG op '%s': moved '%s' from stack\n", pel->name, pstacktop->name);
+				if (pstacktop->type == VARARG_OPERATOR) {
+					*pout++ = 1 - pstacktop->runtime_effect;
 				}
-				*ppostfix++ = pstacktop->code;
+				runtime_depth += pstacktop->runtime_effect;
 				pstacktop--;
 			}
+
+			/* Push new operator onto stack */
+			pstacktop++;
+			*pstacktop = *pel;
+			break;
+
+		case BINARY_OPERATOR:
+			/* Move operators of >= priority to the output */
+			while ((pstacktop > stack) &&
+				   (pstacktop->in_stack_pri >= pel->in_coming_pri)) {
+				*pout++ = pstacktop->code;
+				if (aCalcPostfixDebug) printf("BINARY op '%s': moved '%s' from stack\n", pel->name, pstacktop->name);
+				if (pstacktop->type == VARARG_OPERATOR) {
+					*pout++ = 1 - pstacktop->runtime_effect;
+				}
+				runtime_depth += pstacktop->runtime_effect;
+				pstacktop--;
+			}
+
+			/* Push new operator onto stack */
+			pstacktop++;
+			*pstacktop = *pel;
+
 			operand_needed = TRUE;
 			break;
 
-		case CLOSE_PAREN:
-			if (operand_needed){
-				*perror = 4;
-				*ppostfixStart = BAD_EXPRESSION; return(-1);
-			}
-
-			/* add operators to postfix until matching paren */
-			while (pstacktop->element[0] != '(') {
-				if (pstacktop == &stack[1] || pstacktop == &stack[0]) {
-					*perror = 6;
-					*ppostfixStart = BAD_EXPRESSION; return(-1);
+		case SEPARATOR:
+			/* Move operators to the output until open paren or bracket or curly */
+			while ((pstacktop->name[0] != '(') && (pstacktop->name[0] != '[')
+					&& (pstacktop->name[0] != '{')) {
+				if (pstacktop <= stack+1) {
+					if (aCalcPostfixDebug) printf("***SEPARATOR***\n");
+					*perror = CALC_ERR_BAD_SEPARATOR;
+					goto bad;
 				}
-				*ppostfix++ = pstacktop->code;
+				*pout++ = pstacktop->code;
+				if (pstacktop->type == VARARG_OPERATOR) {
+					*pout++ = 1 - pstacktop->runtime_effect;
+				}
+				runtime_depth += pstacktop->runtime_effect;
+				pstacktop--;
+			}
+			operand_needed = TRUE;
+			pstacktop->runtime_effect -= 1;
+			break;
+
+		case CLOSE_PAREN:
+			/* Move operators to the output until matching paren */
+			while (pstacktop->name[0] != '(') {
+				if (pstacktop <= stack+1) {
+					if (aCalcPostfixDebug) printf("***CLOSE_PAREN***\n");
+					*perror = CALC_ERR_PAREN_NOT_OPEN;
+					goto bad;
+				}
+				*pout++ = pstacktop->code;
+				if (pstacktop->type == VARARG_OPERATOR) {
+					*pout++ = 1 - pstacktop->runtime_effect;
+				}
+				runtime_depth += pstacktop->runtime_effect;
 				pstacktop--;
 			}
 			pstacktop--;	/* remove ( from stack */
+			/* if there is a vararg operator before the opening paren,
+			   it inherits the (opening) paren's stack effect */
+			if ((pstacktop > stack) &&
+				pstacktop->type == VARARG_OPERATOR) {
+				pstacktop->runtime_effect = (pstacktop+1)->runtime_effect;
+				/* check for no arguments */
+				if (pstacktop->runtime_effect > 0) {
+					if (aCalcPostfixDebug) printf("***CLOSE_PAREN_1***\n");
+					*perror = CALC_ERR_INCOMPLETE;
+					goto bad;
+				}
+			}
 			break;
 
 		case CLOSE_BRACKET:
-		case CLOSE_CURLY:
-			c = (pelement->type == CLOSE_BRACKET) ? '[' : '{';
-			if (operand_needed){
-				*perror = 4;
-				*ppostfixStart = BAD_EXPRESSION; return(-1);
-			}
-
-			/* add operators to postfix until matching bracket */
-			while (pstacktop->element[0] != c) {
-				if (pstacktop == &stack[1] || pstacktop == &stack[0]) {
-					*perror = 6;
-					*ppostfixStart = BAD_EXPRESSION; return(-1);
+			if (aCalcPostfixDebug) printf("CLOSE_BRACKET: \n");
+			/* Move operators to the output until matching paren */
+			while (pstacktop->name[0] != '[') {
+				if (aCalcPostfixDebug) printf("CLOSE_BRACKET: stacktop code=%s (%d)\n",
+					opcodes[(int) pstacktop->code], pstacktop->code);
+				if (pstacktop <= stack+1) {
+					if (aCalcPostfixDebug) printf("***CLOSE_BRACKET***\n");
+					*perror = CALC_ERR_BRACKET_NOT_OPEN;
+					goto bad;
 				}
-				*ppostfix++ = pstacktop->code;
+				*pout++ = pstacktop->code;
+				if (pstacktop->type == VARARG_OPERATOR) {
+					*pout++ = 1 - pstacktop->runtime_effect;
+				}
+				runtime_depth += pstacktop->runtime_effect;
 				pstacktop--;
 			}
 			/* add SUBRANGE operator to postfix */
-			if (pstacktop == &stack[0]) {
-				*perror = 6;
-				*ppostfixStart = BAD_EXPRESSION; return(-1);
+			*pout++ = pstacktop->code;
+			runtime_depth += pstacktop->runtime_effect;
+			pstacktop--;
+
+			if (aCalcPostfixDebug) printf("CLOSE_BRACKET: stacktop code=%s (%d)\n",
+					opcodes[(int) pstacktop->code], pstacktop->code);
+			break;
+
+		case CLOSE_CURLY:
+			/* Move operators to the output until matching paren */
+			while (pstacktop->name[0] != '{') {
+				if (pstacktop <= stack+1) {
+					if (aCalcPostfixDebug) printf("***CLOSE_CURLY***\n");
+					*perror = CALC_ERR_CURLY_NOT_OPEN;
+					goto bad;
+				}
+				*pout++ = pstacktop->code;
+				if (aCalcPostfixDebug) printf("CLOSE_CURLY op '%s': moved '%s' from stack\n", pel->name, pstacktop->name);
+				if (pstacktop->type == VARARG_OPERATOR) {
+					*pout++ = 1 - pstacktop->runtime_effect;
+				}
+				runtime_depth += pstacktop->runtime_effect;
+				pstacktop--;
 			}
-			*ppostfix++ = pstacktop->code;
+			/* add REPLACE operator to postfix */
+			*pout++ = pstacktop->code;
+			runtime_depth += pstacktop->runtime_effect;
 			pstacktop--;
 			break;
 
 		case CONDITIONAL:
-			if (operand_needed){
-				*perror = 4;
-				*ppostfixStart = BAD_EXPRESSION; return(-1);
-			}
-
-			/* add operators of higher priority to postfix expression */
-			while ((pstacktop->in_stack_pri > pelement->in_coming_pri)
-					&& (pstacktop >= &stack[1])){
-				*ppostfix++ = pstacktop->code;
+			/* Move operators of > priority to the output */
+			while ((pstacktop > stack) &&
+				   (pstacktop->in_stack_pri > pel->in_coming_pri)) {
+				*pout++ = pstacktop->code;
+				if (aCalcPostfixDebug) printf("CONDITIONAL op '%s': moved '%s' from stack\n", pel->name, pstacktop->name);
+				if (pstacktop->type == VARARG_OPERATOR) {
+					*pout++ = 1 - pstacktop->runtime_effect;
+				}
+				runtime_depth += pstacktop->runtime_effect;
 				pstacktop--;
 			}
 
-			/* add new element to the postfix expression */
-			*ppostfix++ = pelement->code;
+			/* Add new element to the output */
+			*pout++ = pel->code;
+			runtime_depth += pel->runtime_effect;
 
-			/* add : operator with COND_END code to stack */
-			if (pelement->element[0] == ':'){
+			/* For : operator, also push COND_END code to stack */
+			if (pel->name[0] == ':') {
+				if (--cond_count < 0) {
+					if (aCalcPostfixDebug) printf("***CONDITIONAL(:)***\n");
+					*perror = CALC_ERR_CONDITIONAL;
+					goto bad;
+				}
 				pstacktop++;
-				*pstacktop = *pelement;
+				*pstacktop = *pel;
 				pstacktop->code = COND_END;
+				pstacktop->runtime_effect = 0;
+			} else {
+				cond_count++;
 			}
 
 			operand_needed = TRUE;
 			break;
 
-		case EXPR_TERM:
-			if (operand_needed && !new_expression){
-				*perror = 4;
-				*ppostfixStart = BAD_EXPRESSION; return(-1);
-			}
-
-			/* add all operators on stack to postfix */
-			while (pstacktop >= &stack[1]){
-				if (pstacktop->element[0] == '('){
-					*perror = 6;
-					*ppostfixStart = BAD_EXPRESSION; return(-1);
+		case UNTIL_OPERATOR:
+			/* Move operators of >= priority to the output */
+			while ((pstacktop > stack) &&
+				   (pstacktop->in_stack_pri >= pel->in_coming_pri)) {
+				*pout++ = pstacktop->code;
+				if (aCalcPostfixDebug) printf("UNTIL_OPERATOR op '%s': moved '%s' from stack\n", pel->name, pstacktop->name);
+				if (pstacktop->type == VARARG_OPERATOR) {
+					*pout++ = 1 - pstacktop->runtime_effect;
 				}
-				*ppostfix++ = pstacktop->code;
+				runtime_depth += pstacktop->runtime_effect;
 				pstacktop--;
 			}
 
-			/* add new element to the postfix expression */
-			*ppostfix++ = pelement->code;
+			/* Push UNTIL to output */
+			*pout++ = pel->code;
+			runtime_depth += pel->runtime_effect;
 
+			/* Push UNTIL_END code to stack */
+			pstacktop++;
+			*pstacktop = *pel;
+			pstacktop->code = UNTIL_END;
+			pstacktop->runtime_effect = 0;
+			break;
+
+		case EXPR_TERMINATOR:
+			/* Move everything from stack to the output */
+			while ((pstacktop > stack) && (pstacktop->name[0] != '(')) {
+				*pout++ = pstacktop->code;
+				if (aCalcPostfixDebug) printf("EXPR_TERMINATOR op '%s': moved '%s' from stack\n", pel->name, pstacktop->name);
+				if (pstacktop->type == VARARG_OPERATOR) {
+					*pout++ = 1 - pstacktop->runtime_effect;
+				}
+				runtime_depth += pstacktop->runtime_effect;
+				pstacktop--;
+			}
 			operand_needed = TRUE;
-			new_expression = TRUE;
 			break;
 
 		default:
-			*perror = 8;
-			*ppostfixStart = BAD_EXPRESSION; return(-1);
+			if (aCalcPostfixDebug) printf("***default***\n");
+			*perror = CALC_ERR_INTERNAL;
+			goto bad;
 		}
-	}
-	if (operand_needed){
-		*perror = 4;
-		*ppostfixStart = BAD_EXPRESSION; return(-1);
+
+		if (runtime_depth < 0) {
+			if (aCalcPostfixDebug) printf("***runtime_depth<0***\n");
+			*perror = CALC_ERR_UNDERFLOW;
+			goto bad;
+		}
+		if (runtime_depth >= ACALC_STACKSIZE) {
+			if (aCalcPostfixDebug) printf("***runtime_depth>=ACALC_STACKSIZE***\n");
+			*perror = CALC_ERR_OVERFLOW;
+			goto bad;
+		}
 	}
 
-	/* add all operators on stack to postfix */
-	while (pstacktop >= &stack[1]){
-		if (pstacktop->element[0] == '('){
-			*perror = 6;
-			*ppostfixStart = BAD_EXPRESSION; return(-1);
+	if (*psrc != '\0') {
+		if (aCalcPostfixDebug) printf("*** *psrc != 0 ***\n");
+		*perror = CALC_ERR_SYNTAX;
+		goto bad;
+	}
+
+	/* Move everything from stack to the output */
+	while (pstacktop > stack) {
+		if (pstacktop->name[0] == '(') {
+			if (aCalcPostfixDebug) printf("*** pstacktop->name[0] == ( ***\n");
+			*perror = CALC_ERR_PAREN_OPEN;
+			goto bad;
 		}
-		*ppostfix++ = pstacktop->code;
+		*pout++ = pstacktop->code;
+		if (aCalcPostfixDebug) printf("done parsing: moved '%s' from stack\n", pstacktop->name);
+		if (pstacktop->type == VARARG_OPERATOR) {
+			*pout++ = 1 - pstacktop->runtime_effect;
+		}
+		runtime_depth += pstacktop->runtime_effect;
 		pstacktop--;
 	}
-	*ppostfix++ = END_STACK;
-	*ppostfix = '\0';
+	*pout = END_EXPRESSION;
 
-	if ((ppostfixStart[1] == END_STACK) || aCalcCheck(ppostfixStart, 0, 0)) {
-		*ppostfixStart = BAD_EXPRESSION;
-		badExpression = 1;
-	} else {
-		*ppostfixStart = GOOD_EXPRESSION;
-		badExpression = 0;
+	if (cond_count != 0) {
+		if (aCalcPostfixDebug) printf("*** cond_count != 0 ***\n");
+		*perror = CALC_ERR_CONDITIONAL;
+		goto bad;
 	}
+	if (operand_needed) {
+		if (aCalcPostfixDebug) printf("*** operand_needed ***\n");
+		*perror = CALC_ERR_INCOMPLETE;
+		goto bad;
+	}
+	if (runtime_depth != 1) {
+		if (aCalcPostfixDebug) printf("*** runtime_depth!=1 (==%d) ***\n", runtime_depth);
+		*perror = CALC_ERR_INCOMPLETE;
+		goto bad;
+	}
+	if (aCalcPostfixDebug) printf("\naCalcPostfix: returning success\n");
+	return 0;
 
-#if DEBUG
+bad:
 	if (aCalcPostfixDebug) {
-		printf("aCalcPostfix: buf-used=%d\n", (int)(1+ppostfix-ppostfixStart));
+		printf("\n***error*** '%s'\n", aCalcErrorStr(*perror));
+		aCalcExprDump(ppostfix);
 	}
-#endif
-	return(badExpression);
+	*ppostfix = END_EXPRESSION;
+	return -1;
+}
+
+/* aCalcErrorStr
+ *
+ * Return a message string appropriate for the given error code
+ */
+epicsShareFunc const char *
+	aCalcErrorStr(short error)
+{
+	static const char *errStrs[] = {
+		"No error",
+		"Too many results returned",
+		"Badly formed numeric literal",
+		"Bad assignment target",
+		"Comma without enclosing parentheses",
+		"Close parenthesis found without open",
+		"Parenthesis still open at end of expression",
+		"Unbalanced conditional ?: operators",
+		"Incomplete expression, operand missing",
+		"Not enough operands provided",
+		"Runtime stack would overflow",
+		"Syntax error, unknown operator/operand",
+		"NULL or empty input argument to postfix()",
+		"Internal error, unknown element type",
+		"Close bracket without open",
+		"Close curly bracket without open"
+	};
+	
+	if (error < CALC_ERR_NONE || error > CALC_ERR_INTERNAL)
+		return NULL;
+	return errStrs[error];
+}
+
+/* aCalcExprDump
+ *
+ * Disassemble the given postfix instructions to stdout
+ */
+epicsShareFunc void
+	aCalcExprDump(const unsigned char *pinst)
+{
+	unsigned char op;
+	double lit_d;
+	int lit_i;
+	
+	while ((op = *pinst) != END_EXPRESSION) {
+		switch (op) {
+		case LITERAL_DOUBLE:
+			memcpy((void *)&lit_d, ++pinst, sizeof(double));
+			printf("\tDouble %g\n", lit_d);
+			pinst += sizeof(double);
+			break;
+		case LITERAL_INT:
+			memcpy((void *)&lit_i, ++pinst, sizeof(int));
+			printf("\tInteger %d\n", lit_i);
+			pinst += sizeof(int);
+			break;
+		case MIN:
+		case MAX:
+		case FINITE:
+		case ISNAN:
+			printf("\t%s, %d arg(s)\n", opcodes[(int) op], *++pinst);
+			pinst++;
+			break;
+		default:
+			printf("\t%s (%d)\n", opcodes[(int) op], op);
+			pinst++;
+		}
+	}
+}
+
+void aCalcPrintOp(unsigned char op) {
+	printf("%s\n", opcodes[(int) op]);
 }

@@ -1,0 +1,122 @@
+<P>This is a new version of interp, that requires the additional macro, Q, and
+that is easier to use.
+
+<P>This interpolation software relies on the aSub record in EPICS base.
+
+<P>The following fields of the aSub record have the following functions in this
+software:
+
+<table>
+<tr><td>VALA[]  <td>independent variable
+<tr><td>VALB[]  <td>dependent variable 1
+<tr><td>VALC[]  <td>dependent variable 2
+<tr><td>A       <td>new value of independent variable, for interp or adding entry
+<tr><td>VALN    <td>number of entries
+<tr><td>F       <td>interpolation order (1: linear; >1: polynomial)
+<tr><td>G       <td>mode (0: Interpolate; 1: Add Entry; 2: Clear All)
+<tr><td>B       <td>new value for dependent variable 1 array (used if mode is "Add Entry")
+<tr><td>C       <td>new value for dependent variable 2 array (used if mode is "Add Entry")
+<tr><td>VALE    <td>successful interpolation (VALE==1)
+<tr><td>VALF    <td>interpolation result for dependent variable 1
+<tr><td>VALG    <td>interpolation result for dependent variable 2
+<tr><td>NOVA    <td>max number of entries in a array - limits table size
+<tr><td>NOVB    <td>max number of entries in b array - limits table size
+<tr><td>NOVC    <td>max number of entries in c array - limits table size
+
+<tr><td>H       <td>array of new values of independent variable, for interp
+<tr><td>VALH    <td>array of interpolation results for dependent variable 1
+<tr><td>VALI    <td>array of interpolation results for dependent variable 2
+<tr><td>NOH     <td>max number of entries in h array, will be coerced to <= novh, novi
+<tr><td>NOVH    <td>max number of entries in valh array
+<tr><td>NOVI    <td>max number of entries in vali array
+</table>
+
+<P>Note: the code uses only n entries, where n = <code>MIN(NOVA, NOVB, NOVC)</code>
+
+<P>Here's how you use it:
+
+<P>Load VALA, VALB, VALC arrays such that VALB[i] = y1(VALA[i]) and VALC[i] =
+y2(VALA[i]), where y1 and y2 are the functions you want to interpolate, and
+VALA]] increases with its array index.  You can do this in several ways:
+<ol>
+
+<li> with a channel-access client, such as BURT or caput.  This works only at run time.
+
+<li> by editing the file autosave writes when it's told to save according to
+'interpNew_settings.req', and then using autosave/restore to load that file.  This works only
+at boot time.
+
+<li> by selecting "Data Entry" from the "More" menu, specifying x, y1, and y2 values, and pressing
+"Add Entry". This works only at run time.
+
+</ol>
+
+<P>If you load the arrays by method (1) or (2), make sure you do all of the
+following:
+
+<ol>
+<li> set VALE to the number of meaningful points in the VALA, VALB, VALC arrays.
+<li> load arrays into VALA, VALB, and VALC
+<li> Make sure VALA[] is monotonically increasing with its array index
+</ol>
+
+<P>The supplied database adds a sort of user interface to the software described
+above.  The user writes to $(P)interp_x, and the database sends this value to
+the aSub record, which interpolates and, if successful, writes to
+$(P)interp_y1 and $(P)interp_y2.  If the user has specified output-link fields
+$(P)interp_y1.OUT or $(P)interp_y2.OUT, then the new values will be written to
+the PV's named in those links.
+
+<hr>
+<P>To use BURT to load and save the VALA, VALB, and VALC arrays, make a burt
+request file for your loaded copy of the interp database:
+
+<blockquote>
+<pre>
+xxx:interp.VALA
+xxx:interp.VALB
+xxx:interp.VALC
+</pre>
+</blockquote>
+
+<P>Then make a load file using <code>burtrb</code>:
+
+<blockquote>
+<pre>
+burtrb -f interp.req -o interp.load
+</pre>
+</blockquote>
+
+<P>This will produce an output file that might look something like this:
+
+<blockquote>
+<pre>
+--- Start BURT header
+Time:     Thu Dec  9 17:17:48 2010
+Login ID: mooney (Tim Mooney)
+Eff  UID: 597
+Group ID: 104
+Keywords: 
+Comments: 
+Type:     Absolute
+Directory /home/oxygen4/MOONEY/epics/synApps/support/xxx/xxxApp/op/burt
+Req File: interp.req
+--- End BURT header
+xxx:interp.VALA 2000 0.000000000000000e+00 0.000000000000000e+00 ...
+xxx:interp.VALB 2000 0.000000000000000e+00 0.000000000000000e+00 ...
+xxx:interp.VALC 2000 0.000000000000000e+00 0.000000000000000e+00 ...
+---end file interp.load---
+<pre>
+</blockquote>
+
+<P>You can edit this file to change the array values.  Note that the first
+number ("2000") on the line beginning "xxx:interp.VALA" is the number
+of array values specified on the rest of the line.  (I've chopped
+the line off after two array values in this example.)
+
+<P>Beginning with calc 2.10, you can also interpolate using an array of values
+to produce arrays of results.  Instead of writing a scalar to A and getting
+scalars VALF and VALG, you set the mode to "Array Interpolate", write an array
+to H, and get arrays VALH and VALI.
+
+Tim Mooney

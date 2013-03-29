@@ -3,9 +3,9 @@ FILENAME... drvMVP2001.cc
 USAGE...    Motor record driver level support for MicroMo
             MVP 2001 B02 (Linear, RS-485).
 
-Version:        $Revision: 1.13 $
+Version:        $Revision: 14155 $
 Modified By:    $Author: sluiter $
-Last Modified:  $Date: 2009-09-08 18:26:32 $
+Last Modified:  $Date: 2011-11-29 14:50:00 -0600 (Tue, 29 Nov 2011) $
 */
 
 /*
@@ -86,6 +86,8 @@ Last Modified:  $Date: 2009-09-08 18:26:32 $
  * .09 06/06/08  rls    - Bug fix setting RA_DONE based on inMotion.
  * .10 06/09/08  rls    - Controller workaround for comm. errors; delay after
  *                        each messages received for 0.1 second.
+ * .11 03/18/11  kmp    Set status.Bits.EA_POSITION properly in set_status() so
+ *                      the torque enable/disable button is accurate.
  */
 
 /*
@@ -134,18 +136,18 @@ MORE DESIGN LIMITATIONS
 #define BUFF_SIZE 20		/* Maximum length of string to/from MVP2001 */
 
 /*----------------debugging-----------------*/
-#ifdef __GNUG__
-    #ifdef  DEBUG
-        #define Debug(l, f, args...) { if(l<=drvMVP2001debug) printf(f,## args); }
-    #else
-        #define Debug(l, f, args...)
-    #endif
-#else
-    #define Debug()
-#endif
-
 volatile int drvMVP2001debug = 0;
 extern "C" {epicsExportAddress(int, drvMVP2001debug);}
+static inline void Debug(int level, const char *format, ...) {
+  #ifdef DEBUG
+    if (level < drvMVP2001debug) {
+      va_list pVar;
+      va_start(pVar, format);
+      vprintf(format, pVar);
+      va_end(pVar);
+    }
+  #endif
+}
 
 /* --- Local data. --- */
 int MVP2001_num_cards = 0;
@@ -395,8 +397,8 @@ static int set_status(int card, int signal)
     /* The MVP2001 doesn't have a home feature */
     status.Bits.RA_HOME = 0;
 
-    /* !!! Assume no closed-looped control!!! */
-    status.Bits.EA_POSITION = 0;
+    /* Set the enable-torque PV properly */
+    status.Bits.EA_POSITION = (mstat.Bits.NOT_power == false) ? 1 : 0;
 
     /* encoder status */
     status.Bits.EA_SLIP = 0;

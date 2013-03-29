@@ -5,113 +5,121 @@
   <meta content="Ronald L. Sluiter" name="Author" />
   <meta content="Synopsis of modifications, fixes and new features for each motor record release."
     name="Description" />
-  <title>EPICS Motor Record Release R6-5 Notice</title>
+  <title>EPICS Motor Record Release R6-7 Notice</title>
   <meta content="Ronald L. Sluiter" name="author" />
   <meta content="Notification of bug fixes, functional changes and new features." name="description" />
   <meta content="text/html; charset=ISO-8859-1" http-equiv="Content-Type" />
 </head>
+
 <body>
 
-
-
-<div style="text-align: center">
-  <h1><b>Motor Record Version 6-5-2 Release Notice</b></h1>
-</div>
-<div style="text-align: center">
-  <h4>Modifications to Existing Features</h4>
-</div>
-<div style="text-align: left">
-  <p>
-  <b>Aerotech Ensemble</b>
-  </p>
-  <p>
-  <ul>
+  <div style="text-align: center">
+    <h1>
+      <b>Motor Record Version 6-6 and 6-7 Release Notice</b></h1>
+  </div>
+  <div style="text-align: center">
+    <h4>
+      Modifications to Existing Features</h4>
+  </div>
+  <div style="text-align: left">
+    <p>
+    <b>Aerotech Ensemble</b>
+    </p>
+    <p>
+    <ul>
+      <li>
+        Since the Ensemble network connection requires period communication from the 
+        host to prevent the Ensemble from closing the network socket, the Ensemble 
+        support based on the old device driver architecture (phase 1) was removed with 
+        this release.  The asyn motor architecture supports continuous, periodic updates; 
+        the old architecture does not.
+      </li>
+      <li>
+        With this release, the Aerotech Ensemble driver only supports 4.01.00 Ensemble 
+        version firmware and above.
+      </li>
+      <li>
+        In order to support SCURVE trajectories, the move commands have been changed 
+        from MOVE[ABS/INC] to LINEAR.  Currently, the SCURVE command can only be set 
+        from an asyn record (e.g., SCURVE 75).
+      </li>
+      <li>
+        There is a problem with initiating a home search with the Aerotech Ensemble 
+        motor controller with EPICS.  The problem is that the EPICS Ensemble driver uses 
+        Aerotech's ASCII communication protocol and that protocol blocks all 
+        communication on ASCII communication ports during a home search.  Consequently, 
+        once a home search is started from EPICS, it is unable to stop it.  With release 
+        R6-6, the home search function was commented out of the Ensemble driver.  Users 
+        that need to perform a home search should do it from Aerotech's IDE software, 
+        which can abort a home search.  The Home Search ability will be restored in a 
+        future release.
+      </li>
+    </ul>
+    <p>
+    <b>OMS</b>
+    </p>
+    <ul>
     <li>
-      With the current Aerotech Ensemble firmware a home search can not be aborted 
-      from EPICS. Therefore, the home search command has been commented out of this 
-      release until an Ensemble firmware update resolves this problem.  Aerotech's 
-      Ensemble IDE software can be used to perform a home search that can be aborted.
-    </li>
-    <li>
-      Wang Xiaoqiang (PSI) fixed a bug in the Aerotech Ensemble asyn motor driver that 
-      was causing communication problems with Ensemble firmware 2.54.004 and above.  
-      The problem was a redundant EOS was being append to transmitted commands.
-    </li>
-  </ul>
-  </p>
-
-  <p>
-  <b>VxWorks 6.x compiler error</b>
-  </p>
-  <p>
-  The GNU preprocessor assertions in motor.h are deprecated with the VxWorks 6.x 
-  compiler.  Test for CPU macros that are compatible with VxWorks 6.x have been 
-  added.  This change prevents an "Error: unknown bit order!" compiler error with 
-  VxWorks 6.x.
-  </p>
-  </p>
-</div>
-
-
-<div style="text-align: center">
-  <h1>
-    <b>Motor Record Version 6-5-1 Release Notice</b></h1>
-</div>
-<div style="text-align: center">
-  <h4>
-    Modifications to Existing Features</h4>
-</div>
-<div style="text-align: left">
-  <p><b>Aerotech Ensemble</b></p>
-  <p>
-  <ul>
-    <li>
-      With previous releases the Aerotech Ensemble asyn motor driver would crash the 
-      IOC at boot-up if the Ensemble was not powered up and able to communicate.
-    </li>
-    <li>
-      The EOT limit switch status was not available except via an Ensemble fault 
-      condition.  With this release the status of the EOT limit switches are always 
-      available.
-    </li>
-  </ul>
-  </p>
-  
-  <p><b>OMS MAXv WatchDog Timeout Counter</b></p>
-  <p>
-  <p>
-    For OMS MAXv firmware ver:1.33 and above, the EPICS driver reads the MAXv's 
-    Watchdog Timeout Counter at bootup, and with every motor status update. If the 
-    Counter is nonzero, an error message is sent to both the errlog task and the 
-    console.  Since a watchdog timer trip indicates that the MAXv has rebooted and 
-    no longer has valid motor positions, the controller is disabled and is no longer 
-    available to EPICS until after the VME crate has been power cycled.  Other MAXv 
-    boards in the system are unaffected by this scenario.
-  </p>
-  <p>
+    <p>
+    Watchdog and reboot error checks have been added to both the VME58 and MAXv (with 
+    firmware ver:1.33 and above) device drivers.  The EPICS drivers check for a 
+    reboot error or Watchdog timeout (MAXv) with every motor status update.
+    </p>
+    <p>
+    If an error occurs, an error message is sent to both the errlog task and the 
+    console.  Since a reboot or watchdog timer trip indicates that the controller 
+    has rebooted and no longer has valid motor positions, the controller is disabled 
+    and is no longer available to EPICS until after the VME crate has been rebooted.  
+    Other OMS boards in the system are unaffected by this scenario.
+    </p>
+    <p>
     To better communicate this problem to the user, several medm displays have been 
     changed.  Small displays (motorx_tiny.adl, motorx.adl) will show a yellow border 
     around their position readback values.  Larger displays (motorx_more.adl, 
     motorx_all.adl) will display the message "Controller Error" in yellow.  The 
-    following error message at the console and/or in the errlog is definitive;
-  </p>
+    following error message at the console and/or in the IOC errlog is definitive;
+    </p>
+    <div style="text-align: center">
+    <p>
+    "***MAXv card #<card>Disabled*** Watchdog Timeout CTR =<ctr>"
+    </p>
+    <p>
+    "***VME58 card #<card>Disabled*** Reboot Detected."
+    </p>
+    </li>
+    <li>
+      A third argument was added to the MAXvConfig() call; the SSI based absolute 
+      encoder bit flag.
+      <p>
+      MAXvConfig(0, config0, 0x00)
+      </p>
+      Bit #0 for Axis X, bit #1 for Axis Y, etc.. Set a bit flag to '1' for absolute 
+      encoder values; '0' for the standard incremental encoder values.
+    </li>
+    </ul>
+    </div>
+  </div>
+  <div style="text-align: center">
+    <h4>
+      New Features</h4>
+  </div>
+  <div style="text-align: left">
+    <p>
+      <b>Hytec 8601</b>
+    </p>
+    <p>
+    Asyn motor driver support was added by Hytec for the 8601 stepper motor driver.
+    </p>
+    <p>
+      <b></b>
+    </p>
+    <p>
+    </p>
+  </div>
   <p>
-    <center>***MAXv card #<i>(card#)</i> Disabled*** Watchdog Timeout CTR =<i>(count)</i></center>
   </p>
-  </p>
-</div>
 
-<div style="text-align: center">
-  <h4>New Features</h4>
-</div>
-<div style="text-align: left">
-  <p><b>OMS MAXnet motor controller support</b></p>
-  <p>
-  Jens Eden's (PTB) added support for the OMS MAXnet motor controller using an asyn 
-  motor port driver
-  </p>
-</div>
-  
+
   <div style="text-align: center">
     <h1>
       <b>Motor Record Version 6-5 Release Notice</b></h1>
@@ -158,7 +166,7 @@
       <li>Aerotech Ensemble device driver fixes for incorrect Jog speeds, support for a
         negative PosScaleFactor parameter and detecting maximum travel limit switch faults.
       </li>
-      <li>This is the latest release to include the old Ensemble device driver architecture
+      <li>This is the last release to include the old Ensemble device driver architecture
         version. See below. </li>
     </ul>
     <p>

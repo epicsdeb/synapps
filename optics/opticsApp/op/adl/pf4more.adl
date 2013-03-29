@@ -1,14 +1,14 @@
 
 file {
-	name="/home/epicsioc/dev/ioc/sector/32-com/usaxs/op/adl/pf4more.adl"
-	version=030003
+	name="/home/oxygen/MOONEY/epics/synApps/support/optics/opticsApp/op/adl/pf4more.adl"
+	version=030105
 }
 display {
 	object {
-		x=95
-		y=325
-		width=305
-		height=578
+		x=352
+		y=494
+		width=325
+		height=570
 	}
 	clr=14
 	bclr=2
@@ -87,111 +87,22 @@ display {
 		1a7309,
 	}
 }
-text {
-	object {
-		x=49
-		y=27
-		width=180
-		height=18
-	}
-	"basic attribute" {
-		clr=24
-	}
-	textix="Dual XIA filter box"
-	align="horiz. centered"
-}
-"text entry" {
-	object {
-		x=114
-		y=78
-		width=108
-		height=25
-	}
-	control {
-		chan="$(P)$(H)E:local"
-		clr=14
-		bclr=51
-	}
-	limits {
-	}
-}
-text {
-	object {
-		x=16
-		y=82
-		width=95
-		height=14
-	}
-	"basic attribute" {
-		clr=14
-	}
-	textix="using"
-	align="horiz. right"
-}
-"choice button" {
-	object {
-		x=12
-		y=69
-		width=55
-		height=36
-	}
-	control {
-		chan="$(P)$(H)useMono"
-		clr=14
-		bclr=3
-	}
-}
-"related display" {
+rectangle {
 	object {
 		x=0
-		y=24
-		width=40
-		height=20
-	}
-	display[0] {
-		label="small"
-		name="pf4small.adl"
-		args="P=$(P),H=$(H),A=$(A),B=$(B),MONO=$(MONO)"
-		policy="replace display"
-	}
-	clr=14
-	bclr=2
-	label="-less"
-}
-text {
-	object {
-		x=16
-		y=53
-		width=95
-		height=14
+		y=0
+		width=325
+		height=25
 	}
 	"basic attribute" {
-		clr=14
-	}
-	textix="Energy"
-	align="horiz. right"
-}
-"text update" {
-	object {
-		x=114
-		y=49
-		width=108
-		height=24
-	}
-	monitor {
-		chan="$(MONO)"
-		clr=14
-		bclr=51
-	}
-	align="horiz. right"
-	limits {
+		clr=0
 	}
 }
 polyline {
 	object {
 		x=0
-		y=220
-		width=306
+		y=215
+		width=326
 		height=2
 	}
 	"basic attribute" {
@@ -202,91 +113,14 @@ polyline {
 		chan="$(P)$(H)calc"
 	}
 	points {
-		(1,221)
-		(305,221)
+		(1,216)
+		(325,216)
 	}
-}
-"related display" {
-	object {
-		x=2
-		y=47
-		width=60
-		height=14
-	}
-	display[0] {
-		label="all"
-		name="pf4config.adl"
-		args="P=$(P),H=$(H),A=$(A),B=$(B),MONO=$(MONO)"
-	}
-	clr=0
-	bclr=9
-	label="-configure"
-}
-rectangle {
-	object {
-		x=4
-		y=225
-		width=64
-		height=346
-	}
-	"basic attribute" {
-		clr=44
-	}
-	"dynamic attribute" {
-		vis="if not zero"
-		chan="$(P)$(H)fPos$(A)"
-	}
-}
-rectangle {
-	object {
-		x=4
-		y=225
-		width=64
-		height=346
-	}
-	"basic attribute" {
-		clr=16
-	}
-	"dynamic attribute" {
-		vis="if zero"
-		chan="$(P)$(H)fPos$(A)"
-	}
-}
-rectangle {
-	object {
-		x=4
-		y=225
-		width=64
-		height=346
-	}
-	"basic attribute" {
-		clr=21
-	}
-	"dynamic attribute" {
-		vis="if zero"
-		chan="$(P)$(H)bank$(A)"
-	}
-}
-byte {
-	object {
-		x=8
-		y=229
-		width=10
-		height=336
-	}
-	monitor {
-		chan="$(P)$(H)bitFlag$(A)"
-		clr=38
-		bclr=2
-	}
-	direction="up"
-	sbit=0
-	ebit=15
 }
 composite {
 	object {
-		x=160
-		y=225
+		x=6
+		y=220
 		width=64
 		height=346
 	}
@@ -294,8 +128,8 @@ composite {
 	children {
 		rectangle {
 			object {
-				x=160
-				y=225
+				x=6
+				y=220
 				width=64
 				height=346
 			}
@@ -309,8 +143,8 @@ composite {
 		}
 		rectangle {
 			object {
-				x=160
-				y=225
+				x=6
+				y=220
 				width=64
 				height=346
 			}
@@ -324,8 +158,8 @@ composite {
 		}
 		rectangle {
 			object {
-				x=160
-				y=225
+				x=6
+				y=220
 				width=64
 				height=346
 			}
@@ -339,8 +173,8 @@ composite {
 		}
 		byte {
 			object {
-				x=164
-				y=229
+				x=10
+				y=224
 				width=10
 				height=336
 			}
@@ -349,566 +183,16 @@ composite {
 				clr=38
 				bclr=2
 			}
-			direction="up"
+			direction="down"
 			sbit=0
 			ebit=15
 		}
 	}
 }
-composite {
-	object {
-		x=22
-		y=231
-		width=120
-		height=334
-	}
-	"composite name"=""
-	children {
-		composite {
-			object {
-				x=72
-				y=231
-				width=70
-				height=330
-			}
-			"composite name"=""
-			children {
-				"text update" {
-					object {
-						x=72
-						y=294
-						width=70
-						height=14
-					}
-					monitor {
-						chan="$(P)$(H)fPos$(A).THST"
-						clr=14
-						bclr=2
-					}
-					clrmod="discrete"
-					format="exponential"
-					limits {
-					}
-				}
-				"text update" {
-					object {
-						x=72
-						y=273
-						width=70
-						height=14
-					}
-					monitor {
-						chan="$(P)$(H)fPos$(A).TWST"
-						clr=14
-						bclr=2
-					}
-					clrmod="discrete"
-					format="exponential"
-					limits {
-					}
-				}
-				"text update" {
-					object {
-						x=72
-						y=252
-						width=70
-						height=14
-					}
-					monitor {
-						chan="$(P)$(H)fPos$(A).ONST"
-						clr=14
-						bclr=2
-					}
-					clrmod="discrete"
-					format="exponential"
-					limits {
-					}
-				}
-				"text update" {
-					object {
-						x=72
-						y=231
-						width=70
-						height=14
-					}
-					monitor {
-						chan="$(P)$(H)fPos$(A).ZRST"
-						clr=14
-						bclr=2
-					}
-					clrmod="discrete"
-					format="exponential"
-					limits {
-					}
-				}
-				"text update" {
-					object {
-						x=72
-						y=316
-						width=70
-						height=14
-					}
-					monitor {
-						chan="$(P)$(H)fPos$(A).FRST"
-						clr=14
-						bclr=2
-					}
-					clrmod="discrete"
-					format="exponential"
-					limits {
-					}
-				}
-				"text update" {
-					object {
-						x=72
-						y=337
-						width=70
-						height=14
-					}
-					monitor {
-						chan="$(P)$(H)fPos$(A).FVST"
-						clr=14
-						bclr=2
-					}
-					clrmod="discrete"
-					format="exponential"
-					limits {
-					}
-				}
-				"text update" {
-					object {
-						x=72
-						y=358
-						width=70
-						height=14
-					}
-					monitor {
-						chan="$(P)$(H)fPos$(A).SXST"
-						clr=14
-						bclr=2
-					}
-					clrmod="discrete"
-					format="exponential"
-					limits {
-					}
-				}
-				"text update" {
-					object {
-						x=72
-						y=379
-						width=70
-						height=14
-					}
-					monitor {
-						chan="$(P)$(H)fPos$(A).SVST"
-						clr=14
-						bclr=2
-					}
-					clrmod="discrete"
-					format="exponential"
-					limits {
-					}
-				}
-				"text update" {
-					object {
-						x=72
-						y=400
-						width=70
-						height=14
-					}
-					monitor {
-						chan="$(P)$(H)fPos$(A).EIST"
-						clr=14
-						bclr=2
-					}
-					clrmod="discrete"
-					format="exponential"
-					limits {
-					}
-				}
-				"text update" {
-					object {
-						x=72
-						y=421
-						width=70
-						height=14
-					}
-					monitor {
-						chan="$(P)$(H)fPos$(A).NIST"
-						clr=14
-						bclr=2
-					}
-					clrmod="discrete"
-					format="exponential"
-					limits {
-					}
-				}
-				"text update" {
-					object {
-						x=72
-						y=442
-						width=70
-						height=14
-					}
-					monitor {
-						chan="$(P)$(H)fPos$(A).TEST"
-						clr=14
-						bclr=2
-					}
-					clrmod="discrete"
-					format="exponential"
-					limits {
-					}
-				}
-				"text update" {
-					object {
-						x=72
-						y=463
-						width=70
-						height=14
-					}
-					monitor {
-						chan="$(P)$(H)fPos$(A).ELST"
-						clr=14
-						bclr=2
-					}
-					clrmod="discrete"
-					format="exponential"
-					limits {
-					}
-				}
-				"text update" {
-					object {
-						x=72
-						y=484
-						width=70
-						height=14
-					}
-					monitor {
-						chan="$(P)$(H)fPos$(A).TVST"
-						clr=14
-						bclr=2
-					}
-					clrmod="discrete"
-					format="exponential"
-					limits {
-					}
-				}
-				"text update" {
-					object {
-						x=72
-						y=505
-						width=70
-						height=14
-					}
-					monitor {
-						chan="$(P)$(H)fPos$(A).TTST"
-						clr=14
-						bclr=2
-					}
-					clrmod="discrete"
-					format="exponential"
-					limits {
-					}
-				}
-				"text update" {
-					object {
-						x=72
-						y=526
-						width=70
-						height=14
-					}
-					monitor {
-						chan="$(P)$(H)fPos$(A).FTST"
-						clr=14
-						bclr=2
-					}
-					clrmod="discrete"
-					format="exponential"
-					limits {
-					}
-				}
-				"text update" {
-					object {
-						x=72
-						y=547
-						width=70
-						height=14
-					}
-					monitor {
-						chan="$(P)$(H)fPos$(A).FFST"
-						clr=14
-						bclr=2
-					}
-					clrmod="discrete"
-					format="exponential"
-					limits {
-					}
-				}
-			}
-		}
-		"message button" {
-			object {
-				x=22
-				y=231
-				width=40
-				height=18
-			}
-			control {
-				chan="$(P)$(H)fPos$(A)"
-				clr=14
-				bclr=2
-			}
-			label="A 0"
-			release_msg="0"
-			clrmod="discrete"
-		}
-		"message button" {
-			object {
-				x=22
-				y=252
-				width=40
-				height=18
-			}
-			control {
-				chan="$(P)$(H)fPos$(A)"
-				clr=14
-				bclr=2
-			}
-			label="A 1"
-			release_msg="1"
-			clrmod="discrete"
-		}
-		"message button" {
-			object {
-				x=22
-				y=273
-				width=40
-				height=18
-			}
-			control {
-				chan="$(P)$(H)fPos$(A)"
-				clr=14
-				bclr=2
-			}
-			label="A 2"
-			release_msg="2"
-			clrmod="discrete"
-		}
-		"message button" {
-			object {
-				x=22
-				y=294
-				width=40
-				height=18
-			}
-			control {
-				chan="$(P)$(H)fPos$(A)"
-				clr=14
-				bclr=2
-			}
-			label="A 3"
-			release_msg="3"
-			clrmod="discrete"
-		}
-		"message button" {
-			object {
-				x=22
-				y=316
-				width=40
-				height=18
-			}
-			control {
-				chan="$(P)$(H)fPos$(A)"
-				clr=14
-				bclr=2
-			}
-			label="A 4"
-			release_msg="4"
-			clrmod="discrete"
-		}
-		"message button" {
-			object {
-				x=22
-				y=337
-				width=40
-				height=18
-			}
-			control {
-				chan="$(P)$(H)fPos$(A)"
-				clr=14
-				bclr=2
-			}
-			label="A 5"
-			release_msg="5"
-			clrmod="discrete"
-		}
-		"message button" {
-			object {
-				x=22
-				y=358
-				width=40
-				height=18
-			}
-			control {
-				chan="$(P)$(H)fPos$(A)"
-				clr=14
-				bclr=2
-			}
-			label="A 6"
-			release_msg="6"
-			clrmod="discrete"
-		}
-		"message button" {
-			object {
-				x=22
-				y=379
-				width=40
-				height=18
-			}
-			control {
-				chan="$(P)$(H)fPos$(A)"
-				clr=14
-				bclr=2
-			}
-			label="A 7"
-			release_msg="7"
-			clrmod="discrete"
-		}
-		"message button" {
-			object {
-				x=22
-				y=400
-				width=40
-				height=18
-			}
-			control {
-				chan="$(P)$(H)fPos$(A)"
-				clr=14
-				bclr=2
-			}
-			label="A 8"
-			release_msg="8"
-			clrmod="discrete"
-		}
-		"message button" {
-			object {
-				x=22
-				y=421
-				width=40
-				height=18
-			}
-			control {
-				chan="$(P)$(H)fPos$(A)"
-				clr=14
-				bclr=2
-			}
-			label="A 9"
-			release_msg="9"
-			clrmod="discrete"
-		}
-		"message button" {
-			object {
-				x=22
-				y=442
-				width=40
-				height=18
-			}
-			control {
-				chan="$(P)$(H)fPos$(A)"
-				clr=14
-				bclr=2
-			}
-			label="A 10"
-			release_msg="10"
-			clrmod="discrete"
-		}
-		"message button" {
-			object {
-				x=22
-				y=463
-				width=40
-				height=18
-			}
-			control {
-				chan="$(P)$(H)fPos$(A)"
-				clr=14
-				bclr=2
-			}
-			label="A 11"
-			release_msg="11"
-			clrmod="discrete"
-		}
-		"message button" {
-			object {
-				x=22
-				y=484
-				width=40
-				height=18
-			}
-			control {
-				chan="$(P)$(H)fPos$(A)"
-				clr=14
-				bclr=2
-			}
-			label="A 12"
-			release_msg="12"
-			clrmod="discrete"
-		}
-		"message button" {
-			object {
-				x=22
-				y=505
-				width=40
-				height=18
-			}
-			control {
-				chan="$(P)$(H)fPos$(A)"
-				clr=14
-				bclr=2
-			}
-			label="A 13"
-			release_msg="13"
-			clrmod="discrete"
-		}
-		"message button" {
-			object {
-				x=22
-				y=526
-				width=40
-				height=18
-			}
-			control {
-				chan="$(P)$(H)fPos$(A)"
-				clr=14
-				bclr=2
-			}
-			label="A 14"
-			release_msg="14"
-			clrmod="discrete"
-		}
-		"message button" {
-			object {
-				x=22
-				y=547
-				width=40
-				height=18
-			}
-			control {
-				chan="$(P)$(H)fPos$(A)"
-				clr=14
-				bclr=2
-			}
-			label="A 15"
-			release_msg="15"
-			clrmod="discrete"
-		}
-	}
-}
 "text update" {
 	object {
-		x=228
-		y=294
+		x=74
+		y=289
 		width=70
 		height=14
 	}
@@ -918,14 +202,14 @@ composite {
 		bclr=2
 	}
 	clrmod="discrete"
-	format="exponential"
+	format="string"
 	limits {
 	}
 }
 "text update" {
 	object {
-		x=228
-		y=273
+		x=74
+		y=268
 		width=70
 		height=14
 	}
@@ -935,14 +219,14 @@ composite {
 		bclr=2
 	}
 	clrmod="discrete"
-	format="exponential"
+	format="string"
 	limits {
 	}
 }
 "text update" {
 	object {
-		x=228
-		y=252
+		x=74
+		y=247
 		width=70
 		height=14
 	}
@@ -952,14 +236,14 @@ composite {
 		bclr=2
 	}
 	clrmod="discrete"
-	format="exponential"
+	format="string"
 	limits {
 	}
 }
 "text update" {
 	object {
-		x=228
-		y=231
+		x=74
+		y=226
 		width=70
 		height=14
 	}
@@ -969,14 +253,14 @@ composite {
 		bclr=2
 	}
 	clrmod="discrete"
-	format="exponential"
+	format="string"
 	limits {
 	}
 }
 "text update" {
 	object {
-		x=228
-		y=316
+		x=74
+		y=311
 		width=70
 		height=14
 	}
@@ -986,14 +270,14 @@ composite {
 		bclr=2
 	}
 	clrmod="discrete"
-	format="exponential"
+	format="string"
 	limits {
 	}
 }
 "text update" {
 	object {
-		x=228
-		y=337
+		x=74
+		y=332
 		width=70
 		height=14
 	}
@@ -1003,14 +287,14 @@ composite {
 		bclr=2
 	}
 	clrmod="discrete"
-	format="exponential"
+	format="string"
 	limits {
 	}
 }
 "text update" {
 	object {
-		x=228
-		y=358
+		x=74
+		y=353
 		width=70
 		height=14
 	}
@@ -1020,14 +304,14 @@ composite {
 		bclr=2
 	}
 	clrmod="discrete"
-	format="exponential"
+	format="string"
 	limits {
 	}
 }
 "text update" {
 	object {
-		x=228
-		y=379
+		x=74
+		y=374
 		width=70
 		height=14
 	}
@@ -1037,14 +321,14 @@ composite {
 		bclr=2
 	}
 	clrmod="discrete"
-	format="exponential"
+	format="string"
 	limits {
 	}
 }
 "text update" {
 	object {
-		x=228
-		y=400
+		x=74
+		y=395
 		width=70
 		height=14
 	}
@@ -1054,14 +338,14 @@ composite {
 		bclr=2
 	}
 	clrmod="discrete"
-	format="exponential"
+	format="string"
 	limits {
 	}
 }
 "text update" {
 	object {
-		x=228
-		y=421
+		x=74
+		y=416
 		width=70
 		height=14
 	}
@@ -1071,14 +355,14 @@ composite {
 		bclr=2
 	}
 	clrmod="discrete"
-	format="exponential"
+	format="string"
 	limits {
 	}
 }
 "text update" {
 	object {
-		x=228
-		y=442
+		x=74
+		y=437
 		width=70
 		height=14
 	}
@@ -1088,14 +372,14 @@ composite {
 		bclr=2
 	}
 	clrmod="discrete"
-	format="exponential"
+	format="string"
 	limits {
 	}
 }
 "text update" {
 	object {
-		x=228
-		y=463
+		x=74
+		y=458
 		width=70
 		height=14
 	}
@@ -1105,14 +389,14 @@ composite {
 		bclr=2
 	}
 	clrmod="discrete"
-	format="exponential"
+	format="string"
 	limits {
 	}
 }
 "text update" {
 	object {
-		x=228
-		y=484
+		x=74
+		y=479
 		width=70
 		height=14
 	}
@@ -1122,14 +406,14 @@ composite {
 		bclr=2
 	}
 	clrmod="discrete"
-	format="exponential"
+	format="string"
 	limits {
 	}
 }
 "text update" {
 	object {
-		x=228
-		y=505
+		x=74
+		y=500
 		width=70
 		height=14
 	}
@@ -1139,14 +423,14 @@ composite {
 		bclr=2
 	}
 	clrmod="discrete"
-	format="exponential"
+	format="string"
 	limits {
 	}
 }
 "text update" {
 	object {
-		x=228
-		y=526
+		x=74
+		y=521
 		width=70
 		height=14
 	}
@@ -1156,14 +440,14 @@ composite {
 		bclr=2
 	}
 	clrmod="discrete"
-	format="exponential"
+	format="string"
 	limits {
 	}
 }
 "text update" {
 	object {
-		x=228
-		y=547
+		x=74
+		y=542
 		width=70
 		height=14
 	}
@@ -1173,14 +457,14 @@ composite {
 		bclr=2
 	}
 	clrmod="discrete"
-	format="exponential"
+	format="string"
 	limits {
 	}
 }
 "message button" {
 	object {
-		x=178
-		y=231
+		x=24
+		y=226
 		width=40
 		height=18
 	}
@@ -1195,8 +479,8 @@ composite {
 }
 "message button" {
 	object {
-		x=178
-		y=252
+		x=24
+		y=247
 		width=40
 		height=18
 	}
@@ -1211,8 +495,8 @@ composite {
 }
 "message button" {
 	object {
-		x=178
-		y=273
+		x=24
+		y=268
 		width=40
 		height=18
 	}
@@ -1227,8 +511,8 @@ composite {
 }
 "message button" {
 	object {
-		x=178
-		y=294
+		x=24
+		y=289
 		width=40
 		height=18
 	}
@@ -1243,8 +527,8 @@ composite {
 }
 "message button" {
 	object {
-		x=178
-		y=316
+		x=24
+		y=311
 		width=40
 		height=18
 	}
@@ -1259,8 +543,8 @@ composite {
 }
 "message button" {
 	object {
-		x=178
-		y=337
+		x=24
+		y=332
 		width=40
 		height=18
 	}
@@ -1275,8 +559,8 @@ composite {
 }
 "message button" {
 	object {
-		x=178
-		y=358
+		x=24
+		y=353
 		width=40
 		height=18
 	}
@@ -1291,8 +575,8 @@ composite {
 }
 "message button" {
 	object {
-		x=178
-		y=379
+		x=24
+		y=374
 		width=40
 		height=18
 	}
@@ -1307,8 +591,8 @@ composite {
 }
 "message button" {
 	object {
-		x=178
-		y=400
+		x=24
+		y=395
 		width=40
 		height=18
 	}
@@ -1323,8 +607,8 @@ composite {
 }
 "message button" {
 	object {
-		x=178
-		y=421
+		x=24
+		y=416
 		width=40
 		height=18
 	}
@@ -1339,8 +623,8 @@ composite {
 }
 "message button" {
 	object {
-		x=178
-		y=442
+		x=24
+		y=437
 		width=40
 		height=18
 	}
@@ -1355,8 +639,8 @@ composite {
 }
 "message button" {
 	object {
-		x=178
-		y=463
+		x=24
+		y=458
 		width=40
 		height=18
 	}
@@ -1371,8 +655,8 @@ composite {
 }
 "message button" {
 	object {
-		x=178
-		y=484
+		x=24
+		y=479
 		width=40
 		height=18
 	}
@@ -1387,8 +671,8 @@ composite {
 }
 "message button" {
 	object {
-		x=178
-		y=505
+		x=24
+		y=500
 		width=40
 		height=18
 	}
@@ -1403,8 +687,8 @@ composite {
 }
 "message button" {
 	object {
-		x=178
-		y=526
+		x=24
+		y=521
 		width=40
 		height=18
 	}
@@ -1419,8 +703,8 @@ composite {
 }
 "message button" {
 	object {
-		x=178
-		y=547
+		x=24
+		y=542
 		width=40
 		height=18
 	}
@@ -1433,304 +717,665 @@ composite {
 	release_msg="15"
 	clrmod="discrete"
 }
+rectangle {
+	object {
+		x=162
+		y=220
+		width=64
+		height=346
+	}
+	"basic attribute" {
+		clr=44
+	}
+	"dynamic attribute" {
+		vis="if not zero"
+		chan="$(P)$(H)fPos$(A)"
+	}
+}
+rectangle {
+	object {
+		x=162
+		y=220
+		width=64
+		height=346
+	}
+	"basic attribute" {
+		clr=16
+	}
+	"dynamic attribute" {
+		vis="if zero"
+		chan="$(P)$(H)fPos$(A)"
+	}
+}
+rectangle {
+	object {
+		x=162
+		y=220
+		width=64
+		height=346
+	}
+	"basic attribute" {
+		clr=21
+	}
+	"dynamic attribute" {
+		vis="if zero"
+		chan="$(P)$(H)bank$(A)"
+	}
+}
+byte {
+	object {
+		x=166
+		y=224
+		width=10
+		height=336
+	}
+	monitor {
+		chan="$(P)$(H)bitFlag$(A)"
+		clr=38
+		bclr=2
+	}
+	direction="down"
+	sbit=0
+	ebit=15
+}
+"text update" {
+	object {
+		x=230
+		y=289
+		width=70
+		height=14
+	}
+	monitor {
+		chan="$(P)$(H)fPos$(A).THST"
+		clr=14
+		bclr=2
+	}
+	clrmod="discrete"
+	format="string"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=230
+		y=268
+		width=70
+		height=14
+	}
+	monitor {
+		chan="$(P)$(H)fPos$(A).TWST"
+		clr=14
+		bclr=2
+	}
+	clrmod="discrete"
+	format="string"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=230
+		y=247
+		width=70
+		height=14
+	}
+	monitor {
+		chan="$(P)$(H)fPos$(A).ONST"
+		clr=14
+		bclr=2
+	}
+	clrmod="discrete"
+	format="string"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=230
+		y=226
+		width=70
+		height=14
+	}
+	monitor {
+		chan="$(P)$(H)fPos$(A).ZRST"
+		clr=14
+		bclr=2
+	}
+	clrmod="discrete"
+	format="string"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=230
+		y=311
+		width=70
+		height=14
+	}
+	monitor {
+		chan="$(P)$(H)fPos$(A).FRST"
+		clr=14
+		bclr=2
+	}
+	clrmod="discrete"
+	format="string"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=230
+		y=332
+		width=70
+		height=14
+	}
+	monitor {
+		chan="$(P)$(H)fPos$(A).FVST"
+		clr=14
+		bclr=2
+	}
+	clrmod="discrete"
+	format="string"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=230
+		y=353
+		width=70
+		height=14
+	}
+	monitor {
+		chan="$(P)$(H)fPos$(A).SXST"
+		clr=14
+		bclr=2
+	}
+	clrmod="discrete"
+	format="string"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=230
+		y=374
+		width=70
+		height=14
+	}
+	monitor {
+		chan="$(P)$(H)fPos$(A).SVST"
+		clr=14
+		bclr=2
+	}
+	clrmod="discrete"
+	format="string"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=230
+		y=395
+		width=70
+		height=14
+	}
+	monitor {
+		chan="$(P)$(H)fPos$(A).EIST"
+		clr=14
+		bclr=2
+	}
+	clrmod="discrete"
+	format="string"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=230
+		y=416
+		width=70
+		height=14
+	}
+	monitor {
+		chan="$(P)$(H)fPos$(A).NIST"
+		clr=14
+		bclr=2
+	}
+	clrmod="discrete"
+	format="string"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=230
+		y=437
+		width=70
+		height=14
+	}
+	monitor {
+		chan="$(P)$(H)fPos$(A).TEST"
+		clr=14
+		bclr=2
+	}
+	clrmod="discrete"
+	format="string"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=230
+		y=458
+		width=70
+		height=14
+	}
+	monitor {
+		chan="$(P)$(H)fPos$(A).ELST"
+		clr=14
+		bclr=2
+	}
+	clrmod="discrete"
+	format="string"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=230
+		y=479
+		width=70
+		height=14
+	}
+	monitor {
+		chan="$(P)$(H)fPos$(A).TVST"
+		clr=14
+		bclr=2
+	}
+	clrmod="discrete"
+	format="string"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=230
+		y=500
+		width=70
+		height=14
+	}
+	monitor {
+		chan="$(P)$(H)fPos$(A).TTST"
+		clr=14
+		bclr=2
+	}
+	clrmod="discrete"
+	format="string"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=230
+		y=521
+		width=70
+		height=14
+	}
+	monitor {
+		chan="$(P)$(H)fPos$(A).FTST"
+		clr=14
+		bclr=2
+	}
+	clrmod="discrete"
+	format="string"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=230
+		y=542
+		width=70
+		height=14
+	}
+	monitor {
+		chan="$(P)$(H)fPos$(A).FFST"
+		clr=14
+		bclr=2
+	}
+	clrmod="discrete"
+	format="string"
+	limits {
+	}
+}
+"message button" {
+	object {
+		x=180
+		y=226
+		width=40
+		height=18
+	}
+	control {
+		chan="$(P)$(H)fPos$(A)"
+		clr=14
+		bclr=2
+	}
+	label="A 0"
+	release_msg="0"
+	clrmod="discrete"
+}
+"message button" {
+	object {
+		x=180
+		y=247
+		width=40
+		height=18
+	}
+	control {
+		chan="$(P)$(H)fPos$(A)"
+		clr=14
+		bclr=2
+	}
+	label="A 1"
+	release_msg="1"
+	clrmod="discrete"
+}
+"message button" {
+	object {
+		x=180
+		y=268
+		width=40
+		height=18
+	}
+	control {
+		chan="$(P)$(H)fPos$(A)"
+		clr=14
+		bclr=2
+	}
+	label="A 2"
+	release_msg="2"
+	clrmod="discrete"
+}
+"message button" {
+	object {
+		x=180
+		y=289
+		width=40
+		height=18
+	}
+	control {
+		chan="$(P)$(H)fPos$(A)"
+		clr=14
+		bclr=2
+	}
+	label="A 3"
+	release_msg="3"
+	clrmod="discrete"
+}
+"message button" {
+	object {
+		x=180
+		y=311
+		width=40
+		height=18
+	}
+	control {
+		chan="$(P)$(H)fPos$(A)"
+		clr=14
+		bclr=2
+	}
+	label="A 4"
+	release_msg="4"
+	clrmod="discrete"
+}
+"message button" {
+	object {
+		x=180
+		y=332
+		width=40
+		height=18
+	}
+	control {
+		chan="$(P)$(H)fPos$(A)"
+		clr=14
+		bclr=2
+	}
+	label="A 5"
+	release_msg="5"
+	clrmod="discrete"
+}
+"message button" {
+	object {
+		x=180
+		y=353
+		width=40
+		height=18
+	}
+	control {
+		chan="$(P)$(H)fPos$(A)"
+		clr=14
+		bclr=2
+	}
+	label="A 6"
+	release_msg="6"
+	clrmod="discrete"
+}
+"message button" {
+	object {
+		x=180
+		y=374
+		width=40
+		height=18
+	}
+	control {
+		chan="$(P)$(H)fPos$(A)"
+		clr=14
+		bclr=2
+	}
+	label="A 7"
+	release_msg="7"
+	clrmod="discrete"
+}
+"message button" {
+	object {
+		x=180
+		y=395
+		width=40
+		height=18
+	}
+	control {
+		chan="$(P)$(H)fPos$(A)"
+		clr=14
+		bclr=2
+	}
+	label="A 8"
+	release_msg="8"
+	clrmod="discrete"
+}
+"message button" {
+	object {
+		x=180
+		y=416
+		width=40
+		height=18
+	}
+	control {
+		chan="$(P)$(H)fPos$(A)"
+		clr=14
+		bclr=2
+	}
+	label="A 9"
+	release_msg="9"
+	clrmod="discrete"
+}
+"message button" {
+	object {
+		x=180
+		y=437
+		width=40
+		height=18
+	}
+	control {
+		chan="$(P)$(H)fPos$(A)"
+		clr=14
+		bclr=2
+	}
+	label="A 10"
+	release_msg="10"
+	clrmod="discrete"
+}
+"message button" {
+	object {
+		x=180
+		y=458
+		width=40
+		height=18
+	}
+	control {
+		chan="$(P)$(H)fPos$(A)"
+		clr=14
+		bclr=2
+	}
+	label="A 11"
+	release_msg="11"
+	clrmod="discrete"
+}
+"message button" {
+	object {
+		x=180
+		y=479
+		width=40
+		height=18
+	}
+	control {
+		chan="$(P)$(H)fPos$(A)"
+		clr=14
+		bclr=2
+	}
+	label="A 12"
+	release_msg="12"
+	clrmod="discrete"
+}
+"message button" {
+	object {
+		x=180
+		y=500
+		width=40
+		height=18
+	}
+	control {
+		chan="$(P)$(H)fPos$(A)"
+		clr=14
+		bclr=2
+	}
+	label="A 13"
+	release_msg="13"
+	clrmod="discrete"
+}
+"message button" {
+	object {
+		x=180
+		y=521
+		width=40
+		height=18
+	}
+	control {
+		chan="$(P)$(H)fPos$(A)"
+		clr=14
+		bclr=2
+	}
+	label="A 14"
+	release_msg="14"
+	clrmod="discrete"
+}
+"message button" {
+	object {
+		x=180
+		y=542
+		width=40
+		height=18
+	}
+	control {
+		chan="$(P)$(H)fPos$(A)"
+		clr=14
+		bclr=2
+	}
+	label="A 15"
+	release_msg="15"
+	clrmod="discrete"
+}
 text {
 	object {
-		x=228
-		y=82
-		width=49
-		height=15
+		x=0
+		y=0
+		width=320
+		height=20
 	}
 	"basic attribute" {
 		clr=14
 	}
-	textix="keV"
+	textix="PF4 dual filter"
+	align="horiz. centered"
 }
-text {
+polyline {
 	object {
-		x=228
-		y=53
-		width=49
-		height=15
+		x=0
+		y=22
+		width=326
+		height=3
 	}
 	"basic attribute" {
-		clr=14
+		clr=54
+		width=3
 	}
-	textix="keV"
-}
-text {
-	object {
-		x=10
-		y=2
-		width=200
-		height=10
-	}
-	"basic attribute" {
-		clr=14
-	}
-	textix="pf4more.adl"
-}
-text {
-	object {
-		x=10
-		y=14
-		width=200
-		height=10
-	}
-	"basic attribute" {
-		clr=14
-	}
-	textix="2006-Oct-23 (DMK)"
-}
-composite {
-	object {
-		x=16
-		y=110
-		width=206
-		height=18
-	}
-	"composite name"=""
-	children {
-		text {
-			object {
-				x=16
-				y=112
-				width=95
-				height=14
-			}
-			"basic attribute" {
-				clr=14
-			}
-			textix="transmission"
-			align="horiz. right"
-		}
-		"text update" {
-			object {
-				x=114
-				y=110
-				width=108
-				height=18
-			}
-			monitor {
-				chan="$(P)$(H)trans"
-				clr=14
-				bclr=60
-			}
-			align="horiz. right"
-			format="exponential"
-			limits {
-			}
-		}
+	points {
+		(1,23)
+		(324,23)
 	}
 }
 composite {
 	object {
-		x=16
-		y=131
-		width=206
-		height=18
+		x=5
+		y=25
+		width=305
+		height=189
 	}
 	"composite name"=""
-	children {
-		text {
-			object {
-				x=16
-				y=133
-				width=95
-				height=14
-			}
-			"basic attribute" {
-				clr=14
-			}
-			textix="1/transmission"
-			align="horiz. right"
-		}
-		"text update" {
-			object {
-				x=114
-				y=131
-				width=108
-				height=18
-			}
-			monitor {
-				chan="$(P)$(H)invTrans"
-				clr=14
-				bclr=60
-			}
-			align="horiz. right"
-			format="compact"
-			limits {
-			}
-		}
-	}
+	"composite file"="pf4_bare.adl;"
 }
-composite {
+"related display" {
 	object {
-		x=16
-		y=157
-		width=258
-		height=18
+		x=273
+		y=174
+		width=50
+		height=20
 	}
-	"composite name"=""
-	children {
-		text {
-			object {
-				x=16
-				y=159
-				width=95
-				height=14
-			}
-			"basic attribute" {
-				clr=14
-			}
-			textix="Aluminum"
-			align="horiz. right"
-		}
-		"text update" {
-			object {
-				x=114
-				y=157
-				width=108
-				height=18
-			}
-			monitor {
-				chan="$(P)$(H)filterAl"
-				clr=14
-				bclr=31
-			}
-			align="horiz. right"
-			format="compact"
-			limits {
-			}
-		}
-		"text update" {
-			object {
-				x=225
-				y=159
-				width=49
-				height=15
-			}
-			monitor {
-				chan="$(P)$(H)filterAl.EGU"
-				clr=14
-				bclr=2
-			}
-			format="string"
-			limits {
-			}
-		}
+	display[0] {
+		label="all"
+		name="pf4config.adl"
+		args="P=$(P),H=$(H),A=$(A),B=$(B),MONO=$(MONO),B1=$(B1),B2=$(B2),B3=$(B3),B4=$(B4),B5=$(B5),B6=$(B6),B7=$(B7),B8=$(B8)"
+		policy="replace display"
 	}
+	clr=0
+	bclr=17
+	label="-config"
 }
-composite {
+"related display" {
 	object {
-		x=16
-		y=177
-		width=258
-		height=18
+		x=273
+		y=194
+		width=50
+		height=20
 	}
-	"composite name"=""
-	children {
-		text {
-			object {
-				x=16
-				y=179
-				width=95
-				height=14
-			}
-			"basic attribute" {
-				clr=14
-			}
-			textix="Titanium"
-			align="horiz. right"
-		}
-		"text update" {
-			object {
-				x=114
-				y=177
-				width=108
-				height=18
-			}
-			monitor {
-				chan="$(P)$(H)filterTi"
-				clr=14
-				bclr=31
-			}
-			align="horiz. right"
-			format="compact"
-			limits {
-			}
-		}
-		"text update" {
-			object {
-				x=225
-				y=179
-				width=49
-				height=15
-			}
-			monitor {
-				chan="$(P)$(H)filterTi.EGU"
-				clr=14
-				bclr=2
-			}
-			format="string"
-			limits {
-			}
-		}
+	display[0] {
+		label="PF4 mono filter computed controls"
+		name="pf4.adl"
+		args="P=$(P),H=$(H),A=$(A),B=$(B),MONO=$(MONO),B1=$(B1),B2=$(B2),B3=$(B3),B4=$(B4),B5=$(B5),B6=$(B6),B7=$(B7),B8=$(B8)"
+		policy="replace display"
 	}
-}
-composite {
-	object {
-		x=16
-		y=197
-		width=258
-		height=18
-	}
-	"composite name"=""
-	children {
-		text {
-			object {
-				x=16
-				y=199
-				width=95
-				height=14
-			}
-			"basic attribute" {
-				clr=14
-			}
-			textix="Glass"
-			align="horiz. right"
-		}
-		"text update" {
-			object {
-				x=114
-				y=197
-				width=108
-				height=18
-			}
-			monitor {
-				chan="$(P)$(H)filterGlass"
-				clr=14
-				bclr=31
-			}
-			align="horiz. right"
-			format="compact"
-			limits {
-			}
-		}
-		"text update" {
-			object {
-				x=225
-				y=199
-				width=49
-				height=15
-			}
-			monitor {
-				chan="$(P)$(H)filterGlass.EGU"
-				clr=14
-				bclr=2
-			}
-			format="string"
-			limits {
-			}
-		}
-	}
+	clr=0
+	bclr=17
+	label="-less"
 }

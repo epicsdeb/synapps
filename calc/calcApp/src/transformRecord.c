@@ -113,12 +113,19 @@
 #include <callback.h>
 #include <taskwd.h>
 #include "sCalcPostfix.h"
-#include "sCalcPostfixPvt.h"	/* define BAD_EXPRESSION, END_STACK */
+#include "sCalcPostfixPvt.h"	/* define BAD_EXPRESSION */
 
 #define GEN_SIZE_OFFSET
 #include "transformRecord.h"
 #undef GEN_SIZE_OFFSET
 #include "epicsExport.h"
+
+#include <epicsVersion.h>
+#ifndef EPICS_VERSION_INT
+#define VERSION_INT(V,R,M,P) ( ((V)<<24) | ((R)<<16) | ((M)<<8) | (P))
+#define EPICS_VERSION_INT VERSION_INT(EPICS_VERSION, EPICS_REVISION, EPICS_MODIFICATION, EPICS_PATCH_LEVEL)
+#endif
+#define LT_EPICSBASE(V,R,M,P) (EPICS_VERSION_INT < VERSION_INT((V),(R),(M),(P)))
 
 #ifdef NODEBUG
 #define Debug(l,FMT,V) ;
@@ -202,8 +209,8 @@ struct rpvtStruct {
 };
 
 /* These must agree with the .dbd file. */
-#define INFIX_SIZE 40
-#define POSTFIX_SIZE 240
+#define INFIX_SIZE 80
+#define POSTFIX_SIZE SCALC_INFIX_TO_POSTFIX_SIZE(INFIX_SIZE)
 #define MAX_FIELDS 16
 /* Fldnames should have MAX_FIELDS elements */
 static char Fldnames[MAX_FIELDS][2] =
@@ -219,7 +226,8 @@ init_record(transformRecord *ptran, int pass)
 	double			*pvalue, *plvalue;
 	short			error_number;
 	/* buffers holding infix, postfix expressions */
-	char			*pclcbuf, *prpcbuf;	
+	char			*pclcbuf;
+	unsigned char	*prpcbuf;	
     unsigned short	*pInLinkValid, *pOutLinkValid;
     struct dbAddr	dbAddr;
     struct rpvtStruct	*prpvt;
@@ -320,7 +328,8 @@ process(transformRecord *ptran)
 	long			status;
 	struct link		*plink;
 	double			*pval, *plval;
-	char			*prpcbuf, *pclcbuf;
+	unsigned char	*prpcbuf;
+	char			*pclcbuf;
     struct rpvtStruct	*prpvt = (struct rpvtStruct *)ptran->rpvt;
 	int				*pu, *plu;
 
@@ -371,8 +380,8 @@ process(transformRecord *ptran)
 	plink = &ptran->inpa;
 	pval = &ptran->a;
 	plval = &ptran->la;
-	prpcbuf = (char *)ptran->rpca;
-	pclcbuf = (char *)ptran->clca;
+	prpcbuf = ptran->rpca;
+	pclcbuf = ptran->clca;
 	for (i=0; i < MAX_FIELDS;
 			i++, plink++, pval++, plval++,
 			prpcbuf+=POSTFIX_SIZE, pclcbuf+=INFIX_SIZE) {
@@ -439,7 +448,8 @@ special(struct dbAddr *paddr, int after)
 	transformRecord	*ptran = (transformRecord *) (paddr->precord);
 	int				special_type = paddr->special;
 	short			error_number;
-	char			*pclcbuf, *prpcbuf;
+	char			*pclcbuf;
+	unsigned char	*prpcbuf;
 	struct link		*plink = &ptran->inpa;
     int				fieldIndex = dbGetFieldIndex(paddr);
 	/* link-check stuff */
@@ -473,7 +483,7 @@ special(struct dbAddr *paddr, int after)
 		if ((fieldIndex >= transformRecordCLCA) &&
 			(fieldIndex <= transformRecordCLCP)) {
 			pclcbuf = ptran->clca;
-			prpcbuf = (char *)ptran->rpca;
+			prpcbuf = ptran->rpca;
 			pcalcInvalid = &ptran->cav;
 			for (i = 0;
 			     i < MAX_FIELDS && paddr->pfield != (void *) pclcbuf;
@@ -573,7 +583,11 @@ static void
 checkAlarms(transformRecord *ptran)
 {
 	if (ptran->udf == TRUE) {
-		recGblSetSevr(ptran, UDF_ALARM, INVALID_ALARM);
+#if LT_EPICSBASE(3,15,0,2)
+		recGblSetSevr(ptran,UDF_ALARM,INVALID_ALARM);
+#else
+		recGblSetSevr(ptran,UDF_ALARM,ptran->udfs);
+#endif
 		return;
 	}
 	return;

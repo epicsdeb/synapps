@@ -444,6 +444,7 @@ assign  yOffsetLo to "{P}ml_mono_yOffset.DRVL";
 
 %%#include <string.h>
 %%#include <math.h>
+%%#include <stdlib.h>
 
 %%double ml_monoCtl_calc2dSpacing();
 %%char *ml_monoCtl_pmacP;

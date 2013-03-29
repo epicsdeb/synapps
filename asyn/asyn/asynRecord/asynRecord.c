@@ -675,12 +675,14 @@ static void callbackInterruptOctet(void *drvPvt, asynUser *pasynUser,
     asynRecPvt *pasynRecPvt = (asynRecPvt *)drvPvt;
     asynRecord *pasynRec = pasynRecPvt->prec;
 
+    /* If the IOC has not finished initializing we must not call scanIoRequest */
+    if (!interruptAccept) return;
     /* If gotValue==1 then the record has not yet finished processing
      * the previous interrupt, just return */
     if (pasynRecPvt->gotValue == 1) return;
     asynPrint(pasynRecPvt->pasynUser, ASYN_TRACEIO_DEVICE,
-        "%s callbackInterruptOctet new value=%s numchars %d eomReason %d\n",
-        pasynRec->name, data, numchars, eomReason);
+        "%s callbackInterruptOctet new value=%s numchars %lu eomReason %d\n",
+        pasynRec->name, data, (unsigned long)numchars, eomReason);
     epicsMutexLock(pasynRecPvt->interruptLock);
     pasynRecPvt->gotValue = 1;
     epicsStrSnPrintEscaped(pasynRec->tinp,sizeof(pasynRec->tinp),
@@ -695,6 +697,8 @@ static void callbackInterruptInt32(void *drvPvt, asynUser *pasynUser,
     asynRecPvt *pasynRecPvt = (asynRecPvt *)drvPvt;
     asynRecord *pasynRec = pasynRecPvt->prec;
 
+    /* If the IOC has not finished initializing we must not call scanIoRequest */
+    if (!interruptAccept) return;
     /* If gotValue==1 then the record has not yet finished processing
      * the previous interrupt, just return */
     if (pasynRecPvt->gotValue == 1) return;
@@ -714,6 +718,8 @@ static void callbackInterruptUInt32(void *drvPvt, asynUser *pasynUser,
     asynRecPvt *pasynRecPvt = (asynRecPvt *)drvPvt;
     asynRecord *pasynRec = pasynRecPvt->prec;
 
+    /* If the IOC has not finished initializing we must not call scanIoRequest */
+    if (!interruptAccept) return;
     /* If gotValue==1 then the record has not yet finished processing
      * the previous interrupt, just return */
     if (pasynRecPvt->gotValue == 1) return;
@@ -733,6 +739,8 @@ static void callbackInterruptFloat64(void *drvPvt, asynUser *pasynUser,
     asynRecPvt *pasynRecPvt = (asynRecPvt *)drvPvt;
     asynRecord *pasynRec = pasynRecPvt->prec;
 
+    /* If the IOC has not finished initializing we must not call scanIoRequest */
+    if (!interruptAccept) return;
     /* If gotValue==1 then the record has not yet finished processing
      * the previous interrupt, just return */
     if (pasynRecPvt->gotValue == 1) return;
@@ -753,6 +761,8 @@ static asynStatus cancelIOInterruptScan(asynRecord *pasynRec)
     asynStatus status=asynSuccess;
 
     if (pasynRec->scan != menuScanI_O_Intr) return(status);
+    /* Must not call dbPutField before interruptAccept */
+    if (!interruptAccept) return status;
     /* Change to passive */
     dbPutField(&pasynRecPvt->scanAddr,DBR_LONG,&passiveScan,1);
     return(asynSuccess);
@@ -803,7 +813,7 @@ static void asynCallbackSpecial(asynUser * pasynUser)
         break;
     case callbackSetEos:
         setEos(pasynUser);
-        /* no break - every time an option is set call getOptions to verify */
+        /* no break - every time an option is set call getEos to verify */
     case callbackGetEos:
         getEos(pasynUser);
         break;
@@ -1040,7 +1050,7 @@ static void monitorStatus(asynRecord * pasynRec)
         pasynRec->enbl = yesNo;
     else
         pasynRec->enbl = 0;
-    pasynRec->tsiz = pasynTrace->getTraceIOTruncateSize(pasynUser);
+    pasynRec->tsiz = (int)pasynTrace->getTraceIOTruncateSize(pasynUser);
     traceFd = pasynTrace->getTraceFile(pasynUser);
     POST_IF_NEW(tmsk);
     POST_IF_NEW(tb0);
@@ -1446,7 +1456,7 @@ static void performOctetIO(asynUser * pasynUser)
         inlen = pasynRec->imax;
     }
     /* Make sure nrrd is not more than inlen */
-    if(pasynRec->nrrd > inlen) pasynRec->nrrd = inlen;
+    if(pasynRec->nrrd > (int)inlen) pasynRec->nrrd = (int)inlen;
     if(pasynRec->nrrd != 0) 
         nread = pasynRec->nrrd;
     else
@@ -1480,10 +1490,10 @@ static void performOctetIO(asynUser * pasynUser)
             status = pasynRecPvt->pasynOctet->write(pasynRecPvt->asynOctetPvt,
                                  pasynUser, outptr, nwrite, &nbytesTransfered);
         }
-        pasynRec->nawt = nbytesTransfered;
+        pasynRec->nawt = (int)nbytesTransfered;
         asynPrintIO(pasynUser, ASYN_TRACEIO_DEVICE, outptr, nbytesTransfered,
-           "%s: nwrite=%d, status=%d, nawt=%d\n", pasynRec->name, nwrite,
-                    status, nbytesTransfered);
+           "%s: nwrite=%lu, status=%d, nawt=%lu\n", pasynRec->name, (unsigned long)nwrite,
+                    status, (unsigned long)nbytesTransfered);
         if(status != asynSuccess || nbytesTransfered != nwrite) {
             /* Something is wrong if we couldn't write everything */
             reportError(pasynRec, status, "Write error, nout=%d, %s",
@@ -1521,8 +1531,8 @@ static void performOctetIO(asynUser * pasynUser)
                 "Error %s", pasynUser->errorMessage);
         } else {
             asynPrintIO(pasynUser, ASYN_TRACEIO_DEVICE, inptr, nbytesTransfered,
-             "%s: inlen=%d, status=%d, ninp=%d\n", pasynRec->name, inlen,
-                    status, nbytesTransfered);
+             "%s: inlen=%lu, status=%d, ninp=%lu\n", pasynRec->name, (unsigned long)inlen,
+                    status, (unsigned long)nbytesTransfered);
         }
         pasynRec->eomr = eomReason;
         inlen = nbytesTransfered;
@@ -1543,14 +1553,14 @@ static void performOctetIO(asynUser * pasynUser)
             /* terminate response with \0 */
             inptr[sizeof(pasynRec->ainp) - 1] = '\0';
         } else if((pasynRec->ifmt == asynFMT_Hybrid) &&
-                   (nbytesTransfered >= pasynRec->imax)) {
+                   ((int)nbytesTransfered >= pasynRec->imax)) {
             reportError(pasynRec, status, "Overflow nread %d %s",
                 nbytesTransfered, pasynUser->errorMessage);
             recGblSetSevr(pasynRec,READ_ALARM, MINOR_ALARM);
             /* terminate response with \0 */
             inptr[pasynRec->imax - 1] = '\0';
         } else if((pasynRec->ifmt == asynFMT_Binary) &&
-                   (nbytesTransfered > pasynRec->imax)) {
+                   ((int)nbytesTransfered > pasynRec->imax)) {
             /* This should not be able to happen */
             reportError(pasynRec, status, "Overflow nread %d %s",
                 nbytesTransfered, pasynUser->errorMessage);
@@ -1560,14 +1570,14 @@ static void performOctetIO(asynUser * pasynUser)
             /* Add null at end of input.  This is safe because of tests above */
             inptr[nbytesTransfered] = '\0';
         }
-        pasynRec->nord = nbytesTransfered;    /* Number of bytes read */
+        pasynRec->nord = (int)nbytesTransfered;    /* Number of bytes read */
         /* Copy to tinp with dbTranslateEscape */
         ntranslate = epicsStrSnPrintEscaped(pasynRec->tinp, 
                                            sizeof(pasynRec->tinp),
                                            inptr, inlen);
         asynPrint(pasynUser, ASYN_TRACEIO_DEVICE,
-             "%s: inlen=%d, nbytesTransfered=%d, ntranslate=%d \n",
-             pasynRec->name, inlen, nbytesTransfered, ntranslate);
+             "%s: inlen=%lu, nbytesTransfered=%lu, ntranslate=%d\n",
+             pasynRec->name, (unsigned long)inlen, (unsigned long)nbytesTransfered, ntranslate);
     }
 }
 
@@ -1891,7 +1901,6 @@ static void getEos(asynUser * pasynUser)
     char outputEosTranslate[EOS_SIZE];
     char inputEosTranslate[EOS_SIZE];
     int eosSize;
-    int ntranslate;
     asynStatus status;
     unsigned short monitor_mask = DBE_VALUE | DBE_LOG;
 
@@ -1904,16 +1913,16 @@ static void getEos(asynUser * pasynUser)
     status = pasynRecPvt->pasynOctet->getInputEos(pasynRecPvt->asynOctetPvt, 
                                           pasynUser, eosBuff, EOS_SIZE, &eosSize);
     if ((status == asynSuccess) && (eosSize > 0)) {
-        ntranslate = epicsStrSnPrintEscaped(inputEosTranslate, 
-                                            sizeof(inputEosTranslate),
-                                            eosBuff, eosSize);
+        epicsStrSnPrintEscaped(inputEosTranslate, 
+                               sizeof(inputEosTranslate),
+                               eosBuff, eosSize);
     }
     status = pasynRecPvt->pasynOctet->getOutputEos(pasynRecPvt->asynOctetPvt, 
                                           pasynUser, eosBuff, EOS_SIZE, &eosSize);
     if ((status == asynSuccess) && (eosSize > 0)) {
-        ntranslate = epicsStrSnPrintEscaped(outputEosTranslate, 
-                                            sizeof(outputEosTranslate),
-                                            eosBuff, eosSize);
+        epicsStrSnPrintEscaped(outputEosTranslate, 
+                               sizeof(outputEosTranslate),
+                               eosBuff, eosSize);
     }
     post:
     if (strcmp(inputEosTranslate, pasynRec->ieos) != 0) {

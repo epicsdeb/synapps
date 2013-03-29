@@ -3,9 +3,10 @@ FILENAME... drvIM483SM.cc
 USAGE...    Motor record driver level support for Intelligent Motion
         Systems, Inc. IM483(I/IE).
 
-Version:    $Revision: 1.18 $
+Version:        $Revision: 14155 $
 Modified By:    $Author: sluiter $
-Last Modified:  $Date: 2006-01-31 22:09:15 $
+Last Modified:  $Date: 2011-11-29 14:50:00 -0600 (Tue, 29 Nov 2011) $
+HeadURL:        $URL: https://subversion.xor.aps.anl.gov/synApps/motor/tags/R6-7-1/motorApp/ImsSrc/drvIM483SM.cc $
 */
 
 /*****************************************************************
@@ -73,17 +74,19 @@ DESIGN LIMITATIONS...
 #define BUFF_SIZE 50 /* Maximum length of string to/from IM483 */
 
 /*----------------debugging-----------------*/
-#ifdef __GNUG__
-    #ifdef  DEBUG
-        #define Debug(l, f, args...) {if (l <= drvIM483SMdebug) printf(f, ## args);}
-    #else
-        #define Debug(l, f, args...)
-    #endif
-#else
-    #define Debug()
-#endif
 volatile int drvIM483SMdebug = 0;
 extern "C" {epicsExportAddress(int, drvIM483SMdebug);}
+
+static inline void Debug(int level, const char *format, ...) {
+  #ifdef DEBUG
+    if (level < drvIM483SMdebug) {
+      va_list pVar;
+      va_start(pVar, format);
+      vprintf(format, pVar);
+      va_end(pVar);
+    }
+  #endif
+}
 
 /* --- Local data. --- */
 int IM483SM_num_cards = 0;

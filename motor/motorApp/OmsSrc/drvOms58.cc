@@ -2,10 +2,10 @@
 FILENAME...	drvOms58.cc
 USAGE...	Motor record driver level support for OMS model VME58.
 
-Version:        $Revision$
-Modified By:    $Author$
-Last Modified:  $Date$
-HeadURL:        $URL$
+Version:        $Revision: 14155 $
+Modified By:    $Author: sluiter $
+Last Modified:  $Date: 2011-11-29 14:50:00 -0600 (Tue, 29 Nov 2011) $
+HeadURL:        $URL: https://subversion.xor.aps.anl.gov/synApps/motor/tags/R6-7-1/motorApp/OmsSrc/drvOms58.cc $
 */
 
 /*
@@ -109,6 +109,11 @@ HeadURL:        $URL$
  * .37  02-05-09 rls - Have start_status() start ALL updates before waiting.
  * .38  06-18-09 rls - Make oms58Setup() error messages more prominent.
  * .39  03-15-10 rls - sprintf() not callable from any OS ISR.
+ * .40  01-26-11 rls - added reboot flag to DPRAM R/W reserved area. Driver
+ *                     sets flag to 0x4321; set_status() disables board if flag
+ *                     does not read 0x4321.
+ * .41  10-20-11 rls - Added counter in send_mess() to prevent endless loop
+ *                     after VME58 reboot.
  *
  */
 
@@ -146,18 +151,18 @@ HeadURL:        $URL$
 
 
 /*----------------debugging-----------------*/
-#ifdef __GNUG__
-    #ifdef	DEBUG
-        #define Debug(l, f, args...) {if (l <= drvOms58debug) \
-				    errlogPrintf(f, ## args);}
-    #else
-        #define Debug(l, f, args...)
-    #endif
-#else
-    #define Debug
-#endif
 volatile int drvOms58debug = 0;
 extern "C" {epicsExportAddress(int, drvOms58debug);}
+static inline void Debug(int level, const char *format, ...) {
+  #ifdef DEBUG
+    if (level < drvOms58debug) {
+      va_list pVar;
+      va_start(pVar, format);
+      vprintf(format, pVar);
+      va_end(pVar);
+    }
+  #endif
+}
 
 #define pack2x16(p)      ((epicsUInt32)(((p[0])<<16)|(p[1])))
 
@@ -225,6 +230,8 @@ struct drvOms58_drvet
 } drvOms58 = {2, report, init};
 
 extern "C" {epicsExportAddress(drvet, drvOms58);}
+
+static char rebootmsg[] = "\n***VME58 card #%d Disabled*** Reboot Detected.\n\n";
 
 static struct thread_args targs = {SCAN_RATE, &oms58_access, 0.000};
 
@@ -415,6 +422,17 @@ static int set_status(int card, int signal)
     nodeptr = motor_info->motor_motion;
     pmotor = (struct vmex_motor *) motor_state[card]->localaddr;
     status.All = motor_info->status.All;
+
+    if (pmotor->rebootind != 0x4321)    /* Test if board has rebooted. */
+    {
+        errlogPrintf(rebootmsg, card);
+        status.Bits.RA_PROBLEM = 1;
+        motor_info->status.All = status.All;
+        send_mess(card, STOP_ALL, (char) NULL);
+        /* Disable board. */
+        motor_state[card] = (struct controller *) NULL;
+        return(rtn_state = 1); /* End move. */
+    }
 
     if (motor_info->encoder_present == YES)
     {
@@ -641,6 +659,7 @@ static RTN_STATUS send_mess(int card, char const *com, char *name)
     epicsInt16 putIndex;
     char outbuf[MAX_MSG_SIZE], *p;
     RTN_STATUS return_code;
+    int count;
 
     if (strlen(com) > MAX_MSG_SIZE)
     {
@@ -698,7 +717,7 @@ static RTN_STATUS send_mess(int card, char const *com, char *name)
 
     pmotor->outPutIndex = putIndex; /* Message Sent */
 
-    while (putIndex != pmotor->outGetIndex)
+    for (count = 0; (putIndex != pmotor->outGetIndex) && (count < 1000); count++)
     {
 #ifdef	DEBUG
         epicsInt16 deltaIndex, delta;
@@ -709,6 +728,12 @@ static RTN_STATUS send_mess(int card, char const *com, char *name)
 #endif
         epicsThreadSleep(quantum);
     };
+    
+    if (count >= 1000)
+    {
+        errlogPrintf("\n*** VME58 card #%d communication timeout ***\n", card);
+        return_code = ERROR;
+    }
 
     return(return_code);
 }
@@ -1216,6 +1241,8 @@ static int motor_init()
                 if (motorIsrSetup(card_index) == ERROR)
                     errPrintf(0, __FILE__, __LINE__, "Interrupts Disabled!\n");
             }
+
+            pmotor->rebootind = 0x4321; /* Set reboot indicator. */
 
             start_status(card_index);
             for (motor_index = 0; motor_index < total_axis; motor_index++)

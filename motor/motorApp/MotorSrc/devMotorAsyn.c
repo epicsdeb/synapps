@@ -58,7 +58,7 @@
 #include "motorRecord.h"
 #include "motor.h"
 #include "epicsExport.h"
-#include "asynMotorDriver.h"
+#include "asynMotorController.h"
 #include "motor_interface.h"
 
 /*Create the dset for devMotor */
@@ -102,8 +102,8 @@ typedef enum motorCommand {
     motorPgain,
     motorIgain,
     motorDgain,
-    motorHighLim,
-    motorLowLim,
+    motorHighLimit,
+    motorLowLimit,
     motorSetClosedLoop,
     motorStatus,
     motorUpdateStatus,
@@ -160,6 +160,7 @@ static void init_controller(struct motorRecord *pmr, asynUser *pasynUser )
     motorAsynPvt *pPvt = (motorAsynPvt *)pmr->dpvt;
     double position = pPvt->status.position;
     double rdbd = (fabs(pmr->rdbd) < fabs(pmr->mres) ? fabs(pmr->mres) : fabs(pmr->rdbd) );
+    double encRatio[2] = {pmr->mres, pmr->eres};
 
     if ((fabs(pmr->dval) > rdbd && pmr->mres != 0) &&
         (fabs(position * pmr->mres) < rdbd))
@@ -168,6 +169,11 @@ static void init_controller(struct motorRecord *pmr, asynUser *pasynUser )
         epicsEventId initEvent = epicsEventCreate( epicsEventEmpty );
 
         pPvt->initEvent = initEvent;
+
+	/*Before setting position, set the correct encoder ratio.*/
+	start_trans(pmr);
+        build_trans(SET_ENC_RATIO, encRatio, pmr);
+        end_trans(pmr);
 
         start_trans(pmr);
         build_trans(LOAD_POS, &setPos, pmr);
@@ -289,8 +295,8 @@ static long init_record(struct motorRecord * pmr )
     if (findDrvInfo(pmr, pasynUser, motorPgainString,                  motorPgain)) goto bad;
     if (findDrvInfo(pmr, pasynUser, motorIgainString,                  motorIgain)) goto bad;
     if (findDrvInfo(pmr, pasynUser, motorDgainString,                  motorDgain)) goto bad;
-    if (findDrvInfo(pmr, pasynUser, motorHighLimString,                motorHighLim)) goto bad;
-    if (findDrvInfo(pmr, pasynUser, motorLowLimString,                 motorLowLim)) goto bad;
+    if (findDrvInfo(pmr, pasynUser, motorHighLimitString,              motorHighLimit)) goto bad;
+    if (findDrvInfo(pmr, pasynUser, motorLowLimitString,               motorLowLimit)) goto bad;
     if (findDrvInfo(pmr, pasynUser, motorSetClosedLoopString,          motorSetClosedLoop)) goto bad;
     if (findDrvInfo(pmr, pasynUser, motorStatusString,                 motorStatus)) goto bad;
     if (findDrvInfo(pmr, pasynUser, motorUpdateStatusString,           motorUpdateStatus)) goto bad;
@@ -388,7 +394,7 @@ CALLBACK_VALUE update_values(struct motorRecord * pmr)
         pmr->name, pPvt->needUpdate);
     if ( pPvt->needUpdate ) {
 	pmr->rmp = (epicsInt32)floor(pPvt->status.position + 0.5);
-	pmr->rep = (epicsInt32)floor(pPvt->status.encoder_posn + 0.5);
+	pmr->rep = (epicsInt32)floor(pPvt->status.encoderPosition + 0.5);
 	/* pmr->rvel = (epicsInt32)round(pPvt->status.velocity); */
 	pmr->msta = pPvt->status.status;
 	rc = CALLBACK_DATA;
@@ -526,11 +532,11 @@ static RTN_STATUS build_trans( motor_cmnd command,
 		  pmr->name);
 	return(ERROR);
     case SET_HIGH_LIMIT:
-	pmsg->command = motorHighLim;
+	pmsg->command = motorHighLimit;
 	pmsg->dvalue = *param;
 	break;
     case SET_LOW_LIMIT:
-	pmsg->command = motorLowLim;
+	pmsg->command = motorLowLimit;
 	pmsg->dvalue = *param;
 	break;
     case GET_INFO:
@@ -629,7 +635,6 @@ static void asynCallback(asynUser *pasynUser)
 	    pPvt->moveRequestPending--;
 	    if (!pPvt->moveRequestPending) {
 	      pPvt->needUpdate = 1;
-                /* pmr->rset->process((dbCommon*)pmr); */
                 dbProcess((dbCommon*)pmr);
 	    }
 	}
@@ -646,7 +651,9 @@ static void asynCallback(asynUser *pasynUser)
                   pmr->name, pasynUser->errorMessage);
     }
 
-    if ( pPvt->initEvent ) epicsEventSignal(  pPvt->initEvent );
+    if ( pPvt->initEvent && pmsg->command == motorPosition) {
+      epicsEventSignal(  pPvt->initEvent );
+    }
 }
 
 /**
@@ -661,7 +668,7 @@ static void statusCallback(void *drvPvt, asynUser *pasynUser,
 
     asynPrint(pasynUser, ASYN_TRACEIO_DEVICE,
 	      "%s devMotorAsyn::statusCallback new value=[p:%f,e:%f,s:%x] %c%c\n",
-	      pmr->name, value->position, value->encoder_posn, value->status,
+	      pmr->name, value->position, value->encoderPosition, value->status,
 	      pPvt->needUpdate?'N':' ', pPvt->moveRequestPending?'P':' ');
 
     if (dbScanLockOK) {
@@ -678,3 +685,4 @@ static void statusCallback(void *drvPvt, asynUser *pasynUser,
         pPvt->needUpdate = 1;
     }
 }
+

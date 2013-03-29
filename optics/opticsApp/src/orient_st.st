@@ -316,8 +316,12 @@ ASSIGN_MONITOR(short, waiting4motCHI, "{P}waiting4motCHI")
 ASSIGN_MONITOR(short, waiting4motPHI, "{P}waiting4motPHI")
 int old_connect_state;
 
+/*
 ASSIGN_MONITOR(long, A0_state, "{P}A0_state")
 ASSIGN_MONITOR(long, OMTX_state, "{P}OMTX_state")
+*/
+ASSIGN_MONITOR(int, A0_state, "{P}A0_state")
+ASSIGN_MONITOR(int, OMTX_state, "{P}OMTX_state")
 
 ASSIGN_MONITOR(int, weWrote_motTTH, "{P}weWrote_motTTH")
 ASSIGN_MONITOR(int, weWrote_motTH , "{P}weWrote_motTH")

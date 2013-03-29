@@ -47,6 +47,10 @@ Last Modified:	$Date: 2009-04-27 14:28:42 $
  * .07 11-19-08 rls - More extensive bit field tests.
  * .08 00-09-10 rls - GNU preprocessor assertions are deprecated with VxWorks
  *                    6.x.  Added test for CPU macros.
+ * .09 04-07-11 kmp - Added __APPLE__ to define bit order
+ *                    tested by jph with simMotorDriver.
+ * .10 08-25-11 rls - Replaced deprecated #cpu preprocessor assertions with
+ *                    the defined() operator.
  */
 
 #ifndef	INCmotorh
@@ -125,18 +129,18 @@ typedef enum  {
 
 /* Define, from top to bottom, how bit fields are packed. */
 /* This works for gnu, SunPro, MS Visual C. */
-#if defined(_WIN32) || defined (_M_IX86) || defined (_X86_)
+#if defined(_WIN32) || defined(_M_IX86) || defined(_X86_)
     #define LSB_First (TRUE)  /* LSB is packed first. */
-#elif defined (__i386__) || defined(_armv4l_) || defined (_X86_64_)
+#elif defined(__i386__) || defined(_armv4l_) || defined(_X86_64_) || defined(__APPLE__)
     #define LSB_First (TRUE)  /* LSB is packed first. */
-#elif #cpu(i386)
+#elif defined(i386)
     #define LSB_First (TRUE)  /* LSB is packed first. */    
-#elif #cpu(sparc) || #cpu(m68k) || #cpu(powerpc)
+#elif defined(sparc) || defined(m68k) || defined(powerpc)
     #define MSB_First (TRUE)  /* MSB is packed first. */
-#elif (CPU == PPC604) || (CPU == PPC603) || (CPU==PPC85XX)
+#elif (CPU == PPC604) || (CPU == PPC603) || (CPU==PPC85XX) || (CPU == MC68040) || (CPU == PPC32)
     #define MSB_First (TRUE)  /* MSB is packed first. */
 #else
-    Error: unknown bit order!
+    #error: unknown bit order!
 #endif
 
 /* -------------------------------------------------- */

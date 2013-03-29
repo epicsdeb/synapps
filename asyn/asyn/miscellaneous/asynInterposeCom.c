@@ -243,7 +243,6 @@ flushIt(void *ppvt, asynUser *pasynUser)
     interposePvt *pinterposePvt = (interposePvt *)ppvt;
 
     return pinterposePvt->pasynOctetDrv->flush(pinterposePvt->drvPvt, pasynUser);
-    return(asynSuccess);
 }
 
 static asynStatus
@@ -548,7 +547,7 @@ setOption(void *ppvt, asynUser *pasynUser, const char *key, const char *val)
             return asynError;
         }
         xBuf[0] = CPO_SET_STOPSIZE;
-        xBuf[1] = b;
+        xBuf[1] = (char)b;
         status = sbComPortOption(pinterposePvt, pasynUser, xBuf, 2, rBuf);
         if (status == asynSuccess) {
             pinterposePvt->stop = rBuf[0] & 0xFF;

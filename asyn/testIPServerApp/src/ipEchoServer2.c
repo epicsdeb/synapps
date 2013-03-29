@@ -82,14 +82,14 @@ static void echoListener(myData *pPvt)
         switch (status) {
         case asynSuccess:
             asynPrint(pasynUser, ASYN_TRACEIO_DEVICE,
-                      "echoListener: %s read %d: %s\n", 
-                      pPvt->portName, nread, buffer);
+                      "echoListener: %s read %lu: %s\n", 
+                      pPvt->portName, (unsigned long)nread, buffer);
             epicsMessageQueueSend(pPvt->msgQueue, buffer, MESSAGE_SIZE);
             break;
         case asynTimeout:
             asynPrint(pasynUser, ASYN_TRACEIO_DEVICE,
-                      "echoListener: timeout on: %s read %d: %s\n", 
-                      pPvt->portName, nread, buffer);
+                      "echoListener: timeout on: %s read %lu: %s\n", 
+                      pPvt->portName, (unsigned long)nread, buffer);
             /* Timeout is expected, just try again */
             break;
         default:
@@ -114,7 +114,8 @@ static void echoWriter(myData *pPvt)
 {
     asynUser *pasynUser;
     char buffer[MESSAGE_SIZE];
-    size_t nread, nwrite;
+    int nread;
+    size_t nwrite;
     asynStatus status;
 
     status = pasynOctetSyncIO->connect(pPvt->portName, 0, &pasynUser, NULL);

@@ -1,0 +1,101 @@
+Introduction
+============
+
+About
+-----
+
+.. include:: about.inc
+
+Acknowledgements
+----------------
+
+The sequencer was originally developed by Andy Kozubal at Los Alamos
+National Laboratory (LANL). It was subsequently modified by William
+Lupton, formerly at  the W. M. Keck Observatory (Keck), with
+contributions by Greg White of the Stanford Linear Accelerator Center
+National Accelerator Laboratory (SLAC-NAL).
+
+Eric Norum, Janet Anderson, and Marty Kraimer (APS) made the initial
+port to EPICS 3.14 that led to the 2.0.x series. Eric Norum and Andrew
+Johnson (APS) provided lots of patches up to release 2.0.12.
+
+Mark Rivers made a number of useful suggestions and tested version 2.1
+with several sets of existing programs on various platforms. J. Lewis
+Muir provided documentation patches.
+
+
+Copying and Distribution
+------------------------
+
+The EPICS Sequencer is distributed subject to a Software License
+Agreement found in the file LICENSE that is included with this
+distribution.
+
+.. include:: ../LICENSE
+
+Note on Versions
+----------------
+
+This text is supposed to describe version 2.1. Version 2.1 adds
+support for local definitions (including variable declarations) at all
+levels, a significantly improved compiler that employs new lexer and
+parser generators, lots of bug fixes, and a new *safe mode* to avoid
+variable corruption due to race conditions.
+See :ref:`Release_Notes_2.1.0` and :ref:`Release_Notes_2.0.99` for
+details.
+
+Version 2.0 differs from version 1.9 mainly in that sequencer
+run-time code can run under any operating system for which an EPICS
+OSI (Operating System Independent) layer is available, and message
+systems other than channel access can be used. It depends on
+libraries which are available only with EPICS R3.14.
+
+An interim version 1.9.4 was made available to the EPICS community;
+all new developments apart from major bug fixes will be based on
+version 2.0.
+
+Version 1.9 was written by Andy Kozubal, the original author of this
+software. This version of the manual describes version 2.0, for
+which the changes have been implemented by William Lupton of W. M.
+Keck Observatory and Greg White of Stanford Linear Accelerator
+Center (SLAC).
+
+.. _VersioningPolicy:
+
+Versioning Policy
+^^^^^^^^^^^^^^^^^
+
+Starting with 2.0.0, the third digit is the patch level and will
+be incremented each time a new version is released, no matter how
+minor the changes. The second digit is the minor version number and
+will be incremented each time functional changes are made. The
+first digit is the major version number and will be incremented
+only when major changes are made.
+
+Starting with version 2.1, the following refined rules apply:
+
+* Changes in the major (first) version number indicate disruptive
+  changes that may break backward compatibility. When upgrading to a
+  new major version, existing programs may need to be reviewed and
+  possibly adapted to changes in syntax or semantics.
+
+* An increase of the minor (second) version number indicates the
+  availability of new features, while source code compatibility for
+  existing programs is preserved. However, such changes *may*
+  involve major re-organizations of the implementation, und
+  therefore introduce new bugs. Care should be taken when upgrading
+  to a new minor version, especially if the new patch-level number
+  is zero: these should be used in production systems only after
+  testing that everything still works as expected.
+
+* Changes in the patch-level (third) version number are strictly
+  reserved for bug-fixes, including fixes and extensions to the
+  documentation and the tests. No new features will appear, except
+  where unavoidable to cleanly fix a bug. It should always be safe
+  (and is recommended) to upgrade to the latest patch level release.
+
+
+.. ToDo List
+.. ---------
+
+.. .. todolist::

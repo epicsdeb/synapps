@@ -3,10 +3,10 @@ FILENAME...     motordrvCom.cc
 USAGE...        This file contains driver functions that are common
                 to all motor record driver modules.
 
-Version:        $Revision: 9857 $
-Modified By:    $Author: sluiter $
-Last Modified:  $Date: 2009-12-09 10:21:24 -0600 (Wed, 09 Dec 2009) $
-HeadURL:        $URL: https://subversion.xor.aps.anl.gov/synApps/motor/tags/R6-5-2/motorApp/MotorSrc/motordrvCom.cc $
+Version:        $Revision: 13610 $
+Modified By:    $Author: rivers $
+Last Modified:  $Date: 2011-09-07 12:41:46 -0500 (Wed, 07 Sep 2011) $
+HeadURL:        $URL: https://subversion.xor.aps.anl.gov/synApps/motor/tags/R6-7-1/motorApp/MotorSrc/motordrvCom.cc $
 */
 
 /*
@@ -67,18 +67,18 @@ HeadURL:        $URL: https://subversion.xor.aps.anl.gov/synApps/motor/tags/R6-5
 
 /*----------------debugging-----------------*/
 
-#ifdef __GNUG__
-    #ifdef      DEBUG
-        #define Debug(l, f, args...) {if (l <= motordrvComdebug) printf(f, ## args);}
-    #else
-        #define Debug(l, f, args...)
-    #endif
-#else
-    #define Debug()
-#endif
 volatile int motordrvComdebug = 0;
 extern "C" {epicsExportAddress(int, motordrvComdebug);}
-
+static inline void Debug(int level, const char *format, ...) {
+  #ifdef DEBUG
+    if (level < motordrvComdebug) {
+      va_list pVar;
+      va_start(pVar, format);
+      vprintf(format, pVar);
+      va_end(pVar);
+    }
+  #endif
+}
 
 /* Function declarations. */
 static double query_axis(int, struct driver_table *, epicsTime, double);

@@ -246,7 +246,31 @@ record(bo,"$(P)$(R)triggerDelayBO")
     field(OUT,  "@asynMask($(PORT),14,0xFFFF) NONE")
 	field(FLNK, "$(P)$(R)statusSI")
 }
-
+record(longin,"$(P)$(R)triggerPrescaleLI")
+{
+	field(PINI, "YES")
+	field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+	field(DISS, "INVALID")
+	field(DESC, "Trigger Prescale")
+	field(DTYP, "asynUInt32Digital")
+	field(INP,  "@asynMask($(PORT),15,0x3FFFFFFF) NONE")
+}
+record(longout,"$(P)$(R)triggerPrescaleLO")
+{
+	field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+	field(DISS, "INVALID")
+	field(DESC, "Trigger Prescale")
+	field(DTYP, "asynUInt32Digital")
+	field(OUT,  "@asynMask($(PORT),15,0x3FFFFFFF) NONE")
+   field(FLNK, "$(P)$(R)triggerPrescaleFO")
+}
+record(fanout,"$(P)$(R)triggerPrescaleFO")
+{
+	field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+	field(DISS, "INVALID")
+   field(LNK1, "$(P)$(R)statusSI")
+   field(LNK2, "$(P)$(R)triggerPrescaleLI")
+}
 
 ## Burst mode related PVs
 record(bi,"$(P)$(R)burstModeBI")
@@ -980,6 +1004,31 @@ record(ao,"$(P)$(R)aDelayTweakAO")
     field(PREC, "12")
     field(EGU,  "Sec")
 }
+record(longin,"$(P)$(R)abTriggerPrescaleLI")
+{
+	field(PINI, "YES")
+	field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+	field(DISS, "INVALID")
+	field(DESC, "AB Trigger Prescale")
+	field(DTYP, "asynUInt32Digital")
+	field(INP,  "@asynMask($(PORT),105,0xFFFF) NONE")
+}
+record(longout,"$(P)$(R)abTriggerPrescaleLO")
+{
+	field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+	field(DISS, "INVALID")
+	field(DESC, "AB Trigger Prescale")
+	field(DTYP, "asynUInt32Digital")
+	field(OUT,  "@asynMask($(PORT),105,0xFFFF) NONE")
+   field(FLNK, "$(P)$(R)abTriggerPrescaleFO")
+}
+record(fanout,"$(P)$(R)abTriggerPrescaleFO")
+{
+	field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+	field(DISS, "INVALID")
+   field(LNK1, "$(P)$(R)statusSI")
+   field(LNK2, "$(P)$(R)abTriggerPrescaleLI")
+}
 ## Delay channel B related PVs
 record(mbbi,"$(P)$(R)bReferenceMI")
 {
@@ -1227,6 +1276,31 @@ record(ao,"$(P)$(R)cDelayTweakAO")
     field(DESC, "Chan C Delay Tweak")
     field(PREC, "12")
     field(EGU,  "Sec")
+}
+record(longin,"$(P)$(R)cdTriggerPrescaleLI")
+{
+	field(PINI, "YES")
+	field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+	field(DISS, "INVALID")
+	field(DESC, "CD Trigger Prescale")
+	field(DTYP, "asynUInt32Digital")
+	field(INP,  "@asynMask($(PORT),125,0xFFFF) NONE")
+}
+record(longout,"$(P)$(R)cdTriggerPrescaleLO")
+{
+	field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+	field(DISS, "INVALID")
+	field(DESC, "CD Trigger Prescale")
+	field(DTYP, "asynUInt32Digital")
+	field(OUT,  "@asynMask($(PORT),125,0xFFFF) NONE")
+   field(FLNK, "$(P)$(R)cdTriggerPrescaleFO")
+}
+record(fanout,"$(P)$(R)cdTriggerPrescaleFO")
+{
+	field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+	field(DISS, "INVALID")
+   field(LNK1, "$(P)$(R)statusSI")
+   field(LNK2, "$(P)$(R)cdTriggerPrescaleLI")
 }
 ## Delay channel D related PVs
 record(mbbi,"$(P)$(R)dReferenceMI")
@@ -1476,6 +1550,31 @@ record(ao,"$(P)$(R)eDelayTweakAO")
     field(PREC, "12")
     field(EGU,  "Sec")
 }
+record(longin,"$(P)$(R)efTriggerPrescaleLI")
+{
+	field(PINI, "YES")
+	field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+	field(DISS, "INVALID")
+	field(DESC, "EF Trigger Prescale")
+	field(DTYP, "asynUInt32Digital")
+	field(INP,  "@asynMask($(PORT),145,0xFFFF) NONE")
+}
+record(longout,"$(P)$(R)efTriggerPrescaleLO")
+{
+	field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+	field(DISS, "INVALID")
+	field(DESC, "EF Trigger Prescale")
+	field(DTYP, "asynUInt32Digital")
+	field(OUT,  "@asynMask($(PORT),145,0xFFFF) NONE")
+   field(FLNK, "$(P)$(R)efTriggerPrescaleFO")
+}
+record(fanout,"$(P)$(R)efTriggerPrescaleFO")
+{
+	field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+	field(DISS, "INVALID")
+   field(LNK1, "$(P)$(R)statusSI")
+   field(LNK2, "$(P)$(R)efTriggerPrescaleLI")
+}
 ## Delay channel F related PVs
 record(mbbi,"$(P)$(R)fReferenceMI")
 {
@@ -1723,6 +1822,31 @@ record(ao,"$(P)$(R)gDelayTweakAO")
     field(DESC, "Chan G Delay Tweak")
     field(PREC, "12")
     field(EGU,  "Sec")
+}
+record(longin,"$(P)$(R)ghTriggerPrescaleLI")
+{
+	field(PINI, "YES")
+	field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+	field(DISS, "INVALID")
+	field(DESC, "GH Trigger Prescale")
+	field(DTYP, "asynUInt32Digital")
+	field(INP,  "@asynMask($(PORT),165,0xFFFF) NONE")
+}
+record(longout,"$(P)$(R)ghTriggerPrescaleLO")
+{
+	field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+	field(DISS, "INVALID")
+	field(DESC, "GH Trigger Prescale")
+	field(DTYP, "asynUInt32Digital")
+	field(OUT,  "@asynMask($(PORT),165,0xFFFF) NONE")
+   field(FLNK, "$(P)$(R)ghTriggerPrescaleFO")
+}
+record(fanout,"$(P)$(R)ghTriggerPrescaleFO")
+{
+	field(SDIS, "$(P)$(R)disableScanBI.VAL NPP NMS")
+	field(DISS, "INVALID")
+   field(LNK1, "$(P)$(R)statusSI")
+   field(LNK2, "$(P)$(R)ghTriggerPrescaleLI")
 }
 ## Delay channel H related PVs
 record(mbbi,"$(P)$(R)hReferenceMI")

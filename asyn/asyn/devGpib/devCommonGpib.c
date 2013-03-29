@@ -207,8 +207,10 @@ long  devGpib_initBi(biRecord * pbi)
     }
     pdevGpibNames = devGpibNamesGet(pgpibDpvt);
     if(pdevGpibNames) {
-        if (pbi->znam[0] == 0) strcpy(pbi->znam, pdevGpibNames->item[0]);
-        if (pbi->onam[0] == 0) strcpy(pbi->onam, pdevGpibNames->item[1]);
+        if (pbi->znam[0] == 0)
+            strncpy(pbi->znam, pdevGpibNames->item[0], sizeof(pbi->znam));
+        if (pbi->onam[0] == 0)
+            strncpy(pbi->onam, pdevGpibNames->item[1], sizeof(pbi->onam));
     }
     return  0;
 }
@@ -309,8 +311,10 @@ long  devGpib_initBo(boRecord * pbo)
                 "%s devGpib_initBo logic error\n",pbo->name);
         }
         if (papname) {
-            if (pbo->znam[0] == 0) strcpy(pbo->znam, papname[0]);
-            if (pbo->onam[0] == 0) strcpy(pbo->onam, papname[1]);
+            if (pbo->znam[0] == 0)
+                strncpy(pbo->znam, papname[0], sizeof(pbo->znam));
+            if (pbo->onam[0] == 0)
+                strncpy(pbo->onam, papname[1], sizeof(pbo->onam));
         }
     } else if(!(cmdType&(GPIBWRITE|GPIBCMD|GPIBACMD|GPIBEFASTO|GPIBSOFT|GPIBCVTIO))) {
         asynPrint(pgpibDpvt->pasynUser,ASYN_TRACE_ERROR,
@@ -321,8 +325,10 @@ long  devGpib_initBo(boRecord * pbo)
     }
     pdevGpibNames = devGpibNamesGet(pgpibDpvt);
     if(pdevGpibNames) {
-        if (pbo->znam[0] == 0) strcpy(pbo->znam, pdevGpibNames->item[0]);
-        if (pbo->onam[0] == 0) strcpy(pbo->onam, pdevGpibNames->item[1]);
+        if (pbo->znam[0] == 0)
+            strncpy(pbo->znam, pdevGpibNames->item[0], sizeof(pbo->znam));
+        if (pbo->onam[0] == 0)
+            strncpy(pbo->onam, pdevGpibNames->item[1], sizeof(pbo->onam));
     }
     return 2;
 }
@@ -470,12 +476,21 @@ static void evFinish(gpibDpvt * pgpibDpvt,int failure)
             "%s no msg buffer\n",pev->name);
         failure = -1;
     } else {/* interpret msg with predefined format and write into val/rval */
-        char *format = (pgpibCmd->format) ? (pgpibCmd->format) : "hu";
-        if (sscanf(pgpibDpvt->msg, format, &value) == 1) {
-            pev->val = value;
-            pev->udf = FALSE;
-        } else { /* sscanf did not find or assign the parameter */
-            failure = -1;
+        if (sizeof pev->val == sizeof value) {
+            char *format = (pgpibCmd->format) ? (pgpibCmd->format) : "hu";
+            if (sscanf(pgpibDpvt->msg, format, &value) == 1) {
+                memcpy(&pev->val, &value, sizeof pev->val);
+                pev->udf = FALSE;
+            } else { /* sscanf did not find or assign the parameter */
+                failure = -1;
+            }
+        }
+        else {
+            if (sscanf(pgpibDpvt->msg, " %39s", (char *)&pev->val) == 1) {
+                pev->udf = FALSE;
+            } else { /* sscanf did not find or assign the parameter */
+                failure = -1;
+            }
         }
     }
     if(failure==-1) recGblSetSevr(pev, READ_ALARM, INVALID_ALARM);
@@ -660,7 +675,7 @@ long  devGpib_initMbbi(mbbiRecord * pmbbi)
         val_ptr = &(pmbbi->zrvl);       /* first value element */
         while (name_ct < pdevGpibNames->count) {
             if (name_ptr[0] == 0) {
-                strcpy(name_ptr, pdevGpibNames->item[name_ct]);
+                strncpy(name_ptr, pdevGpibNames->item[name_ct], sizeof(pmbbi->zrst));
                 *val_ptr = pdevGpibNames->value[name_ct];
             }
             name_ct++;
@@ -842,7 +857,7 @@ long  devGpib_initMbbo(mbboRecord * pmbbo)
         val_ptr = &(pmbbo->zrvl);       /* first value element */
         while (name_ct < pdevGpibNames->count) {
             if (name_ptr[0] == 0) {
-                strcpy(name_ptr, pdevGpibNames->item[name_ct]);
+                strncpy(name_ptr, pdevGpibNames->item[name_ct], sizeof(pmbbo->zrst));
                 *val_ptr = pdevGpibNames->value[name_ct];
             }
             name_ct++;

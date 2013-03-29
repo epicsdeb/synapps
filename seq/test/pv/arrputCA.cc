@@ -1,7 +1,4 @@
-/* $Id: arrputCA.cc,v 1.2 2004-01-15 14:11:09 mrk Exp $
- *
- * Loop putting simulated values to an array-valued PV (CA version)
- */
+/* Loop putting simulated values to an array-valued PV (CA version) */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,7 +12,7 @@
 
 /* main program */
 int main( int argc, char *argv[] ) {
-    char       *name  = ( argc > 1 ) ? argv[1] : "k0:ao:wc:tl:dmActVec";
+    const char  *name  = ( argc > 1 ) ? argv[1] : "k0:ao:wc:tl:dmActVec";
     int         cycle = ( argc > 2 ) ? atoi( argv[2] ) : 0;
     double      delay = ( argc > 3 ) ? atof( argv[3] ) : 0.05;
     double      scale = ( argc > 4 ) ? atof( argv[4] ) : 1.0 / ( 32767 * 10 );

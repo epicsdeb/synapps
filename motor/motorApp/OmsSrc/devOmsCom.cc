@@ -2,9 +2,10 @@
 FILENAME...     devOmsCom.cc
 USAGE... Data and functions common to all OMS device level support.
 
-Version:        $Revision: 1.16 $
+Version:        $Revision: 13925 $
 Modified By:    $Author: sluiter $
-Last Modified:  $Date: 2008-09-09 18:19:45 $
+Last Modified:  $Date: 2011-11-04 13:20:09 -0500 (Fri, 04 Nov 2011) $
+HeadURL:        $URL: https://subversion.xor.aps.anl.gov/synApps/motor/tags/R6-7-1/motorApp/OmsSrc/devOmsCom.cc $
 */
 
 /*
@@ -64,6 +65,9 @@ Last Modified:  $Date: 2008-09-09 18:19:45 $
  * .19  06-11-08 rls For MAXv, fix error on ER command; replace UU1.0 with UF.
  * .20  07-24-08 rls For MAXv, normalize PID values based on 32,767 maximum.
  * .21  03-01-10 rls Some MR commands still ignored; change fraction to .9.
+ * .22  11-10-10 rls Error check for valid acceleration rate on STOP command.
+ * .23  10-26-11 rls Use MAXv motor type to support MRES and ERES with
+ *                   different polarity (signs).
  *
  */
 
@@ -79,6 +83,15 @@ Last Modified:  $Date: 2008-09-09 18:19:45 $
 #include "motor.h"
 #include "motordevCom.h"
 #include "devOmsCom.h"
+#include "drvMAXv.h"
+
+
+/* WARNING... The following is a COPY of a motorRecord.cc definition.
+   If device support uses MIP definitions, then they should be moved
+   from motorRecord.cc to motor.h. In addition, for device support to
+   fully use MIP (e.g. correct accleration on STOP command), device
+   support needs record support to implement previous MIP (PMIP). */
+#define MIP_JOG_STOP    0x2000  /* Stop jogging. */
 
 /*
 Command set used by record support.  WARNING! this must match "motor_cmnd" in
@@ -193,13 +206,14 @@ RTN_STATUS oms_build_trans(motor_cmnd command, double *parms, struct motorRecord
     struct motor_trans *trans = (struct motor_trans *) mr->dpvt;
     struct mess_node *motor_call;
     struct controller *brdptr;
+    struct MAXvController *MAXvCntrl;
     char buffer[40];
     msg_types cmnd_type;
     RTN_STATUS rtnind;
     static bool invalid_velmsg_latch = false;
     bool MAXv = false;
-    bool MAXv_PSE = false;
     int card, signal;
+    long valid_acc;
 
     rtnind = OK;
     motor_call = &trans->motor_call;
@@ -215,16 +229,15 @@ RTN_STATUS oms_build_trans(motor_cmnd command, double *parms, struct motorRecord
         return(rtnind = ERROR);
 
     brdptr = (*trans->tabptr->card_array)[card];
+
     if (strncmp(brdptr->ident, "MAXv", 4) == 0)
     {
         MAXv = true;
-        if (brdptr->motor_info[signal].encoder_present == YES &&
-            brdptr->motor_info[signal].pid_present == NO)
-            MAXv_PSE = true;
+        MAXvCntrl = (struct MAXvController *) brdptr->DevicePrivate;
         /* Error check; ER command only for MAXv PSE type motors. */
-        if (command == SET_ENC_RATIO && MAXv_PSE == false)
+        if (command == SET_ENC_RATIO && MAXvCntrl->typeID[signal] != PSE)
         {
-	    trans->state = IDLE_STATE;	/* No command sent to the controller. */
+            trans->state = IDLE_STATE;  /* No command sent to the controller. */
             return(rtnind);
         }
     }
@@ -290,14 +303,31 @@ RTN_STATUS oms_build_trans(motor_cmnd command, double *parms, struct motorRecord
                 rtnind = ERROR;
             }
             else if (command == STOP_AXIS)
-            {
-                double acc = ((mr->velo - mr->vbas) / fabs(mr->mres)) / mr->accl;
-            
+            {                
+                double acc;
+
+                /* Use MIP to determine which acc. rate to use. */
+                if (mr->mip & MIP_JOG_STOP)
+                    acc = ((mr->jar) / fabs(mr->mres)) / mr->accl;
+                else
+                    acc = ((mr->velo - mr->vbas) / fabs(mr->mres)) / mr->accl;
+
+                valid_acc = NINT(acc);
+
+                /* For VME8/44 & MAXv, valid_acc < 8E6. For VME58, valid_acc < 1E9.
+                 * Use 8E6 in common code. */
+                if (valid_acc < 1 || valid_acc > 8E6)
+                {
+                    errPrintf(-1, __FILE__, __LINE__,
+                              "Overriding invalid acceleration.\n");
+                    valid_acc = (long) 200000; /* Using VME58 default. */
+                }
+                
                 /* Put in acceleration. */
                 if (MAXv == true)
                     strcat(motor_call->message, "FL");
                 strcat(motor_call->message, oms_table[SET_ACCEL].command);
-                sprintf(buffer, "%ld", NINT(acc));
+                sprintf(buffer, "%ld", valid_acc);
                 strcat(motor_call->message, buffer);
                 if (MAXv == true)
                     strcat(motor_call->message, "; WQ");
@@ -457,17 +487,13 @@ errorexit:                  errMessage(-1, "Invalid device directive");
 
                 case SET_ACCEL: /* Prevent invalid acceleration values. */
                     {
-                        long valid_acc = NINT(parms[itera]);
+                        valid_acc = NINT(parms[itera]);
 
-                        if (valid_acc < 1 || valid_acc > 1000000000)
+                        if (valid_acc < 1 || valid_acc > 8E6)
                         {
                             errPrintf(-1, __FILE__, __LINE__,
                                       "Overriding invalid acceleration.\n");
-
-                            if (valid_acc < 1)
-                                valid_acc = 1;
-                            else
-                                valid_acc = 1000000000;
+                            valid_acc = (long) 200000;  /* Using VME58 default. */
                         }
                         sprintf(buffer, "%ld", valid_acc);
                     }
@@ -490,6 +516,17 @@ errorexit:                  errMessage(-1, "Invalid device directive");
                 break;
 
             case LOAD_POS:
+                if ((MAXv == true) && (MAXvCntrl->typeID[signal] != PSO))
+                {
+                    long int ref  = NINT(parms[0]);
+                    long int fdbk = ref;
+                    if ((mr->mres > 0.0 && mr->eres < 0.0) ||
+                        (mr->mres < 0.0 && mr->eres > 0.0))
+                        fdbk *= -1;
+                    sprintf(motor_call->message, "LO%ld LPE%ld;", ref, fdbk);
+                }
+                break;
+
             case JOG:
             case JOG_VELOCITY:
                 strcat(motor_call->message, ";");
@@ -501,5 +538,4 @@ errorexit:                  errMessage(-1, "Invalid device directive");
     }
     return(rtnind);
 }
-
 

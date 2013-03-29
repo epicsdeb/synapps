@@ -2,9 +2,10 @@
 FILENAME...	drvMXmotor.cc
 USAGE...	Motor record driver level support for MX device driver.
 
-Version:	$Revision: 1.9 $
-Modified By:	$Author: sluiter $
-Last Modified:	$Date: 2005-05-10 16:34:35 $
+Version:        $Revision: 14155 $
+Modified By:    $Author: sluiter $
+Last Modified:  $Date: 2011-11-29 14:50:00 -0600 (Tue, 29 Nov 2011) $
+HeadURL:        $URL: https://subversion.xor.aps.anl.gov/synApps/motor/tags/R6-7-1/motorApp/MXmotorSrc/drvMXmotor.cc $
 */
 
 /*
@@ -36,16 +37,19 @@ Last Modified:	$Date: 2005-05-10 16:34:35 $
 #include "epicsExport.h"
 
 /*----------------debugging-----------------*/
-#ifdef __GNUG__
-    #ifdef	DEBUG
-	volatile int drvMXmotordebug = 0;
-	#define Debug(l, f, args...) { if(l<=drvMXmotordebug) printf(f,## args); }
-    #else
-	#define Debug(l, f, args...)
-    #endif
-#else
-    #define Debug()
-#endif
+volatile int drvMXmotordebug = 0;
+extern "C" {epicsExportAddress(int, drvMXmotordebug);}
+
+static inline void Debug(int level, const char *format, ...) {
+  #ifdef DEBUG
+    if (level < drvMXmotordebug) {
+      va_list pVar;
+      va_start(pVar, format);
+      vprintf(format, pVar);
+      va_end(pVar);
+    }
+  #endif
+}
 
 /* Global data. */
 int MXmotor_num_cards = 0;

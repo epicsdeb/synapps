@@ -80,7 +80,7 @@ static asynStatus connect(const char *port, int addr,
     pasynInterface = pasynManager->findInterface(pasynUser, asynCommonType, 1);
     if (!pasynInterface) {
        epicsSnprintf(pasynUser->errorMessage,pasynUser->errorMessageSize,
-           "port does not implement interface %s\n",asynCommonType);
+           "port does not implement interface %s",asynCommonType);
        return asynError;
     }
     pioPvt->pasynCommon = (asynCommon *)pasynInterface->pinterface;
@@ -88,7 +88,7 @@ static asynStatus connect(const char *port, int addr,
     pasynInterface = pasynManager->findInterface(pasynUser, asynInt32Type, 1);
     if (!pasynInterface) {
        epicsSnprintf(pasynUser->errorMessage,pasynUser->errorMessageSize,
-           "port does not implement interface %s\n",asynInt32Type);
+           "port does not implement interface %s",asynInt32Type);
        return asynError;
     }
     pioPvt->pasynInt32 = (asynInt32 *)pasynInterface->pinterface;
@@ -139,7 +139,7 @@ static asynStatus writeOp(asynUser *pasynUser, epicsInt32 value,double timeout)
     ioPvt      *pioPvt = (ioPvt *)pasynUser->userPvt;
 
     pasynUser->timeout = timeout;
-    status = pasynManager->lockPort(pasynUser);
+    status = pasynManager->queueLockPort(pasynUser);
     if(status!=asynSuccess) {
         return status;
     }
@@ -148,7 +148,7 @@ static asynStatus writeOp(asynUser *pasynUser, epicsInt32 value,double timeout)
         asynPrint(pasynUser, ASYN_TRACEIO_DEVICE, 
                   "asynInt32SyncIO wrote: %d\n", value);
     }
-    unlockStatus = pasynManager->unlockPort(pasynUser);
+    unlockStatus = pasynManager->queueUnlockPort(pasynUser);
     if (unlockStatus != asynSuccess) {
         return unlockStatus;
     }
@@ -161,7 +161,7 @@ static asynStatus readOp(asynUser *pasynUser, epicsInt32 *pvalue, double timeout
     asynStatus status, unlockStatus;
 
     pasynUser->timeout = timeout;
-    status = pasynManager->lockPort(pasynUser);
+    status = pasynManager->queueLockPort(pasynUser);
     if(status!=asynSuccess) {
         return status;
     }
@@ -170,7 +170,7 @@ static asynStatus readOp(asynUser *pasynUser, epicsInt32 *pvalue, double timeout
         asynPrint(pasynUser, ASYN_TRACEIO_DEVICE, 
                   "asynInt32SyncIO read: %d\n", *pvalue);
     }
-    unlockStatus = pasynManager->unlockPort(pasynUser);
+    unlockStatus = pasynManager->queueUnlockPort(pasynUser);
     if (unlockStatus != asynSuccess) {
         return unlockStatus;
     }
@@ -183,7 +183,7 @@ static asynStatus getBounds(asynUser *pasynUser,
     ioPvt      *pioPvt = (ioPvt *)pasynUser->userPvt;
     asynStatus status, unlockStatus;
 
-    status = pasynManager->lockPort(pasynUser);
+    status = pasynManager->queueLockPort(pasynUser);
     if(status!=asynSuccess) {
         return status;
     }
@@ -191,7 +191,7 @@ static asynStatus getBounds(asynUser *pasynUser,
     asynPrint(pasynUser, ASYN_TRACE_FLOW, 
                   "asynInt32SyncIO getBounds: status=%d low %d high %d\n",
                   status, *plow,*phigh);
-    unlockStatus = pasynManager->unlockPort(pasynUser);
+    unlockStatus = pasynManager->queueUnlockPort(pasynUser);
     if (unlockStatus != asynSuccess) {
         return unlockStatus;
     }

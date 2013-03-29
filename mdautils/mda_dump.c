@@ -1,5 +1,5 @@
 /*************************************************************************\
-* Copyright (c) 2011 UChicago Argonne, LLC,
+* Copyright (c) 2013 UChicago Argonne, LLC,
 *               as Operator of Argonne National Laboratory.
 * This file is distributed subject to a Software License Agreement
 * found in file LICENSE that is included with this distribution. 
@@ -26,6 +26,11 @@
            Fixed integer issues by tying short to int16_t, long to int32_t,
            and char to int8_t.  Changed %li to %i in printf's.  For MacOS
            Darwin, add fix to use xdr_char instead of xdr_int8_t.
+  1.2.1 -- January 2012
+           Minor build tweak
+  1.2.2 -- June 2012
+  1.3.0 -- February 2013
+           Use printf correctly
 
  */
 
@@ -43,10 +48,9 @@
 
 #include <unistd.h>
 
-#define VERSION       "1.2 (March 2011)"
-#define VERSIONNUMBER "1.2"
-
-
+#define VERSION       "1.3.0 (February 2013)"
+#define YEAR          "2013"
+#define VERSIONNUMBER "1.3.0"
 
 
 
@@ -79,7 +83,10 @@ static bool_t xdr_counted_string( XDR *xdrs, char **p)
 }
 
 
-
+/* 
+   This function was set up to fflush after every printf in case of a crash 
+   but that was too slow, but I left it in case someone wants to reenable .
+*/
 void print( char *fmt, ...)
 {
   va_list args;
@@ -88,7 +95,7 @@ void print( char *fmt, ...)
   vprintf( fmt, args);
   va_end(args);
 
-  //  fflush( stdout);
+  /*  fflush( stdout);  */
 }
 
 
@@ -315,7 +322,7 @@ void mda_dump_scan( XDR *xdrs)
     {
       print( "\nPositioner #%i data:\n", i+1);
       for( j = 0; j < req_pts; j++)
-	d_print( xdrs, "%.9lg ");
+	d_print( xdrs, "%.9g ");
       print( "\n");
     }
 
@@ -505,7 +512,7 @@ void mda_dump_extra( XDR *xdrs)
 	      {
 		if( j)
 		  print( ", ");
-		print( "%.9lg", doubles[j]);
+		print( "%.9g", doubles[j]);
 	      }
 	    print( "\n");
 
@@ -570,11 +577,11 @@ void version(void)
 {
   printf("mda-dump %s\n"
          "\n"
-         "Copyright (c) 2011 UChicago Argonne, LLC,\n"
+         "Copyright (c) %s UChicago Argonne, LLC,\n"
          "as Operator of Argonne National Laboratory.\n"
          "\n"
          "Written by Dohn Arms, dohnarms@anl.gov.\n",
-         VERSION);
+         VERSION, YEAR);
 }
 
 
@@ -607,7 +614,6 @@ int main( int argc, char *argv[])
       printf("For help, type: mda-dump -h\n");
       return 0;
     }
-
 
   printf("********** mda-dump %s generated output **********\n\n\n", 
          VERSIONNUMBER);

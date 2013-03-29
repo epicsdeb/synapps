@@ -1,5 +1,5 @@
-MDA Utilities v1.2
-March 2011
+MDA Utilities v1.3.0
+February 2013
 
 Written by Dohn A. Arms, Argonne National Laboratory
 Send comments to dohnarms@anl.gov
@@ -46,7 +46,12 @@ can be useful for debugging purposes, as it prints out information
 immediately after loading it.  It does not use the mda-load library,
 instead using direct functions for reading the file.
 
-5) mda-load library - This is the engine used for reading the MDA
+5) mdatree2ascii - This script converts a directory tree of MDA files
+into a new parallel directory tree populated by ASCII files, ignoring
+all non-MDA files.  It uses the program mda2ascii to do the actual
+conversion.
+
+6) mda-load library - This is the engine used for reading the MDA
 files.  The library functions are relatively simple, as there are very
 few.  Accessing the data -- due to the arbitrary dimensional nature of
 the MDA files -- can be complicated, and familiarity with structures
@@ -60,22 +65,25 @@ shared libraries differently, this isn't enabled.
 Requirements:
 -------------
 
-MDA Utilities can compiled using a C99-compatible compiler (such as
+MDA Utilities can be compiled using a C99-compatible compiler (such as
 gcc), make, and ar (if the library is to be made).  C99 compatiblity
 is needed only so far as <stdint.h>.  MDA Utilities have been
 successfully compiled on Linux, Solaris, and Mac OS X, while it can
 also be compiled on Windows using MinGW.
 
 The only extra library requirement is access to the standard XDR
-routines.  With Linux, they're are part of glibc (Linux's standard C
-library), while with Solaris, they are part of the standard Networking
-Services Library (nsl).  I've been told the utilities compile under
-Mac OS X using the Linux configuration.  So, no extra packages should
-have to be installed.
+routines.  With Linux and Mac OS X, they're part of the standard C
+library; with Solaris, they're part of the standard Networking
+Services Library (nsl). No extra packages should have to be installed
+with these systems.
 
 There are no XDR routines in Windows, and an external library has to
 be used.  I used portablexdr 4.0.11, with a bug fix for floating point
 numbers.  The Makefile has to be modified to make this all work.
+
+The program mdatree2ascii is a script, and needs the following programs
+(other than mda2ascii): bash, find, and sed.  These programs are very
+standard, and should already be installed on your system.
 
 
 

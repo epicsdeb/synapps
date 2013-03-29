@@ -75,7 +75,7 @@ static asynStatus connect(const char *port, int addr,
     pasynInterface = pasynManager->findInterface(pasynUser, asynCommonType, 1);
     if (!pasynInterface) {
        epicsSnprintf(pasynUser->errorMessage,pasynUser->errorMessageSize,
-           "interface %s is not supported by port\n",asynCommonType);
+           "interface %s is not supported by port",asynCommonType);
        return asynError;
     }
     pioPvt->pasynCommon = (asynCommon *)pasynInterface->pinterface;
@@ -83,7 +83,7 @@ static asynStatus connect(const char *port, int addr,
     pasynInterface = pasynManager->findInterface(pasynUser, asynInt16ArrayType, 1);
     if (!pasynInterface) {
        epicsSnprintf(pasynUser->errorMessage,pasynUser->errorMessageSize,
-           "interface %s is not supported by port\n",asynInt16ArrayType);
+           "interface %s is not supported by port",asynInt16ArrayType);
        return asynError;
     }
     pioPvt->pasynInt16Array = (asynInt16Array *)pasynInterface->pinterface;
@@ -133,7 +133,7 @@ static asynStatus writeOp(asynUser *pasynUser,epicsInt16 *pvalue,size_t nelem,do
     ioPvt      *pPvt = (ioPvt *)pasynUser->userPvt;
 
     pasynUser->timeout = timeout;
-    status = pasynManager->lockPort(pasynUser);
+    status = pasynManager->queueLockPort(pasynUser);
     if(status!=asynSuccess) {
         return status;
     }
@@ -143,7 +143,7 @@ static asynStatus writeOp(asynUser *pasynUser,epicsInt16 *pvalue,size_t nelem,do
                   "asynInt16ArraySyncIO wrote: %d\n",
                   *pvalue);
     }
-    unlockStatus = pasynManager->unlockPort(pasynUser);
+    unlockStatus = pasynManager->queueUnlockPort(pasynUser);
     if (unlockStatus != asynSuccess) {
         return unlockStatus;
     }
@@ -156,7 +156,7 @@ static asynStatus readOp(asynUser *pasynUser,epicsInt16 *pvalue,size_t nelem,siz
     asynStatus status, unlockStatus;
 
     pasynUser->timeout = timeout;
-    status = pasynManager->lockPort(pasynUser);
+    status = pasynManager->queueLockPort(pasynUser);
     if(status!=asynSuccess) {
         return status;
     }
@@ -165,7 +165,7 @@ static asynStatus readOp(asynUser *pasynUser,epicsInt16 *pvalue,size_t nelem,siz
         asynPrint(pasynUser, ASYN_TRACEIO_DEVICE, 
                   "asynInt16ArraySyncIO read: %d\n", *pvalue);
     }
-    unlockStatus = pasynManager->unlockPort(pasynUser);
+    unlockStatus = pasynManager->queueUnlockPort(pasynUser);
     if (unlockStatus != asynSuccess) {
         return unlockStatus;
     }

@@ -1,0 +1,334 @@
+Examples of SNL Programs
+========================
+
+Entry and exit action example
+-----------------------------
+
+The following program illustrates entry and exit actions. ::
+
+  program snctest
+  float v;
+  assign v to "grw:xxxExample"; monitor v;
+
+  ss ss1 {
+    state low {
+      entry {
+        printf("Will do this on entry");
+        printf("Another thing to do on entry");
+      }
+      when (v>5.0) {
+        printf("now changing to high\n");
+      } state high
+      when (delay(.1)) { } state low
+      exit {
+        printf("Something to do on exit");
+      }
+    }
+
+    state high {
+      when (v<=5.0) {
+        printf("changing to low\n");
+      } state low
+      when(delay(.1)) { } state high
+    }
+  }
+
+Dynamic assignment example
+--------------------------
+
+The following segment of a program illustrates dynamic
+assignment of database variables to database channels. We have left
+out error checking for simplicity. ::
+
+  program dynamic
+  option -c; /* don't wait for db connections */
+  string sysName;
+  assign sysName to "";
+
+  long setpoint[5];
+  assign setpoint to {}; /* don't need all five strings */
+
+  int i;
+  char str[30];
+
+  ss dyn {
+    state init {
+      when () {
+        sprintf (str, "MySys:%s", "name");
+        pvAssign (sysName, str);
+        for (i = 0; i < 5; i++) {
+          sprintf (str, "MySys:SP%d\n", i);
+          pvAssign (setpoint[i], str);
+          pvMonitor (setpoint[i]);
+        }
+      } state process
+    }
+
+    state process {
+      ...
+    }
+  }
+
+Complex example
+---------------
+
+.. todo:: This example needs updating.
+
+The following program contains most of the concepts presented
+in the previous sections. It consists of four state sets: (1)
+``level_det`` , (2) ``generate_voltage`` , (3) ``test_status`` , and
+(4) ``periodic_read`` . The state set ``level_det`` is similar to the
+example in :ref:`A Complete Program`.
+It generates a triangle waveform in one state set and detects the
+level in another. Other state sets detect and print alarm status
+and demonstrate asynchronous ``pvGet`` and ``pvPut`` operation. The
+program demonstrates several other concepts, including access to
+run-time parameters with macro substitution and ``macValueGet`` , use
+of arrays, escaped C code, and VxWorks input-output.
+
+Preamble
+^^^^^^^^
+
+::
+
+  /* File example.st: State program example. */
+  program example ("unit=ajk, stack=11000")
+
+  /*=================== declarations =========================*/
+  float ao1;
+  assign ao1 to "{unit}:ao1";
+  monitor ao1;
+
+  float ao2;
+  assign ao2 to "{unit}:ao1";
+
+  float wf1[2000];
+  assign wf1 to "{unit}:wf1.FVAL";
+
+  short bi1;
+  assign bi1 to "{unit}:bi1";
+
+  float delta;
+  short prev_status;
+  short ch_status;
+
+  evflag ef1;
+  evflag ef2;
+
+  option +r;
+
+  int fd; /* file descriptor for logging */
+  char *pmac; /* used to access program macros */
+
+level_det state set
+^^^^^^^^^^^^^^^^^^^
+
+::
+
+  /*=================== State Sets ===========================*/
+
+  /* State set level_det detects level > 5v & < 3v */
+  ss level_det {
+
+    state start {
+      when() {
+        fd = -1;
+        /* Use parameter to define logging file */
+        pmac = macValueGet("output");
+        if (pmac == 0 || pmac[0] == 0) {
+          printf("No macro defined for \"output\"\n");
+          fd = 1;
+        }
+        else {
+          fd = open(pmac, (O_CREAT | O_WRONLY), 0664);
+          if (fd == ERROR) {
+            printf("Can't open %s\n", pmac);
+            exit (-1);
+          }
+        }
+        fdprintf(fd, "Starting program\n");
+      } state init
+    }
+
+    state init {
+      /* Initialize */
+      when (pvConnectCount() == pvChannelCount() ) {
+        fdprintf(fd, "All channels connectedly");
+        bi1 = FALSE;
+        ao2 = -1.0;
+        pvPut(bi1);
+        pvPut(ao2);
+        efClear(ef2);
+        efSet(ef1);
+      } state low
+
+      when (delay(5.0)) {
+        fdprintf(fd, "...waiting\n");
+      } state init
+    }
+
+    state low {
+      when (ao1 > 5.0) {
+        fdprintf(fd, "High\n");
+        bi1 = TRUE;
+        pvPut(bi1);
+      } state high
+
+      when (pvConnectCount() < pvChannelCount() ) {
+        fdprintf(fd, "Connection lost\n");
+        efClear(ef1);
+        efSet(ef2);
+      } state init
+    }
+
+    state high {
+      when (ao1 < 3.0) {
+        fdprintf(fd, "Low\n");
+        bi1 = FALSE;
+        pvPut(bi1);
+      } state low
+
+      when (pvConnectCount() < pvChannelCount() ) {
+        efSet(ef2);
+      } state init
+    }
+  }
+
+generate\_voltage state set
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+::
+
+  /* Generate a ramp up/down */
+  ss generate_voltage {
+    state init {
+      when (efTestAndClear(ef1)) {
+        printf("start ramp\n");
+        fdprintf(fd, "start ramp\n");
+        delta = 0.2;
+      } state ramp
+    }
+
+    state ramp {
+      when (delay(0.1)) {
+        if ( (delta > 0.0 && ao2 >= 11.0) ||
+          (delta < 0.0 && ao2 <= -11.0) ) {
+          delta = -delta;
+        }
+        ao2 += delta;
+        pvPut(ao2);
+      } state ramp
+
+      when (efTestAndClear(ef2)) {
+      } state init
+    }
+  }
+
+test\_status state set
+^^^^^^^^^^^^^^^^^^^^^^
+
+::
+
+  /* Check for channel status; print exceptions */
+  ss test_status {
+    state init {
+      when (efTestAndClear(ef1)) {
+        printf("start test_status\n");
+        fdprintf(fd, "start test_status\n");
+        prev_status = pvStatus(ao1);
+      } state status_check
+    }
+
+    state status_check {
+      when ((ch_status = pvStatus(ao1)) != prev_status) {
+        print_status(fd, ao1, ch_status, pvSeverity(ao1));
+        prev_status = ch_status;
+      } state status_check
+    }
+  }
+
+periodic\_read state set
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+::
+
+  /* Periodically write/read a waveform channel. This uses
+     pvGetComplete() to allow asynchronous pvGet().
+  */
+  ss periodic_read {
+    state init {
+      when (efTestAndClear(ef1)) {
+        wf1[0] = 2.5;
+        wf1[1] = -2.5;
+        pvPut(wf1);
+      } state read_chan
+    }
+
+    state read_chan {
+      when (delay(5.)) {
+        wf1[0] += 2.5;
+        wf1[1] += -2.5;
+        pvPut(wf1);
+        pvGet(wf1);
+      } state wait_read
+    }
+
+    state wait_read {
+      when (pvGetComplete(wf1)) {
+        fdprintf(fd, "periodic read: ");
+        print_status(fd, wf1[0], pvStatus(wf1), pvSeverity(wf1));
+      } state read_chan
+    }
+  }
+
+exit procedure
+^^^^^^^^^^^^^^
+
+::
+
+  /* Exit procedure - close the log file */
+  exit {
+    printf("close fd=%d\n", fd);
+    if ((fd > 0) && (fd != ioGlobalStdGet(1)) )
+      close(fd);
+    fd = -1;
+  }
+
+C functions
+^^^^^^^^^^^
+
+::
+
+  /*==================== End of state sets =====================*/
+
+  %{
+    /* This C function prints out the status, severity,
+    and value for a channel. Note: fd is passed as a
+    parameter to allow reentrant code to be generated */
+    print_status(int fd, float value, int status, int severity)
+    {
+      char *pstr;
+
+      switch (status)
+      {
+        case NO_ALARM:    pstr = "no alarm";        break;
+        case HIHI_ALARM:  pstr = "high-high alarm"; break;
+        case HIGH_ALARM:  pstr = "high alarm";      break;
+        case LOLO_ALARM:  pstr = "low-low alarm";   break;
+        case LOW_ALARM:   pstr = "low alarm";       break;
+        case STATE_ALARM: pstr = "state alarm";     break;
+        case COS_ALARM:   pstr = "cos alarm";       break;
+        case READ_ALARM:  pstr = "read alarm";      break;
+        case WRITE_ALARM: pstr = "write alarm";     break;
+        default:          pstr = "other alarm";     break;
+      }
+      fprintf (fd, "Alarm condition: \"%s\"", pstr);
+      if (severity == MINOR_ALARM)
+        pstr = "minor";
+      else if (severity == MAJOR_ALARM)
+        pstr = "major";
+      else
+        pstr = "none";
+      fdprintf (fd, ", severity: \"%s\", value=%g\n", pstr, value);
+    }
+  }%

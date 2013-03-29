@@ -30,18 +30,13 @@ PROD_IOC = loveApp
 
 #-----------------------------------------------------------------------------
 # <name>.dbd and <name>VX.dbd will be created and installed
-ifeq ($(OS_CLASS), WIN32)
-DBD += loveAppWin32.dbd
-else
 DBD += loveApp.dbd
 DBD += loveAppVX.dbd
-endif
 
 #-----------------------------------------------------------------------------
 # <name>_registerRecordDeviceDriver.cpp will be created from <name>.dbd
 # <name>VX_registerRecordDeviceDriver.cpp will be created from <name>VX.dbd
 loveApp_SRCS_DEFAULT += loveApp_registerRecordDeviceDriver.cpp loveMain.cpp
-loveApp_SRCS_WIN32   += loveAppWin32_registerRecordDeviceDriver.cpp loveMain.cpp
 loveApp_SRCS_vxWorks += loveAppVX_registerRecordDeviceDriver.cpp
 
 #-----------------------------------------------------------------------------

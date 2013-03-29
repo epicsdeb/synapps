@@ -52,7 +52,7 @@ typedef unsigned int uint32;
 typedef unsigned short uint16;
 
 #ifdef vxWorks
-#include	<rebootLib.h>
+#include	<epicsExit.h>
 extern int logMsg(char *fmt, ...);
 #else
 #define printf errlogPrintf
@@ -406,8 +406,8 @@ STATIC long scaler_init(int after)
 	Debug(3,"scaler_init: Total cards = %d\n\n",scaler_total_cards);
 
 #ifdef vxWorks
-    if (rebootHookAdd(scaler_shutdown) < 0)
-		epicsPrintf ("scaler_init: rebootHookAdd() failed\n"); 
+    if (epicsAtExit(scaler_shutdown, 0) < 0)
+		epicsPrintf ("scaler_init: epicsAtExit() failed\n"); 
 #endif
 
 	Debug(3, "%s", "scaler_init: scalers initialized\n");

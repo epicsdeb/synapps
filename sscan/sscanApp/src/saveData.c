@@ -1199,19 +1199,19 @@ LOCAL int monitorScan(SCAN* pscan, int pass)
 	if (pass==0) {
 		if (ca_add_event(DBR_TIME_SHORT, pscan->cdata, 
 				dataMonitor, (void*)NULL, 0)!=ECA_NORMAL) {
-			Debug1(2, "Unable to monitor %s\n", ca_name(pscan->cdata));
+			printf("Unable to monitor %s\n", ca_name(pscan->cdata));
 			return -1;
 		}
 		return 0;
 	}
 
 	if (pscan->cnpts == NULL) {
-		Debug1(2, "Unable to monitor %s npts field\n", pscan->name);
+		printf("Unable to monitor %s npts field\n", pscan->name);
 		return -1;
 	}
 	if (ca_add_event(DBR_LONG, pscan->cnpts, 
 			nptsMonitor, (void*)NULL, 0)!=ECA_NORMAL) {
-		Debug1(2, "Unable to monitor %s\n", ca_name(pscan->cnpts));
+		printf("Unable to monitor %s\n", ca_name(pscan->cnpts));
 		return -1;
 	}
 	
@@ -1219,17 +1219,17 @@ LOCAL int monitorScan(SCAN* pscan, int pass)
 		if (pscan->cpxnv[i]!=NULL && pscan->cpxsm[i]!=NULL && pscan->crxnv[i]!=NULL) {
 			if (ca_add_event(DBR_SHORT, pscan->cpxnv[i], pxnvMonitor, 
 					(void*)(long)i, 0)!=ECA_NORMAL) {
-				Debug1(2, "Unable to monitor %s\n", ca_name(pscan->cpxnv[i]));
+				printf("Unable to monitor %s\n", ca_name(pscan->cpxnv[i]));
 				return -1;
 			}
 			if (ca_add_event(DBR_STRING, pscan->cpxsm[i], pxsmMonitor, 
 					(void*)pscan->pxsm[i], 0)!=ECA_NORMAL) {
-				Debug1(2, "Unable to monitor %s\n", ca_name(pscan->cpxsm[i]));
+				printf("Unable to monitor %s\n", ca_name(pscan->cpxsm[i]));
 				return -1;
 			}
 			if (ca_add_event(DBR_SHORT, pscan->crxnv[i], rxnvMonitor, 
 					(void*)(long)i, 0)!=ECA_NORMAL) {
-				Debug1(2, "Unable to monitor %s\n", ca_name(pscan->crxnv[i]));
+				printf("Unable to monitor %s\n", ca_name(pscan->crxnv[i]));
 				return -1;
 			}
 		} else {
@@ -1242,7 +1242,7 @@ LOCAL int monitorScan(SCAN* pscan, int pass)
 		if (pscan->cdxnv[i]!=NULL) {
 			if (ca_add_event(DBR_SHORT, pscan->cdxnv[i], dxnvMonitor, 
 					(void*)(long)i, 0)!=ECA_NORMAL) {
-				Debug1(2, "Unable to monitor %s\n", ca_name(pscan->cdxnv[i]));
+				printf("Unable to monitor %s\n", ca_name(pscan->cdxnv[i]));
 				return -1;
 			}
 		} else {
@@ -1255,12 +1255,12 @@ LOCAL int monitorScan(SCAN* pscan, int pass)
 		if (pscan->ctxnv[i]!=NULL && pscan->ctxcd[i]!=NULL) {
 			if (ca_add_event(DBR_SHORT, pscan->ctxnv[i], txnvMonitor, 
 					(void*)(long)i, 0)!=ECA_NORMAL) {
-				Debug1(2, "Unable to monitor %s\n", ca_name(pscan->ctxnv[i]));
+				printf("Unable to monitor %s\n", ca_name(pscan->ctxnv[i]));
 				return -1;
 			}
 			if (ca_add_event(DBR_FLOAT, pscan->ctxcd[i], txcdMonitor, 
 					(void*)(long)i, 0)!=ECA_NORMAL) {
-				Debug1(2, "Unable to monitor %s\n", ca_name(pscan->ctxcd[i]));
+				printf("Unable to monitor %s\n", ca_name(pscan->ctxcd[i]));
 				return -1;
 			}
 		} else {
@@ -1656,7 +1656,7 @@ LOCAL int connectCounter(char* name)
 
 	ca_search(name, &counter_chid);
 	if (ca_pend_io(0.5)!=ECA_NORMAL) {
-		Debug1(1, "Can't connect counter %s\n", name);
+		printf("Can't connect scan-number PV %s\n", name);
 		return -1;
 	}
 	return 0;
@@ -1825,19 +1825,19 @@ LOCAL void extraValCallback(struct event_handler_args eha)
 		/* logMsg("extraValCallback: count=%d, strlen=%d\n", count, size); */
 		break;
 	case DBR_CTRL_CHAR:
-		size= dbr_size[DBR_CTRL_CHAR]+(count-1);
+		size= dbr_size_n(DBR_CTRL_CHAR, count);
 		break;
 	case DBR_CTRL_SHORT:
-		size= dbr_size[DBR_CTRL_SHORT]+(count-1)*sizeof(short);
+		size= dbr_size_n(DBR_CTRL_SHORT, count);
 		break;
 	case DBR_CTRL_LONG:
-		size= dbr_size[DBR_CTRL_LONG]+(count-1)*sizeof(long);
+		size= dbr_size_n(DBR_CTRL_LONG, count);
 		break;
 	case DBR_CTRL_FLOAT:
-		size= dbr_size[DBR_CTRL_FLOAT]+(count-1)*sizeof(float);
+		size= dbr_size_n(DBR_CTRL_FLOAT, count);
 		break;
 	case DBR_CTRL_DOUBLE:
-		size= dbr_size[DBR_CTRL_DOUBLE]+(count-1)*sizeof(double);
+		size= dbr_size_n(DBR_CTRL_DOUBLE, count);
 		break;
 	default:
 		printf("saveDta: unsupported dbr_type %d\n", (int)type);
@@ -1915,11 +1915,11 @@ LOCAL int connectPV(char* pv, char* desc)
 		break;
 	case DBR_CHAR:
 		pnode->dbr_type= DBR_CTRL_CHAR;
-		size= dbr_size[DBR_CTRL_CHAR]+ (count-1);
+		size= dbr_size_n(DBR_CTRL_CHAR, count);
 		break;
 	case DBR_SHORT:
 		pnode->dbr_type= DBR_CTRL_SHORT;
-		size= dbr_size[DBR_CTRL_SHORT]+ (count-1)*sizeof(short);
+		size= dbr_size_n(DBR_CTRL_SHORT, count);
 		break;
 	case DBR_ENUM:
 		pnode->dbr_type= DBR_STRING;
@@ -1928,15 +1928,15 @@ LOCAL int connectPV(char* pv, char* desc)
 		break;
 	case DBR_LONG:
 		pnode->dbr_type= DBR_CTRL_LONG;
-		size= dbr_size[DBR_CTRL_LONG]+ (count-1) * sizeof(long);
+		size= dbr_size_n(DBR_CTRL_LONG, count);
 		break;
 	case DBR_FLOAT:
 		pnode->dbr_type= DBR_CTRL_FLOAT;
-		size= dbr_size[DBR_CTRL_FLOAT]+ (count-1) * sizeof(float);
+		size= dbr_size_n(DBR_CTRL_FLOAT, count);
 		break;
 	case DBR_DOUBLE:
 		pnode->dbr_type= DBR_CTRL_DOUBLE;
-		size= dbr_size[DBR_CTRL_DOUBLE]+ (count-1) * sizeof(double);
+		size= dbr_size_n(DBR_CTRL_DOUBLE, count);
 		break;
 	default:
 		printf("saveData: %s has an unsupported type\n", pv);
@@ -2006,7 +2006,7 @@ LOCAL int initSaveDataTask()
 
 	rf= req_open_file(req_file, req_macros);
 	if (!rf) {
-		Debug1(1, "Unable to open \"%s\". saveDataTask aborted\n", req_file);
+		printf("Unable to open \"%s\". saveDataTask aborted\n", req_file);
 		return -1;
 	}
 
@@ -2265,7 +2265,7 @@ LOCAL int saveExtraPV(XDR* pxdrs)
 			case DBR_CTRL_LONG:
 				cptr= pval->clngval.units;
 				writeFailed |= !xdr_counted_string(pxdrs, &cptr);
-				writeFailed |= !xdr_vector(pxdrs,(char*)&pval->clngval.value,count, sizeof(long),(xdrproc_t)xdr_long);
+				writeFailed |= !xdr_vector(pxdrs,(char*)&pval->clngval.value,count, sizeof(epicsInt32),(xdrproc_t)xdr_int);
 				break;
 			case DBR_CTRL_FLOAT:
 				cptr= pval->cfltval.units;
@@ -2282,6 +2282,7 @@ LOCAL int saveExtraPV(XDR* pxdrs)
 			epicsMutexUnlock(pcur->lock);
 			pcur= pcur->nxt;
 		}
+		ca_flush_io();
 	}
 	return(writeFailed ? -1 : 0);
 }
@@ -2403,7 +2404,7 @@ LOCAL int writeScanRecInProgress(SCAN *pscan, epicsTimeStamp stamp, int isRetry)
 		pscan->nxt->offset = lval; /* tell inner scan where to write its offset */
 		Debug3(15, "saveData:writeScanRecInProgress(%s) telling %s to write its next offset at loc %ld\n",
 			pscan->name, pscan->nxt->name, lval);
-		writeFailed |= !xdr_setpos(&xdrs, lval+pscan->npts*sizeof(long));
+		writeFailed |= !xdr_setpos(&xdrs, lval+pscan->npts*sizeof(epicsInt32));
 	}
 	if (writeFailed) goto cleanup;
 

@@ -1,5 +1,5 @@
 /*************************************************************************\
-* Copyright (c) 2011 UChicago Argonne, LLC,
+* Copyright (c) 2013 UChicago Argonne, LLC,
 *               as Operator of Argonne National Laboratory.
 * This file is distributed subject to a Software License Agreement
 * found in file LICENSE that is included with this distribution. 
@@ -21,6 +21,12 @@
   1.2   -- March 2011
            Fixed integer issues by tying short to int16_t, long to int32_t,
            and char to int8_t.  Changed %li to %i in printf's.
+  1.2.1 -- January 2012
+           Cleaned up the overuse of pointer dereferencing, hopefully
+           making it faster as well as easier to understand
+  1.2.2 -- June 2012
+  1.3.0 -- February 2013
+           Used printf better, removed formatting strings
 
  */
 
@@ -37,8 +43,8 @@
 #include "mda-load.h"
 
 
-#define VERSION "1.2 (March 2011)"
-
+#define VERSION "1.3.0 (February 2013)"
+#define YEAR "2013"
 
 // this function relies too much on the input format not changing
 void time_reformat( char *original, char *new)
@@ -110,10 +116,10 @@ void version(void)
 {
   printf( "mda-ls %s\n"
           "\n"
-          "Copyright (c) 2011 UChicago Argonne, LLC,\n"
+          "Copyright (c) %s UChicago Argonne, LLC,\n"
           "as Operator of Argonne National Laboratory.\n"
           "\n"
-          "Written by Dohn Arms, dohnarms@anl.gov.\n", VERSION);
+          "Written by Dohn Arms, dohnarms@anl.gov.\n", VERSION, YEAR);
 }
 
 
@@ -200,17 +206,20 @@ int main( int argc, char *argv[])
   int dir_number;
 
   struct mda_fileinfo **fileinfos;
+
+  // these are used to reduce pointer dereferencing
+  struct mda_fileinfo   *finf;
+  struct mda_scaninfo   *scinf;
+  struct mda_positioner *pos;  
+
   FILE *fptr;
 
   char *dir;
 
 
 #define STRING_SIZE (4096)
-#define FORMAT_SIZE (256)
 
   char string[STRING_SIZE];
-  char name_format[FORMAT_SIZE];
-  char dim_format[FORMAT_SIZE];
 
   int max_namelen, max_dimlen, max_timelen, offset;
 
@@ -322,53 +331,39 @@ int main( int argc, char *argv[])
 	allow_list[i] = 0;
       for( i = 0; i < dir_number; i++)
 	{
-          if( positioner_flag) 
+          for( k = 0; k < fileinfos[i]->data_rank; k++)
             {
-              for( k = 0; k < fileinfos[i]->data_rank; k++)
-                if( fileinfos[i]->scaninfos[k]->number_positioners)
-                  for( j = 0; j < fileinfos[i]->scaninfos[k]->number_positioners; j++)
-                    if( !strcmp( positioner_term, 
-                                 (fileinfos[i]->scaninfos[k]->positioners[j])->name ))
-                      {
-                        allow_list[i] = 1;
-                        allow_count++;
-                        goto Pos_Shortcut;
-                      }
-            }
-	Pos_Shortcut:
-	  ;
-          if( detector_flag )
-            {
-              for( k = 0; k < fileinfos[i]->data_rank; k++)
-                if( fileinfos[i]->scaninfos[k]->number_detectors)
-                  for( j = 0; j < fileinfos[i]->scaninfos[k]->number_detectors; j++)
-                    if( !strcmp( detector_term, 
-                                 (fileinfos[i]->scaninfos[k]->detectors[j])->name ))
-                      {
-                        allow_list[i] = 1;
-                        allow_count++;
-                        goto Det_Shortcut;
-                      }
-            }
-	Det_Shortcut:
-	  ;
-          if( trigger_flag )
-            {
-              for( k = 0; k < fileinfos[i]->data_rank; k++)
-                if( fileinfos[i]->scaninfos[k]->number_triggers)
-                  for( j = 0; j < fileinfos[i]->scaninfos[k]->number_triggers; j++)
-                    if( !strcmp( trigger_term, 
-                                 (fileinfos[i]->scaninfos[k]->triggers[j])->name ))
-                      {
-                        allow_list[i] = 1;
-                        allow_count++;
-                        goto Trig_Shortcut;
-                      }
-            }
-	Trig_Shortcut:
-	  ;
-	}
+              scinf = fileinfos[i]->scaninfos[k];
 
+              if( positioner_flag && scinf->number_positioners)
+                for( j = 0; j < scinf->number_positioners; j++)
+                  if( !strcmp( positioner_term, (scinf->positioners[j])->name ))
+                    {
+                      allow_list[i] = 1;
+                      allow_count++;
+                      goto Shortcut;
+                    }
+              if( detector_flag && scinf->number_detectors)
+                for( j = 0; j < scinf->number_detectors; j++)
+                  if( !strcmp( detector_term, (scinf->detectors[j])->name ))
+                    {
+                      allow_list[i] = 1;
+                      allow_count++;
+                          goto Shortcut;
+                    }
+              if( trigger_flag && scinf->number_triggers)
+                for( j = 0; j < scinf->number_triggers; j++)
+                  if( !strcmp( trigger_term, (scinf->triggers[j])->name ))
+                    {
+                      allow_list[i] = 1;
+                      allow_count++;
+                      goto Shortcut;
+                    }
+            }
+        Shortcut:
+          ;
+	}
+      
       if( !allow_count)
 	{
 	  printf("No MDA files in the directory fit your search.\n");
@@ -388,7 +383,9 @@ int main( int argc, char *argv[])
       if( j > max_namelen)
         max_namelen = j;
 
-      if( fileinfos[i] == NULL)
+      finf = fileinfos[i];
+
+      if( finf == NULL)
         {
           //          printf("Invalid\n");
           if( 7 > max_dimlen)
@@ -396,16 +393,15 @@ int main( int argc, char *argv[])
         }
       else
         {
-          if( fileinfos[i]->dimensions[0] != fileinfos[i]->last_topdim_point)
+          if( finf->dimensions[0] != finf->last_topdim_point)
             j = snprintf( string, STRING_SIZE, "%i(%i)", 
-                          fileinfos[i]->last_topdim_point, 
-                          fileinfos[i]->dimensions[0]);
+                          finf->last_topdim_point, finf->dimensions[0]);
           else
-            j = snprintf( string, STRING_SIZE, "%i", fileinfos[i]->dimensions[0]);
+            j = snprintf( string, STRING_SIZE, "%i", finf->dimensions[0]);
 
-          for( k = 1; k < fileinfos[i]->data_rank; k++)
+          for( k = 1; k < finf->data_rank; k++)
             j += snprintf( &string[j], STRING_SIZE - j, "x%i", 
-                           fileinfos[i]->dimensions[k]);
+                           finf->dimensions[k]);
 
           if( j > max_dimlen)
             max_dimlen = j;
@@ -414,9 +410,6 @@ int main( int argc, char *argv[])
     }
 
   max_timelen = 19;
-
-  snprintf( name_format, FORMAT_SIZE, "%%%ds  ", max_namelen);  // "%12s - "
-  snprintf( dim_format, FORMAT_SIZE, "%%-%ds -", max_dimlen);  // "%-12s "
 
   offset = max_namelen + max_dimlen + 4;
   if( full_flag)
@@ -428,9 +421,11 @@ int main( int argc, char *argv[])
 	if( !allow_list[i] )
 	  continue;
 
-      printf(name_format, filelist[i]);
+      printf("%*s  ", max_namelen, filelist[i]);
 
-      if( fileinfos[i] == NULL)
+      finf = fileinfos[i];
+
+      if( finf == NULL)
         {
           printf("Invalid\n");
           continue;
@@ -438,38 +433,38 @@ int main( int argc, char *argv[])
 
       if( full_flag)
         {
-          time_reformat( fileinfos[i]->time, string);
+          time_reformat( finf->time, string);
           printf( "%s  ", string );
         }
 
-      if( fileinfos[i]->dimensions[0] != fileinfos[i]->last_topdim_point)
+      if( finf->dimensions[0] != finf->last_topdim_point)
         j = snprintf( string, STRING_SIZE, "%i(%i)", 
-                      fileinfos[i]->last_topdim_point, fileinfos[i]->dimensions[0]);
+                      finf->last_topdim_point, finf->dimensions[0]);
       else
-        j = snprintf( string, STRING_SIZE, "%i", fileinfos[i]->dimensions[0]);
-      for( k = 1; k < fileinfos[i]->data_rank; k++)
+        j = snprintf( string, STRING_SIZE, "%i", finf->dimensions[0]);
+      for( k = 1; k < finf->data_rank; k++)
         j += snprintf( &string[j], STRING_SIZE - j, "x%i", 
-                       fileinfos[i]->dimensions[k]);
-      printf(dim_format, string);
+                       finf->dimensions[k]);
+      printf("%-*s -", max_dimlen, string);
 
       m = 0;
-      for( k = 0; k < fileinfos[i]->data_rank; k++)
-        if( fileinfos[i]->scaninfos[k]->number_positioners)
-          for( j = 0; j < fileinfos[i]->scaninfos[k]->number_positioners; j++)
-            {
-              if( m)
-                for( n = 0; n < offset; n++)
-                  printf(" ");
-              printf(" %dD %s",
-                     fileinfos[i]->scaninfos[k]->scan_rank,
-                     (fileinfos[i]->scaninfos[k]->positioners[j])->name );
-              if( (fileinfos[i]->scaninfos[k]->positioners[j])->description[0] 
-                  != '\0' )
-                printf(" (%s)",
-                       (fileinfos[i]->scaninfos[k]->positioners[j])->description );
-              printf("\n");
-              m = 1;
-            }
+      for( k = 0; k < finf->data_rank; k++)
+        {
+          scinf = finf->scaninfos[k];
+          if( scinf->number_positioners)
+            for( j = 0; j < scinf->number_positioners; j++)
+              {
+                pos = scinf->positioners[j];
+                if( m)
+                  for( n = 0; n < offset; n++)
+                    printf(" ");
+                printf(" %dD %s", scinf->scan_rank, pos->name );
+                if( pos->description[0] != '\0' )
+                  printf(" (%s)", pos->description );
+                printf("\n");
+                m = 1;
+              }
+        }
       if( !m)
         printf("\n");
     }
@@ -484,8 +479,6 @@ int main( int argc, char *argv[])
 
   if( search_flag)
     free(allow_list );
-
-
 
   return 0;
 }

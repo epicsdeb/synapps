@@ -32,7 +32,6 @@
 #include	<string.h>
 #include	<math.h>
 
-#include	<epicsVersion.h>
 #include	<alarm.h>
 #include	<dbDefs.h>
 #include	<dbAccess.h>
@@ -53,6 +52,15 @@
 #undef  GEN_SIZE_OFFSET
 #include	<menuIvoa.h>
 #include	<epicsExport.h>
+
+#include	<epicsVersion.h>
+#ifndef EPICS_VERSION_INT
+#define VERSION_INT(V,R,M,P) ( ((V)<<24) | ((R)<<16) | ((M)<<8) | (P))
+#define EPICS_VERSION_INT VERSION_INT(EPICS_VERSION, EPICS_REVISION, EPICS_MODIFICATION, EPICS_PATCH_LEVEL)
+#endif
+#define LT_EPICSBASE(V,R,M,P) (EPICS_VERSION_INT < VERSION_INT((V),(R),(M),(P)))
+
+#define MIND_UNUSED_ELEMENTS 0
 
 /* Create RSET - Record Support Entry Table*/
 #define report NULL
@@ -136,8 +144,10 @@ static void execOutput();
 static void checkLinks();
 static void checkLinksCallback();
 static long writeValue(acalcoutRecord *pcalc);
-
-volatile int    aCalcoutRecordDebug = 0;
+static void call_aCalcPerform(acalcoutRecord *pcalc);
+static long doCalc(acalcoutRecord *pcalc);
+static void acalcPerformTask(void *parm);
+volatile int aCalcoutRecordDebug = 0;
 epicsExportAddress(int, aCalcoutRecordDebug);
 
 #define MAX_FIELDS 12
@@ -166,7 +176,7 @@ static long init_record(acalcoutRecord *pcalc, int pass)
 		}
 		return(0);
 	}
-    
+
 	if (!(pacalcoutDSET = (acalcoutDSET *)pcalc->dset)) {
 		recGblRecordError(S_dev_noDSET,(void *)pcalc,"acalcout:init_record");
 		return(S_dev_noDSET);
@@ -191,7 +201,7 @@ static long init_record(acalcoutRecord *pcalc, int pass)
 			*plinkValid = acalcoutINAV_CON;
 			if (plink == &pcalc->out)
 				prpvt->outlink_field_type = DBF_NOACCESS;
-        } else if (!dbNameToAddr(plink->value.pv_link.pvname, pAddr)) {
+		} else if (!dbNameToAddr(plink->value.pv_link.pvname, pAddr)) {
 			/* the PV we're linked to resides on this ioc */
 			*plinkValid = acalcoutINAV_LOC;
 			if (plink == &pcalc->out) {
@@ -226,7 +236,7 @@ static long init_record(acalcoutRecord *pcalc, int pass)
 	}
 	db_post_events(pcalc,&pcalc->clcv,DBE_VALUE);
 
-	pcalc->oclv = aCalcPostfix(pcalc->ocal,(char *)pcalc->orpc,&error_number);
+	pcalc->oclv = aCalcPostfix(pcalc->ocal, pcalc->orpc,&error_number);
 	if (pcalc->oclv) {
 		recGblRecordError(S_db_badField,(void *)pcalc,
 			"acalcout: init_record: Illegal OCAL field");
@@ -248,17 +258,102 @@ static long init_record(acalcoutRecord *pcalc, int pass)
 	if (pacalcoutDSET->init_record ) {
 		return (*pacalcoutDSET->init_record)(pcalc);
 	}
-    return(0);
+	return(0);
 }
-
+
+#define ASYNC 1
+#define SYNC 0
+static long afterCalc(acalcoutRecord *pcalc) {
+	rpvtStruct   *prpvt = (rpvtStruct *)pcalc->rpvt;
+	short		doOutput = 0;
+	long		i, j;
+	double		**panew;
+
+	i = ((pcalc->nuse > 0) && (pcalc->nuse < pcalc->nelm)) ?
+		pcalc->nuse : pcalc->nelm;
+#if MIND_UNUSED_ELEMENTS
+	if (i < pcalc->nelm) {
+		for (; i<pcalc->nelm; i++) pcalc->aval[i] = 0;
+	}
+#endif
+	/* post array fields that aCalcPerform wrote to. */
+	for (j=0, panew=&pcalc->aa; j<ARRAY_MAX_FIELDS; j++, panew++) {
+		if (*panew && (pcalc->amask & (1<<j))) {
+			db_post_events(pcalc, *panew, DBE_VALUE|DBE_LOG);
+		}
+	}
+
+	if (aCalcoutRecordDebug >= 5) {
+		printf("acalcoutRecord(%s):aCalcPerform returns val=%f, aval=[%f %f...]\n",
+			pcalc->name, pcalc->val, pcalc->aval[0], pcalc->aval[1]);
+	}
+	if (pcalc->cstat)
+		recGblSetSevr(pcalc,CALC_ALARM,INVALID_ALARM);
+	else
+		pcalc->udf = FALSE;
+
+	/* Check VAL against limits */
+	checkAlarms(pcalc);
+
+	/* check for output link execution */
+	switch (pcalc->oopt) {
+	case acalcoutOOPT_Every_Time:
+		doOutput = 1;
+		break;
+	case acalcoutOOPT_On_Change:
+		if (fabs(pcalc->pval - pcalc->val) > pcalc->mdel) doOutput = 1;
+		break;
+	case acalcoutOOPT_Transition_To_Zero:
+		if ((pcalc->pval != 0) && (pcalc->val == 0)) doOutput = 1;
+		break;         
+	case acalcoutOOPT_Transition_To_Non_zero:
+		if ((pcalc->pval == 0) && (pcalc->val != 0)) doOutput = 1;
+		break;
+	case acalcoutOOPT_When_Zero:
+		if (!pcalc->val) doOutput = 1;
+		break;
+	case acalcoutOOPT_When_Non_zero:
+		if (pcalc->val) doOutput = 1;
+		break;
+	case acalcoutOOPT_Never:
+		doOutput = 0;
+		break;
+	}
+	pcalc->pval = pcalc->val;
+
+	if (doOutput) {
+		if (pcalc->odly > 0.0) {
+			pcalc->dlya = 1;
+			db_post_events(pcalc,&pcalc->dlya,DBE_VALUE);
+				callbackRequestProcessCallbackDelayed(&prpvt->doOutCb,
+					pcalc->prio, pcalc, (double)pcalc->odly);
+			if (aCalcoutRecordDebug >= 5)
+				printf("acalcoutRecord(%s):process: exit, wait for delay\n", pcalc->name);
+			return(ASYNC);
+		} else {
+			if (aCalcoutRecordDebug >= 5)
+				printf("acalcoutRecord(%s):calling execOutput\n", pcalc->name);
+			pcalc->pact = FALSE;
+			execOutput(pcalc);
+			if (pcalc->pact) {
+				if (aCalcoutRecordDebug >= 5)
+					printf("acalcoutRecord(%s):process: exit, pact==1\n", pcalc->name);
+				return(ASYNC);
+			}
+			pcalc->pact = TRUE;
+		}
+	}
+	return(SYNC);
+}
+
 static long process(acalcoutRecord *pcalc)
 {
 	rpvtStruct   *prpvt = (rpvtStruct *)pcalc->rpvt;
-	short		doOutput = 0;
-	long		i, stat;
+	long		i;
+	double		*pnew, *pprev;
 
-	if (aCalcoutRecordDebug) printf("acalcoutRecord(%s):process: pact=%d\n",
-		pcalc->name, pcalc->pact);
+	if (aCalcoutRecordDebug) printf("acalcoutRecord(%s):process: pact=%d, cact=%d, dlya=%d\n",
+		pcalc->name, pcalc->pact, pcalc->cact, pcalc->dlya);
 
 	/* Make sure.  Autosave is capable of setting NUSE to an illegal value. */
 	if ((pcalc->nuse < 0) || (pcalc->nuse > pcalc->nelm)) {
@@ -266,108 +361,59 @@ static long process(acalcoutRecord *pcalc)
 		db_post_events(pcalc,&pcalc->nuse, DBE_VALUE|DBE_LOG);
 	}
 
-	/* If we're getting processed, it's certainly ok to allocate memory */
+	/* If we're getting processed, we can no longer put off allocating memory */
 	if (pcalc->aval == NULL) pcalc->aval = (double *)calloc(pcalc->nelm, sizeof(double));
 	if (pcalc->oav == NULL) pcalc->oav = (double *)calloc(pcalc->nelm, sizeof(double));
 
 	if (!pcalc->pact) {
 		pcalc->pact = TRUE;
 
+		/* record scalar-field values so we can tell which ones aCalcPerform wrote to. */
+		for (i=0, pnew=&pcalc->a, pprev=&pcalc->pa; i<MAX_FIELDS;  i++, pnew++, pprev++) {
+			*pprev = *pnew;
+		}
+
 		/* if some links are CA, check connections */
 		if (prpvt->caLinkStat != NO_CA_LINKS) checkLinks(pcalc);
 		if (fetch_values(pcalc)==0) {
-			if (aCalcoutRecordDebug >= 5) printf("acalcoutRecord(%s):process: calling aCalcPerform\n", pcalc->name);
-			/* Note that we want to permit nuse == 0 as a way of saying "use nelm". */
-			i = ((pcalc->nuse > 0) && (pcalc->nuse < pcalc->nelm)) ?
-				pcalc->nuse : pcalc->nelm;
-			stat = aCalcPerform(&pcalc->a, MAX_FIELDS, &pcalc->aa,
-					ARRAY_MAX_FIELDS, i, &pcalc->val, pcalc->aval, pcalc->rpcl);
-			if (stat) printf("%s:process: error in aCalcPerform()\n", pcalc->name);
-			if (i < pcalc->nelm) {
-				for (; i<pcalc->nelm; i++) pcalc->aval[i] = 0;
-			}
-			if (aCalcoutRecordDebug >= 5) {
-				printf("acalcoutRecord(%s):aCalcPerform returns val=%f, aval=[%f %f...]\n",
-					pcalc->name, pcalc->val, pcalc->aval[0], pcalc->aval[1]);
-			}
-			if (stat)
-				recGblSetSevr(pcalc,CALC_ALARM,INVALID_ALARM);
-			else
-				pcalc->udf = FALSE;
-		}
+			long stat;
 
-		/* Check VAL against limits */
-	    checkAlarms(pcalc);
+			if (aCalcoutRecordDebug >= 5) printf("acalcoutRecord(%s):process: queueing aCalcPerform\n", pcalc->name);
 
-		/* check for output link execution */
-		switch (pcalc->oopt) {
-		case acalcoutOOPT_Every_Time:
-			doOutput = 1;
-			break;
-		case acalcoutOOPT_On_Change:
-			if (fabs(pcalc->pval - pcalc->val) > pcalc->mdel) doOutput = 1;
-			break;
-		case acalcoutOOPT_Transition_To_Zero:
-			if ((pcalc->pval != 0) && (pcalc->val == 0)) doOutput = 1;
-			break;         
-		case acalcoutOOPT_Transition_To_Non_zero:
-			if ((pcalc->pval == 0) && (pcalc->val != 0)) doOutput = 1;
-			break;
-		case acalcoutOOPT_When_Zero:
-			if (!pcalc->val) doOutput = 1;
-			break;
-		case acalcoutOOPT_When_Non_zero:
-			if (pcalc->val) doOutput = 1;
-			break;
-		case acalcoutOOPT_Never:
-			doOutput = 0;
-			break;
-		}
-		pcalc->pval = pcalc->val;
-
-		if (doOutput) {
-			if (pcalc->odly > 0.0) {
-				pcalc->dlya = 1;
-				db_post_events(pcalc,&pcalc->dlya,DBE_VALUE);
-                callbackRequestProcessCallbackDelayed(&prpvt->doOutCb,
-                    pcalc->prio, pcalc, (double)pcalc->odly);
-				if (aCalcoutRecordDebug >= 5)
-					printf("acalcoutRecord(%s):process: exit, wait for delay\n",
-						pcalc->name);
+			pcalc->cact = 0;
+			stat = doCalc(pcalc);
+			if (stat) printf("%s:process: doCalc failed.\n", pcalc->name);
+			if (stat == 0 && pcalc->cact == 1) {
+				pcalc->pact = 1;
+				/* we'll get processed again when the calculation is done */
 				return(0);
 			} else {
-				if (aCalcoutRecordDebug >= 5)
-					printf("acalcoutRecord(%s):calling execOutput\n", pcalc->name);
-                pcalc->pact = FALSE;
-				execOutput(pcalc);
-                if (pcalc->pact) {
-					if (aCalcoutRecordDebug >= 5)
-						printf("acalcoutRecord(%s):process: exit, pact==1\n",
-							pcalc->name);
-					return(0);
-				}
-				pcalc->pact = TRUE;
+				if (afterCalc(pcalc) == ASYNC) return(0);
 			}
 		}
 	} else { /* pact == TRUE */
+
 		/* Who invoked us ? */
-		if (pcalc->dlya) {
+		if (pcalc->cact) {
+			pcalc->cact = 0;
+			if (afterCalc(pcalc) == ASYNC) return(0);
+		} else if (pcalc->dlya) {
 			/* callbackRequestProcessCallbackDelayed() called us */
 			pcalc->dlya = 0;
 			db_post_events(pcalc,&pcalc->dlya,DBE_VALUE);
 
-            /* Must set pact 0 so that asynchronous device support works */
-            pcalc->pact = 0;
+			/* Must set pact 0 so that asynchronous device support works */
+			pcalc->pact = 0;
 			execOutput(pcalc);
-            if (pcalc->pact) return(0);
-            pcalc->pact = TRUE;
+			if (pcalc->pact) return(0);
+			pcalc->pact = TRUE;
 		} else {
 			/* We must have been called by asynchronous device support */
-            writeValue(pcalc);
+			writeValue(pcalc);
 		}
 	}
-    /*checkAlarms(pcalc); This is too late; IVOA might have vetoed output */
-    recGblGetTimeStamp(pcalc);
+	/*checkAlarms(pcalc); This is too late; IVOA might have vetoed output */
+	recGblGetTimeStamp(pcalc);
 
 	if (aCalcoutRecordDebug >= 5) {
 		printf("acalcoutRecord(%s):process:calling monitor \n", pcalc->name);
@@ -384,7 +430,7 @@ static long process(acalcoutRecord *pcalc)
 		pcalc->name);
 	return(0);
 }
-
+
 static long special(dbAddr	*paddr, int after)
 {
 	acalcoutRecord	*pcalc = (acalcoutRecord *)(paddr->precord);
@@ -413,7 +459,7 @@ static long special(dbAddr	*paddr, int after)
 		break;
 
 	case acalcoutRecordOCAL:
-		pcalc->oclv = aCalcPostfix(pcalc->ocal, (char *)pcalc->orpc, &error_number);
+		pcalc->oclv = aCalcPostfix(pcalc->ocal, pcalc->orpc, &error_number);
 		if (pcalc->oclv) {
 			recGblRecordError(S_db_badField,(void *)pcalc,
 				"acalcout: special(): Illegal OCAL field");
@@ -535,8 +581,22 @@ static long cvt_dbaddr(dbAddr *paddr)
 		if (pcalc->oav == NULL) pcalc->oav = (double *)calloc(pcalc->nelm, sizeof(double));
 		paddr->pfield = pcalc->oav;
 	}
-	paddr->no_elements = ((pcalc->nuse > 0) && (pcalc->nuse < pcalc->nelm)) ?
-		pcalc->nuse : pcalc->nelm;
+
+	/* What size should we report to CA clients?  Before EPICS 3.14.12, arrays
+	 * were always sent in full to clients, regardless of the number of elements
+	 * actually in use.  To work around this problem, user can specify
+	 * SIZE="NUSE", and the acalcout record will tell the client that the array
+	 * size is NUSE, rather than NELM.  But this is a problem for clients that
+	 * connect to a record whose NUSE increases, because they won't see the
+	 * additional elements until they disconnect and reconnect to the array.
+	 */
+	if (pcalc->size == acalcoutSIZE_NUSE) {
+		paddr->no_elements = ((pcalc->nuse > 0) && (pcalc->nuse < pcalc->nelm)) ?
+			pcalc->nuse : pcalc->nelm;
+	} else {
+		paddr->no_elements = pcalc->nelm;
+	}
+
 	paddr->field_type = DBF_DOUBLE;
 	paddr->field_size = sizeof(double);
 	paddr->dbr_field_type = DBF_DOUBLE;
@@ -605,9 +665,15 @@ static long put_array_info(struct dbAddr *paddr, long nNew)
 	if (aCalcoutRecordDebug >= 20) {
 		printf("acalcoutRecord(%s):put_array_info: pd=%p\n", pcalc->name, (void *)pd);
 	}
+
+#if MIND_UNUSED_ELEMENTS
 	if (pd && (nNew < pcalc->nelm))
 		for (i=nNew; i<pcalc->nelm; i++) pd[i] = 0.;
-	
+#else
+	if (pd && (nNew < pcalc->nuse))
+		for (i=nNew; i<pcalc->nuse; i++) pd[i] = 0.;
+#endif
+
 	/* We could set nuse to the number of elements just written, but that would also
 	 * affect the other arrays.  For now, with all arrays sharing a single value of nuse,
 	 * it seems better to require that nuse be set explicitly.  Currently, I'm leaving
@@ -721,7 +787,11 @@ static void checkAlarms(acalcoutRecord *pcalc)
 	unsigned short	hhsv, llsv, hsv, lsv;
 
 	if (pcalc->udf == TRUE) {
+#if LT_EPICSBASE(3,15,0,2)
 		recGblSetSevr(pcalc,UDF_ALARM,INVALID_ALARM);
+#else
+		recGblSetSevr(pcalc,UDF_ALARM,pcalc->udfs);
+#endif
 		return;
 	}
 	hihi = pcalc->hihi; 
@@ -768,29 +838,19 @@ static void checkAlarms(acalcoutRecord *pcalc)
 
 static void execOutput(acalcoutRecord *pcalc)
 {
-	long	i, status;
+	long		i, status;
 
 	/* Determine output data */
 	if (aCalcoutRecordDebug >= 10)
 		printf("acalcoutRecord(%s):execOutput:entry\n", pcalc->name);
-	switch (pcalc->dopt) {
-	case acalcoutDOPT_Use_VAL:
-		pcalc->oval = pcalc->val;
-		for (i=0; i<pcalc->nelm; i++) pcalc->oav[i] = pcalc->aval[i];
-		break;
 
-	case acalcoutDOPT_Use_OVAL:
-		i = ((pcalc->nuse > 0) && (pcalc->nuse < pcalc->nelm)) ?
-			pcalc->nuse : pcalc->nelm;
-		if (aCalcPerform(&pcalc->a, MAX_FIELDS, &pcalc->aa,
-				ARRAY_MAX_FIELDS, i, &pcalc->oval, pcalc->oav, pcalc->rpcl)) {
-			recGblSetSevr(pcalc,CALC_ALARM,INVALID_ALARM);
-			printf("%s:execOutput: error in aCalcPerform()\n", pcalc->name);
-		}
-		if (i < pcalc->nelm) {
-			for (; i<pcalc->nelm; i++) pcalc->oav[i] = 0;
-		}
-		break;
+	if (pcalc->dopt == acalcoutDOPT_Use_VAL) {
+		pcalc->oval = pcalc->val;
+#if MIND_UNUSED_ELEMENTS
+		for (i=0; i<pcalc->nelm; i++) pcalc->oav[i] = pcalc->aval[i];
+#else
+		for (i=0; i<pcalc->nuse; i++) pcalc->oav[i] = pcalc->aval[i];
+#endif
 	}
 
 	/* Check to see what to do if INVALID */
@@ -835,6 +895,7 @@ static void monitor(acalcoutRecord *pcalc)
 	double			*pnew, *pprev;
 	double			**panew;
 	int				i, diff;
+	long			numElements;
 
 	if (aCalcoutRecordDebug >= 10)
 		printf("acalcoutRecord(%s):monitor:entry\n", pcalc->name);
@@ -866,22 +927,30 @@ static void monitor(acalcoutRecord *pcalc)
 	if (pcalc->poav == NULL)
 		pcalc->poav = (double *)calloc(pcalc->nelm, sizeof(double));
 
-	for (i=0, diff=0; i<pcalc->nelm; i++) {
+#if MIND_UNUSED_ELEMENTS
+	numElements = pcalc->nelm;
+#else
+	numElements = pcalc->nuse;
+#endif
+
+	for (i=0, diff=0; i<numElements; i++) {
 		if (pcalc->aval[i] != pcalc->pavl[i]) {diff = 1;break;}
 	}
+
 	if (diff) {
 		if (aCalcoutRecordDebug >= 1)
 			printf("acalcoutRecord(%s):posting .AVAL\n", pcalc->name);
 		db_post_events(pcalc, pcalc->aval, monitor_mask|DBE_VALUE|DBE_LOG);
-		for (i=0; i<pcalc->nelm; i++) pcalc->pavl[i] = pcalc->aval[i];
+		for (i=0; i<numElements; i++) pcalc->pavl[i] = pcalc->aval[i];
 	}
 
-	for (i=0, diff=0; i<pcalc->nelm; i++) {
+	for (i=0, diff=0; i<numElements; i++) {
 		if (pcalc->oav[i] != pcalc->poav[i]) {diff = 1;break;}
 	}
+
 	if (diff) {
 		db_post_events(pcalc, pcalc->oav, monitor_mask|DBE_VALUE|DBE_LOG);
-		for (i=0; i<pcalc->nelm; i++) pcalc->poav[i] = pcalc->oav[i];
+		for (i=0; i<numElements; i++) pcalc->poav[i] = pcalc->oav[i];
 	}
 
 	/* check all input fields for changes */
@@ -893,11 +962,11 @@ static void monitor(acalcoutRecord *pcalc)
 	}
 
 	for (i=0, panew=&pcalc->aa; i<ARRAY_MAX_FIELDS; i++, panew++) {
-		if (*panew && (pcalc->new & (1<<i))) {
+		if (*panew && (pcalc->newm & (1<<i))) {
 			db_post_events(pcalc, *panew, monitor_mask|DBE_VALUE|DBE_LOG);
 		}
 	}
-	pcalc->new = 0;
+	pcalc->newm = 0;
 
 	/* Check OVAL field */
 	if (pcalc->povl != pcalc->oval) {
@@ -916,7 +985,13 @@ static int fetch_values(acalcoutRecord *pcalc)
 							pcalc->nuse : pcalc->nelm;
 	int		i, j;
 	unsigned short *plinkValid;
+	long numElements;
 
+#if MIND_UNUSED_ELEMENTS
+	numElements = pcalc->nelm;
+#else
+	numElements = pcalc->nuse;
+#endif
 	if (aCalcoutRecordDebug >= 10)
 		printf("acalcoutRecord(%s):fetch_values: entry\n", pcalc->name);
 	for (i=0, plink=&pcalc->inpa, pvalue=&pcalc->a; i<MAX_FIELDS; 
@@ -943,13 +1018,13 @@ static int fetch_values(acalcoutRecord *pcalc)
 					pcalc->name);
 				pcalc->paa = (double *)calloc(pcalc->nelm, sizeof(double));
 			}
-			for (j=0; j<pcalc->nelm; j++) pcalc->paa[j] = (*pavalue)[j];
+			for (j=0; j<numElements; j++) pcalc->paa[j] = (*pavalue)[j];
 			/* get new value */
 			status = dbGetLink(plink, DBR_DOUBLE, *pavalue, 0, &nRequest);
 			if (!RTN_SUCCESS(status)) return(status);
 			/* compare new array value with saved value */
-			for (j=0; j<pcalc->nelm; j++) {
-				if (pcalc->paa[j] != (*pavalue)[j]) {pcalc->new |= 1<<i; break;}
+			for (j=0; j<numElements; j++) {
+				if (pcalc->paa[j] != (*pavalue)[j]) {pcalc->newm |= 1<<i; break;}
 			}
 		}
 	}
@@ -1071,4 +1146,118 @@ static long writeValue(acalcoutRecord *pcalc)
 	if (aCalcoutRecordDebug >= 10)
 		printf("acalcoutRecord(%s):writeValue:calling device support\n", pcalc->name);
 	return pacalcoutDSET->write(pcalc);
+}
+
+/************************************************************/
+#include <epicsMessageQueue.h>
+#include <epicsThread.h>
+
+static epicsThreadId		acalcThreadId = NULL;
+static epicsMessageQueueId	acalcMsgQueue = NULL;
+
+typedef struct {
+	acalcoutRecord *pcalc;
+} calcMessage;
+
+#define MAX_MSG  100                   /* max # of messages in queue    */
+#define MSG_SIZE sizeof(calcMessage)   /* size in bytes of the messages */
+#define PRIORITY epicsThreadPriorityMedium
+volatile int aCalcAsyncThreshold = 10000; /* array sizes larger than this get queued */
+epicsExportAddress(int, aCalcAsyncThreshold);
+
+static void call_aCalcPerform(acalcoutRecord *pcalc) {
+	long i;
+	epicsUInt32 amask;
+
+	if (aCalcoutRecordDebug >= 10) printf("call_aCalcPerform:entry\n");
+
+	/* Note that we want to permit nuse == 0 as a way of saying "use nelm". */
+	i = ((pcalc->nuse > 0) && (pcalc->nuse < pcalc->nelm)) ?
+		pcalc->nuse : pcalc->nelm;
+	pcalc->cstat = aCalcPerform(&pcalc->a, MAX_FIELDS, &pcalc->aa,
+		ARRAY_MAX_FIELDS, i, &pcalc->val, pcalc->aval, pcalc->rpcl,
+		pcalc->nelm, &pcalc->amask);
+	
+	if (pcalc->dopt == acalcoutDOPT_Use_OVAL) {
+		pcalc->cstat |= aCalcPerform(&pcalc->a, MAX_FIELDS, &pcalc->aa,
+			ARRAY_MAX_FIELDS, i, &pcalc->oval, pcalc->oav, pcalc->orpc,
+			pcalc->nelm, &amask);
+		pcalc->amask |= amask;
+	}
+}
+
+static long doCalc(acalcoutRecord *pcalc) {
+	calcMessage msg;
+	int doAsync = 0;
+
+	if (aCalcoutRecordDebug >= 10)
+		printf("acalcoutRecord(%s):doCalc\n", pcalc->name);
+
+	if (pcalc->nuse > aCalcAsyncThreshold) doAsync = 1;
+
+	/* if required infrastructure doesn't yet exist, create it */
+	if (doAsync && acalcMsgQueue == NULL) {
+		acalcMsgQueue = epicsMessageQueueCreate(MAX_MSG, MSG_SIZE);
+		if (acalcMsgQueue==NULL) {
+			printf("aCalcoutRecord: Unable to create message queue\n");
+			return(-1);
+		}
+
+		acalcThreadId = epicsThreadCreate("acalcPerformTask", PRIORITY,
+			epicsThreadGetStackSize(epicsThreadStackBig),
+			(EPICSTHREADFUNC)acalcPerformTask, (void *)epicsThreadGetIdSelf());
+
+		if (acalcThreadId == NULL) {
+			printf("aCalcoutRecord: Unable to create acalcPerformTask\n");
+			epicsMessageQueueDestroy(acalcMsgQueue);
+			acalcMsgQueue = NULL;
+			return(-1);
+		}
+	}
+	
+	/* Ideally, we should do short calculations in this thread, and queue long calculations.
+	 * But aCalcPerform is not reentrant (global value stack), so for now we queue everything.
+	 */
+	if (doAsync) {
+		if (aCalcoutRecordDebug >= 2) printf("acalcoutRecord(%s):doCalc async\n", pcalc->name);
+		pcalc->cact = 1; /* Tell caller that we went asynchronous */
+		msg.pcalc = pcalc;
+		epicsMessageQueueSend(acalcMsgQueue, (void *)&msg, MSG_SIZE);
+		return(0);
+	} else {
+		if (aCalcoutRecordDebug >= 2) printf("acalcoutRecord(%s):doCalc sync\n", pcalc->name);
+		call_aCalcPerform(pcalc);
+	}
+	return(0);
+}
+
+static void acalcPerformTask(void *parm) {
+	calcMessage msg;
+	acalcoutRecord *pcalc;
+	struct rset *prset;
+
+	if (aCalcoutRecordDebug >= 10)
+		printf("acalcPerformTask:entry\n");
+
+	while (1) {
+		/* waiting for messages */
+		if (epicsMessageQueueReceive(acalcMsgQueue, &msg, MSG_SIZE) != MSG_SIZE) {
+			printf("acalcPerformTask: epicsMessageQueueReceive returned wrong size\n");
+			break;
+		}
+
+		pcalc = msg.pcalc;
+		prset = (struct rset *)(pcalc->rset);
+
+		dbScanLock((struct dbCommon *)pcalc);
+
+		if (aCalcoutRecordDebug >= 10)
+			printf("acalcPerformTask:message from '%s'\n", pcalc->name);
+		call_aCalcPerform(pcalc);
+		if (aCalcoutRecordDebug >= 10)
+			printf("acalcPerformTask:processing '%s'\n", pcalc->name);
+
+		(*prset->process)(pcalc);
+		dbScanUnlock((struct dbCommon *)pcalc);
+	}
 }

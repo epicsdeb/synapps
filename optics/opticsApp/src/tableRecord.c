@@ -900,7 +900,8 @@ MotorLimitViol(tableRecord *ptbl)
 
 	for (i=0; i<6; i++, h0x++, l0x++, m0x++) {
 		if ((lnkStat[i].can_read_limits) && (lnkStat[i].can_RW_drive)) {
-			if ((*h0x != 0.) || (*l0x != 0.)) {
+			/*if ((*h0x != 0.) || (*l0x != 0.)) {*/
+			if ((fabs(*h0x) > SMALL) || (fabs(*l0x) > SMALL)) {
 				if ((*m0x > *h0x) || (*m0x < *l0x)) {
 					if (tableRecordDebug >= 1)
 						printf("MotorLimitViol: motor[%d]=%f, l=%f, h=%f\n",
@@ -924,11 +925,12 @@ UserLimitViol(tableRecord *ptbl)
 
 	/* check against user's limits */
 	for (i=0; i<6; i++, hlax++, llax++, ax++, ax0++) {
-		if ((*hlax != 0.0) || (*llax != 0.0)) {
+		/*if ((*hlax != 0.0) || (*llax != 0.0)) {*/
+		if ((fabs(*hlax) > SMALL) || (fabs(*llax) > SMALL)) {
 			u = *ax + *ax0;
 			if ((u < *llax) || (u > *hlax)) {
 				if (tableRecordDebug >= 1)
-					printf("MotorLimitViol: user[%d]=%f, l=%f, h=%f\n",
+					printf("UserLimitViol: user[%d]=%f, l=%f, h=%f\n",
 						i, u, *llax, *hlax);
 				return(1);
 			}
@@ -2055,14 +2057,15 @@ CalcUserLimits(tableRecord *ptbl)
 
 	/* Enforce user's limits; subtract offsets */
 	for (i=0; i<6; i++) {
-		if ((uhax[i] != 0.0) || (ulax[i] != 0.0)) {
+		/*if ((uhax[i] != 0.0) || (ulax[i] != 0.0)) {*/
+		if ((fabs(uhax[i]) > SMALL) || (fabs(ulax[i]) > SMALL)) {
 			hu[i] = MIN(hu[i], uhax[i]);
 			lu[i] = MAX(lu[i], ulax[i]);
 		}
 		hu[i] -= ax0[i];
 		lu[i] -= ax0[i];
 	}
-	if (tableRecordDebug > 10) {
+	if (tableRecordDebug >= 10) {
 		printf("CalcUserLimits:done\n");
 		PrintValues(ptbl);
 	}

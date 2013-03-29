@@ -530,7 +530,7 @@ static asynStatus readInt32(void *drvPvt, asynUser *pasynUser,
         return(asynError);
     }
     asynPrint(pasynUser, ASYN_TRACEIO_DRIVER,
-              "drvIp330::readInt32, value=%d", *value);
+              "drvIp330::readInt32, command=%d, value=%d\n", command, *value);
     return(asynSuccess);
 }
 
@@ -557,7 +557,7 @@ static asynStatus readFloat64(void *drvPvt, asynUser *pasynUser,
         return(asynError);
     }
     asynPrint(pasynUser, ASYN_TRACEIO_DRIVER,
-              "drvIp330::readFloat64, value=%f", *value);
+              "drvIp330::readFloat64, command=%d, value=%f\n", command, *value);
     return(status);
 }
 
@@ -588,7 +588,7 @@ static asynStatus writeInt32(void *drvPvt, asynUser *pasynUser,
         return(asynError);
     }
     asynPrint(pasynUser, ASYN_TRACEIO_DRIVER,
-                  "drvIp330::writeInt32, value=%d", value);
+                  "drvIp330::writeInt32, command=%d, value=%d\n", command, value);
     return(status);
 }
 
@@ -614,7 +614,7 @@ static asynStatus writeFloat64(void *drvPvt, asynUser *pasynUser,
         return(asynError);
     }
     asynPrint(pasynUser, ASYN_TRACEIO_DRIVER,
-              "drvIp330::writeFloat64, value=%f", value);
+              "drvIp330::writeFloat64, command=%d, value=%f\n", command, value);
     return(status);
 }
 
@@ -830,12 +830,11 @@ static void autoCalibrate(void *drvPvt)
 
     if (pPvt->rebooting) epicsThreadSuspendSelf();
     epicsTimerCancel(pPvt->timerId);
-    if (pPvt->secondsBetweenCalibrate < 0) return;
-    asynPrint(pPvt->pasynUser, ASYN_TRACE_FLOW,
+    asynPrint(pPvt->pasynUser, ASYN_TRACEIO_DRIVER,
               "drvIp330::autoCalibrate starting calibration\n");
     for(i=pPvt->firstChan; i<= pPvt->lastChan; i++)
         calibrate(pPvt, i);
-    if (pPvt->secondsBetweenCalibrate != 0)
+    if (pPvt->secondsBetweenCalibrate > 0)
         epicsTimerStartDelay(pPvt->timerId, pPvt->secondsBetweenCalibrate);
 }
 
@@ -871,15 +870,15 @@ static int calibrate(drvIp330Pvt *pPvt, int channel)
     /* Ignore first set of data so that adc has time to settle */
     pPvt->regs->startConvert = 0x0001;
     waitNewData(pPvt);
-    asynPrint(pPvt->pasynUser, ASYN_TRACE_FLOW,
-              "drvIp330::calibrate. Raw values low\n");
+    asynPrint(pPvt->pasynUser, ASYN_TRACEIO_DRIVER,
+              "drvIp330::calibrate. Raw values low channel=%d\n",
+              channel);
     sum = 0;
     for (i = 0; i < MAX_IP330_CHANNELS; i++) {
         val = pPvt->regs->mailBox[i];
         sum = sum + val;
-        asynPrint(pPvt->pasynUser, ASYN_TRACE_FLOW,
-                  "%hu ",val);
-        if((i+1)%8 == 0) asynPrint(pPvt->pasynUser, ASYN_TRACE_FLOW, "\n");
+        asynPrint(pPvt->pasynUser, ASYN_TRACEIO_DRIVER,
+                  "  %d %hu\n", i, val);
     }
     count_callo = ((double)sum)/(double)MAX_IP330_CHANNELS;
     /* determine count_calhi */
@@ -890,15 +889,15 @@ static int calibrate(drvIp330Pvt *pPvt, int channel)
     /* Ignore first set of data so that adc has time to settle */
     pPvt->regs->startConvert = 0x0001;
     waitNewData(pPvt);
-    asynPrint(pPvt->pasynUser, ASYN_TRACE_FLOW,
-              "drvIp33::calibrate. Raw values high\n");
+    asynPrint(pPvt->pasynUser, ASYN_TRACEIO_DRIVER,
+              "drvIp33::calibrate. Raw values high channel=%d\n",
+              channel);
     sum = 0;
     for (i = 0; i < MAX_IP330_CHANNELS; i++) {
         val = pPvt->regs->mailBox[i];
         sum = sum + val;
-        asynPrint(pPvt->pasynUser, ASYN_TRACE_FLOW,
-                  "%hu ",val);
-        if((i+1)%8 == 0) asynPrint(pPvt->pasynUser, ASYN_TRACE_FLOW, "\n");
+        asynPrint(pPvt->pasynUser, ASYN_TRACEIO_DRIVER,
+                  " %d %hu\n", i, val);
     }
     count_calhi = ((double)sum)/(double)MAX_IP330_CHANNELS;
 
@@ -916,7 +915,7 @@ static int calibrate(drvIp330Pvt *pPvt, int channel)
     pPvt->chanSettings[channel].adj_slope = cal1;
     pPvt->chanSettings[channel].adj_offset = cal2;
     epicsMutexUnlock(pPvt->lock);
-    asynPrint(pPvt->pasynUser, ASYN_TRACE_FLOW,
+    asynPrint(pPvt->pasynUser, ASYN_TRACEIO_DRIVER,
               "drvIp330::calibrate channel %d adj_slope %e adj_offset %e\n",
               channel, cal1, cal2);
     /* restore control and gain values */
@@ -1029,7 +1028,7 @@ finish:
         }
     pasynManager->interruptEnd(pPvt->float64InterruptPvt);
 
-    asynPrint(pPvt->pasynUser, ASYN_TRACE_FLOW,
+    asynPrint(pPvt->pasynUser, ASYN_TRACEIO_DRIVER,
               "drvIp330::setScanPeriod, requested time=%f\n" 
               "   prescale=%d, convert=%d, actual=%f\n",
               seconds, timePrescale, timeConvert, pPvt->actualScanPeriod);
@@ -1051,7 +1050,7 @@ static asynStatus drvUserCreate(void *drvPvt, asynUser *pasynUser,
             pasynUser->reason = ip330Commands[i].command;
             if (pptypeName) *pptypeName = epicsStrDup(pstring);
             if (psize) *psize = sizeof(ip330Commands[i].command);
-            asynPrint(pasynUser, ASYN_TRACE_FLOW,
+            asynPrint(pasynUser, ASYN_TRACEIO_DRIVER,
               "drvIp330::drvUserCreate, command=%s\n", pstring);
             return(asynSuccess);
         }

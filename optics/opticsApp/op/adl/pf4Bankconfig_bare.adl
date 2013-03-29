@@ -1,0 +1,596 @@
+
+file {
+	name="/home/oxygen/MOONEY/epics/synApps/support/optics/opticsApp/op/adl/pf4Bankconfig_bare.adl"
+	version=030105
+}
+display {
+	object {
+		x=439
+		y=700
+		width=225
+		height=250
+	}
+	clr=14
+	bclr=2
+	cmap=""
+	gridSpacing=5
+	gridOn=0
+	snapToGrid=0
+}
+"color map" {
+	ncolors=65
+	colors {
+		ffffff,
+		ececec,
+		dadada,
+		c8c8c8,
+		bbbbbb,
+		aeaeae,
+		9e9e9e,
+		919191,
+		858585,
+		787878,
+		696969,
+		5a5a5a,
+		464646,
+		2d2d2d,
+		000000,
+		00d800,
+		1ebb00,
+		339900,
+		2d7f00,
+		216c00,
+		fd0000,
+		de1309,
+		be190b,
+		a01207,
+		820400,
+		5893ff,
+		597ee1,
+		4b6ec7,
+		3a5eab,
+		27548d,
+		fbf34a,
+		f9da3c,
+		eeb62b,
+		e19015,
+		cd6100,
+		ffb0ff,
+		d67fe2,
+		ae4ebc,
+		8b1a96,
+		610a75,
+		a4aaff,
+		8793e2,
+		6a73c1,
+		4d52a4,
+		343386,
+		c7bb6d,
+		b79d5c,
+		a47e3c,
+		7d5627,
+		58340f,
+		99ffff,
+		73dfff,
+		4ea5f9,
+		2a63e4,
+		0a00b8,
+		ebf1b5,
+		d4db9d,
+		bbc187,
+		a6a462,
+		8b8239,
+		73ff6b,
+		52da3b,
+		3cb420,
+		289315,
+		1a7309,
+	}
+}
+text {
+	object {
+		x=5
+		y=220
+		width=195
+		height=14
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Be B C Al Si Ti Cr Mn Fe Co Ni"
+}
+text {
+	object {
+		x=10
+		y=190
+		width=215
+		height=14
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Choices for filter material"
+}
+"text entry" {
+	object {
+		x=108
+		y=26
+		width=90
+		height=25
+	}
+	control {
+		chan="$(P)$(H)E:local"
+		clr=14
+		bclr=51
+	}
+	limits {
+	}
+}
+text {
+	object {
+		x=200
+		y=30
+		width=25
+		height=14
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="keV"
+}
+text {
+	object {
+		x=66
+		y=30
+		width=40
+		height=14
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="using"
+	align="horiz. right"
+}
+"choice button" {
+	object {
+		x=5
+		y=7
+		width=55
+		height=36
+	}
+	control {
+		chan="$(P)$(H)useMono"
+		clr=14
+		bclr=51
+	}
+}
+text {
+	object {
+		x=66
+		y=1
+		width=40
+		height=14
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Energy"
+	align="horiz. right"
+}
+"text update" {
+	object {
+		x=108
+		y=0
+		width=90
+		height=20
+	}
+	monitor {
+		chan="$(P)$(H)displayEnergy"
+		clr=54
+		bclr=2
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+text {
+	object {
+		x=200
+		y=1
+		width=25
+		height=14
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="keV"
+}
+composite {
+	object {
+		x=77
+		y=65
+		width=66
+		height=20
+	}
+	"composite name"=""
+	children {
+		rectangle {
+			object {
+				x=77
+				y=65
+				width=66
+				height=20
+			}
+			"basic attribute" {
+				clr=20
+			}
+			"dynamic attribute" {
+				vis="if zero"
+				chan="$(P)$(H)bank$(B)"
+			}
+		}
+		rectangle {
+			object {
+				x=77
+				y=65
+				width=66
+				height=20
+			}
+			"basic attribute" {
+				clr=18
+			}
+			"dynamic attribute" {
+				vis="if not zero"
+				chan="$(P)$(H)bank$(B)"
+			}
+		}
+	}
+}
+"message button" {
+	object {
+		x=49
+		y=64
+		width=30
+		height=20
+	}
+	control {
+		chan="$(P)$(H)bank$(B)"
+		clr=0
+		bclr=22
+	}
+	label="off"
+	release_msg="0"
+}
+"message button" {
+	object {
+		x=22
+		y=64
+		width=30
+		height=20
+	}
+	control {
+		chan="$(P)$(H)bank$(B)"
+		clr=14
+		bclr=15
+	}
+	label="on"
+	release_msg="3"
+}
+"text update" {
+	object {
+		x=80
+		y=68
+		width=60
+		height=14
+	}
+	monitor {
+		chan="$(P)$(H)bank$(B)"
+		clr=14
+		bclr=2
+	}
+	align="horiz. centered"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=15
+		y=91
+		width=40
+		height=14
+	}
+	monitor {
+		chan="$(P)$(H)f4$(B).EGU"
+		clr=14
+		bclr=2
+	}
+	align="horiz. centered"
+	limits {
+	}
+}
+menu {
+	object {
+		x=55
+		y=104
+		width=54
+		height=20
+	}
+	control {
+		chan="$(P)$(H)Z4$(B)"
+		clr=14
+		bclr=51
+	}
+}
+menu {
+	object {
+		x=55
+		y=124
+		width=54
+		height=20
+	}
+	control {
+		chan="$(P)$(H)Z3$(B)"
+		clr=14
+		bclr=51
+	}
+}
+menu {
+	object {
+		x=55
+		y=144
+		width=54
+		height=20
+	}
+	control {
+		chan="$(P)$(H)Z2$(B)"
+		clr=14
+		bclr=51
+	}
+}
+menu {
+	object {
+		x=55
+		y=164
+		width=54
+		height=20
+	}
+	control {
+		chan="$(P)$(H)Z1$(B)"
+		clr=14
+		bclr=51
+	}
+}
+"text entry" {
+	object {
+		x=15
+		y=125
+		width=40
+		height=20
+	}
+	control {
+		chan="$(P)$(H)f3$(B)"
+		clr=14
+		bclr=51
+	}
+	limits {
+	}
+}
+"text entry" {
+	object {
+		x=15
+		y=105
+		width=40
+		height=20
+	}
+	control {
+		chan="$(P)$(H)f4$(B)"
+		clr=14
+		bclr=51
+	}
+	limits {
+	}
+}
+"text entry" {
+	object {
+		x=15
+		y=145
+		width=40
+		height=20
+	}
+	control {
+		chan="$(P)$(H)f2$(B)"
+		clr=14
+		bclr=51
+	}
+	limits {
+	}
+}
+"text entry" {
+	object {
+		x=15
+		y=165
+		width=40
+		height=20
+	}
+	control {
+		chan="$(P)$(H)f1$(B)"
+		clr=14
+		bclr=51
+	}
+	limits {
+	}
+}
+composite {
+	object {
+		x=110
+		y=165
+		width=50
+		height=22
+	}
+	"composite name"=""
+	"composite file"="pf4_other_bare.adl;P=$(P),H=$(H),N=1,B=B"
+}
+composite {
+	object {
+		x=110
+		y=145
+		width=50
+		height=22
+	}
+	"composite name"=""
+	"composite file"="pf4_other_bare.adl;P=$(P),H=$(H),N=2,B=B"
+}
+composite {
+	object {
+		x=110
+		y=125
+		width=50
+		height=22
+	}
+	"composite name"=""
+	"composite file"="pf4_other_bare.adl;P=$(P),H=$(H),N=3,B=B"
+}
+composite {
+	object {
+		x=110
+		y=105
+		width=50
+		height=22
+	}
+	"composite name"=""
+	"composite file"="pf4_other_bare.adl;P=$(P),H=$(H),N=4,B=B"
+}
+text {
+	object {
+		x=182
+		y=78
+		width=35
+		height=14
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="debug"
+	align="horiz. right"
+}
+menu {
+	object {
+		x=179
+		y=93
+		width=40
+		height=20
+	}
+	control {
+		chan="$(P)$(H)debug$(B)"
+		clr=14
+		bclr=51
+	}
+}
+text {
+	object {
+		x=0
+		y=107
+		width=10
+		height=18
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="4"
+	align="horiz. right"
+}
+text {
+	object {
+		x=0
+		y=127
+		width=10
+		height=18
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="3"
+	align="horiz. right"
+}
+text {
+	object {
+		x=0
+		y=147
+		width=10
+		height=18
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="2"
+	align="horiz. right"
+}
+text {
+	object {
+		x=0
+		y=167
+		width=10
+		height=18
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="1"
+	align="horiz. right"
+}
+polyline {
+	object {
+		x=0
+		y=55
+		width=225
+		height=2
+	}
+	"basic attribute" {
+		clr=14
+		width=2
+	}
+	points {
+		(1,56)
+		(224,56)
+	}
+}
+"related display" {
+	object {
+		x=110
+		y=89
+		width=40
+		height=16
+	}
+	display[0] {
+		label="all"
+		name="pf4_otherHelp.adl"
+		args="P=$(P),H=$(H),B=$(B)"
+	}
+	clr=0
+	bclr=17
+	label="-mu"
+}
+text {
+	object {
+		x=10
+		y=205
+		width=215
+		height=14
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="'Other':"
+}
+text {
+	object {
+		x=5
+		y=235
+		width=220
+		height=14
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Cu Zn Ge Mo Ag Sn Ta W Pt Au Pb"
+}

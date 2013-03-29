@@ -1,6 +1,8 @@
-/* $Id: pvAlarm.h,v 1.1.1.1 2000-04-04 03:22:15 wlupton Exp $
- *
- * Definitions for EPICS sequencer message system-independent status and
+/*************************************************************************\
+This file is distributed subject to a Software License Agreement found
+in the file LICENSE that is included with this distribution.
+\*************************************************************************/
+/* Definitions for EPICS sequencer message system-independent status and
  * severity (alarms).
  *
  * William Lupton, W. M. Keck Observatory
@@ -60,7 +62,10 @@ typedef enum {
 #endif /* INCLpvAlarmh */
 
 /*
- * $Log: not supported by cvs2svn $
+ * pvAlarm.h,v
+ * Revision 1.1.1.1  2000/04/04 03:22:15  wlupton
+ * first commit of seq-2-0-0
+ *
  * Revision 1.1  2000/03/29 01:58:59  wlupton
  * initial insertion
  *

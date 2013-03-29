@@ -9,7 +9,12 @@
 #
 # Add your declarations here
 
-ASYN=/home/oxygen/MOONEY/distrib/synApps_5_5/support/asyn-4-13
-IPAC=/home/oxygen/MOONEY/distrib/synApps_5_5/support/ipac-2-11
-SNCSEQ=/home/oxygen/MOONEY/distrib/synApps_5_5/support/seq-2-0-12
-EPICS_BASE=/home/oxygen/MOONEY/epics/base-3.14.11
+SUPPORT=/home/oxygen/MOONEY/epics/synAppsSVN/support
+-include $(TOP)/../configure/SUPPORT.$(EPICS_HOST_ARCH)
+
+ASYN=$(SUPPORT)/asynSVN
+IPAC=$(SUPPORT)/ipac-2-11
+SNCSEQ=$(SUPPORT)/seq-2-1-2
+
+EPICS_BASE=/home/oxygen/MOONEY/epics/base-3.14.12.1
+-include $(TOP)/../configure/EPICS_BASE.$(EPICS_HOST_ARCH)

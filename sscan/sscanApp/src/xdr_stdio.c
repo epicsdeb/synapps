@@ -87,6 +87,33 @@ static struct xdr_ops_32	xdrstdio_ops_32 = {
 	xdrstdio_inline,	/* prime stream for inline macros */
 	xdrstdio_destroy	/* destroy stream */
 };
+
+/* Tornado ?.? ******************************************/
+struct xdr_ops_40 {
+	bool_t	(*x_getlong)();	/* get a long from underlying stream */
+	bool_t	(*x_putlong)();	/* put a long to " */
+	bool_t	(*x_getbytes)();/* get some bytes from " */
+	bool_t	(*x_putbytes)();/* put some bytes to " */
+	bool_t	(*x_putwords)();/* put some words to " */
+	bool_t	(*x_putlongs)();/* put some longs to " */
+	u_int	(*x_getpostn)();/* returns bytes off from beginning */
+	bool_t  (*x_setpostn)();/* lets you reposition the stream */
+	long *	(*x_inline)();	/* buf quick ptr to buffered data */
+	void	(*x_destroy)();	/* free privates of this xdr_stream */
+};
+
+static struct xdr_ops_40	xdrstdio_ops_40 = {
+	xdrstdio_getlong,	/* deseraialize a long int */
+	xdrstdio_putlong,	/* seraialize a long int */
+	xdrstdio_getbytes,	/* deserialize counted bytes */
+	xdrstdio_putbytes,	/* serialize counted bytes */
+	xdrstdio_putwords,	/* put some words to underlying stream */
+	xdrstdio_putlongs,	/* put some longs to underlying stream */
+	xdrstdio_getpos,	/* get offset in the stream */
+	xdrstdio_setpos,	/* set offset in the stream */
+	xdrstdio_inline,	/* prime stream for inline macros */
+	xdrstdio_destroy	/* destroy stream */
+};
 /*****************************************************************/
 
 /* Tornado 5.5 and later ****************************************/
@@ -118,6 +145,7 @@ static struct xdr_ops_48	xdrstdio_ops_48 = {
 	xdrstdio_inline,	/* prime stream for inline macros */
 	xdrstdio_destroy	/* destroy stream */
 };
+
 /*****************************************************************/
 
 /*
@@ -134,10 +162,15 @@ xdrstdio_create(xdrs, file, op)
 
 	/* printf("xdrstdio_create: size_of_struct_xdr_ops=%d\n", size_of_struct_xdr_ops);*/
 	xdrs->x_op = op;
-	if (sizeof(struct xdr_ops) == 32) {
-		xdrs->x_ops = (struct xdr_ops *) &xdrstdio_ops_32;
-	} else {
+	if (size_of_struct_xdr_ops == 48) {
 		xdrs->x_ops = (struct xdr_ops *) &xdrstdio_ops_48;
+	} else if (size_of_struct_xdr_ops == 40) {
+		xdrs->x_ops = (struct xdr_ops *) &xdrstdio_ops_40;
+	} else {
+		if (sizeof(struct xdr_ops) != 32) {
+			printf("saveData:xdr_stdio: unexpected size of XDR structure = %d\n", size_of_struct_xdr_ops);
+		}
+		xdrs->x_ops = (struct xdr_ops *) &xdrstdio_ops_32;
 	}
 	xdrs->x_private = (caddr_t)file;
 	xdrs->x_handy = 0;

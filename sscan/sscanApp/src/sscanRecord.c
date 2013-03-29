@@ -1381,10 +1381,10 @@ special(struct dbAddr *paddr, int after)
 					if (precPvt->dlyCallback.timer) epicsTimerCancel(precPvt->dlyCallback.timer);
 					return(0);
 				} else {
-					/* request to abort scan that is not active */
+					/* request to abort scan that is not active.  (This is no longer an error 02/03/2012) */
 					sprintf(psscan->smsg, "Scan record is idle");
 					db_post_events(psscan, &psscan->smsg, DBE_VAL_LOG);
-					return(-1);
+					return(0);
 				}
 			}
 			break;

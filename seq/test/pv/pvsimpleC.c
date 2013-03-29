@@ -1,7 +1,8 @@
-/* $Id: pvsimpleC.c,v 1.1.1.1 2000-04-04 03:23:09 wlupton Exp $
- *
- * Very simple C program to demonstrate pv classes
- */
+/*************************************************************************\
+This file is distributed subject to a Software License Agreement found
+in the file LICENSE that is included with this distribution.
+\*************************************************************************/
+/* Very simple C program to demonstrate pv classes */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,8 +11,8 @@
 #include "pv.h"
 
 /* event handler (get/put completion; monitors) */
-void event( void *var, pvType type, int count, pvValue *val, void *arg,
-	    pvStat stat) {
+static void event( void *var, pvType type, unsigned count,
+        pvValue *val, void *arg, pvStat stat ) {
     printf( "event: %s=%g\n", pvVarGetName( var ), val->doubleVal[0] );
 }
 

@@ -1,7 +1,7 @@
 
 file {
-	name="/home/oxygen/MOONEY/epics/synApps/support/calc/calcApp/op/adl/userArrayCalcPlot.adl"
-	version=030004
+	name="/home/oxygen4/MOONEY/epics/synAppsSVN/support/calc/calcApp/op/adl/userArrayCalcPlot.adl"
+	version=030107
 }
 display {
 	object {
@@ -100,10 +100,11 @@ display {
 		bclr=0
 	}
 	style="line"
-	count="1000"
+	count="$(P)$(C).NUSE"
 	trace[0] {
 		ydata="$(Y)"
 		data_clr=14
+		yaxis=0
 	}
 	x_axis {
 		rangeStyle="auto-scale"
@@ -114,6 +115,7 @@ display {
 	y2_axis {
 		rangeStyle="auto-scale"
 	}
+	countPvName="$(P)$(C).NUSE"
 	eraseMode="if zero"
 }
 text {

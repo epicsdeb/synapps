@@ -1,6 +1,4 @@
-/* $Id: pvKtlCnv.cc,v 1.1.1.1 2000-04-04 03:22:15 wlupton Exp $
- *
- * Implementation of EPICS sequencer KTL type conversion (pvKtlCnv)
+/* Implementation of EPICS sequencer KTL type conversion (pvKtlCnv)
  *
  * Uses large amounts of code from the cdevData class
  *
@@ -286,7 +284,10 @@ converter ktlCnvMatrix[ktlCnv::NUMBER][ktlCnv::NUMBER] =
 };
 
 /*
- * $Log: not supported by cvs2svn $
+ * pvKtlCnv.cc,v
+ * Revision 1.1.1.1  2000/04/04 03:22:15  wlupton
+ * first commit of seq-2-0-0
+ *
  * Revision 1.1  2000/03/06 19:21:04  wlupton
  * misc error reporting and type conversion mods
  *

@@ -1,7 +1,7 @@
 
 file {
-	name="/home/oxygen/MOONEY/epics/synApps_5_5/support/softGlue/softGlueApp/op/adl/softGlueConvenience.adl"
-	version=030104
+	name="/home/oxygen4/MOONEY/epics/synAppsSVN/support/softGlue/softGlueApp/op/adl/softGlueConvenience.adl"
+	version=030105
 }
 display {
 	object {
@@ -253,4 +253,25 @@ menu {
 	}
 	label="+Pulse"
 	press_msg="1"
+}
+"related display" {
+	object {
+		x=90
+		y=155
+		width=80
+		height=20
+	}
+	display[0] {
+		label="sseq record 1"
+		name="yySseq.adl"
+		args="P=$(P),S=$(H)sseq1"
+	}
+	display[1] {
+		label="sseq record 2"
+		name="yySseq.adl"
+		args="P=$(P),S=$(H)sseq2"
+	}
+	clr=0
+	bclr=63
+	label="-sseq records"
 }

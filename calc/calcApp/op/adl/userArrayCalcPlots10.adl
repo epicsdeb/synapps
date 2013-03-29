@@ -1,7 +1,7 @@
 
 file {
-	name="/home/oxygen4/MOONEY/epics/synApps_T202_E3_14_7_R5_1/support/calc/calcApp/op/adl/userArrayCalcPlots10.adl"
-	version=030004
+	name="/home/oxygen/MOONEY/epics/synApps/support/calc/calcApp/op/adl/userArrayCalcPlots10.adl"
+	version=030107
 }
 display {
 	object {
@@ -126,10 +126,11 @@ text {
 		bclr=0
 	}
 	style="line"
-	count="1000"
+	count="$(P)userArrayCalc1.NUSE"
 	trace[0] {
 		ydata="$(P)userArrayCalc1.AVAL"
 		data_clr=14
+		yaxis=0
 	}
 	x_axis {
 		rangeStyle="auto-scale"
@@ -140,6 +141,7 @@ text {
 	y2_axis {
 		rangeStyle="auto-scale"
 	}
+	countPvName="$(P)userArrayCalc1.NUSE"
 	eraseMode="if zero"
 }
 "cartesian plot" {
@@ -155,10 +157,11 @@ text {
 		bclr=0
 	}
 	style="line"
-	count="1000"
+	count="$(P)userArrayCalc6.NUSE"
 	trace[0] {
 		ydata="$(P)userArrayCalc6.AVAL"
 		data_clr=14
+		yaxis=0
 	}
 	x_axis {
 		rangeStyle="auto-scale"
@@ -169,283 +172,256 @@ text {
 	y2_axis {
 		rangeStyle="auto-scale"
 	}
+	countPvName="$(P)userArrayCalc6.NUSE"
 	eraseMode="if zero"
 }
-composite {
+"cartesian plot" {
 	object {
 		x=0
 		y=135
-		width=400
+		width=200
 		height=100
 	}
-	"composite name"=""
-	children {
-		"cartesian plot" {
-			object {
-				x=0
-				y=135
-				width=200
-				height=100
-			}
-			plotcom {
-				xlabel="ARRAY INDEX"
-				clr=14
-				bclr=0
-			}
-			style="line"
-			count="1000"
-			trace[0] {
-				ydata="$(P)userArrayCalc2.AVAL"
-				data_clr=14
-			}
-			x_axis {
-				rangeStyle="auto-scale"
-			}
-			y1_axis {
-				rangeStyle="auto-scale"
-			}
-			y2_axis {
-				rangeStyle="auto-scale"
-			}
-			eraseMode="if zero"
-		}
-		"cartesian plot" {
-			object {
-				x=200
-				y=135
-				width=200
-				height=100
-			}
-			plotcom {
-				xlabel="ARRAY INDEX"
-				clr=14
-				bclr=0
-			}
-			style="line"
-			count="1000"
-			trace[0] {
-				ydata="$(P)userArrayCalc7.AVAL"
-				data_clr=14
-			}
-			x_axis {
-				rangeStyle="auto-scale"
-			}
-			y1_axis {
-				rangeStyle="auto-scale"
-			}
-			y2_axis {
-				rangeStyle="auto-scale"
-			}
-			eraseMode="if zero"
-		}
+	plotcom {
+		xlabel="ARRAY INDEX"
+		clr=14
+		bclr=0
 	}
+	style="line"
+	count="$(P)userArrayCalc2.NUSE"
+	trace[0] {
+		ydata="$(P)userArrayCalc2.AVAL"
+		data_clr=14
+		yaxis=0
+	}
+	x_axis {
+		rangeStyle="auto-scale"
+	}
+	y1_axis {
+		rangeStyle="auto-scale"
+	}
+	y2_axis {
+		rangeStyle="auto-scale"
+	}
+	countPvName="$(P)userArrayCalc2.NUSE"
+	eraseMode="if zero"
 }
-composite {
+"cartesian plot" {
+	object {
+		x=200
+		y=135
+		width=200
+		height=100
+	}
+	plotcom {
+		xlabel="ARRAY INDEX"
+		clr=14
+		bclr=0
+	}
+	style="line"
+	count="$(P)userArrayCalc7.NUSE"
+	trace[0] {
+		ydata="$(P)userArrayCalc7.AVAL"
+		data_clr=14
+		yaxis=0
+	}
+	x_axis {
+		rangeStyle="auto-scale"
+	}
+	y1_axis {
+		rangeStyle="auto-scale"
+	}
+	y2_axis {
+		rangeStyle="auto-scale"
+	}
+	countPvName="$(P)userArrayCalc7.NUSE"
+	eraseMode="if zero"
+}
+"cartesian plot" {
 	object {
 		x=0
 		y=255
-		width=400
+		width=200
 		height=100
 	}
-	"composite name"=""
-	children {
-		"cartesian plot" {
-			object {
-				x=0
-				y=255
-				width=200
-				height=100
-			}
-			plotcom {
-				xlabel="ARRAY INDEX"
-				clr=14
-				bclr=0
-			}
-			style="line"
-			count="1000"
-			trace[0] {
-				ydata="$(P)userArrayCalc3.AVAL"
-				data_clr=14
-			}
-			x_axis {
-				rangeStyle="auto-scale"
-			}
-			y1_axis {
-				rangeStyle="auto-scale"
-			}
-			y2_axis {
-				rangeStyle="auto-scale"
-			}
-			eraseMode="if zero"
-		}
-		"cartesian plot" {
-			object {
-				x=200
-				y=255
-				width=200
-				height=100
-			}
-			plotcom {
-				xlabel="ARRAY INDEX"
-				clr=14
-				bclr=0
-			}
-			style="line"
-			count="1000"
-			trace[0] {
-				ydata="$(P)userArrayCalc8.AVAL"
-				data_clr=14
-			}
-			x_axis {
-				rangeStyle="auto-scale"
-			}
-			y1_axis {
-				rangeStyle="auto-scale"
-			}
-			y2_axis {
-				rangeStyle="auto-scale"
-			}
-			eraseMode="if zero"
-		}
+	plotcom {
+		xlabel="ARRAY INDEX"
+		clr=14
+		bclr=0
 	}
+	style="line"
+	count="$(P)userArrayCalc3.NUSE"
+	trace[0] {
+		ydata="$(P)userArrayCalc3.AVAL"
+		data_clr=14
+		yaxis=0
+	}
+	x_axis {
+		rangeStyle="auto-scale"
+	}
+	y1_axis {
+		rangeStyle="auto-scale"
+	}
+	y2_axis {
+		rangeStyle="auto-scale"
+	}
+	countPvName="$(P)userArrayCalc3.NUSE"
+	eraseMode="if zero"
 }
-composite {
+"cartesian plot" {
+	object {
+		x=200
+		y=255
+		width=200
+		height=100
+	}
+	plotcom {
+		xlabel="ARRAY INDEX"
+		clr=14
+		bclr=0
+	}
+	style="line"
+	count="$(P)userArrayCalc8.NUSE"
+	trace[0] {
+		ydata="$(P)userArrayCalc8.AVAL"
+		data_clr=14
+		yaxis=0
+	}
+	x_axis {
+		rangeStyle="auto-scale"
+	}
+	y1_axis {
+		rangeStyle="auto-scale"
+	}
+	y2_axis {
+		rangeStyle="auto-scale"
+	}
+	countPvName="$(P)userArrayCalc8.NUSE"
+	eraseMode="if zero"
+}
+"cartesian plot" {
 	object {
 		x=0
 		y=495
-		width=400
+		width=200
 		height=100
 	}
-	"composite name"=""
-	children {
-		"cartesian plot" {
-			object {
-				x=0
-				y=495
-				width=200
-				height=100
-			}
-			plotcom {
-				xlabel="ARRAY INDEX"
-				clr=14
-				bclr=0
-			}
-			style="line"
-			count="1000"
-			trace[0] {
-				ydata="$(P)userArrayCalc5.AVAL"
-				data_clr=14
-			}
-			x_axis {
-				rangeStyle="auto-scale"
-			}
-			y1_axis {
-				rangeStyle="auto-scale"
-			}
-			y2_axis {
-				rangeStyle="auto-scale"
-			}
-			eraseMode="if zero"
-		}
-		"cartesian plot" {
-			object {
-				x=200
-				y=495
-				width=200
-				height=100
-			}
-			plotcom {
-				xlabel="ARRAY INDEX"
-				clr=14
-				bclr=0
-			}
-			style="line"
-			count="1000"
-			trace[0] {
-				ydata="$(P)userArrayCalc10.AVAL"
-				data_clr=14
-			}
-			x_axis {
-				rangeStyle="auto-scale"
-			}
-			y1_axis {
-				rangeStyle="auto-scale"
-			}
-			y2_axis {
-				rangeStyle="auto-scale"
-			}
-			eraseMode="if zero"
-		}
+	plotcom {
+		xlabel="ARRAY INDEX"
+		clr=14
+		bclr=0
 	}
+	style="line"
+	count="$(P)userArrayCalc5.NUSE"
+	trace[0] {
+		ydata="$(P)userArrayCalc5.AVAL"
+		data_clr=14
+		yaxis=0
+	}
+	x_axis {
+		rangeStyle="auto-scale"
+	}
+	y1_axis {
+		rangeStyle="auto-scale"
+	}
+	y2_axis {
+		rangeStyle="auto-scale"
+	}
+	countPvName="$(P)userArrayCalc5.NUSE"
+	eraseMode="if zero"
 }
-composite {
+"cartesian plot" {
+	object {
+		x=200
+		y=495
+		width=200
+		height=100
+	}
+	plotcom {
+		xlabel="ARRAY INDEX"
+		clr=14
+		bclr=0
+	}
+	style="line"
+	count="$(P)userArrayCalc10.NUSE"
+	trace[0] {
+		ydata="$(P)userArrayCalc10.AVAL"
+		data_clr=14
+		yaxis=0
+	}
+	x_axis {
+		rangeStyle="auto-scale"
+	}
+	y1_axis {
+		rangeStyle="auto-scale"
+	}
+	y2_axis {
+		rangeStyle="auto-scale"
+	}
+	countPvName="$(P)userArrayCalc10.NUSE"
+	eraseMode="if zero"
+}
+"cartesian plot" {
 	object {
 		x=0
 		y=375
-		width=400
+		width=200
 		height=100
 	}
-	"composite name"=""
-	children {
-		"cartesian plot" {
-			object {
-				x=0
-				y=375
-				width=200
-				height=100
-			}
-			plotcom {
-				xlabel="ARRAY INDEX"
-				clr=14
-				bclr=0
-			}
-			style="line"
-			count="1000"
-			trace[0] {
-				ydata="$(P)userArrayCalc4.AVAL"
-				data_clr=14
-			}
-			x_axis {
-				rangeStyle="auto-scale"
-			}
-			y1_axis {
-				rangeStyle="auto-scale"
-			}
-			y2_axis {
-				rangeStyle="auto-scale"
-			}
-			eraseMode="if zero"
-		}
-		"cartesian plot" {
-			object {
-				x=200
-				y=375
-				width=200
-				height=100
-			}
-			plotcom {
-				xlabel="ARRAY INDEX"
-				clr=14
-				bclr=0
-			}
-			style="line"
-			count="1000"
-			trace[0] {
-				ydata="$(P)userArrayCalc9.AVAL"
-				data_clr=14
-			}
-			x_axis {
-				rangeStyle="auto-scale"
-			}
-			y1_axis {
-				rangeStyle="auto-scale"
-			}
-			y2_axis {
-				rangeStyle="auto-scale"
-			}
-			eraseMode="if zero"
-		}
+	plotcom {
+		xlabel="ARRAY INDEX"
+		clr=14
+		bclr=0
 	}
+	style="line"
+	count="$(P)userArrayCalc4.NUSE"
+	trace[0] {
+		ydata="$(P)userArrayCalc4.AVAL"
+		data_clr=14
+		yaxis=0
+	}
+	x_axis {
+		rangeStyle="auto-scale"
+	}
+	y1_axis {
+		rangeStyle="auto-scale"
+	}
+	y2_axis {
+		rangeStyle="auto-scale"
+	}
+	countPvName="$(P)userArrayCalc4.NUSE"
+	eraseMode="if zero"
+}
+"cartesian plot" {
+	object {
+		x=200
+		y=375
+		width=200
+		height=100
+	}
+	plotcom {
+		xlabel="ARRAY INDEX"
+		clr=14
+		bclr=0
+	}
+	style="line"
+	count="$(P)userArrayCalc9.NUSE"
+	trace[0] {
+		ydata="$(P)userArrayCalc9.AVAL"
+		data_clr=14
+		yaxis=0
+	}
+	x_axis {
+		rangeStyle="auto-scale"
+	}
+	y1_axis {
+		rangeStyle="auto-scale"
+	}
+	y2_axis {
+		rangeStyle="auto-scale"
+	}
+	countPvName="$(P)userArrayCalc9.NUSE"
+	eraseMode="if zero"
 }
 composite {
 	object {

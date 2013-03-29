@@ -1,0 +1,28 @@
+US Digital X3 Multi-Axis Absolute MEMS Inclinometer:
+
+- Files: USdigital_X3.vdb, USdigital_X3.proto,
+         USdigital_X3_settings.req, USdigital_X3.adl, 
+         USdigital_X3_more.adl
+
+- In serial.cmd:
+tyGSAsynInit("serial5",  "UART_0", 4,19200,'N',1,8,'N',"","")  /* USdigital X3 */
+
+# US Digital X3 Inclinometer
+dbLoadRecords("$(TOP)/kagApp/Db/USdigital_X3.vdb","P=kag:,S=1,PORT=serial5")
+
+
+- In top level medm screen, related display button:
+     display[7] {
+             label="US Digital X3"
+             name="USdigital_X3.adl"
+             args="P=3idd:,S=1"
+     }
+
+- RS-232 connection:
+Straight-through, with XM-Octal default jumpers (veritical)
+
+- Notes:
+  1.) This device's default Baud rate is 115K.  This has to be set
+      to 19.2K by connecting the device to a PC running US Digital's
+      demo program.
+  2.) StreamDevice support used, .proto file must be accessable to ioc.

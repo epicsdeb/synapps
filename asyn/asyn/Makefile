@@ -20,6 +20,7 @@ USR_INCLUDES_cygwin32 += -I/usr/include/tirpc
 ifeq (vxWorks,$(findstring vxWorks, $(T_A)))
 CODE_CXXFLAGS=
 endif
+USR_CXXFLAGS_solaris-sparc=-instances=global
 
 LIBRARY_IOC += asyn
 asyn_LIBS += $(EPICS_BASE_IOC_LIBS)
@@ -61,6 +62,7 @@ INC += asynFloat32Array.h  asynFloat32ArraySyncIO.h
 INC += asynFloat64Array.h  asynFloat64ArraySyncIO.h
 INC += asynOctet.h         asynOctetSyncIO.h
 INC += asynGenericPointer.h asynGenericPointerSyncIO.h
+INC += asynEnum.h          asynEnumSyncIO.h
 INC += asynCommonSyncIO.h
 INC += asynOption.h
 INC += asynDrvUser.h
@@ -75,6 +77,7 @@ asyn_SRCS += asynFloat32ArrayBase.c  asynFloat32ArraySyncIO.c
 asyn_SRCS += asynFloat64ArrayBase.c  asynFloat64ArraySyncIO.c
 asyn_SRCS += asynOctetBase.c         asynOctetSyncIO.c
 asyn_SRCS += asynGenericPointerBase.c  asynGenericPointerSyncIO.c
+asyn_SRCS += asynEnumBase.c          asynEnumSyncIO.c
 asyn_SRCS += asynCommonSyncIO.c
 asyn_SRCS += asynStandardInterfacesBase.c
 
@@ -84,12 +87,34 @@ INC += asynShellCommands.h
 INC += asynInterposeCom.h
 INC += asynInterposeEos.h
 INC += asynInterposeFlush.h
-INC += asynPortDriver.h
 asyn_SRCS += asynShellCommands.c
 asyn_SRCS += asynInterposeCom.c
 asyn_SRCS += asynInterposeEos.c
 asyn_SRCS += asynInterposeFlush.c
+
+SRC_DIRS += $(ASYN)/asynPortDriver/exceptions
+INC += ParamListInvalidIndex.h
+INC += ParamListParamNotFound.h
+INC += ParamValNotDefined.h
+INC += ParamValStringSizeRequestTooBig.h
+INC += ParamValWrongType.h
+INC += ParamValValueNotChanged.h
+asyn_SRCS += ParamListInvalidIndex.cpp
+asyn_SRCS += ParamListParamNotFound.cpp
+asyn_SRCS += ParamValNotDefined.cpp
+asyn_SRCS += ParamValStringSizeRequestTooBig.cpp
+asyn_SRCS += ParamValWrongType.cpp
+asyn_SRCS += ParamValValueNotChanged.cpp
+
+SRC_DIRS += $(ASYN)/asynPortDriver
+INC += asynParamType.h
+INC += paramVal.h
+INC += paramList.h
+INC += asynPortDriver.h
+asyn_SRCS += paramVal.cpp
+asyn_SRCS += paramList.cpp
 asyn_SRCS += asynPortDriver.cpp
+
 
 SRC_DIRS += $(ASYN)/devEpics
 DBD += devAsynOctet.dbd
@@ -97,11 +122,15 @@ DBD += devAsynInt32.dbd
 DBD += devAsynInt8Array.dbd
 DBD += devAsynInt16Array.dbd
 DBD += devAsynInt32Array.dbd
+DBD += devAsynInt32TimeSeries.dbd
 DBD += devAsynUInt32Digital.dbd
 DBD += devAsynFloat64.dbd
 DBD += devAsynFloat32Array.dbd
 DBD += devAsynFloat64Array.dbd
+DBD += devAsynFloat64TimeSeries.dbd
 DBD += devEpics.dbd
+DB  += asynInt32TimeSeries.db
+DB  += asynFloat64TimeSeries.db
 INC += asynEpicsUtils.h
 asyn_SRCS += devAsynOctet.c
 asyn_SRCS += asynEpicsUtils.c
@@ -109,10 +138,12 @@ asyn_SRCS += devAsynInt32.c
 asyn_SRCS += devAsynInt8Array.c
 asyn_SRCS += devAsynInt16Array.c
 asyn_SRCS += devAsynInt32Array.c
+asyn_SRCS += devAsynInt32TimeSeries.c
 asyn_SRCS += devAsynUInt32Digital.c
 asyn_SRCS += devAsynFloat64.c
 asyn_SRCS += devAsynFloat32Array.c
 asyn_SRCS += devAsynFloat64Array.c
+asyn_SRCS += devAsynFloat64TimeSeries.c
 
 SRC_DIRS += $(ASYN)/asynRecord
 DBDINC += asynRecord
@@ -171,23 +202,25 @@ ifneq ($(findstring $(OS_CLASS),vxWorks RTEMS),)
 vxi11core.h vxi11core_xdr.c vxi11intr.h vxi11intr_xdr.c : \
 % : ../vxi11/rpc/%
 	cp $< $@
+vxi11core_xdr.o: vxi11core.h
+vxi11intr_xrd.o: vxi11intr.h
 
 else
 
-RPCGEN_FLAGS_solaris = -M
-vxi11core.h vxi11core_xdr.c: ../vxi11/vxi11core.rpcl
-	cp ../vxi11/vxi11core.rpcl .
-	rpcgen $(RPCGEN_FLAGS_$(OS_CLASS)) vxi11core.rpcl
+.SECONDARY: vxi11core_xdr.c vxi11intr_xdr.c
 
-vxi11intr.h vxi11intr_xdr.c: ../vxi11/vxi11intr.rpcl
-	cp ../vxi11/vxi11intr.rpcl .
-	rpcgen $(RPCGEN_FLAGS_$(OS_CLASS)) vxi11intr.rpcl
+RPCGEN_FLAGS_darwin = -C
+RPCGEN_FLAGS_solaris = -M
+%.h %_xdr.c: ../vxi11/%.rpcl
+	cp $< .
+	rpcgen $(RPCGEN_FLAGS_$(OS_CLASS)) $*.rpcl
 
 endif
-
-vxi11core_xdr.c: vxi11core.h
-vxi11intr_xdr.c: vxi11intr.h
 
 endif
 
 $(ASYN)/vxi11/drvVxi11.c: vxi11intr.h
+
+# Parallel build sometimes fails.
+# Make dependences on new records explicit.
+asynRecord$(OBJ): $(COMMON_DIR)/asynRecord.h

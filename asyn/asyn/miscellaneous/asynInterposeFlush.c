@@ -116,14 +116,13 @@ static asynStatus flushIt(void *ppvt,asynUser *pasynUser)
     void         *drvPvt = pinterposePvt->drvPvt;
     double       savetimeout = pasynUser->timeout;
     char         buffer[100];
-    asynStatus   status;
     size_t       nbytesTransfered;
 
     asynPrint(pasynUser,ASYN_TRACEIO_FILTER,"entered asynInterposeFlush::flush\n");
     pasynUser->timeout = pinterposePvt->timeout;
     while(1) {
         nbytesTransfered = 0;
-        status = pasynOctetDrv->read(drvPvt,pasynUser,
+        pasynOctetDrv->read(drvPvt,pasynUser,
             buffer,sizeof(buffer),&nbytesTransfered,0);
         if(nbytesTransfered==0) break;
         asynPrintIO(pasynUser,ASYN_TRACEIO_FILTER,
@@ -202,7 +201,7 @@ static const iocshFuncDef asynInterposeFlushConfigFuncDef =
     {"asynInterposeFlushConfig", 3, asynInterposeFlushConfigArgs};
 static void asynInterposeFlushConfigCallFunc(const iocshArgBuf *args)
 {
-    asynInterposeFlushConfig(args[0].sval,args[1].ival,args[2].dval);
+    asynInterposeFlushConfig(args[0].sval,args[1].ival,(int)args[2].dval);
 }
 
 static void asynInterposeFlushRegister(void)

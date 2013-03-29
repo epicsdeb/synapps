@@ -1,0 +1,41 @@
+# Database for Piezosystems Jena NV 40/1 CLE
+# http://www.piezojena.com/en/site/piezo-controller-and-amplifier__183/
+
+############  SVN Repository information  #############
+# $Date: 2011-09-28 16:47:03 -0500 (Wed, 28 Sep 2011) $
+# $Author: kpetersn $
+# $Revision: 13794 $
+# $HeadURL: https://subversion.xor.aps.anl.gov/synApps/ip/tags/R2-13/ipApp/Db/JenaNV40.db $
+# $Id: JenaNV40.db 13794 2011-09-28 21:47:03Z kpetersn $
+#######################################################
+
+record(ao, "$(P)$(C)write")
+{
+   field(DTYP, "stream")
+   field(OUT,  "@jenaNV40.proto writeValue $(PORT)")
+   field(PREC, "3")
+}
+
+record(ai, "$(P)$(C)read")
+{
+   field(DTYP, "stream")
+   field(INP,  "@jenaNV40.proto readValue $(PORT)")
+   field(PREC, "3")
+   field(SCAN, "0")
+}
+
+record(bo, "$(P)$(C)cl")
+{
+   field(DTYP, "stream")
+   field(ZNAM, "Off")
+   field(ONAM, "On")
+   field(OUT,  "@jenaNV40.proto closedLoop $(PORT)")
+}
+
+record(bo, "$(P)$(C)rc")
+{
+   field(DTYP, "stream")
+   field(ZNAM, "Off")
+   field(ONAM, "On")
+   field(OUT,  "@jenaNV40.proto remoteControl $(PORT)")
+}

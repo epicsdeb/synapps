@@ -2,9 +2,10 @@
 FILENAME...	devOms58.c
 USAGE...	Motor record device level support for OMS VME58.
 
-Version:	$Revision: 1.7 $
-Modified By:	$Author: sluiter $
-Last Modified:	$Date: 2008-03-14 20:19:06 $
+Version:        $Revision: 10834 $
+Modified By:    $Author: sluiter $
+Last Modified:  $Date: 2010-04-29 12:04:39 -0500 (Thu, 29 Apr 2010) $
+HeadURL:        $URL: https://subversion.xor.aps.anl.gov/synApps/motor/tags/R6-7-1/motorApp/OmsSrc/devOms58.cc $
 */
 
 /*

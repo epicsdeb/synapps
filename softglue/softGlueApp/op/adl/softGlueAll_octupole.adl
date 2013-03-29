@@ -1,7 +1,7 @@
 
 file {
-	name="/home/oxygen/MOONEY/epics/synApps_5_5/support/softGlue/softGlueApp/op/adl/softGlueAll.adl"
-	version=030104
+	name="/home/oxygen/MOONEY/epics/synApps/support/softGlue/softGlueApp/op/adl/softGlueAll_octupole.adl"
+	version=030105
 }
 display {
 	object {
@@ -90,7 +90,7 @@ display {
 composite {
 	object {
 		x=83
-		y=777
+		y=786
 		width=285
 		height=26
 	}
@@ -180,7 +180,7 @@ composite {
 composite {
 	object {
 		x=10
-		y=10
+		y=35
 		width=374
 		height=49
 	}
@@ -190,7 +190,7 @@ composite {
 composite {
 	object {
 		x=10
-		y=60
+		y=85
 		width=374
 		height=49
 	}
@@ -200,7 +200,7 @@ composite {
 composite {
 	object {
 		x=10
-		y=110
+		y=135
 		width=374
 		height=49
 	}
@@ -210,7 +210,7 @@ composite {
 composite {
 	object {
 		x=10
-		y=160
+		y=185
 		width=374
 		height=49
 	}
@@ -290,7 +290,7 @@ composite {
 composite {
 	object {
 		x=10
-		y=310
+		y=335
 		width=373
 		height=49
 	}
@@ -300,7 +300,7 @@ composite {
 composite {
 	object {
 		x=10
-		y=360
+		y=385
 		width=373
 		height=49
 	}
@@ -310,7 +310,7 @@ composite {
 composite {
 	object {
 		x=10
-		y=210
+		y=235
 		width=373
 		height=49
 	}
@@ -320,7 +320,7 @@ composite {
 composite {
 	object {
 		x=10
-		y=260
+		y=285
 		width=373
 		height=49
 	}
@@ -330,7 +330,7 @@ composite {
 composite {
 	object {
 		x=10
-		y=410
+		y=435
 		width=379
 		height=99
 	}
@@ -339,7 +339,7 @@ composite {
 		composite {
 			object {
 				x=10
-				y=410
+				y=435
 				width=379
 				height=49
 			}
@@ -349,7 +349,7 @@ composite {
 		composite {
 			object {
 				x=10
-				y=460
+				y=485
 				width=379
 				height=49
 			}
@@ -361,7 +361,7 @@ composite {
 composite {
 	object {
 		x=10
-		y=707
+		y=732
 		width=412
 		height=52
 	}
@@ -371,7 +371,7 @@ composite {
 composite {
 	object {
 		x=10
-		y=657
+		y=682
 		width=412
 		height=52
 	}
@@ -381,7 +381,7 @@ composite {
 composite {
 	object {
 		x=10
-		y=510
+		y=535
 		width=411
 		height=72
 	}
@@ -391,7 +391,7 @@ composite {
 composite {
 	object {
 		x=10
-		y=585
+		y=610
 		width=411
 		height=72
 	}
@@ -497,4 +497,69 @@ composite {
 	}
 	"composite name"=""
 	"composite file"="softGlue_BUFFER_bare.adl;P=$(P),H=$(H),N=2"
+}
+composite {
+	object {
+		x=50
+		y=10
+		width=350
+		height=20
+	}
+	"composite name"=""
+	children {
+		"text update" {
+			object {
+				x=370
+				y=10
+				width=30
+				height=20
+			}
+			monitor {
+				chan="$(P)$(H)availableSignals"
+				clr=54
+				bclr=2
+			}
+			limits {
+			}
+		}
+		text {
+			object {
+				x=50
+				y=10
+				width=160
+				height=20
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="#Signals In Use:"
+		}
+		text {
+			object {
+				x=260
+				y=10
+				width=110
+				height=20
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="#Remaining:"
+		}
+		"text update" {
+			object {
+				x=210
+				y=10
+				width=30
+				height=20
+			}
+			monitor {
+				chan="$(P)$(H)numSignalsInUse"
+				clr=54
+				bclr=2
+			}
+			limits {
+			}
+		}
+	}
 }

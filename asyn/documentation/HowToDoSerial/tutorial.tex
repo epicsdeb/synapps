@@ -1,4 +1,4 @@
-%% LyX 1.6.2 created this file.  For more info, see http://www.lyx.org/.
+%% LyX 2.0.3 created this file.  For more info, see http://www.lyx.org/.
 %% Do not edit unless you really know what you are doing.
 \documentclass[twoside,english]{article}
 \usepackage{mathptmx}
@@ -7,6 +7,7 @@
 \setcounter{tocdepth}{2}
 \usepackage{url}
 
+\makeatletter
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LyX specific LaTeX commands.
 %% Because html converters don't know tabularnewline
@@ -41,8 +42,9 @@
 \usepackage{hyperref}
 %HEVEA \def{\textbackslash}{$\backslash$} % No \textbackslash in hevea.
 
-\usepackage{babel}
+\makeatother
 
+\usepackage{babel}
 \begin{document}
 
 \title{How to create EPICS device support for a simple serial or GPIB device}
@@ -97,22 +99,22 @@ type must be appropriate to the data transferred by the command. The
 AB300 commands and process variable record types I choose to associate
 with them are shown in table~\ref{commandList}.
 
-%
 \begin{table}
 \caption{AB300 filter wheel commands\label{commandList}}
 
 
-\centering{}\begin{tabular}{|l|l|}
+\centering{}%
+\begin{tabular}{|l|l|}
 \hline 
 \multicolumn{2}{|l|}{CVI Laser Corporation AB300 filter wheel}\tabularnewline
-\hline
+\hline 
 \multicolumn{1}{|l|}{Command} & \multicolumn{1}{l|}{EPICS record type}\tabularnewline
-\hline
+\hline 
 Reset  & longout \tabularnewline
 Go to new position  & longout \tabularnewline
 Query position  & longin \tabularnewline
 Query status  & longin  \tabularnewline
-\hline
+\hline 
 \end{tabular}
 \end{table}
 
@@ -591,6 +593,7 @@ drvAsynSerialPortConfigure(\textquotedbl{}L0\textquotedbl{},\textquotedbl{}/tyGS
 asynSetOption(\textquotedbl{}L0\textquotedbl{},-1,\textquotedbl{}baud\textquotedbl{},\textquotedbl{}9600\textquotedbl{})
 \end{lyxcode}
 \end{itemize}
+
 In all of the above examples the first argument of the configure and
 set port option commands is the link identifier and must match the
 \texttt{L} value in the EPICS database record INP and OUT fields.
@@ -611,6 +614,7 @@ every I/O operation.
 asynSetTraceMask(\textquotedbl{}L0\textquotedbl{},-1,0x9)~\\
 asynSetTraceIOMask(\textquotedbl{}L0\textquotedbl{},-1,0x2)
 \end{lyxcode}
+
 A better way to control the amount and type of diagnostic output is
 to add an asynRecord \url{../asynRecord.html} to your application.
 
@@ -796,7 +800,7 @@ asynOctetSetOutputEos(\textquotedbl{}L0\textquotedbl{},0,\textquotedbl{}\textbac
 The configuration command for the same oscilloscope connected to an
 Ethernet GPIB adapter would be:
 \begin{lyxcode}
-vxi11Configure(\textquotedbl{}L0\textquotedbl{},~\textquotedbl{}192.168.8.129\textquotedbl{},~0,~0.0,~\textquotedbl{}gpib0\textquotedbl{},~0)
+vxi11Configure(\textquotedbl{}L0\textquotedbl{},~\textquotedbl{}192.168.8.129\textquotedbl{},~0,~\textquotedbl{}0.0\textquotedbl{},~\textquotedbl{}gpib0\textquotedbl{},~0)
 \end{lyxcode}
 An example command table entry for this device is shown below. Notice
 that there is no \texttt{\textbackslash{}n} at the end of the command
@@ -804,7 +808,6 @@ and that the table 'eos' field is \texttt{NULL}:
 \begin{lyxcode}
 /{*}~2~:~read~delay~:~AI~{*}/~\\
 ~~\{\&DSET\_AI,~GPIBREAD,~IB\_Q\_LOW,~\textquotedbl{}HOR:DEL:TIM?\textquotedbl{},~\textquotedbl{}\%lf\textquotedbl{},~0,~20,~\\
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~NULL,~0,~0,~NULL,~NULL,~NULL\},
-\end{lyxcode}
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~NULL,~0,~0,~NULL,~NULL,~NULL\},\end{lyxcode}
 
 \end{document}

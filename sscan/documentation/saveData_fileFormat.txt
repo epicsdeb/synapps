@@ -1,3 +1,16 @@
+Note, in the following, that an "xdr_counted_string" is not part of the XDR
+standard, but a definition added on top of the standard.  It consists of an
+xdr_short, containing the number of characters in the string, possibly followed
+by an xdr_string.  Only if the xdr_short value is nonzero will an xdr_string
+follow it.  Thus an empty string looks like this:
+
+	<xdr_short=0>
+
+and a nonempty string looks like this:
+
+	<xdr_short=3><xdr_string>
+
+-----------------------------------------------------------------------
 
 scan file format
 
@@ -89,30 +102,30 @@ EXTRA PVs
 
 A 1D scan looks like this:
 
-header
-scan1
-extra PV's
+	header
+	scan1
+	extra PV's
 
 A 2D scan looks like this
 
-header
-scan2
-	scan1
-	scan1
-	...
-extra PV's
+	header
+	scan2
+		scan1
+		scan1
+		...
+	extra PV's
 
 A 3D scan looks like this
 
-header
-scan3
-	scan2
-		scan1
-		scan1
+	header
+	scan3
+		scan2
+			scan1
+			scan1
+			...
+		scan2
+			scan1
+			scan1
+			...
 		...
-	scan2
-		scan1
-		scan1
-		...
-	...
-extra PV's
+	extra PV's

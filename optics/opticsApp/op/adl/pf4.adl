@@ -1,14 +1,14 @@
 
 file {
-	name="/home/oxygen12/DKLINE/EPICS/shared/ioc/sld02/sld02App/op/adl/pf4.adl"
-	version=030101
+	name="/home/oxygen/MOONEY/epics/synApps/support/optics/opticsApp/op/adl/pf4.adl"
+	version=030105
 }
 display {
 	object {
-		x=620
-		y=46
-		width=314
-		height=257
+		x=1194
+		y=346
+		width=325
+		height=215
 	}
 	clr=14
 	bclr=2
@@ -87,49 +87,23 @@ display {
 		1a7309,
 	}
 }
-text {
+rectangle {
 	object {
-		x=10
-		y=2
-		width=200
-		height=10
+		x=0
+		y=0
+		width=325
+		height=25
 	}
 	"basic attribute" {
-		clr=14
+		clr=0
 	}
-	textix="pf4.adl"
-}
-text {
-	object {
-		x=10
-		y=14
-		width=200
-		height=10
-	}
-	"basic attribute" {
-		clr=14
-	}
-	textix="2008-Mar-07 (DMK)"
 }
 text {
 	object {
 		x=4
-		y=56
-		width=300
-		height=24
-	}
-	"basic attribute" {
-		clr=14
-	}
-	textix="$(P)$(H)"
-	align="horiz. centered"
-}
-text {
-	object {
-		x=4
-		y=26
-		width=300
-		height=24
+		y=3
+		width=320
+		height=20
 	}
 	"basic attribute" {
 		clr=14
@@ -139,353 +113,61 @@ text {
 }
 "related display" {
 	object {
-		x=254
-		y=4
+		x=273
+		y=194
 		width=50
-		height=22
+		height=20
 	}
 	display[0] {
 		label="PF4 mono filter computed controls"
 		name="pf4more.adl"
-		args="P=$(P),H=$(H),A=$(A),B=$(B),MONO=$(MONO)"
+		args="P=$(P),H=$(H),A=$(A),B=$(B),MONO=$(MONO),B1=$(B1),B2=$(B2),B3=$(B3),B4=$(B4),B5=$(B5),B6=$(B6),B7=$(B7),B8=$(B8)"
+		policy="replace display"
 	}
-	clr=14
-	bclr=51
+	clr=0
+	bclr=17
 	label="-more"
 }
-"text update" {
+"related display" {
 	object {
-		x=7
-		y=226
-		width=219
+		x=273
+		y=174
+		width=50
 		height=20
 	}
-	monitor {
-		chan="$(P)$(H)trans"
-		clr=14
-		bclr=60
+	display[0] {
+		label="all"
+		name="pf4config.adl"
+		args="P=$(P),H=$(H),A=$(A),B=$(B),MONO=$(MONO),B1=$(B1),B2=$(B2),B3=$(B3),B4=$(B4),B5=$(B5),B6=$(B6),B7=$(B7),B8=$(B8)"
+		policy="replace display"
 	}
-	align="horiz. centered"
-	format="exponential"
-	limits {
-	}
+	clr=0
+	bclr=17
+	label="-+config"
 }
-text {
+polyline {
 	object {
-		x=231
-		y=226
-		width=75
-		height=20
+		x=0
+		y=22
+		width=326
+		height=3
 	}
 	"basic attribute" {
-		clr=14
-	}
-	textix="I/I0"
-}
-"text update" {
-	object {
-		x=76
-		y=175
-		width=82
-		height=12
-	}
-	monitor {
-		chan="$(P)$(H)filterAl"
-		clr=14
-		bclr=31
-	}
-	align="horiz. centered"
-	limits {
-	}
-}
-text {
-	object {
-		x=166
-		y=192
-		width=50
-		height=12
-	}
-	"basic attribute" {
-		clr=14
-	}
-	textix="mm Ti"
-}
-"text update" {
-	object {
-		x=76
-		y=192
-		width=82
-		height=12
-	}
-	monitor {
-		chan="$(P)$(H)filterTi"
-		clr=14
-		bclr=31
-	}
-	align="horiz. centered"
-	limits {
-	}
-}
-text {
-	object {
-		x=166
-		y=175
-		width=50
-		height=12
-	}
-	"basic attribute" {
-		clr=14
-	}
-	textix="mm Al"
-}
-text {
-	object {
-		x=166
-		y=209
-		width=50
-		height=12
-	}
-	"basic attribute" {
-		clr=14
-	}
-	textix="mm glass"
-}
-"text update" {
-	object {
-		x=76
-		y=209
-		width=82
-		height=12
-	}
-	monitor {
-		chan="$(P)$(H)filterGlass"
-		clr=14
-		bclr=31
-	}
-	align="horiz. centered"
-	limits {
-	}
-}
-rectangle {
-	object {
-		x=4
-		y=90
-		width=300
-		height=80
-	}
-	"basic attribute" {
-		clr=14
-		fill="outline"
-		width=2
-	}
-}
-polygon {
-	object {
-		x=26
-		y=108
-		width=20
-		height=46
-	}
-	"basic attribute" {
-		clr=38
-		width=2
-	}
-	"dynamic attribute" {
-		vis="if not zero"
-		chan="$(B8)"
+		clr=54
+		width=3
 	}
 	points {
-		(26,141)
-		(46,154)
-		(46,116)
-		(26,108)
-		(26,141)
+		(1,23)
+		(324,23)
 	}
 }
-polygon {
+composite {
 	object {
-		x=56
-		y=108
-		width=20
-		height=46
+		x=5
+		y=25
+		width=305
+		height=189
 	}
-	"basic attribute" {
-		clr=37
-		width=2
-	}
-	"dynamic attribute" {
-		vis="if not zero"
-		chan="$(B7)"
-	}
-	points {
-		(56,141)
-		(76,154)
-		(76,116)
-		(56,108)
-		(56,141)
-	}
-}
-polygon {
-	object {
-		x=86
-		y=108
-		width=20
-		height=46
-	}
-	"basic attribute" {
-		clr=36
-		width=2
-	}
-	"dynamic attribute" {
-		vis="if not zero"
-		chan="$(B6)"
-	}
-	points {
-		(86,141)
-		(106,154)
-		(106,116)
-		(86,108)
-		(86,141)
-	}
-}
-polygon {
-	object {
-		x=116
-		y=108
-		width=20
-		height=46
-	}
-	"basic attribute" {
-		clr=35
-		width=2
-	}
-	"dynamic attribute" {
-		vis="if not zero"
-		chan="$(B5)"
-	}
-	points {
-		(116,141)
-		(136,154)
-		(136,116)
-		(116,108)
-		(116,141)
-	}
-}
-polygon {
-	object {
-		x=169
-		y=108
-		width=20
-		height=46
-	}
-	"basic attribute" {
-		clr=53
-		width=2
-	}
-	"dynamic attribute" {
-		vis="if not zero"
-		chan="$(B4)"
-	}
-	points {
-		(169,141)
-		(189,154)
-		(189,116)
-		(169,108)
-		(169,141)
-	}
-}
-polygon {
-	object {
-		x=199
-		y=108
-		width=20
-		height=46
-	}
-	"basic attribute" {
-		clr=52
-		width=2
-	}
-	"dynamic attribute" {
-		vis="if not zero"
-		chan="$(B3)"
-	}
-	points {
-		(199,141)
-		(219,154)
-		(219,116)
-		(199,108)
-		(199,141)
-	}
-}
-polygon {
-	object {
-		x=259
-		y=108
-		width=20
-		height=46
-	}
-	"basic attribute" {
-		clr=50
-		width=2
-	}
-	"dynamic attribute" {
-		vis="if not zero"
-		chan="$(B1)"
-	}
-	points {
-		(259,141)
-		(279,154)
-		(279,116)
-		(259,108)
-		(259,141)
-	}
-}
-polygon {
-	object {
-		x=229
-		y=108
-		width=20
-		height=46
-	}
-	"basic attribute" {
-		clr=51
-		width=2
-	}
-	"dynamic attribute" {
-		vis="if not zero"
-		chan="$(B2)"
-	}
-	points {
-		(229,141)
-		(249,154)
-		(249,116)
-		(229,108)
-		(229,141)
-	}
-}
-text {
-	object {
-		x=25
-		y=153
-		width=100
-		height=14
-	}
-	"basic attribute" {
-		clr=14
-	}
-	textix="bank B"
-	align="horiz. centered"
-}
-text {
-	object {
-		x=180
-		y=153
-		width=100
-		height=14
-	}
-	"basic attribute" {
-		clr=14
-	}
-	textix="bank A"
-	align="horiz. centered"
+	"composite name"=""
+	"composite file"="pf4_bare.adl;"
 }

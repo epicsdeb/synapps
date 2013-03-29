@@ -306,25 +306,33 @@ scan, it sets its <tt>BUSY</tt> field to <tt>1</tt> while the new scan is in
 progress, and it sets <tt>BUSY</tt> to <tt>0</tt> when the scan is done.
 
 <P>If the sscan record is not able to start a new scan, the client will receive
-an error indication, and the command will be ignored.  The sscan record
+an error indication, and the command may be ignored.  The sscan record
 will set its <tt>SMSG</tt> field to a string describing the reason why it cannot
 start a new scan.  Possible reasons include the following:
 
 <dl>
 <dt>"Scan is paused"<dd>The sscan-record field <tt>PAUS</tt> has a nonzero value,
 indicating that some client has told the sscan record to stand by until
-<tt>PAUS</tt> is set back to <tt>0</tt>.
+<tt>PAUS</tt> is set back to <tt>0</tt>.  In this case, the sscan record will
+wait until <tt>PAUS</tt> is rescinded before setting <tt>BUSY</tt> to <tt>1</tt>
+and starting the scan.
 
 <dt>"Already scanning"<dd>A scan is already in progress.  Setting <tt>EXSC</tt> to
-<tt>1</tt> while  scan is in progress has no effect on that scan.
+<tt>1</tt> while  scan is in progress has no effect on that scan.  In this case,
+the command will be ignored.
 
 <dt>"Waiting for saveData"<dd>A new scan cannot be started because the
-data-storage client, "saveData", is still using one of the two sets of
-data arrays, and the other set is full of scan data also waiting for service
-by saveData.
+data-storage client, "saveData", is still using one of the two sets of data
+arrays, and the other set is full of scan data also waiting for service by
+saveData.  In this case, the sscan record will wait until saveData has finished
+using the arrays (which saveData indicates by writing <tt>0</tt> to the sscan
+record's <tt>AWAIT</tt> field) before setting <tt>BUSY</tt> to <tt>1</tt> and
+starting the scan.
 
-<dt>"Waiting for callback"<dd>The previous scan is essentially complete,
-but one of the commands the sscan record issued has not yet completed.
+<dt>"Waiting for callback"<dd>The previous scan is essentially complete, but one
+of the commands the sscan record issued has not yet completed.    In this case,
+the command will be ignored.
+
 </dl>
 
 <P>In all of these cases, the start command is ignored, and the scan will not

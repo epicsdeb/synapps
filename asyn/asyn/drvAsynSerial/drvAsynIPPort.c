@@ -94,7 +94,7 @@ typedef struct {
     char              *portName;
     int                socketType;
     int                flags;
-    int                fd;
+    SOCKET             fd;
     unsigned long      nRead;
     unsigned long      nWritten;
     int                haveAddress;
@@ -114,7 +114,7 @@ typedef struct {
 #define POLLIN  0x1
 #define POLLOUT 0x2
 struct pollfd {
-    int fd;
+    SOCKET fd;
     short events;
     short revents;
 };
@@ -144,7 +144,7 @@ static int poll(struct pollfd fds[], int nfds, int timeout)
 /*
  * OSI function to control blocking/non-blocking I/O
  */
-static int setNonBlock(int fd, int nonBlockFlag)
+static int setNonBlock(SOCKET fd, int nonBlockFlag)
 {
 #if defined(vxWorks)
     int flags;
@@ -178,9 +178,9 @@ closeConnection(asynUser *pasynUser,ttyController_t *tty,const char *why)
 {
     asynPrint(pasynUser, ASYN_TRACE_FLOW,
               "Close %s connection (fd %d): %s\n", tty->IPDeviceName, tty->fd, why);
-    if (tty->fd >= 0) {
+    if (tty->fd != INVALID_SOCKET) {
         epicsSocketDestroy(tty->fd);
-        tty->fd = -1;
+        tty->fd = INVALID_SOCKET;
     }
     if (!(tty->flags & FLAG_CONNECT_PER_TRANSACTION))
         pasynManager->exceptionDisconnect(pasynUser);
@@ -199,7 +199,7 @@ asynCommonReport(void *drvPvt, FILE *fp, int details)
     if (details >= 1) {
         fprintf(fp, "    Port %s: %sonnected\n",
                                                 tty->IPDeviceName,
-                                                tty->fd >= 0 ? "C" : "Disc");
+                                                tty->fd != INVALID_SOCKET ? "C" : "Disc");
     }
     if (details >= 2) {
         fprintf(fp, "                    fd: %d\n", tty->fd);
@@ -223,11 +223,11 @@ cleanup (void *arg)
     if(status!=asynSuccess)
         asynPrint(tty->pasynUser, ASYN_TRACE_ERROR, "%s: cleanup locking error\n", tty->portName);
 
-    if (tty->fd >= 0) {
+    if (tty->fd != INVALID_SOCKET) {
         asynPrint(tty->pasynUser, ASYN_TRACE_FLOW, "%s: shutdown socket\n", tty->portName);
         tty->flags |= FLAG_SHUTDOWN; /* prevent reconnect */
         epicsSocketDestroy(tty->fd);
-        tty->fd = -1;
+        tty->fd = INVALID_SOCKET;
         /* If this delay is not present then the sockets are not always really closed cleanly */
         epicsThreadSleep(CLOSE_SOCKET_DELAY);
     }
@@ -243,7 +243,7 @@ static asynStatus
 connectIt(void *drvPvt, asynUser *pasynUser)
 {
     ttyController_t *tty = (ttyController_t *)drvPvt;
-    int fd;
+    SOCKET fd;
     int i;
 
     /*
@@ -255,7 +255,7 @@ connectIt(void *drvPvt, asynUser *pasynUser)
                                                            pasynUser->reason,
                                                            tty->fd);
 
-    if (tty->fd >= 0) {
+    if (tty->fd != INVALID_SOCKET) {
         epicsSnprintf(pasynUser->errorMessage,pasynUser->errorMessageSize,
                               "%s: Link already open!", tty->IPDeviceName);
         return asynError;
@@ -286,7 +286,7 @@ connectIt(void *drvPvt, asynUser *pasynUser)
         if ((tty->flags & FLAG_BROADCAST)
          && (setsockopt(fd, SOL_SOCKET, SO_BROADCAST, (void *)&i, sizeof i) < 0)) {
             epicsSnprintf(pasynUser->errorMessage,pasynUser->errorMessageSize,
-                          "Can't set %s socket BROADCAST option: %s\n",
+                          "Can't set %s socket BROADCAST option: %s",
                           tty->IPDeviceName, strerror(SOCKERRNO));
             epicsSocketDestroy(fd);
             return asynError;
@@ -301,6 +301,7 @@ connectIt(void *drvPvt, asynUser *pasynUser)
             if(hostToIPAddr(tty->IPHostName, &tty->farAddr.ia.sin_addr) < 0) {
                 epicsSnprintf(pasynUser->errorMessage,pasynUser->errorMessageSize,
                                             "Unknown host \"%s\"", tty->IPHostName);
+                epicsSocketDestroy(fd);
                 return asynError;
             }
             tty->haveAddress = 1;
@@ -324,7 +325,7 @@ connectIt(void *drvPvt, asynUser *pasynUser)
     if ((tty->socketType == SOCK_STREAM)
      && (setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, (void *)&i, sizeof i) < 0)) {
         epicsSnprintf(pasynUser->errorMessage,pasynUser->errorMessageSize,
-                      "Can't set %s socket NODELAY option: %s\n",
+                      "Can't set %s socket NODELAY option: %s",
                       tty->IPDeviceName, strerror(SOCKERRNO));
         epicsSocketDestroy(fd);
         return asynError;
@@ -332,7 +333,7 @@ connectIt(void *drvPvt, asynUser *pasynUser)
 #ifdef USE_POLL
     if (setNonBlock(fd, 1) < 0) {
         epicsSnprintf(pasynUser->errorMessage,pasynUser->errorMessageSize,
-                               "Can't set %s O_NONBLOCK option: %s\n",
+                               "Can't set %s O_NONBLOCK option: %s",
                                        tty->IPDeviceName, strerror(SOCKERRNO));
         epicsSocketDestroy(fd);
         return asynError;
@@ -390,9 +391,9 @@ static asynStatus writeIt(void *drvPvt, asynUser *pasynUser,
     asynPrint(pasynUser, ASYN_TRACE_FLOW,
               "%s write.\n", tty->IPDeviceName);
     asynPrintIO(pasynUser, ASYN_TRACEIO_DRIVER, data, numchars,
-                "%s write %d\n", tty->IPDeviceName, numchars);
+                "%s write %lu\n", tty->IPDeviceName, (unsigned long)numchars);
     *nbytesTransfered = 0;
-    if (tty->fd < 0) {
+    if (tty->fd == INVALID_SOCKET) {
         if (tty->flags & FLAG_CONNECT_PER_TRANSACTION) {
             if ((status = connectIt(drvPvt, pasynUser)) != asynSuccess)
                 return status;
@@ -430,7 +431,7 @@ static asynStatus writeIt(void *drvPvt, asynUser *pasynUser,
         poll(&pollfd, 1, writePollmsec);
 #endif
         for (;;) {
-            thisWrite = send(tty->fd, (char *)data, numchars, 0);
+            thisWrite = send(tty->fd, (char *)data, (int)numchars, 0);
             if (thisWrite >= 0) break;
             if (SOCKERRNO == SOCK_EWOULDBLOCK || SOCKERRNO == SOCK_EINTR) {
                 if (!haveStartTime) {
@@ -450,7 +451,7 @@ static asynStatus writeIt(void *drvPvt, asynUser *pasynUser,
             } else break;
         }
         if (thisWrite > 0) {
-            tty->nWritten += thisWrite;
+            tty->nWritten += (unsigned long)thisWrite;
             *nbytesTransfered += thisWrite;
             numchars -= thisWrite;
             if (numchars == 0)
@@ -492,7 +493,7 @@ static asynStatus readIt(void *drvPvt, asynUser *pasynUser,
     assert(tty);
     asynPrint(pasynUser, ASYN_TRACE_FLOW,
               "%s read.\n", tty->IPDeviceName);
-    if (tty->fd < 0) {
+    if (tty->fd == INVALID_SOCKET) {
         if (tty->flags & FLAG_CONNECT_PER_TRANSACTION) {
             if ((status = connectIt(drvPvt, pasynUser)) != asynSuccess)
                 return status;
@@ -505,7 +506,7 @@ static asynStatus readIt(void *drvPvt, asynUser *pasynUser,
     }
     if (maxchars <= 0) {
         epicsSnprintf(pasynUser->errorMessage,pasynUser->errorMessageSize,
-                  "%s maxchars %d. Why <=0?\n",tty->IPDeviceName,(int)maxchars);
+                  "%s maxchars %d. Why <=0?",tty->IPDeviceName,(int)maxchars);
         return asynError;
     }
     readPollmsec = (int) (pasynUser->timeout * 1000.0);
@@ -533,11 +534,11 @@ static asynStatus readIt(void *drvPvt, asynUser *pasynUser,
         poll(&pollfd, 1, readPollmsec);
     }
 #endif
-    thisRead = recv(tty->fd, data, maxchars, 0);
+    thisRead = recv(tty->fd, data, (int)maxchars, 0);
     if (thisRead > 0) {
         asynPrintIO(pasynUser, ASYN_TRACEIO_DRIVER, data, thisRead,
                    "%s read %d\n", tty->IPDeviceName, thisRead);
-        tty->nRead += thisRead;
+        tty->nRead += (unsigned long)thisRead;
     }
     if (thisRead < 0) {
         if ((SOCKERRNO != SOCK_EWOULDBLOCK) && (SOCKERRNO != SOCK_EINTR)) {
@@ -584,7 +585,7 @@ flushIt(void *drvPvt,asynUser *pasynUser)
 
     assert(tty);
     asynPrint(pasynUser, ASYN_TRACE_FLOW, "%s flush\n", tty->IPDeviceName);
-    if (tty->fd >= 0) {
+    if (tty->fd != INVALID_SOCKET) {
         /*
          * Toss characters until there are none left
          */
@@ -607,7 +608,7 @@ static void
 ttyCleanup(ttyController_t *tty)
 {
     if (tty) {
-        if (tty->fd >= 0)
+        if (tty->fd != INVALID_SOCKET)
             epicsSocketDestroy(tty->fd);
         free(tty->portName);
         free(tty->IPDeviceName);
@@ -675,7 +676,7 @@ drvAsynIPPortConfigure(const char *portName,
     tty = (ttyController_t *)callocMustSucceed(1, nbytes,
           "drvAsynIPPortConfigure()");
     pasynOctet = (asynOctet *)(tty+1);
-    tty->fd = -1;
+    tty->fd = INVALID_SOCKET;
     tty->IPDeviceName = epicsStrDup(hostInfo);
     tty->portName = epicsStrDup(portName);
 

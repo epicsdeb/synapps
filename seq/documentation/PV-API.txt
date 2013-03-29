@@ -1,0 +1,742 @@
+The PV (Process Variable) API
+=============================
+
+This chapter describes the PV API. It is intended for those who
+would like to add support for new message systems. It need not be
+read by those who want to write sequences using message systems
+that are already supported.
+
+Introduction
+------------
+
+The PV (Process Variable) API was introduced at version 2.0 in
+order to hide the details of the underlying message system from the
+sequencer code. Previously, the sequencer code (i.e. the modules
+implementing the sequencer run-time support, not the user-written
+sequences) called CA routines directly. Now it calls PV routines,
+which in turn call routines of the underlying message system. This
+allows new message systems to be supported without changing
+sequencer code.
+
+Rationale
+---------
+
+Several EPICS tools support both CA and CDEV. They do so in ad hoc
+ways. For example, *medm* uses an *MEDM_CDEV* macro and has
+*medmCA* and *medmCdev* modules, whereas *alh* has an *alCaCdev*
+module that implements the same interface as the *alCA* module.
+
+The PV API is an attempt at solving the same problem but in a way
+that is independent of the tool to which it is being applied. It
+should be possible to use the PV API (maybe with some
+backwards-compatible extensions) with *medm*, *alh* and other
+CA-based tools. Having done that, supporting another message system
+at the PV level automatically supports it for all the tools that
+use the PV API.
+
+Doesn't this sound rather like the problem that CDEV is solving? In
+a way, but PV is a pragmatic solution to a specific problem. The PV
+API is very close in concept to the CA API and is designed to plug
+in to a CA-based tool with minimal disruption. Why not use the CA
+API and implement it for other message systems? That could have
+been done, but would have made the PV API dependent on the EPICS
+*db\_access.h* definitions (currently it is dependent only on the
+EPICS OSI layer).
+
+In any case, a new API was defined and the sequencer code was
+converted to use it.
+
+A tour of the API
+-----------------
+
+.. _pvApiOverview:
+
+Overview
+^^^^^^^^
+
+The public interface is defined in the file *pv.h*, which defines
+various types such as ``pvStat``, ``pvSevr``, ``pvValue``,
+``pvConnFunc`` and ``pvEventFunc``, then defines abstract ``pvSystem``,
+``pvVariable`` and ``pvCallback`` classes. Finally it defines a C API.
+
+The file *pv.cc* implements generic methods (mostly constructors
+and destructors) and the C API.
+
+Each supported message system *XXX* creates a *pvXxx.h* file that
+defines ``xxxSystem`` (extending ``pvSystem`` ) and ``xxxVariable``
+(extending ``pvVariable``) classes, and a *pvXxx.cc* file that
+contains the implementations of ``xxxSystem`` and ``xxxVariable`` .
+
+Currently-supported message systems are CA and a Keck-specific one
+called KTL. The CA layer is very thin (*pvCa.h* is 104 lines and
+*pvCa.cc* is 818 lines; both these figures include comments).
+
+The file *pvNew.cc* implements a ``newPvSystem`` function that takes
+a system name argument (e.g. ``"ca"``), calls the appropriate
+``xxxSystem`` constructor, and returns it (as a ``pvSystem`` pointer).
+It would be good to change it to use dynamically-loaded libraries,
+in which case there would be no direct dependence of the *pv*
+library on any of the *pvXxx* libraries (c.f. the way CDEV
+creates ``cdevService`` objects).
+
+Simple C++ PV program (comments and error handling have been removed)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+::
+
+  #include <stdio.h>
+  #include <stdlib.h>
+  #include <string.h>
+
+  #include "pv.h"
+
+  void event( void *obj, pvType type, int count, pvValue *val,
+      void *arg, pvStat stat ) {
+    pvVariable *var = ( pvVariable * ) obj;
+    printf( "event: %s=%g\\n", var->getName(), val->doubleVal[0] );
+  }
+
+  int main( int argc, char *argv[] ) {
+    const char *sysNam = ( argc > 1 ) ? argv[1] : "ca";
+    const char *varNam = ( argc > 2 ) ? argv[2] : "demo:voltage";
+
+    pvSystem *sys = newPvSystem( sysNam );
+    pvVariable *var = sys->newVariable( varNam );
+
+    var->monitorOn( pvTypeDOUBLE, 1, event );
+    sys->pend( 10, TRUE );
+
+    delete var;
+    delete sys;
+    return 0;
+  }
+
+The equivalent program using the C API
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+::
+
+  #include <stdio.h>
+  #include <stdlib.h>
+  #include <string.h>
+
+  #include "pv.h"
+
+  void event( void *var, pvType type, int count, pvValue *val,
+      void *arg, pvStat stat) {
+    printf( "event: %s=%g\\n", pvVarGetName( var ),
+    val->doubleVal[0] );
+  }
+
+  int main( int argc, char *argv[] ) {
+    const char *sysNam = ( argc > 1 ) ? argv[1] : "ca";
+    const char *varNam = ( argc > 2 ) ? argv[2] : "demo:voltage";
+    void *sys;
+    void *var;
+
+    pvSysCreate( sysNam, 0, &sys );
+    pvVarCreate( sys, varNam, NULL, NULL, 0, &var );
+
+    pvVarMonitorOn( var, pvTypeDOUBLE, 1, event, NULL, NULL );
+    pvSysPend( sys, 10, TRUE );
+
+    pvVarDestroy( var );
+    pvSysDestroy( sys );
+    return 0;
+  }
+
+The API in More Detail
+----------------------
+
+We will look at the contents of *pv.h* (and *pvAlarm.h*) in more
+detail and will specify the constraints that must be met by
+underlying message systems.
+
+Type definitions
+^^^^^^^^^^^^^^^^
+
+*pv.h* and *pvAlarm.h* define various types, described in the
+following sections.
+
+.. _pvStat:
+
+Status
+~~~~~~
+
+::
+
+  typedef enum {
+    pvStatOK = 0,
+    pvStatERROR = -1,
+    pvStatDISCONN = -2,
+
+    pvStatREAD = 1,
+    pvStatWRITE = 2,
+    ...
+    pvStatREAD_ACCESS = 20,
+    pvStatWRITE_ACCESS = 21
+  } pvStat;
+
+The negative codes correspond to the few CA status codes that were
+used in the sequencer. The positive codes correspond to EPICS STAT
+values.
+
+Severity
+~~~~~~~~
+
+::
+
+  typedef enum {
+    pvSevrOK = 0,
+    pvSevrERROR = -1,
+
+    pvSevrNONE = 0,
+    pvSevrMINOR = 1,
+    pvSevrMAJOR = 2,
+    pvSevrINVALID = 3
+  } pvSevr;
+
+These allow easy mapping of EPICS severities.
+
+Data Types
+~~~~~~~~~~
+
+::
+
+  typedef enum {
+    pvTypeERROR = -1,
+    pvTypeCHAR = 0,
+    pvTypeSHORT = 1,
+    pvTypeLONG = 2,
+    pvTypeFLOAT = 3,
+    pvTypeDOUBLE = 4,
+    pvTypeSTRING = 5,
+    pvTypeTIME_CHAR = 6,
+    pvTypeTIME_SHORT = 7,
+    pvTypeTIME_LONG = 8,
+    pvTypeTIME_FLOAT = 9,
+    pvTypeTIME_DOUBLE = 10,
+    pvTypeTIME_STRING = 11
+  } pvType;
+
+  #define PV_SIMPLE(_type) ( (_type) <= pvTypeSTRING )
+
+Only the types required by the sequencer are supported, namely
+simple and "time" types. The "error" type is used to indicate an
+error in a routine that returns a ``pvType`` as its result.
+
+Data Values
+~~~~~~~~~~~
+
+::
+
+  typedef char pvChar;
+  typedef short pvShort;
+  typedef long pvLong;
+  typedef float pvFloat;
+  typedef double pvDouble;
+  typedef char pvString[256]; /* use sizeof( pvString ) */
+
+  #define PV_TIME_XXX(_type) \
+    typedef struct { \
+    pvStat status; \
+    pvSevr severity; \
+    TS_STAMP stamp; \
+    pv##_type value[1]; \
+  } pvTime##_type
+
+  PV_TIME_XXX( Char );
+  PV_TIME_XXX( Short );
+  PV_TIME_XXX( Long );
+  PV_TIME_XXX( Float );
+  PV_TIME_XXX( Double );
+  PV_TIME_XXX( String );
+
+  typedef union {
+    pvChar charVal[1];
+    pvShort shortVal[1];
+    pvLong longVal[1];
+    pvFloat floatVal[1];
+    pvDouble doubleVal[1];
+    pvString stringVal[1];
+    pvTimeChar timeCharVal;
+    pvTimeShort timeShortVal;
+    pvTimeLong timeLongVal;
+    pvTimeFloat timeFloatVal;
+    pvTimeDouble timeDoubleVal;
+    pvTimeString timeStringVal;
+  } pvValue;
+
+  #define PV_VALPTR(_type,_value) \
+    ( ( PV_SIMPLE(_type) ? \
+    ( void * ) ( _value ) : \
+    ( void * ) ( &_value->timeCharVal.value ) ) )
+
+``pvValue`` is equivalent to ``db_access_val`` and, like it, is not
+self-describing (remember, the idea is that the PV layer is a
+drop-in replacement for CA).
+
+Obviously, the introduction of ``pvValue`` means that values must be
+converted between it and the message system's internal value
+representation. This is a performance hit but one that was deemed
+worthwhile given that there is currently no appropriate "neutral"
+(message system independent) value representation. Once the
+replacement for GDD is available, it will maybe be used in
+preference to ``pvValue``.
+
+Callbacks
+~~~~~~~~~
+
+::
+
+  typedef void (*pvConnFunc)( void *var, int connected );
+  typedef void (*pvEventFunc)( void *var, pvType type, int count,
+    pvValue *value, void *arg, pvStat status );
+
+In both cases, the ``var`` argument is a pointer to the ``pvVariable``
+that caused the event. It is passed as a ``void*`` so that the same
+function signature can be used for both C and C++. In C, it would
+be passed to one of the ``pvVarXxx`` routines; in C++ it would be
+cast to a ``pvVariable*`` .
+
+``pvConnFunc`` is used to notify the application that a process
+variable has connected or disconnected
+
+-  ``connected`` is 0 for disconnect and 1 for connect
+
+``pvEventFunc`` is used to notify an application that a get or put
+has completed, or that a monitor has been delivered
+
+-  ``type``, ``count`` and ``arg`` come from the request
+-  ``value`` is of type ``type`` and contains ``count`` elements
+-  it may be NULL on put completion (the application should check)
+-  it might also be NULL if ``status`` indicates failure (the
+   application should check)
+-  it is filled with zeroes if the process variable has
+   fewer than ``count`` elements
+-  ``status`` comes from the underlying message system
+-  it is converted to a ``pvStat``
+
+Class pvSystem
+^^^^^^^^^^^^^^
+
+``pvSystem`` is an abstract class that must be extended by specific
+message systems. An application typically contains a single
+instance, created by ``newPvSystem`` as described in
+:ref:`pvApiOverview`. There's nothing to stop an
+application having several instances, each corresponding to a
+different message system, but the sequencer doesn't do this. Also,
+there is no way to wait for events from multiple ``pvSystem``.
+
+Refer to *pv.h* for explicit detail. The following sections
+describe various important aspects of the class.
+
+Variable Creation
+~~~~~~~~~~~~~~~~~
+
+The ``newVariable`` method creates a new ``pvVariable`` corresponding
+to the same message system as the calling ``pvSystem`` . It should be
+used in preference to the concrete ``xxxVariable`` constructors since
+it doesn't require knowledge of ``xxx``!
+
+Event Handling
+~~~~~~~~~~~~~~
+
+The ``flush`` and ``pend`` methods correspond to ``ca_flush``,
+``ca_pend_io`` and ``ca_pend_event`` (the latter two are combined
+into a single ``pend`` method with an optional ``wait`` argument;
+``wait=FALSE`` gives ``ca_pend_io`` behavior, i.e. exit when
+pending activity is complete, and ``wait=TRUE`` gives
+``ca_pend_event`` behavior, i.e. wait until timer expires).
+
+Locking
+~~~~~~~
+
+The ``lock`` and ``unlock`` methods take and give a (recursive) mutex
+that can be used to prevent more than one thread at a time from
+being within message system code. This is not necessary for
+thread-safe message systems such as CA.
+
+Debugging
+~~~~~~~~~
+
+A ``debug`` flag is supported (it's an optional argument to the
+constructor and to the ``newVariable`` method) and is used to report
+method entry, arguments and other information. Debug flags are used
+consistently throughout the entire PV layer.
+
+Error Reporting
+~~~~~~~~~~~~~~~
+
+A message system-specific status, a severity (``pvSevr``), a status
+(``pvStat``), and an error message, are maintained in member
+variables. The concrete implementations should use the provided
+accessor functions to maintain up-to-date values for them. The
+``pvVariable`` class supports the same interface.
+
+Class pvVariable
+^^^^^^^^^^^^^^^^
+
+``pvVariable`` is an abstract class that must be extended by specific
+message systems. It corresponds to a process variable
+accessed via its message system. Each ``pvVariable`` object is
+associated with a ``pvSystem`` object that manages system-wide issues
+like locking and event handling.
+
+Refer to *pv.h* for explicit detail. The following sections
+describe various important aspects of the class.
+
+Creation
+~~~~~~~~
+
+The constructor specifies the corresponding ``pvSystem``, the
+variable name (which is copied), an optional connection function,
+an optional private pointer, and an optional debug flag (0 means to
+inherit it from the ``pvSystem``).
+
+The constructor should initiate connection to the underlying
+process variable and should arrange to call the connection
+function (if supplied) on each connect or disconnect.
+
+Reading
+~~~~~~~
+
+Like CDEV, the PV API supports the following ``get`` methods::
+
+  pvStat get( pvType type, int count, pvValue *value );
+  pvStat getNoBlock( pvType type, int count, pvValue *value );
+  pvStat getCallback( pvType type, int count, pvEventFunc func,
+    void *arg = NULL );
+
+-  ``get`` blocks on completion for a message system specific timeout
+   (currently 5s for CA)
+-  ``getNoBlock`` doesn't block: the value can be assumed to be valid
+   only if a subsequent ``pend`` (with ``wait=FALSE`` ) returns without
+   error (currently, the CA implementation of ``getNoBlock`` does in
+   fact block; it should really use ``ca_get_callback``; note,
+   however, that this is not an issue for the sequencer because it is
+   not used).
+-  ``getCallback`` calls the user-specified function on completion;
+   there is no timeout
+
+Writing
+~~~~~~~
+
+Like CDEV, the PV API supports the following put methods::
+
+  pvStat put( pvType type, int count, pvValue *value );
+  pvStat putNoBlock( pvType type, int count, pvValue *value );
+  pvStat putCallback( pvType type, int count, pvValue *value,
+  pvEventFunc func, void *arg = NULL );
+
+- ``put`` blocks on completion for a message system specific timeout
+  (currently 5s for CA; note that CA does not call
+  ``ca_put_callback`` for a blocking put)
+- ``putNoBlock`` doesn't block: successful completion can be inferred
+  only if a subsequent ``pend`` (with ``wait=FALSE`` ) returns without
+  error (note that CA does not call ``ca_put_callback`` for a
+  non-blocking put)
+- ``putCallback`` calls the user-specified function on completion;
+  there is no timeout (note that CA calls ``ca_put_callback`` for a
+  put with callback)
+
+Monitoring
+~~~~~~~~~~
+
+The PV API supports the following monitor methods::
+
+  pvStat monitorOn( pvType type, int count, pvEventFunc func,
+    void *arg = NULL, pvCallback **pCallback = NULL );
+  pvStat monitorOff( pvCallback *callback = NULL );
+
+- ``monitorOn`` enables monitors; when the underlying message system
+  posts a monitor, the user-supplied function will be called (CA
+  enables *value* and *alarm* monitors)
+- ``monitorOff`` disables monitors; it should be supplied with the
+  callback value that was optionally returned by ``monitorOn``
+- some message systems will permit several ``monitorOn`` calls for a
+  single variable (CA does); this is optional (the sequencer only
+  ever calls it once per variable)
+- all message systems must permit several ``pvVariable`` objects to
+  be associated with the same underlying process variable and,
+  when a monitor is posted, must guarantee to propagate it to all the
+  associated ``pvVariable`` s
+
+Miscellaneous
+~~~~~~~~~~~~~
+
+``pvVariable`` supports the same debugging and error reporting
+interfaces as ``pvSystem`` .
+
+Supporting a New Message System
+-------------------------------
+
+CDEV is an obvious message system to support. This section should
+provide the necessary information to support it or another message
+system. It includes an example of a partly functional *file*
+message system.
+
+Note that file names in this section are assumed to be relative to
+the top of the sequencer source tree.
+
+Check-list
+^^^^^^^^^^
+
+This section gives a check-list. See `Example`_ for an example
+of each stage.
+
+Create New Files
+~~~~~~~~~~~~~~~~
+
+For message system XXX, the following files should be created:
+
+-  *src/pv/pvXxx.h*, definitions
+-  *src/pv/pvXxx.cc*, implementation
+
+Edit src/pv/pvNew.cc
+~~~~~~~~~~~~~~~~~~~~
+
+Edit *src/pv/pvNew.cc* according to existing conventions. Assume
+that the ``PVXXX`` pre-processor macro is defined if and only if
+support for XXX is to be compiled in. See `src/pv/pvNew.cc`_
+for an example.
+
+Edit configure/RELEASE
+~~~~~~~~~~~~~~~~~~~~~~
+
+By convention, the *configure/RELEASE* file defines the various
+``PVXXX`` make macros. See `configure/RELEASE`_ for an example.
+
+Edit src/pv/Makefile
+~~~~~~~~~~~~~~~~~~~~
+
+By convention, XXX support should be compiled only if the ``PVXXX``
+make macro is defined and set to ``TRUE`` . See `pv/src/Makefile`_
+for an example.
+
+Edit application Makefiles
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Edit application *Makefile* s to search the *pvXxx* library and any
+other libraries that it references. It is, unfortunately,
+necessary, to link applications against all message systems. This
+is because *src/pv/pvNew.cc* references them all. This problem will
+disappear if and when ``pvNew`` is changed to load *pvXxx* libraries
+dynamically by name. See `test/pv/Makefile`_ for an example.
+
+Example
+^^^^^^^
+
+As an example, we consider a notional *file* message system with
+the following attributes:
+
+
+-  Commands are read from file *fileI*; they are of the form
+   ``<keyword> <value>``, e.g. ``fred 2`` sets variable *fred* to *2*
+-  Results are written to file *fileO*; they are of the same form
+   as the commands
+-  Everything is a string
+
+The files *pvFile.h* and *pvFile.cc* can be found in the *src/pv*
+directory. They compile and run but do not implement full
+functionality (left as an exercise for the reader!).
+
+src/pv/pvFile.h
+~~~~~~~~~~~~~~~
+
+Only some sections of the file are shown.
+
+::
+
+  class fileSystem : public pvSystem {
+
+  public:
+    fileSystem( int debug = 0 );
+    ~fileSystem();
+
+    virtual pvStat pend( double seconds = 0.0, int wait = FALSE );
+
+    virtual pvVariable *newVariable( const char *name,
+    pvConnFunc func = NULL, void *priv = NULL, int debug = 0 );
+
+  private:
+    FILE *ifd_;
+    FILE *ofd_;
+    fd_set readfds_;
+  };
+
+  class fileVariable : public pvVariable {
+
+  public:
+    fileVariable( fileSystem *system, const char *name, pvConnFunc
+      func = NULL, void *priv = NULL, int debug = 0 );
+    ~fileVariable();
+
+    virtual pvStat get( pvType type, int count, pvValue *value );
+    virtual pvStat getNoBlock( pvType type, int count,
+      pvValue *value );
+    virtual pvStat getCallback( pvType type, int count, pvEventFunc
+      func, void *arg = NULL );
+    virtual pvStat put( pvType type, int count, pvValue *value );
+    virtual pvStat putNoBlock( pvType type, int count, pvValue
+      *value );
+    virtual pvStat putCallback( pvType type, int count, pvValue
+      *value, pvEventFunc func, void *arg = NULL );
+    virtual pvStat monitorOn( pvType type, int count, pvEventFunc
+      func, void *arg = NULL, pvCallback **pCallback = NULL );
+    virtual pvStat monitorOff( pvCallback *callback = NULL );
+
+    virtual int getConnected() const { return TRUE; }
+    virtual pvType getType() const { return pvTypeSTRING; }
+    virtual int getCount() const { return 1; }
+
+  private:
+    char *value_; /* current value */
+  };
+
+src/pv/pvFile.cc
+~~~~~~~~~~~~~~~~
+
+Most of the file is omitted.
+
+::
+
+  fileSystem::fileSystem( int debug ) :
+    pvSystem( debug ),
+    ifd_( fopen( "iFile", "r" ) ),
+    ofd_( fopen( "oFile", "a" ) )
+  {
+    if ( getDebug() > 0 )
+      printf( "%8p: fileSystem::fileSystem( %d )\\n", this, debug);
+
+    if ( ifd_ == NULL \|\| ofd_ == NULL ) {
+      setError( -1, pvSevrERROR, pvStatERROR, "failed to open "
+        "iFile or oFile" );
+      return;
+    }
+
+    // initialize fd_set for select()
+    FD_ZERO( &readfds_ );
+    FD_SET( fileno( ifd_ ), &readfds_ );
+  }
+
+  pvStat fileVariable::get( pvType type, int count, pvValue *value )
+  {
+    if ( getDebug() > 0 )
+      printf( "%8p: fileVariable::get( %d, %d )\\n", this, type,
+      count );
+
+    printf( "would read %s\\n", getName() );
+    strcpy( value->stringVal[0], "string" );
+    return pvStatOK;
+  }
+
+  pvStat fileVariable::put( pvType type, int count, pvValue *value )
+  {
+    if ( getDebug() > 0 )
+    printf( "%8p: fileVariable::put( %d, %d )\\n", this, type,
+    count );
+
+    printf( "would write %s\\n", getName() );
+    return pvStatOK;
+  }
+
+src/pv/pvNew.cc
+~~~~~~~~~~~~~~~
+
+Edit this to support the *file* message system. Some parts of the
+file are omitted.
+
+::
+
+  #include "pv.h"
+
+  #if defined( PVCA )
+  #include "pvCa.h"
+  #endif
+
+  #if defined( PVFILE )
+  #include "pvFile.h"
+  #endif
+
+  pvSystem *newPvSystem( const char *name, int debug ) {
+
+    #if defined( PVCA )
+    if ( strcmp( name, "ca" ) == 0 )
+      return new caSystem( debug );
+    #endif
+
+    #if defined( PVFILE )
+    if ( strcmp( name, "file" ) == 0 )
+      return new fileSystem( debug );
+    #endif
+
+    return NULL;
+  }
+
+configure/RELEASE
+~~~~~~~~~~~~~~~~~
+
+Edit this to support the *file* message system. Comment out these
+lines to disable use of message systems. Some parts of the file are
+omitted.
+
+::
+
+  PVCA = TRUE
+  PVFILE = TRUE
+
+pv/src/Makefile
+~~~~~~~~~~~~~~~
+
+Edit this to support the *file* message system. Some parts of the
+file are omitted.
+
+::
+
+  LIBRARY += pv
+  pv_SRCS += pvNew.cc pv.cc
+
+  ifeq "$(PVCA)" "TRUE"
+  USR_CPPFLAGS += -DPVCA
+  INC += pvCa.h
+  LIBRARY += pvCa
+  pv_SRCS_vxWorks += pvCa.cc
+  pvCa_SRCS_DEFAULT += pvCa.cc
+  endif
+
+  ifeq "$(PVFILE)" "TRUE"
+  USR_CPPFLAGS += -DPVFILE
+  INC += pvFile.h
+  LIBRARY += pvFile
+  pvFile_SRCS += pvFile.cc
+  endif
+
+test/pv/Makefile
+~~~~~~~~~~~~~~~~
+
+This includes rules for building the test programs of
+`A tour of the API`_. Only those rules are shown.
+
+::
+
+  TOP = ../..
+
+  include $(TOP)/configure/CONFIG
+
+  PROD = pvsimpleCC pvsimpleC
+
+  PROD_LIBS += seq pv
+  seq_DIR = $(SUPPORT_LIB)
+
+  ifeq "$(PVFILE)" "TRUE"
+  PROD_LIBS += pvFile
+  endif
+
+  ifeq "$(PVCA)" "TRUE"
+  PROD_LIBS += pvCa ca
+  endif
+
+  PROD_LIBS += Com
+
+  include $(TOP)/configure/RULES

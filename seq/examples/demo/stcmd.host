@@ -1,0 +1,9 @@
+dbLoadDatabase "../../dbd/demo.dbd"
+demo_registerRecordDeviceDriver(pdbbase)
+dbLoadRecords "demo.db" "PREFIX=demo"
+#dbLoadRecords "demo.db" "PREFIX=demo2"
+#dbLoadRecords "demo.db" "PREFIX=demo3"
+iocInit
+seq &demo "debug=0,prefix=demo"
+#seq &demo "debug=0,prefix=demo2"
+#seq &demo "debug=0,prefix=demo3"

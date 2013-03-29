@@ -25,4 +25,9 @@ ifdef T_A
   -include $(TOP)/configure/O.$(T_A)/CONFIG_APP_INCLUDE
 endif
 
-SEQ_VERSION = 2.0.12
+EPICS_HAS_UNIT_TEST := $(shell $(PERL) -e\
+ 'print($(EPICS_REVISION) > 14 || ($(EPICS_REVISION) == 14 && $(EPICS_MODIFICATION) >= 10))')
+
+ECHO := $(if $(findstring s,$(MAKEFLAGS)),$(NOP),@echo)
+
+SEQ_RELEASE = 2.1.12

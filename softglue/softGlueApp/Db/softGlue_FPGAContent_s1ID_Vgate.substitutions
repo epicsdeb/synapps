@@ -1,0 +1,37 @@
+file "softGlue_Input.db"
+{
+pattern {SIG   ADDR}
+{UpDnCntr-1_CLOCK		0x802000}
+{UpDnCntr-1_UPDOWN		0x802008}
+{UpDnCntr-1_ENABLE		0x802010}
+{UpDnCntr-1_CLEAR		0x802018}
+{UpDnCntr-1_LOAD		0x802020}
+{UpDnCntr-2_CLOCK		0x802050}
+{UpDnCntr-2_UPDOWN		0x802058}
+{UpDnCntr-2_ENABLE		0x802060}
+{UpDnCntr-2_CLEAR		0x802068}
+{UpDnCntr-2_LOAD		0x802070}
+}
+
+
+file "softGlue_Output.db"
+{
+pattern {SIG   ADDR}
+{UpDnCntr-1_OUT			0x802028}
+{UpDnCntr-2_OUT			0x802078}
+}
+
+
+file "softGlue_Register32.db"
+{
+pattern {SIG		ADDR_MSW	ADDR_LSW 	CALC}
+{UpDnCntr-1_PRESET	0x802038	0x802030	A}
+{UpDnCntr-2_PRESET	0x802088	0x802080	A}
+}
+
+file "softGlue_InRegister32.db"
+{
+pattern {SIG     	ADDR_MSW	ADDR_LSW}
+{UpDnCntr-1_COUNTS    0x802048    0x802040}
+{UpDnCntr-2_COUNTS    0x802098    0x802090}
+}

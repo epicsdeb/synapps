@@ -1,10 +1,10 @@
 #FILENAME...     Makefile
 #USAGE...        Makefile for motor application example with Asyn
 
-#Version:        $Revision: 10825 $
-#Modified By:    $Author: sluiter $
-#Last Modified:  $Date: 2010-04-28 13:27:35 -0500 (Wed, 28 Apr 2010) $
-#HeadURL:        $URL: https://subversion.xor.aps.anl.gov/synApps/motor/tags/R6-5-2/motorExApp/WithAsyn/Makefile $
+#Version:        $Revision: 13567 $
+#Modified By:    $Author: rivers $
+#Last Modified:  $Date: 2011-08-30 14:11:01 -0500 (Tue, 30 Aug 2011) $
+#HeadURL:        $URL: https://subversion.xor.aps.anl.gov/synApps/motor/tags/R6-7-1/motorExApp/WithAsyn/Makefile $
 
 # "#!" marks lines that can be uncommented.
 
@@ -33,7 +33,10 @@ COMMONDBDS += devSmartMotorMotor.dbd
 COMMONDBDS += devKohzuMotor.dbd
 COMMONDBDS += devAttocube.dbd
 COMMONDBDS += devAerotech.dbd
+COMMONDBDS += ACRMotorSupport.dbd
 COMMONDBDS += drvAsynSerialPort.dbd
+COMMONDBDS += drvAsynIPPort.dbd
+COMMONDBDS += busySupport.dbd
 
 DBD += WithAsyn.dbd
 WithAsyn_DBD += $(COMMONDBDS)
@@ -68,6 +71,7 @@ COMMONLIBS += softMotor
 COMMONLIBS += motorSimSupport
 COMMONLIBS += SmartMotor
 COMMONLIBS += KohzuMotor
+COMMONLIBS += ACRMotor
 COMMONLIBS += motor
 
 # Needed for Newport SNL programs
@@ -77,6 +81,8 @@ ifdef SNCSEQ
 WithAsyn_LIBS += seqDev seq pv
 endif
 WithAsyn_LIBS += $(EPICS_BASE_IOC_LIBS)
+
+WithAsyn_LIBS += busy
 
 WithAsynVx_LIBS += $(COMMONLIBS)
 ifdef IPAC

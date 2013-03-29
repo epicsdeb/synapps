@@ -15,6 +15,7 @@
 #include <link.h>
 #include <shareLib.h>
 #include <epicsTypes.h>
+#include <alarm.h>
 #include "asynDriver.h"
 
 #ifdef __cplusplus
@@ -28,6 +29,9 @@ typedef struct asynEpicsUtils {
                 char **port, int *addr, epicsUInt32 *mask,char **userParam);
     asynStatus (*parseLinkFree)(asynUser *pasynUser, 
                 char **port, char **userParam);
+    void       (*asynStatusToEpicsAlarm)(asynStatus status, 
+                epicsAlarmCondition defaultStat, epicsAlarmCondition *pStat, 
+                epicsAlarmSeverity defaultSevr, epicsAlarmSeverity *pSevr);
 } asynEpicsUtils;
 epicsShareExtern asynEpicsUtils *pasynEpicsUtils;
 

@@ -103,12 +103,12 @@ applyOptions(asynUser *pasynUser, ttyController_t *tty)
     if ((ioctl(tty->fd, FIOBAUDRATE, tty->baud) < 0)
      && (ioctl(tty->fd, SIO_BAUD_SET, tty->baud) < 0)) {
         epicsSnprintf(pasynUser->errorMessage, pasynUser->errorMessageSize,
-                                "SIO_BAUD_SET failed: %s\n", strerror(errno));
+                                "SIO_BAUD_SET failed: %s", strerror(errno));
         return asynError;
     }
     if (ioctl(tty->fd, SIO_HW_OPTS_SET, tty->termios.c_cflag) < 0) {
         epicsSnprintf(pasynUser->errorMessage, pasynUser->errorMessageSize,
-                               "SIO_HW_OPTS_SET failed: %s\n", strerror(errno));
+                               "SIO_HW_OPTS_SET failed: %s", strerror(errno));
         return asynError;
     }
 #else
@@ -116,7 +116,7 @@ applyOptions(asynUser *pasynUser, ttyController_t *tty)
     tty->termios.c_cflag |= CREAD;
     if (tcsetattr(tty->fd, TCSANOW, &tty->termios) < 0) {
         epicsSnprintf(pasynUser->errorMessage, pasynUser->errorMessageSize,
-                                   "tcsetattr failed: %s\n", strerror(errno));
+                                   "tcsetattr failed: %s", strerror(errno));
         return asynError;
     }
 #endif
@@ -253,12 +253,12 @@ setOption(void *drvPvt, asynUser *pasynUser, const char *key, const char *val)
         }
         if(cfsetispeed(&tty->termios,baudCode) < 0 ) {
             epicsSnprintf(pasynUser->errorMessage,pasynUser->errorMessageSize,
-                "cfsetispeed returned %s\n",strerror(errno));
+                "cfsetispeed returned %s",strerror(errno));
             return asynError;
         }
         if(cfsetospeed(&tty->termios,baudCode) < 0 ) {
             epicsSnprintf(pasynUser->errorMessage,pasynUser->errorMessageSize,
-                "cfsetospeed returned %s\n",strerror(errno));
+                "cfsetospeed returned %s",strerror(errno));
             return asynError;
         }
         }
@@ -452,7 +452,7 @@ timeoutHandler(void *p)
     tcflush(tty->fd, TCOFLUSH);
 #endif
 #ifdef vxWorks
-    ioctl(tty->fd, FIOCANCEL, NULL);
+    ioctl(tty->fd, FIOCANCEL, 0);
     /*
      * Since it is possible, though unlikely, that we got here before the
      * slow system call actually started, we arrange to poke the thread
@@ -509,14 +509,14 @@ connectIt(void *drvPvt, asynUser *pasynUser)
      */
     if ((tty->fd = open(tty->serialDeviceName, O_RDWR|O_NOCTTY|O_NONBLOCK, 0)) < 0) {
         epicsSnprintf(pasynUser->errorMessage,pasynUser->errorMessageSize,
-                            "%s Can't open  %s\n",
+                            "%s Can't open  %s",
                                     tty->serialDeviceName, strerror(errno));
         return asynError;
     }
 #if defined(FD_CLOEXEC) && !defined(vxWorks)
     if (fcntl(tty->fd, F_SETFD, FD_CLOEXEC) < 0) {
         epicsSnprintf(pasynUser->errorMessage,pasynUser->errorMessageSize,
-                            "Can't set %s close-on-exec flag: %s\n",
+                            "Can't set %s close-on-exec flag: %s",
                                     tty->serialDeviceName, strerror(errno));
         close(tty->fd);
         tty->fd = -1;
@@ -578,7 +578,7 @@ static asynStatus writeIt(void *drvPvt, asynUser *pasynUser,
     asynPrint(pasynUser, ASYN_TRACE_FLOW,
                             "%s write.\n", tty->serialDeviceName);
     asynPrintIO(pasynUser, ASYN_TRACEIO_DRIVER, data, numchars,
-                            "%s write %d\n", tty->serialDeviceName, numchars);
+                            "%s write %lu\n", tty->serialDeviceName, (unsigned long)numchars);
     if (tty->fd < 0) {
         epicsSnprintf(pasynUser->errorMessage,pasynUser->errorMessageSize,
                                 "%s disconnected:", tty->serialDeviceName);
@@ -672,7 +672,7 @@ static asynStatus readIt(void *drvPvt, asynUser *pasynUser,
     }
     if (maxchars <= 0) {
         epicsSnprintf(pasynUser->errorMessage,pasynUser->errorMessageSize,
-            "%s maxchars %d Why <=0?\n",tty->serialDeviceName,(int)maxchars);
+            "%s maxchars %d Why <=0?",tty->serialDeviceName,(int)maxchars);
         return asynError;
     }
     if (tty->readTimeout != pasynUser->timeout) {
@@ -775,8 +775,8 @@ static asynStatus readIt(void *drvPvt, asynUser *pasynUser,
         data[nRead] = 0;
     else if (gotEom)
         *gotEom = ASYN_EOM_CNT;
-    asynPrint(pasynUser, ASYN_TRACE_FLOW, "%s read %d, return %d\n",
-                            tty->serialDeviceName, *nbytesTransfered, status);
+    asynPrint(pasynUser, ASYN_TRACE_FLOW, "%s read %lu, return %d\n",
+                            tty->serialDeviceName, (unsigned long)*nbytesTransfered, status);
     return status;
 }
 

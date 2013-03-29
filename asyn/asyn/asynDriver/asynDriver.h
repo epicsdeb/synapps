@@ -16,13 +16,14 @@
 #define ASYNDRIVER_H
 
 #include <epicsStdio.h>
+#include <epicsTime.h>
 #include <ellLib.h>
 #include <shareLib.h>
 
 /* Version number names similar to those provide by base
  * These macros are always numeric */
 #define ASYN_VERSION       4
-#define ASYN_REVISION     17
+#define ASYN_REVISION     21
 #define ASYN_MODIFICATION  0
 
 #ifdef __cplusplus
@@ -46,18 +47,19 @@ typedef enum {
 }asynQueuePriority;
 
 typedef struct asynUser {
-    char *errorMessage;
-    int errorMessageSize;
+    char          *errorMessage;
+    int            errorMessageSize;
     /* timeout must be set by the user */
-    double       timeout;  /*Timeout for I/O operations*/
-    void         *userPvt; 
-    void         *userData; 
+    double         timeout;  /*Timeout for I/O operations*/
+    void          *userPvt; 
+    void          *userData; 
     /*The following is for user to/from driver communication*/
-    void         *drvUser;
+    void          *drvUser;
     /*The following is normally set by driver*/
-    int          reason;
+    int            reason;
+    epicsTimeStamp timestamp;
     /* The following are for additional information from method calls */
-    int          auxStatus; /*For auxillary status*/
+    int            auxStatus; /*For auxillary status*/
 }asynUser;
 
 typedef struct asynInterface{
@@ -112,6 +114,8 @@ typedef struct asynManager {
     asynStatus (*unblockProcessCallback)(asynUser *pasynUser, int allDevices);
     asynStatus (*lockPort)(asynUser *pasynUser);
     asynStatus (*unlockPort)(asynUser *pasynUser);
+    asynStatus (*queueLockPort)(asynUser *pasynUser);
+    asynStatus (*queueUnlockPort)(asynUser *pasynUser);
     asynStatus (*canBlock)(asynUser *pasynUser,int *yesNo);
     asynStatus (*getAddr)(asynUser *pasynUser,int *addr);
     asynStatus (*getPortName)(asynUser *pasynUser,const char **pportName);
@@ -200,19 +204,29 @@ typedef struct asynTrace {
     FILE       *(*getTraceFile)(asynUser *pasynUser);
     asynStatus (*setTraceIOTruncateSize)(asynUser *pasynUser,size_t size);
     size_t     (*getTraceIOTruncateSize)(asynUser *pasynUser);
+#if defined(__GNUC__) && (__GNUC__ < 3)
+    /* GCC 2.95 does not allow EPICS_PRINTF_STYLE on function pointers */
     int        (*print)(asynUser *pasynUser,int reason, const char *pformat, ...);
     int        (*vprint)(asynUser *pasynUser,int reason, const char *pformat, va_list pvar);
     int        (*printIO)(asynUser *pasynUser,int reason,
                const char *buffer, size_t len,const char *pformat, ...);
     int        (*vprintIO)(asynUser *pasynUser,int reason,
                const char *buffer, size_t len,const char *pformat, va_list pvar);
+#else
+    int        (*print)(asynUser *pasynUser,int reason, const char *pformat, ...) EPICS_PRINTF_STYLE(3,4);
+    int        (*vprint)(asynUser *pasynUser,int reason, const char *pformat, va_list pvar) EPICS_PRINTF_STYLE(3,0);
+    int        (*printIO)(asynUser *pasynUser,int reason,
+               const char *buffer, size_t len,const char *pformat, ...) EPICS_PRINTF_STYLE(5,6);
+    int        (*vprintIO)(asynUser *pasynUser,int reason,
+               const char *buffer, size_t len,const char *pformat, va_list pvar) EPICS_PRINTF_STYLE(5,0);
+#endif
 }asynTrace;
 epicsShareExtern asynTrace *pasynTrace;
 
 #if defined(__STDC_VERSION__) && __STDC_VERSION__>=199901L
 #define asynPrint(pasynUser,reason, ...) \
    ((pasynTrace->getTraceMask((pasynUser))&(reason)) \
-    ? pasynTrace->print((pasynUser),(reason),__VAR_ARGS__) \
+    ? pasynTrace->print((pasynUser),(reason),__VA_ARGS__) \
     : 0)
 #elif defined(__GNUC__)
 #define asynPrint(pasynUser,reason,format...) \
@@ -226,7 +240,7 @@ epicsShareExtern asynTrace *pasynTrace;
 #if defined(__STDC_VERSION__) && __STDC_VERSION__>=199901L
 #define asynPrintIO(pasynUser,reason,buffer,len, ...) \
    ((pasynTrace->getTraceMask((pasynUser))&(reason)) \
-    ? pasynTrace->printIO((pasynUser),(reason),(buffer),(len),__VAR_ARGS__) \
+    ? pasynTrace->printIO((pasynUser),(reason),(buffer),(len),__VA_ARGS__) \
     : 0)
 #elif defined(__GNUC__)
 #define asynPrintIO(pasynUser,reason,buffer,len,format...) \

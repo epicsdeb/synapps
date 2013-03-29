@@ -16,7 +16,7 @@ DBD += vmeVXSupport.dbd
 
 #=============================
 
-LIBRARY_IOC += vme
+LIBRARY_IOC_vxWorks += vme
 
 vme_SRCS_vxWorks += devAiVaroc.c drvVarocB.c
 vme_SRCS_vxWorks += devXxHP10895LaserAxis.c

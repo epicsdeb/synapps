@@ -54,9 +54,9 @@
  Developer notes:
 
  Source control info:
-    Modified by:    dkline
-                    2006/05/26 18:43:37
-                    1.5
+    Modified by:    $Author: dkline $
+                    $Date: 2006-05-26 18:43:37 $
+                    $Revision: 1.5 $
 
  =============================================================================
  History:

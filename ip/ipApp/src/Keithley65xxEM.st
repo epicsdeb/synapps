@@ -29,10 +29,10 @@ option +r;
 
 int i;
 int scan_chan;
-long previous_mode;
-long previous_chan;
+int previous_mode;
+int previous_chan;
 
-long    ch_mode[MAX_CHANNELS];
+int    ch_mode[MAX_CHANNELS];
 assign  ch_mode to 
            {"{P}{Dmm}ch1_mode_sel.VAL",
             "{P}{Dmm}ch2_mode_sel.VAL",
@@ -49,7 +49,7 @@ monitor ch_mode;
 evflag  ch_mode_mon;
 sync    ch_mode ch_mode_mon;
 
-long    ch_on_off[MAX_CHANNELS];
+int    ch_on_off[MAX_CHANNELS];
 assign  ch_on_off to 
            {"{P}{Dmm}Ch1_on_off.VAL",
             "{P}{Dmm}Ch2_on_off.VAL",
@@ -63,7 +63,7 @@ assign  ch_on_off to
             "{P}{Dmm}Ch10_on_off.VAL"};
 monitor ch_on_off;
 
-long    ch_raw[MAX_CHANNELS];
+int    ch_raw[MAX_CHANNELS];
 assign  ch_raw to 
            {"{P}{Dmm}Ch1_raw.PROC",
             "{P}{Dmm}Ch2_raw.PROC",
@@ -78,7 +78,7 @@ assign  ch_raw to
 
 /* Note:  dci and aci must be the last 2 modes.  These are defined for
    front panel use only. */
-long dmm_modes[NUM_FRONT_MODES];
+int dmm_modes[NUM_FRONT_MODES];
 assign dmm_modes to 
            {"{P}{Dmm}conf_dcv.PROC",
             "{P}{Dmm}conf_dci.PROC",
@@ -89,54 +89,54 @@ assign dmm_modes to
  *          "{P}{Dmm}conf_humid.PROC" */
 
 
-long ch_mode_sel;
+int ch_mode_sel;
 assign ch_mode_sel to "{P}{Dmm}ch_mode_sel.VAL";
 monitor ch_mode_sel;
 evflag  ch_mode_sel_mon;
 sync    ch_mode_sel ch_mode_sel_mon;
 
 
-long done_read;
+int done_read;
 assign  done_read to "{P}{Dmm}done_read.VAL";
 monitor done_read;
 
-long dmm_chan;
+int dmm_chan;
 assign  dmm_chan to "{P}{Dmm}dmm_chan.VAL";
 monitor dmm_chan;
 evflag  dmm_chan_mon;
 sync    dmm_chan dmm_chan_mon;
 
-long dmm_delay_read;
+int dmm_delay_read;
 assign  dmm_delay_read to "{P}{Dmm}dmm_delay_read.PROC";
 
-long dmm_read;
+int dmm_read;
 assign  dmm_read to "{P}{Dmm}dmm_read.PROC";
 
-long Dmm_raw;
+int Dmm_raw;
 assign  Dmm_raw to "{P}{Dmm}Dmm_raw.PROC";
 
-long read_complete;
+int read_complete;
 assign  read_complete to "{P}{Dmm}read_complete.VAL";
 monitor read_complete;
 evflag  read_complete_mon;
 sync    read_complete read_complete_mon;
 
-long single_multi;
+int single_multi;
 assign  single_multi to "{P}{Dmm}single_multi.VAL";
 monitor single_multi;
 
-long init_dmm;
+int init_dmm;
 assign init_dmm to "{P}{Dmm}init_dmm.VAL";
 monitor init_dmm;
 evflag  init_dmm_mon;
 sync    init_dmm init_dmm_mon;
 
-long do_init;
+int do_init;
 assign do_init to "{P}{Dmm}init_string.PROC";
 
 string ch_close;  assign  ch_close to "{P}{Dmm}ch_close.VAL";
 string model; assign model to "{P}{Dmm}model.VAL";
-long channels; assign channels to "{P}{Dmm}channels.VAL";
+int channels; assign channels to "{P}{Dmm}channels.VAL";
 string dmm_units; assign dmm_units to "{P}{Dmm}units.VAL";
 string ch_units;  assign ch_units to "";
 
@@ -145,8 +145,8 @@ char *P;
 char *Dmm;
 string pvname;
 string close_format;
-long mode;
-long chan;
+int mode;
+int chan;
 
 ss mode_change {
     state init {

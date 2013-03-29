@@ -1,7 +1,4 @@
-/* $Id: arrput.cc,v 1.2 2004-01-15 14:11:09 mrk Exp $
- *
- * Loop putting simulated values to an array-valued PV
- */
+/* Loop putting simulated values to an array-valued PV */
 
 #include <stdio.h>
 #include <stdlib.h>

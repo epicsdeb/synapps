@@ -1,16 +1,16 @@
-/* $Id: pvFile.h,v 1.2 2001-02-23 20:45:22 jba Exp $
- *
- * Definitions for demonstration EPICS sequencer file library (pvFile)
+/*************************************************************************\
+This file is distributed subject to a Software License Agreement found
+in the file LICENSE that is included with this distribution.
+\*************************************************************************/
+/* Definitions for demonstration EPICS sequencer file library (pvFile)
  *
  * William Lupton, W. M. Keck Observatory
  */
 
 #ifndef INCLpvFileh
 #define INCLpvFileh
-#ifndef _WIN32
-#include <sys/time.h>
-#endif
-#include <sys/types.h>
+
+#include "osiSock.h"
 
 #include "pv.h"
 
@@ -44,22 +44,22 @@ public:
 		  void *priv = NULL, int debug = 0 );
     ~fileVariable();
 
-    virtual pvStat get( pvType type, int count, pvValue *value );
-    virtual pvStat getNoBlock( pvType type, int count, pvValue *value );
-    virtual pvStat getCallback( pvType type, int count,
+    virtual pvStat get( pvType type, unsigned count, pvValue *value );
+    virtual pvStat getNoBlock( pvType type, unsigned count, pvValue *value );
+    virtual pvStat getCallback( pvType type, unsigned count,
 		pvEventFunc func, void *arg = NULL );
-    virtual pvStat put( pvType type, int count, pvValue *value );
-    virtual pvStat putNoBlock( pvType type, int count, pvValue *value );
-    virtual pvStat putCallback( pvType type, int count, pvValue *value,
+    virtual pvStat put( pvType type, unsigned count, pvValue *value );
+    virtual pvStat putNoBlock( pvType type, unsigned count, pvValue *value );
+    virtual pvStat putCallback( pvType type, unsigned count, pvValue *value,
 		pvEventFunc func, void *arg = NULL );
-    virtual pvStat monitorOn( pvType type, int count,
+    virtual pvStat monitorOn( pvType type, unsigned count,
 		pvEventFunc func, void *arg = NULL,
 		pvCallback **pCallback = NULL );
     virtual pvStat monitorOff( pvCallback *callback = NULL );
 
     virtual int getConnected() const { return TRUE; }
     virtual pvType getType() const { return pvTypeSTRING; }
-    virtual int getCount() const { return 1; }
+    virtual unsigned getCount() const { return 1; }
 
 private:
     char *value_;	/* current value */
@@ -68,7 +68,10 @@ private:
 #endif /* INCLpvFileh */
 
 /*
- * $Log: not supported by cvs2svn $
+ * pvFile.h,v
+ * Revision 1.2  2001/02/23 20:45:22  jba
+ * Change for win32.
+ *
  * Revision 1.1.1.1  2000/04/04 03:22:15  wlupton
  * first commit of seq-2-0-0
  *

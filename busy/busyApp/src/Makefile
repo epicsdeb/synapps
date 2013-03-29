@@ -28,3 +28,11 @@ else
 busySupport.dbd: ../busySupport_LOCAL.dbd
 	perl ../cat.pl ../busySupport_LOCAL.dbd busySupport.dbd
 endif
+
+# Parallel build sometimes fails.
+# Make dependences on busyRecord.h explicit.
+busyRecord$(OBJ):     $(COMMON_DIR)/busyRecord.h
+devBusySoft$(OBJ):    $(COMMON_DIR)/busyRecord.h
+devBusySoftRaw$(OBJ): $(COMMON_DIR)/busyRecord.h
+devBusyAsyn$(OBJ):    $(COMMON_DIR)/busyRecord.h
+

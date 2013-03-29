@@ -15,14 +15,16 @@ include $(TOP)/configure/CONFIG
 SNCFLAGS = +m
 
 #  Products
-#PROD_HOST = testCA pvtest arrput arrputCA
-PROD_HOST = pvsimpleCC pvsimpleC pvtest arrput gphtest
+TESTPROD_HOST += arrput
+TESTPROD_HOST += arrputCA
+TESTPROD_HOST += pvsimpleC
+TESTPROD_HOST += pvsimpleCC
+TESTPROD_HOST += pvtest
 
 #  Libraries
-PROD_LIBS += seq
-seq_DIR    = $(INSTALL_LIB)
+PROD_LIBS += seq pv
+PROD_LIBS += $(EPICS_BASE_IOC_LIBS)
 
 include $(TOP)/configure/RULES
 #----------------------------------------
 #  ADD RULES AFTER THIS LINE
-

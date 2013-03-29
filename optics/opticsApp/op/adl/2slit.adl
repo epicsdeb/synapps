@@ -1,7 +1,7 @@
 
 file {
-	name="/home/oxygen4/MOONEY/epics/3.13.1/tmm/tmmApp/op/adl/2slit_2.6.adl"
-	version=020305
+	name="/home/oxygen4/MOONEY/epics/synAppsSVN/support/optics/opticsApp/op/adl/2slit.adl"
+	version=030105
 }
 display {
 	object {
@@ -213,7 +213,7 @@ text {
 		clr=14
 		bclr=51
 	}
-	label="<"
+	label="-"
 	press_msg="1"
 }
 "text entry" {
@@ -243,7 +243,7 @@ text {
 		clr=14
 		bclr=51
 	}
-	label=">"
+	label="+"
 	press_msg="1"
 }
 "text update" {
@@ -347,7 +347,7 @@ text {
 		clr=14
 		bclr=51
 	}
-	label="<"
+	label="-"
 	press_msg="1"
 }
 "text entry" {
@@ -377,7 +377,7 @@ text {
 		clr=14
 		bclr=51
 	}
-	label=">"
+	label="+"
 	press_msg="1"
 }
 "text update" {
@@ -481,7 +481,7 @@ text {
 		clr=14
 		bclr=51
 	}
-	label="<"
+	label="-"
 	press_msg="1"
 }
 "text entry" {
@@ -511,7 +511,7 @@ text {
 		clr=14
 		bclr=51
 	}
-	label=">"
+	label="+"
 	press_msg="1"
 }
 "text update" {
@@ -601,7 +601,7 @@ rectangle {
 		clr=14
 		bclr=51
 	}
-	label="<"
+	label="-"
 	press_msg="1"
 }
 "text entry" {
@@ -631,7 +631,7 @@ rectangle {
 		clr=14
 		bclr=51
 	}
-	label=">"
+	label="+"
 	press_msg="1"
 }
 "text update" {
@@ -684,7 +684,7 @@ rectangle {
 }
 "message button" {
 	object {
-		x=300
+		x=350
 		y=185
 		width=79
 		height=21
@@ -699,7 +699,7 @@ rectangle {
 }
 "message button" {
 	object {
-		x=100
+		x=85
 		y=185
 		width=110
 		height=21
@@ -727,7 +727,7 @@ text {
 }
 "related display" {
 	object {
-		x=220
+		x=305
 		y=185
 		width=40
 		height=21
@@ -813,7 +813,7 @@ text {
 	object {
 		x=10
 		y=25
-		width=420
+		width=100
 		height=10
 	}
 	"basic attribute" {
@@ -851,19 +851,94 @@ bar {
 	limits {
 	}
 }
-bar {
+composite {
 	object {
 		x=10
 		y=13
 		width=420
 		height=10
 	}
-	monitor {
-		chan="$(P)$(SLIT)xn.VAL"
-		clr=14
-		bclr=0
+	"composite name"=""
+	children {
+		bar {
+			object {
+				x=10
+				y=13
+				width=420
+				height=10
+			}
+			monitor {
+				chan="$(P)$(SLIT)xn.VAL"
+				clr=14
+				bclr=0
+			}
+			label="no decorations"
+			limits {
+			}
+		}
 	}
-	label="no decorations"
+	"dynamic attribute" {
+		vis="if zero"
+		chan="$(P)$(SLIT)CoordSys"
+	}
+}
+composite {
+	object {
+		x=10
+		y=13
+		width=420
+		height=10
+	}
+	"composite name"=""
+	children {
+		bar {
+			object {
+				x=10
+				y=13
+				width=420
+				height=10
+			}
+			monitor {
+				chan="$(P)$(SLIT)xn.VAL"
+				clr=0
+				bclr=14
+			}
+			label="no decorations"
+			direction="left"
+			limits {
+			}
+		}
+	}
+	"dynamic attribute" {
+		vis="if not zero"
+		chan="$(P)$(SLIT)CoordSys"
+	}
+}
+"text update" {
+	object {
+		x=245
+		y=25
+		width=100
+		height=12
+	}
+	monitor {
+		chan="$(P)$(SLIT)CoordSys"
+		clr=54
+		bclr=3
+	}
 	limits {
 	}
+}
+text {
+	object {
+		x=130
+		y=25
+		width=110
+		height=10
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="COORDINATE SYSTEM:"
+	align="horiz. centered"
 }

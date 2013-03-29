@@ -2,10 +2,10 @@
 FILENAME... drvMM4000.cc
 USAGE...    Motor record driver level support for Newport MM4000.
 
-Version:        $Revision$
-Modified By:    $Author$
-Last Modified:  $Date$
-HeadURL:        $URL$
+Version:        $Revision: 14155 $
+Modified By:    $Author: sluiter $
+Last Modified:  $Date: 2011-11-29 14:50:00 -0600 (Tue, 29 Nov 2011) $
+HeadURL:        $URL: https://subversion.xor.aps.anl.gov/synApps/motor/tags/R6-7-1/motorApp/NewportSrc/drvMM4000.cc $
 */
 
 /*
@@ -34,6 +34,18 @@ HeadURL:        $URL$
  *        Advanced Photon Source
  *        Argonne National Laboratory
  *
+ *
+ * NOTES
+ * -----
+ * Verified with firmware:
+ *
+ *  - MM4000 2.04
+ *  - MM4005 2.40
+ *  - MM4005 2.42
+ *  - MM4005 3.14b
+ *  - MM4006 7.01c date 04-02-2004
+ *
+ *
  * Modification Log:
  * -----------------
  * .01 10-20-97 mlr initialized from drvOms58
@@ -61,7 +73,12 @@ HeadURL:        $URL$
  *      - make debug variables always available.
  * .14 02/18/09 rls Check for controller error.
  * .15 02/17/10 rls Bug fix controller error check overwriting position buffer.
- *
+ * .16 08/25/11 kmp Bug fix for drvMM4000Readback delay. The first call after the
+ *                  readback delay now gets and sets the status properly. Also, the delay
+ *                  was changed from a double (seconds) to an int (milliseconds) because 
+ *                  of problems passing floating-point values from the VxWorks shell.
+ * .17 08/25/11 rls - Added feedback position.
+ *                  - Increased max. # of cards to 10 and buffer size to 160 bytes.
  */
 
 
@@ -79,7 +96,8 @@ HeadURL:        $URL$
 
 #define READ_RESOLUTION "TU;"
 #define READ_STATUS     "MS;"
-#define READ_POSITION   "TP;"
+#define READ_POSITION   "TH;"
+#define READ_FEEDBACK   "TP;"
 #define STOP_ALL        "ST;"
 #define MOTOR_ON        "MO;"
 #define GET_IDENT       "VE;"
@@ -92,23 +110,24 @@ HeadURL:        $URL$
 #define M_MINUS_LIMIT     0x10
 #define M_HOME_SIGNAL     0x20
 
-#define MM4000_NUM_CARDS    4
-#define BUFF_SIZE 100       /* Maximum length of string to/from MM4000 */
+#define MM4000_NUM_CARDS 10
+#define BUFF_SIZE 160       /* Maximum length of string to/from MM4000 */
 
 #define TIMEOUT 2.0 /* Command timeout in sec. */
 
 /*----------------debugging-----------------*/
-#ifdef __GNUG__
-    #ifdef  DEBUG
-        #define Debug(l, f, args...) { if(l<=drvMM4000debug) printf(f,## args); }
-    #else
-        #define Debug(l, f, args...)
-    #endif
-#else
-    #define Debug()
-#endif
 volatile int drvMM4000debug = 0;
 extern "C" {epicsExportAddress(int, drvMM4000debug);}
+static inline void Debug(int level, const char *format, ...) {
+  #ifdef DEBUG
+    if (level < drvMM4000debug) {
+      va_list pVar;
+      va_start(pVar, format);
+      vprintf(format, pVar);
+      va_end(pVar);
+    }
+  #endif
+}
 
 /* --- Local data. --- */
 int MM4000_num_cards = 0;
@@ -118,9 +137,9 @@ int MM4000_num_cards = 0;
 
 
 /* This is a temporary fix to introduce a delayed reading of the motor
- * position after a move completes
+ * position after a move completes. drvMM4000ReadbackDelay is in milliseconds
  */
-volatile double drvMM4000ReadbackDelay = 0.;
+volatile int drvMM4000ReadbackDelay = 0;
 
 
 /*----------------functions-----------------*/
@@ -249,6 +268,8 @@ static void start_status(int card)
             cntrl->status = NORMAL;
             send_mess(card, READ_POSITION, (char) NULL);
             recv_mess(card, cntrl->position_string, 1);
+            send_mess(card, READ_FEEDBACK, (char) NULL);
+            recv_mess(card, cntrl->feedback_string, 1);
         }
         else
         {
@@ -271,7 +292,11 @@ static void start_status(int card)
             cntrl = (struct MMcontroller *) motor_state[itera]->DevicePrivate;
             status = recv_mess(itera, cntrl->status_string, 1);
             if (status > 0)
+            {
                 cntrl->status = NORMAL;
+                send_mess(itera, READ_FEEDBACK, (char) NULL);
+                recv_mess(itera, cntrl->feedback_string, 1);
+            }
             else
             {
                 if (cntrl->status == NORMAL)
@@ -342,7 +367,7 @@ static int set_status(int card, int signal)
      */
     pos = signal*5 + 3;  /* Offset in status string */
     mstat.All = cntrl->status_string[pos];
-    Debug(5, "set_status(): status byte = %x\n", mstat.All);
+    Debug(5, "set_status(): status byte = %x on card #%d\n", mstat.All, card);
 
     status.Bits.RA_DIRECTION = (mstat.Bits.direction == false) ? 0 : 1;
 
@@ -362,11 +387,11 @@ static int set_status(int card, int signal)
  * on the first poll, when it is really moving.  We work around this by reading
  * the status again after the delay, in case it is really still moving.
  */
-        if (motor_info->pid_present == YES && drvMM4000ReadbackDelay != 0.)
+        if (motor_info->pid_present == YES && drvMM4000ReadbackDelay != 0)
         {
-            epicsThreadSleep(drvMM4000ReadbackDelay);
-            send_mess(card, READ_POSITION, (char) NULL);
-            recv_mess(card, cntrl->position_string, 1);
+            epicsThreadSleep((double) drvMM4000ReadbackDelay/1000.0);
+            send_mess(card, READ_STATUS, (char) NULL);
+            recv_mess(card, cntrl->status_string, 1);
             pos = signal*5 + 3;  /* Offset in status string */
             mstat.All = cntrl->status_string[pos];
             if (mstat.Bits.inmotion == true)
@@ -416,7 +441,7 @@ static int set_status(int card, int signal)
     p = epicsStrtok_r(buff, ",", &tok_save);
     for (itera = 0; itera < signal; itera++)
         p = epicsStrtok_r(NULL, ",", &tok_save);
-    Debug(6, "set_status(): position substring = %s\n", p);
+    Debug(6, "set_status(): position substring = %s on card #%d\n", p, card);
     motorData = atof(p+3) / cntrl->drive_resolution[signal];
 
     if (motorData == motor_info->position)
@@ -427,13 +452,23 @@ static int set_status(int card, int signal)
     else
     {
         motor_info->position = NINT(motorData);
-        if (motor_state[card]->motor_info[signal].encoder_present == YES)
-            motor_info->encoder_position = (epicsInt32) motorData;
-        else
-            motor_info->encoder_position = 0;
-
         motor_info->no_motion_count = 0;
     }
+
+    if (motor_state[card]->motor_info[signal].encoder_present == YES)
+    {
+        strcpy(buff, cntrl->feedback_string);
+        tok_save = NULL;
+        p = epicsStrtok_r(buff, ",", &tok_save);
+        for (itera = 0; itera < signal; itera++)
+            p = epicsStrtok_r(NULL, ",", &tok_save);
+        Debug(6, "set_status(): feedback substring = %s on card #%d\n", p, card);
+        motorData = atof(p+3) / cntrl->drive_resolution[signal];
+        motor_info->encoder_position = (epicsInt32) motorData;
+    }
+    else
+        motor_info->encoder_position = 0;
+
 
     /* Check for controller error. */
     send_mess(card, "TE;", (char) NULL);
@@ -505,7 +540,7 @@ static RTN_STATUS send_mess(int card, char const *com, char *name)
         return(ERROR);
     }
 
-    Debug(2, "send_mess(): message = %s\n", com);
+    Debug(2, "send_mess(): message = %s on card #%d\n", com, card);
 
     cntrl = (struct MMcontroller *) motor_state[card]->DevicePrivate;
 
@@ -555,7 +590,7 @@ static int recv_mess(int card, char *com, int flag)
         nread = 0;
     }
 
-    Debug(2, "recv_mess(): message = \"%s\"\n", com);
+    Debug(2, "recv_mess(): message = \"%s\" on card #%d\n", com, card);
     return(nread);
 }
 
@@ -571,7 +606,12 @@ MM4000Setup(int num_cards,  /* maximum number of controllers in system.  */
     int itera;
 
     if (num_cards < 1 || num_cards > MM4000_NUM_CARDS)
+    {
+        epicsThreadSleep(5.0);
+        errlogPrintf("\n*** ERROR *** Number specified (%d) exceeds maximum allowed (%d).\n\n", num_cards, MM4000_NUM_CARDS);
+        epicsThreadSleep(5.0);
         MM4000_num_cards = MM4000_NUM_CARDS;
+    }
     else
         MM4000_num_cards = num_cards;
 

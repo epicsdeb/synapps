@@ -213,7 +213,7 @@ STATIC long scalar_restore(int pass, DBENTRY *pdbentry, char *PVname, char *valu
 	DBADDR	*paddr = &dbaddr;
 	dbfType field_type = pdbentry->pflddes->field_type;
 	short special = pdbentry->pflddes->special;
-	
+
 	if (save_restoreDebug >= 5) errlogPrintf("dbrestore:scalar_restore:entry:field type '%s'\n", pamapdbfType[field_type].strvalue);
 	switch (field_type) {
 	case DBF_STRING: case DBF_ENUM:
@@ -386,10 +386,10 @@ long SR_array_restore(int pass, FILE *inp_fd, char *PVname, char *value_string, 
 	int				field_size = 0;
 	char			*p_char = NULL;
 	short			*p_short = NULL;
-	long			*p_long = NULL;
+	epicsInt32		*p_long = NULL;
 	unsigned char	*p_uchar = NULL;
 	unsigned short	*p_ushort = NULL;
-	unsigned long	*p_ulong = NULL;
+	epicsUInt32		*p_ulong = NULL;
 	float			*p_float = NULL;
 	double			*p_double = NULL;
 
@@ -431,8 +431,8 @@ long SR_array_restore(int pass, FILE *inp_fd, char *PVname, char *value_string, 
 		case DBF_UCHAR:                                p_uchar = (unsigned char *)p_data;   break;
 		case DBF_ENUM: case DBF_USHORT: case DBF_MENU: p_ushort = (unsigned short *)p_data; break;
 		case DBF_SHORT:                                p_short = (short *)p_data;           break;
-		case DBF_ULONG:                                p_ulong = (unsigned long *)p_data;   break;
-		case DBF_LONG:                                 p_long = (long *)p_data;             break;
+		case DBF_ULONG:                                p_ulong = (epicsUInt32 *)p_data;     break;
+		case DBF_LONG:                                 p_long = (epicsInt32 *)p_data;       break;
 		case DBF_FLOAT:                                p_float = (float *)p_data;           break;
 		case DBF_DOUBLE:                               p_double = (double *)p_data;         break;
 		case DBF_NOACCESS:
@@ -549,10 +549,10 @@ long SR_array_restore(int pass, FILE *inp_fd, char *PVname, char *value_string, 
 							p_short[num_read++] = (short)atol(string);
 							break;
 						case DBF_LONG:
-							p_long[num_read++] = atol(string);
+							p_long[num_read++] = (epicsInt32) atol(string);
 							break;
 						case DBF_ULONG:
-							p_ulong[num_read++] = (unsigned long)atol(string);
+							p_ulong[num_read++] = (epicsUInt32) atol(string);
 							break;
 						case DBF_FLOAT:
 							p_float[num_read++] = mySafeDoubleToFloat(atof(string));
@@ -584,9 +584,9 @@ long SR_array_restore(int pass, FILE *inp_fd, char *PVname, char *value_string, 
 				case DBF_CHAR:
 					errlogPrintf("	'%c' (%d)\n", p_char[j], p_char[j]); break;
 				case DBF_ULONG:
-					errlogPrintf("	%lu\n", p_ulong[j]); break;
+					errlogPrintf("	%u\n", p_ulong[j]); break;
 				case DBF_LONG:
-					errlogPrintf("	%ld\n", p_long[j]); break;
+					errlogPrintf("	%d\n", p_long[j]); break;
 				case DBF_FLOAT:
 					errlogPrintf("	%f\n", p_float[j]); break;
 				case DBF_DOUBLE:
@@ -708,7 +708,9 @@ int reboot_restore(char *filename, initHookState init_state)
 	int			n, write_backup, num_errors, is_scalar;
 	long		*pStatusVal = 0;
 	char		*statusStr = 0;
-	
+	char		realName[64];	/* name without trailing '$' */
+	int			is_long_string;
+
 	errlogPrintf("reboot_restore: entry for file '%s'\n", filename);
 	printf("reboot_restore (v%s): entry for file '%s'\n", RESTORE_VERSION, filename);
 	/* initialize database access routines */
@@ -790,7 +792,9 @@ int reboot_restore(char *filename, initHookState init_state)
 		n = sscanf(bp,"%80s%c%[^\n\r]", PVname, &c, value_string);
 		if (n<3) *value_string = 0;
 		if ((n<1) || (PVname[0] == '\0')) {
-			if (save_restoreDebug >= 10) errlogPrintf("dbrestore:reboot_restore: line (fragment) '%s' ignored.\n", bp);
+			if (save_restoreDebug >= 10) {
+				errlogPrintf("dbrestore:reboot_restore: line (fragment) '%s' ignored.\n", bp);
+			}
 			continue;
 		}
 		if (PVname[0] == '#') {
@@ -812,10 +816,31 @@ int reboot_restore(char *filename, initHookState init_state)
 			is_scalar = strncmp(value_string, ARRAY_MARKER, ARRAY_MARKER_LEN);
 			if (save_restoreDebug > 9) errlogPrintf("\n");
 			if (save_restoreDebug >= 10) {
-				errlogPrintf("dbrestore:reboot_restore: Attempting to put %s '%s' to '%s'\n", is_scalar?"scalar":"array", value_string, PVname);
+				errlogPrintf("dbrestore:reboot_restore: Attempting to put %s '%s' to '%s'\n",
+					is_scalar?"scalar":"array", value_string, PVname);
 			}
+
+			/* dbStatic doesn't know about long-string fields (PV name with appended '$'). */
+			strcpy(realName, PVname);
+			if (realName[strlen(realName)-1] == '$') {
+				realName[strlen(realName)-1] = '\0';
+				is_long_string = 1;
+				/* See if we got the whole line */
+				if (bp[strlen(bp)-1] != '\n') {
+					/* No, we didn't.  One more read will certainly accumulate a value string of length BUF_SIZE */
+					if (save_restoreDebug > 9) printf("reboot_restore: did not reach end of line for long-string PV\n");
+					bp = fgets(buffer, BUF_SIZE, inp_fd);
+					n = BUF_SIZE-strlen(value_string)-1;
+					strncat(value_string, bp, n);
+					/* we don't want that '\n' in the string */
+					if (value_string[strlen(value_string)-1] == '\n') value_string[strlen(value_string)-1] = '\0';
+				}
+				/* Discard additional characters until end of line */
+				while (bp[strlen(bp)-1] != '\n') fgets(buffer, BUF_SIZE, inp_fd);
+			}
+
 			found_field = 1;
-			if ((status = dbFindRecord(pdbentry, PVname)) != 0) {
+			if ((status = dbFindRecord(pdbentry, realName)) != 0) {
 				errlogPrintf("dbFindRecord for '%s' failed\n", PVname);
 				num_errors++; found_field = 0;
 			} else if (dbFoundField(pdbentry) == 0) {
@@ -1179,10 +1204,10 @@ long SR_write_array_data(FILE *out_fd, char *name, void *pArray, long num_elemen
 	long		i, j, n;
 	char			*p_char = NULL, *pc;
 	short			*p_short = NULL;
-	long			*p_long = NULL;
+	epicsInt32		*p_long = NULL;
 	unsigned char	*p_uchar = NULL;
 	unsigned short	*p_ushort = NULL;
-	unsigned long	*p_ulong = NULL;
+	epicsUInt32		*p_ulong = NULL;
 	float			*p_float = NULL;
 	double			*p_double = NULL;
 
@@ -1223,12 +1248,12 @@ long SR_write_array_data(FILE *out_fd, char *name, void *pArray, long num_elemen
 			n += fprintf(out_fd, "%1c%u%1c ", ELEMENT_BEGIN, p_ushort[i], ELEMENT_END);
 			break;
 		case DBF_LONG:
-			p_long = (long *)pArray;
-			n += fprintf(out_fd, "%1c%ld%1c ", ELEMENT_BEGIN, p_long[i], ELEMENT_END);
+			p_long = (epicsInt32 *)pArray;
+			n += fprintf(out_fd, "%1c%d%1c ", ELEMENT_BEGIN, p_long[i], ELEMENT_END);
 			break;
 		case DBF_ULONG:
-			p_ulong = (unsigned long *)pArray;
-			n += fprintf(out_fd, "%1c%lu%1c ", ELEMENT_BEGIN, p_ulong[i], ELEMENT_END);
+			p_ulong = (epicsUInt32 *)pArray;
+			n += fprintf(out_fd, "%1c%u%1c ", ELEMENT_BEGIN, p_ulong[i], ELEMENT_END);
 			break;
 		case DBF_FLOAT:
 			p_float = (float *)pArray;
@@ -1264,7 +1289,7 @@ void makeAutosaveFileFromDbInfo(char *fileBaseName, char *info_name)
 	DBENTRY		dbentry;
 	DBENTRY		*pdbentry = &dbentry;
 	const char *info_value, *pbegin, *pend;
-	char		*fname, *falloc=NULL, field[MAX_FIELD_SIZE];
+	char		*fname, *falloc=NULL, field[MAX_FIELD_SIZE], realfield[MAX_FIELD_SIZE];
 	FILE 		*out_fd;
 	int			searchRecord, flen;
 
@@ -1317,8 +1342,10 @@ void makeAutosaveFileFromDbInfo(char *fileBaseName, char *info_name)
 						if (flen >= sizeof(field)-1) flen = sizeof(field)-1;
 						memcpy(field, pbegin, flen);
 						field[flen]='\0';
+						strcpy(realfield, field);
+						if (realfield[strlen(realfield)-1] == '$') realfield[strlen(realfield)-1] = '\0';
 
-						if (dbFindField(pdbentry, field) == 0) {
+						if (dbFindField(pdbentry, realfield) == 0) {
 							fprintf(out_fd, "%s.%s\n", dbGetRecordName(pdbentry), field);
 						} else {
 							printf("makeAutosaveFileFromDbInfo: %s.%s not found\n", dbGetRecordName(pdbentry), field);

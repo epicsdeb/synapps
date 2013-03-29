@@ -1,7 +1,7 @@
 
 file {
-	name="/home/oxygen/MOONEY/epics/synApps_5_5/support/softGlue/softGlueApp/op/adl/softGlue_Shift32_bare.adl"
-	version=030104
+	name="/home/oxygen/MOONEY/epics/synApps/support/softGlue/softGlueApp/op/adl/softGlue_Shift32_bare.adl"
+	version=030105
 }
 display {
 	object {
@@ -531,4 +531,36 @@ text {
 	}
 	textix="LSBIT"
 	align="horiz. centered"
+}
+"text update" {
+	object {
+		x=88
+		y=3
+		width=60
+		height=20
+	}
+	monitor {
+		chan="$(P)$(H)Shift-$(N)_READVAL_LSW"
+		clr=54
+		bclr=1
+	}
+	format="hexadecimal"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=13
+		y=2
+		width=60
+		height=20
+	}
+	monitor {
+		chan="$(P)$(H)Shift-$(N)_READVAL_MSW"
+		clr=54
+		bclr=1
+	}
+	format="hexadecimal"
+	limits {
+	}
 }

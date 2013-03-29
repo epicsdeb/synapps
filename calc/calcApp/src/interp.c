@@ -3,20 +3,29 @@
  *  vala[]  independent variable
  *  valb[]  dependent variable 1
  *  valc[]  dependent variable 2
- *  a    new value of independent variable, for interp or adding entry
- *  valn number of entries
- *  f    interpolation order (1: linear; >1: polynomial)
- *  g    mode (0: interpolate; 1: add point to table
- *  b    new value for dependent variable 1 array
- *  c    new value for dependent variable 2 array
- *  vale successful interpolation
- *  valf interpolation result for dependent variable 1
- *  valg interpolation result for dependent variable 2
- *  noa  max number of entries in a array - limits table size
- *  nob  max number of entries in b array - limits table size
- *  noc  max number of entries in c array - limits table size
+ *  a       new value of independent variable, for interp or adding entry
+ *  valn    number of entries
+ *  f       interpolation order (1: linear; >1: polynomial)
+ *  g       mode (0: interpolate; 1: add point to table
+ *  b       new value for dependent variable 1 array
+ *  c       new value for dependent variable 2 array
+ *  vale    successful interpolation
+ *  valf    interpolation result for dependent variable 1
+ *  valg    interpolation result for dependent variable 2
+ *  nova    max number of entries in a array - limits table size
+ *  novb    max number of entries in b array - limits table size
+ *  novc    max number of entries in c array - limits table size
  *
  *  Note: the code uses only n entries, where n = MIN(nova, novb, novc)
+ *
+ *  New fields for array interpolation
+ *  h[]     new values of independent variable, for interp
+ *  valh[]  interpolation result for dependent variable 1
+ *  vali[]  interpolation result for dependent variable 2
+ *  noh     max number of entries in h array, will be coerced to <= novh, novi
+ *  novh    max number of entries in valh array
+ *  novi    max number of entries in valh array
+ *
  * Tim Mooney
  */
 
@@ -56,15 +65,18 @@ static long interp_init(aSubRecord *pasub)
 	if (*valn > pasub->noa) *valn = pasub->nova;
 	if (*valn > pasub->nob) *valn = pasub->novb;
 	if (*valn > pasub->noc) *valn = pasub->novc;
+
+	if (pasub->noh > pasub->novh) pasub->noh = pasub->novh;
+	if (pasub->noh > pasub->novi) pasub->noh = pasub->novi;
 	return(0);
 }
 
 static long interp_do(aSubRecord *pasub)
 {
 	double	*a, *b, *c, ix;
-	double	*vala, *valb, *valc, *valf, *valg;
+	double	*vala, *valb, *valc, *valf, *valg, *h, *valh, *vali;
 	long	hi, lo, n, ii, iplace, first, *order, mode, *valn, *vale, err=0;
-	int		same_X=0;
+	int		same_X=0, i;
 
 	a = (double *)pasub->a;
 	b = (double *)pasub->b;
@@ -77,6 +89,9 @@ static long interp_do(aSubRecord *pasub)
 	valn = (long *)pasub->valn;
 	valf = (double *)pasub->valf;
 	valg = (double *)pasub->valg;
+	h = (double *)pasub->h;
+	valh = (double *)pasub->valh;
+	vali = (double *)pasub->vali;
 	if (*valn > pasub->nova) *valn = pasub->nova;
 	if (*valn > pasub->novb) *valn = pasub->novb;
 	if (*valn > pasub->novc) *valn = pasub->novc;
@@ -183,7 +198,58 @@ static long interp_do(aSubRecord *pasub)
 		}
 		*valn = 0;
 		break;
+
+	case 3:
+		/* interpolate array */
+		*vale = 0;  /* presume failure */
+		order = (long *)pasub->f;
+		if (*order > MAXORDER) *order = MAXORDER;
+		/* if arrays haven't been set up yet, output is same as input */
+		if (n <= 1) {
+			for (i=0; i<pasub->noh; i++) {
+				valh[i] = h[i];
+				vali[i] = h[i];
+			}
+			return(0);
+		}
+
+		for (i=0; i<pasub->noh; i++) {
+			if (h[i] < vala[0]) {
+				valh[i] = valb[0];
+				vali[i] = valb[0];
+			}
+			if (h[i] > vala[n-1]) {
+				valh[i] = valb[n-1];
+				vali[i] = valb[n-1];
+			}
+
+			ix = find_index(n, vala, &h[i], &lo, &hi);
+
+			if (*order > 1) {
+				/* polynomial */
+				ii = MIN(*order+1, n);	/* number of points required */
+				/* arrange that we switch from one set of points to the next */
+				/* when *d crosses a point, and not halfway between */
+				first = (int)(ix - ii/2) + ((ii%2)?0:1);
+				first = MAX(0, MIN(n-ii, first));
+				err = polyInterp(&vala[first], &valb[first], ii, h[i], &valh[i]);
+				err += polyInterp(&vala[first], &valc[first], ii, h[i], &vali[i]);
+				if (interpDebug >= 10) {
+					printf("poly (O%ld, first=%ld) valh[i] = %f; err=%ld\n",
+						*order, first, valh[i], err);
+				}
+			} else {
+				/* linear interpolation */
+				valh[i] = valb[lo] + (ix-lo)*(valb[hi]-valb[lo]);
+				vali[i] = valc[lo] + (ix-lo)*(valc[hi]-valc[lo]);
+				if (interpDebug) printf("linear (%ld:%f:%ld) valh[i] = %f, err=%ld\n",
+					lo, ix, hi, valh[i], err);
+			}
+		}
+		if (!err) *vale = 1;
+		break;
 	}
+
 	return(0);
 }
 
