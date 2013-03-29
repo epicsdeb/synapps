@@ -24,7 +24,7 @@ ENVIRON += LINUX_USB_INSTALLED LINUX_TIFF_INSTALLED
 
 ENVIRON += USE_RPATH 
 
-SHRLIB_VERSION ?= 20111025
+SHRLIB_VERSION ?= 20130320
 
 #Note: SNCSEQ will create configure/RULES_BUILD with the additional
 #      rules required to handle .st files.
@@ -214,6 +214,8 @@ clean-$(1): realclean-$(1) #fullclean-$(1)
 
 clean-all += clean-$(1)
 
+.PHONY: info-$(1) rinfo-$(1) build-$(1) single-$(1) realclean-$(1) clean-$(1)
+
 endef
 
 MMODS = $(filter-out $(SKIP),$(MODS))
@@ -250,3 +252,5 @@ help:
 	@echo "  binfo      - Show configuration options affecting build"
 	@echo "  info-MOD   - Show information about a module"
 	@echo "  rinfo-MOD  - Show information about a module and its dependencies"
+
+.PHONY: all help info binfo clean distclean runtests
