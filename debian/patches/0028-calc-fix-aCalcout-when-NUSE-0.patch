@@ -1,0 +1,57 @@
+From: Michael Davidsaver <mdavidsaver@bnl.gov>
+Date: Thu, 8 Aug 2013 14:19:49 -0400
+Subject: calc: fix aCalcout when NUSE=0
+
+---
+ calc/calcApp/src/aCalcoutRecord.c |   15 ++++++++++++---
+ 1 file changed, 12 insertions(+), 3 deletions(-)
+
+diff --git a/calc/calcApp/src/aCalcoutRecord.c b/calc/calcApp/src/aCalcoutRecord.c
+index 517c610..a05d53f 100644
+--- a/calc/calcApp/src/aCalcoutRecord.c
++++ b/calc/calcApp/src/aCalcoutRecord.c
+@@ -838,7 +838,7 @@ static void checkAlarms(acalcoutRecord *pcalc)
+ 
+ static void execOutput(acalcoutRecord *pcalc)
+ {
+-	long		i, status;
++	long		i, status, nCopy = 0;
+ 
+ 	/* Determine output data */
+ 	if (aCalcoutRecordDebug >= 10)
+@@ -849,7 +849,11 @@ static void execOutput(acalcoutRecord *pcalc)
+ #if MIND_UNUSED_ELEMENTS
+ 		for (i=0; i<pcalc->nelm; i++) pcalc->oav[i] = pcalc->aval[i];
+ #else
+-		for (i=0; i<pcalc->nuse; i++) pcalc->oav[i] = pcalc->aval[i];
++		// for (i=0; i<pcalc->nuse; i++) pcalc->oav[i] = pcalc->aval[i];
++		nCopy = ((pcalc->nuse > 0) && (pcalc->nuse < pcalc->nelm)) ?
++			pcalc->nuse : pcalc->nelm;
++
++		for (i=0; i<nCopy; i++) pcalc->oav[i] = pcalc->aval[i];
+ #endif
+ 	}
+ 
+@@ -930,7 +934,8 @@ static void monitor(acalcoutRecord *pcalc)
+ #if MIND_UNUSED_ELEMENTS
+ 	numElements = pcalc->nelm;
+ #else
+-	numElements = pcalc->nuse;
++	numElements = ((pcalc->nuse > 0) && (pcalc->nuse < pcalc->nelm)) ?
++							pcalc->nuse : pcalc->nelm;
+ #endif
+ 
+ 	for (i=0, diff=0; i<numElements; i++) {
+@@ -1020,8 +1025,12 @@ static int fetch_values(acalcoutRecord *pcalc)
+ 			}
+ 			for (j=0; j<numElements; j++) pcalc->paa[j] = (*pavalue)[j];
+ 			/* get new value */
++			nRequest = ((pcalc->nuse > 0) && (pcalc->nuse < pcalc->nelm)) ?	pcalc->nuse : pcalc->nelm;
+ 			status = dbGetLink(plink, DBR_DOUBLE, *pavalue, 0, &nRequest);
+ 			if (!RTN_SUCCESS(status)) return(status);
++			if (nRequest<numElements) {
++				for (j=nRequest; j<numElements; j++) (*pavalue)[j] = 0;
++			}
+ 			/* compare new array value with saved value */
+ 			for (j=0; j<numElements; j++) {
+ 				if (pcalc->paa[j] != (*pavalue)[j]) {pcalc->newm |= 1<<i; break;}
