@@ -16,9 +16,13 @@
 #    slot:     IP-slot number (numbering begins at 0)
 #    filename: Name of the FPGA-content hex file to load into the FPGA.
 #
-initIP_EP200_FPGA(0, 2, "$(SOFTGLUE)/softGlueApp/Db/SoftGlue_2_2.hex")
-#    softGlue 2.2 with shift registers
+
+#    standard softGlue 2.2
+#initIP_EP200_FPGA(0, 2, "$(SOFTGLUE)/softGlueApp/Db/SoftGlue_2_2.hex")
+#    standard softGlue 2.2 plus two shift registers
 #initIP_EP200_FPGA(0, 2, "$(SOFTGLUE)/softGlueApp/Db/SoftGlue_2_2_Octupole_0_0.hex")
+#    standard softGlue 2.2 plus two up/down counters
+initIP_EP200_FPGA(0, 2, "$(SOFTGLUE)/softGlueApp/Db/SoftGlue_2_2_1ID_Vgate_0_1.hex")
 
 ################################################################################
 #    Initialize basic field I/O 
@@ -68,19 +72,19 @@ initIP_EP200_Int(0, 2, 0x90, 0x0, 0x0, 0x0, 0x0)
 #    -------------------------------------------------------------------
 #    |  Correspondence between dataDir bits (0-8) and I/O pins (1-48)  |
 #    -------------------------------------------------------------------
-#    |             |  201          |  202/204           |  203         |
+#    |             |  201          |  202/204           |  203         | 
 #    -------------------------------------------------------------------
-#    | bit 0       |  pins 1-8     |  pins 1, 3,25,27   |  pins 25,27  |
-#    | bit 1       |  pins 9-16    |  pins 5, 7,29,31   |  pins 29,31  |
-#    | bit 2       |  pins 17-24   |  pins 9,11,33,35   |  pins 33,35  |
-#    | bit 3       |  pins 25-32   |  pins 13,15,37,39  |  pins 37,39  |
+#    | bit 0       |  pins 1-8     |  pins 1, 3,25,27   |  pins 25,27  | 
+#    | bit 1       |  pins 9-16    |  pins 5, 7,29,31   |  pins 29,31  | 
+#    | bit 2       |  pins 17-24   |  pins 9,11,33,35   |  pins 33,35  | 
+#    | bit 3       |  pins 25-32   |  pins 13,15,37,39  |  pins 37,39  | 
 #    |             |               |                    |              |
-#    | bit 4       |  pins 33-40   |  pins 17,19,41,43  |  pins 41,43  |
-#    | bit 5       |  pins 41-48   |  pins 21,23,45,47  |  pins 45,47  |
-#    | bit 6       |         x     |            x       |  pins 1-8    |
-#    | bit 7       |         x     |            x       |  pins 9-16   |
+#    | bit 4       |  pins 33-40   |  pins 17,19,41,43  |  pins 41,43  | 
+#    | bit 5       |  pins 41-48   |  pins 21,23,45,47  |  pins 45,47  | 
+#    | bit 6       |         x     |            x       |  pins 1-8    | 
+#    | bit 7       |         x     |            x       |  pins 9-16   | 
 #    |             |               |                    |              |
-#    | bit 8       |         x     |            x       |  pins 17-24  |
+#    | bit 8       |         x     |            x       |  pins 17-24  | 
 #    -------------------------------------------------------------------
 #    Examples:
 #    1. For the IP-EP201, moduleType is 201, and dataDir == 0x3c would mean
@@ -89,7 +93,9 @@ initIP_EP200_Int(0, 2, 0x90, 0x0, 0x0, 0x0, 0x0)
 #       would mean that I/O bits 1,3,25,27, 5,7,29,31, 17,19,41,43 are outputs.
 #    3. For the IP-EP203, moduleType is 203, and dataDir == 0x??? would mean
 #       that I/O bits 1-8, 25,27, 29,31, 33,35, 45,47 are outputs.
-initIP_EP200_IO(0, 2, 201, 0x3c)
+#initIP_EP200_IO(0, 2, 201, 0x3c)
+initIP_EP200_IO(0, 2, 201, 0xc)
+#initIP_EP200_IO(0, 2, 202, 0x13)
 
 #-------------------------------------------------------------------------------
 #    For backward compatibility with softGlue 2.1 and earlier, the following
@@ -154,16 +160,35 @@ initIP_EP201SingleRegisterPort("SOFTGLUE", 0, 2)
 dbLoadRecords("$(SOFTGLUE)/db/softGlue_SignalShow.db","P=xxx:,H=softGlue:,PORT=SOFTGLUE,READEVENT=10")
 
 #    Load a set of database fragments for each single-register component.
+# This database contains the records for standard softGlue, and must be loaded
+# for all .hex files above 
 dbLoadRecords("$(SOFTGLUE)/db/softGlue_FPGAContent.db", "P=xxx:,H=softGlue:,PORT=SOFTGLUE,READEVENT=10")
+
+# This database contains the additional records needed for
+# SoftGlue_2_2_Octupole_0_0.hex
 #!dbLoadRecords("$(SOFTGLUE)/db/softGlue_FPGAContent_octupole.db", "P=xxx:,H=softGlue:,PORT=SOFTGLUE,READEVENT=10")
+
+# This database contains the additional records needed for
+# SoftGlue_2_2_1ID_Vgate_0_1.hex
+dbLoadRecords("$(SOFTGLUE)/db/softGlue_FPGAContent_s1ID_Vgate.db", "P=xxx:,H=softGlue:,PORT=SOFTGLUE,READEVENT=10")
 
 #    Interrupt support.
 #    ('putenv' is used to fit the command into the vxWorks command line space.)
-putenv "SDB=$(SOFTGLUE)/db/softGlue_FPGAInt.db"
-dbLoadRecords("$(SDB)","P=xxx:,H=softGlue:,PORT1=SGIO_1,PORT2=SGIO_2,PORT3=SGIO_3,FIFO=10")
+putenv "SFDB=$(SOFTGLUE)/db/softGlue_FPGAInt.db"
+dbLoadRecords("$(SFDB)","P=xxx:,H=softGlue:,PORT1=SGIO_1,PORT2=SGIO_2,PORT3=SGIO_3,FIFO=10")
+
+taskDelay(50)
 
 #    Some stuff just for convenience: software clock and pulse generators, and
 #    a couple of busy records.
 dbLoadRecords("$(SOFTGLUE)/db/softGlue_convenience.db", "P=xxx:,H=softGlue:")
+
+# Menu of softGlue circuits
+# -------------------------
+# This database supports loading and saving softGlue circuits to named files in
+# the autosave directory.  For loading, this is all you need.  For saving, you
+# also need a command like the following to be executed after iocInit:
+#    create_manual_set("SGMenu.req","P=xxx:,CONFIG=SG,H=softGlue:")
+#dbLoadRecords("$(AUTOSAVE)/asApp/Db/configMenu.db","P=xxx:,CONFIG=SG")
 
 # END softGlue.cmd ------------------------------------------------------------

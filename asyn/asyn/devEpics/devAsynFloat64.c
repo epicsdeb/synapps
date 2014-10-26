@@ -260,6 +260,7 @@ static void processCallbackInput(asynUser *pasynUser)
     dbCommon *pr = (dbCommon *)pPvt->pr;
 
     pPvt->result.status = pPvt->pfloat64->read(pPvt->float64Pvt, pPvt->pasynUser, &pPvt->result.value);
+    pPvt->result.time = pPvt->pasynUser->timestamp;
     if (pPvt->result.status == asynSuccess) {
         asynPrint(pasynUser, ASYN_TRACEIO_DEVICE,
             "%s devAsynFloat64 process value=%f\n",pr->name,pPvt->result.value);
@@ -384,7 +385,7 @@ getCallbackValue(devPvt *pPvt)
     epicsMutexLock(pPvt->mutexId);
     if (pPvt->ringTail != pPvt->ringHead) {
         if (pPvt->ringBufferOverflows > 0) {
-            asynPrint(pPvt->pasynUser, ASYN_TRACEIO_DEVICE,
+            asynPrint(pPvt->pasynUser, ASYN_TRACE_WARNING,
                 "%s devAsynFloat64 getCallbackValue error, %d ring buffer overflows\n",
                                     pPvt->pr->name, pPvt->ringBufferOverflows);
             pPvt->ringBufferOverflows = 0;
@@ -429,6 +430,7 @@ static long processAi(aiRecord *pr)
         }
     }
     pr->val = pPvt->result.value; 
+    pr->time = pPvt->result.time; 
     if(pPvt->result.status==asynSuccess) {
         pr->udf=0;
     }

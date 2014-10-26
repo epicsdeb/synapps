@@ -18,6 +18,7 @@ include $(TOP)/configure/CONFIG
 DB += motor.db
 DB += basic_motor.db
 DB += basic_asyn_motor.db
+DB += IMS_extra.db
 DB += XPSAuxAi.db
 DB += XPSAuxAo.db
 DB += XPSAuxBi.db
@@ -25,6 +26,8 @@ DB += XPSAuxBo.db
 DB += XPSAuxLi.db
 DB += XPSAuxLo.db
 DB += XPS_extra.db
+DB += HXP_extra.db
+DB += HXP_coords.db
 DB += ACRAux.template
 DB += ACRAuxRead.template
 DB += ACRAuxLi.template
@@ -38,6 +41,7 @@ DB += profileMoveController.template
 DB += profileMoveAxis.template
 DB += profileMoveControllerXPS.template
 DB += profileMoveAxisXPS.template
+DB += PI_Support.db PI_SupportCtrl.db
 
 #----------------------------------------------------
 # Declare template files which do not show up in DB

@@ -1,0 +1,18 @@
+
+Serial connection: Used straight-through RJ11 (6-cond).  
+IP (XM-OCTAL) jumpers default.
+
+RJ-11 recepticle (taper at bottom)
+| | | | | |
+1 2 3 4 5 6
+
+1,2 = RxD (to db9 pin 3)
+3,4 = GND (to db9 pin 5)
+5,6 = TxD (to db9 pin 2)
+
+Enter PID parameters as strings.  This helps reduce the serial port
+traffic by limiting the number of zeros that get sent out.  When I tried
+using doubles for inputs, the STR(X) function created numbers with many
+zeros after the decimal point.  
+
+Because of this, was able to add PID query to PID setting commands.

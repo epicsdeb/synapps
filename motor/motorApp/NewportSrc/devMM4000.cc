@@ -2,10 +2,10 @@
 FILENAME...     devMM4000.cc
 USAGE...        Motor record device level support for Newport MM4000.
 
-Version:        $Revision: 13022 $
-Modified By:    $Author: sluiter $
-Last Modified:  $Date: 2011-07-06 11:15:22 -0500 (Wed, 06 Jul 2011) $
-HeadURL:        $URL: https://subversion.xor.aps.anl.gov/synApps/motor/tags/R6-7-1/motorApp/NewportSrc/devMM4000.cc $
+Version:        $Revision: 15620 $
+Modified By:    $Author: rivers $
+Last Modified:  $Date: 2012-12-06 16:20:02 -0600 (Thu, 06 Dec 2012) $
+HeadURL:        $URL: https://subversion.xray.aps.anl.gov/synApps/motor/tags/R6-8-1/motorApp/NewportSrc/devMM4000.cc $
 */
 
 /*
@@ -162,7 +162,7 @@ STATIC RTN_STATUS MM4000_build_trans(motor_cmnd command, double *parms, struct m
     struct MMcontroller *cntrl;
     char buff[110];
     int axis, card, maxdigits;
-    unsigned int size;
+    size_t size;
     double dval, cntrl_units;
     RTN_STATUS rtnval;
 

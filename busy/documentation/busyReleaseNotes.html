@@ -10,6 +10,19 @@ content="text/html; charset=iso-8859-1">
 
 <h1 align="center">busy Release Notes</h1>
 
+<h2 align="center">Release 1-6</h2>
+<P>Fixed a bug when the using asynchronous device support, for example devBusyAsyn with an asyn port driver
+with ASYN_CANBLOCK.  The problem occurred when 0 was written to the record, followed immediately by writing 1. 
+If the record was still processing with the 0 value when the 1 was written, device support would not process a
+second time with the 1 value.  It should have processed a second time with the 1 value (via the EPICS .RPRO
+field), but this was not happening.
+</P>
+
+<h2 align="center">Release 1-5</h2>
+<P>configure/CONFIG no longer defines STATIC_BUILD=YES on any platform.
+<P>Added caQtDM display
+
+
 <h2 align="center">Release 1-4</h2>
 <P>Added autosave-request file busyRecord_settings.req.
 <P>RELEASE* changes

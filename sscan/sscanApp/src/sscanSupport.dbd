@@ -1,6 +1,7 @@
 ################
 # RECORD SUPPORT
 ################
+include "menuSscan.dbd"
 include "scanparmRecord.dbd"
 include "sscanRecord.dbd"
 
@@ -27,3 +28,7 @@ variable("sscanRecordViewPos", int)
 variable("sscanRecordDontCheckLimits", int)
 variable("sscanRecordLookupTime", int)
 variable("sscanRecordConnectWaitSeconds", int)
+# Don't put this here, because it would require all users
+# of sscan to use the sequencer.  Instead, Makefile will add
+# sscanProgressSupport.dbd to the .dbd file iff SNCSEQ is defined.
+#registrar(scanProgressRegistrar)

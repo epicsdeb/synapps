@@ -14,7 +14,7 @@
  <tbody>
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
-   <div id="projectname">asyn&#160;<span id="projectnumber">4-21</span></div>
+   <div id="projectname">asyn&#160;<span id="projectnumber">4-23</span></div>
   </td>
  </tr>
  </tbody>
@@ -67,6 +67,7 @@ Public Member Functions</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classparam_val.html#a795c4e244aac26327070dd80b61058cc">getName</a> ()</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classparam_val.html#ac172eb86bd309250835c7a3898804441">nameEquals</a> (const char *<a class="el" href="classparam_val.html#afa7f0de7462e90fcc90af8f1bdcaed4f">name</a>)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classparam_val.html#a544ed8e86be09dd7bedc83cdfe2d2fc6">setInteger</a> (epicsInt32 value)</td></tr>
+<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the value for an integer.  <a href="#a544ed8e86be09dd7bedc83cdfe2d2fc6"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">epicsInt32&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classparam_val.html#ac6454b112baec4ecb63a93313707df33">getInteger</a> ()</td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the value for an integer in the parameter library.  <a href="#ac6454b112baec4ecb63a93313707df33"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classparam_val.html#a28afbf19093313721a507cd8becdcdae">setUInt32</a> (epicsUInt32 value, epicsUInt32 valueMask, epicsUInt32 interruptMask)</td></tr>
@@ -74,6 +75,7 @@ Public Member Functions</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">epicsUInt32&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classparam_val.html#a021d79980f7a8d40eca4eeaa54305954">getUInt32</a> (epicsUInt32 valueMask)</td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the value for a UInt32 in the parameter library.  <a href="#a021d79980f7a8d40eca4eeaa54305954"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classparam_val.html#ac7b13360dba9a80c1cfddfcc6eea3e97">setDouble</a> (epicsFloat64 value)</td></tr>
+<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the value for a double in the parameter library.  <a href="#ac7b13360dba9a80c1cfddfcc6eea3e97"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">epicsFloat64&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classparam_val.html#a8d333398ee303326d7cd89f7a4088cc9">getDouble</a> ()</td></tr>
 <tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets the value for an double in the parameter library.  <a href="#a8d333398ee303326d7cd89f7a4088cc9"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classparam_val.html#a92be608024aad187aa4ef2bcaa6dffc0">setString</a> (const char *value)</td></tr>
@@ -449,6 +451,15 @@ Protected Attributes</h2></td></tr>
 </div>
 <div class="memdoc">
 
+<p>Sets the value for a double in the parameter library. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">value</td><td>Value to set. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="return"><dt><b>Returns:</b></dt><dd>Returns asynParamBadIndex if the index is not valid or asynParamWrongType if the parameter type is not asynParamFloat64. </dd></dl>
+
 </div>
 </div>
 <a class="anchor" id="a544ed8e86be09dd7bedc83cdfe2d2fc6"></a><!-- doxytag: member="paramVal::setInteger" ref="a544ed8e86be09dd7bedc83cdfe2d2fc6" args="(epicsInt32 value)" -->
@@ -465,6 +476,20 @@ Protected Attributes</h2></td></tr>
       </table>
 </div>
 <div class="memdoc">
+
+<p>Sets the value for an integer. </p>
+<dl><dt><b>Parameters:</b></dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">value</td><td>Value to set. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl><dt><b>Exceptions:</b></dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">ParamValWrongType</td><td>if type is not asynParamInt32 </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -850,11 +875,11 @@ Protected Attributes</h2></td></tr>
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following files:<ul>
-<li>/home/epics/devel/asynR4-21/asyn/asynPortDriver/<a class="el" href="param_val_8h_source.html">paramVal.h</a></li>
-<li>/home/epics/devel/asynR4-21/asyn/asynPortDriver/<a class="el" href="param_val_8cpp.html">paramVal.cpp</a></li>
+<li>/home/epics/devel/asynR4-23/asyn/asynPortDriver/<a class="el" href="param_val_8h_source.html">paramVal.h</a></li>
+<li>/home/epics/devel/asynR4-23/asyn/asynPortDriver/<a class="el" href="param_val_8cpp.html">paramVal.cpp</a></li>
 </ul>
 </div>
-<hr class="footer"/><address class="footer"><small>Generated on Mon Feb 18 2013 for asyn by&#160;
+<hr class="footer"/><address class="footer"><small>Generated on Wed Jun 18 2014 for asyn by&#160;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.7.4 </small></address>
 </body>

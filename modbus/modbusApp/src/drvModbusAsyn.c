@@ -54,15 +54,31 @@
 
 #define WAGO_ID_STRING      "Wago"      /* If the plcName parameter to drvModbusAsynConfigure contains
                                          * this substring then the driver will do the initial readback
-                                         * for write operations at address plus 0x200. */
+                                         * for write operations and the readback for read/modify/write
+                                         * operations at address plus 0x200. */
+                                         
+#define WAGO_OFFSET         0x200       /* The offset for readback operations on Wago devices */
+
+/* MODBUS_READ_WRITE_MULTIPLE_REGISTERS (function 23) is not very common, and is problematic.  
+ * It can use a different range of registers for reading and writing.
+ * We handle this by defining 2 new function codes.  
+ * These will use MODBUS_READ_WRITE_MULTIPLE_REGISTERS
+ * but one is read-only and the other is write-only.
+ * Each EPICS modbus driver will use one or the other, and hence will behave like 
+ * READ_INPUT_REGISTERS or WRITE_MULTIPLE_REGISTERS. */
+#define MODBUS_READ_INPUT_REGISTERS_F23      123
+#define MODBUS_WRITE_MULTIPLE_REGISTERS_F23  223
 
 
 /* Structures for drvUser interface */
 
 typedef enum {
     modbusDataCommand,
+    modbusReadCommand,
     modbusEnableHistogramCommand,
     modbusReadHistogramCommand,
+    modbusHistogramBinTimeCommand,
+    modbusHistogramTimeAxisCommand,
     modbusPollDelayCommand,
     modbusReadOKCommand,
     modbusWriteOKCommand,
@@ -72,7 +88,7 @@ typedef enum {
 } modbusCommand;
 
 /* Note, this constant must match the number of enums in modbusCommand */
-#define MAX_MODBUS_COMMANDS 9
+#define MAX_MODBUS_COMMANDS 12
 
 typedef struct {
     modbusCommand command;
@@ -81,8 +97,11 @@ typedef struct {
 
 static modbusCommandStruct modbusCommands[MAX_MODBUS_COMMANDS] = {
     {modbusDataCommand,            MODBUS_DATA_STRING},    
+    {modbusReadCommand,            MODBUS_READ_STRING},    
     {modbusEnableHistogramCommand, MODBUS_ENABLE_HISTOGRAM_STRING},
     {modbusReadHistogramCommand,   MODBUS_READ_HISTOGRAM_STRING}, 
+    {modbusHistogramBinTimeCommand,  MODBUS_HISTOGRAM_BIN_TIME_STRING}, 
+    {modbusHistogramTimeAxisCommand, MODBUS_HISTOGRAM_TIME_AXIS_STRING}, 
     {modbusPollDelayCommand,       MODBUS_POLL_DELAY_STRING}, 
     {modbusReadOKCommand,          MODBUS_READ_OK_STRING}, 
     {modbusWriteOKCommand,         MODBUS_WRITE_OK_STRING}, 
@@ -90,9 +109,6 @@ static modbusCommandStruct modbusCommands[MAX_MODBUS_COMMANDS] = {
     {modbusLastIOTimeCommand,      MODBUS_LAST_IO_TIME_STRING},
     {modbusMaxIOTimeCommand,       MODBUS_MAX_IO_TIME_STRING} 
 };
-
-/* Note, this constant must match the number of enums in modbusCommand */
-#define MAX_MODBUS_COMMANDS 9
 
 typedef struct {
     modbusDataType_t dataType;
@@ -132,7 +148,6 @@ typedef struct modbusStr
     asynUser  *pasynUserCommon; /* asynUser for asynCommon interface to asyn octet port */
     asynUser  *pasynUserTrace;  /* asynUser for asynTrace on this port */
     asynStandardInterfaces asynStdInterfaces;  /* Structure for standard interfaces */
-    epicsMutexId mutexId;       /* Mutex for interlocking access to doModbusIO */
     int modbusSlave;            /* Modbus slave address */
     int modbusFunction;         /* Modbus function code */
     int modbusStartAddress;     /* Modbus starting addess for this port */
@@ -152,7 +167,10 @@ typedef struct modbusStr
     int maxIOMsec;
     int lastIOMsec; 
     epicsInt32 timeHistogram[HISTOGRAM_LENGTH];     /* Histogram of read-times */
+    epicsInt32 histogramTimeAxis[HISTOGRAM_LENGTH]; /* Time axis of histogram of read-times */
     int enableHistogram;
+    int histogramMsPerBin;
+    int readbackOffset;  /* Readback offset for Wago devices */
 } modbusStr_t;
 
 
@@ -294,8 +312,6 @@ int drvModbusAsynConfigure(char *portName,
     int needReadThread=0;
     int IOLength=0;
     int maxLength=0;
-    int canBlock=0;
-    int readbackOffset=0;
     int i;
 
     pPlc = callocMustSucceed(1, sizeof(*pPlc), "drvModbusAsynConfigure");
@@ -308,7 +324,12 @@ int drvModbusAsynConfigure(char *portName,
     pPlc->modbusLength = modbusLength;
     pPlc->pollDelay = pollMsec/1000.;
     if (pPlc->pollDelay < MIN_POLL_DELAY) pPlc->pollDelay = MIN_POLL_DELAY;
-    pPlc->mutexId = epicsMutexMustCreate();
+    pPlc->histogramMsPerBin = 1;
+
+    /* Set readback offset for Wago devices for which the register readback address 
+     * is different from the register write address */
+    if (strstr(pPlc->plcType, WAGO_ID_STRING) != NULL) 
+        pPlc->readbackOffset = WAGO_OFFSET;
 
     switch(pPlc->modbusFunction) {
         case MODBUS_READ_COILS:
@@ -319,6 +340,7 @@ int drvModbusAsynConfigure(char *portName,
             break;
         case MODBUS_READ_HOLDING_REGISTERS:
         case MODBUS_READ_INPUT_REGISTERS:
+        case MODBUS_READ_INPUT_REGISTERS_F23:
             IOLength = pPlc->modbusLength;
             maxLength = MAX_READ_WORDS;
             needReadThread = 1;
@@ -328,14 +350,17 @@ int drvModbusAsynConfigure(char *portName,
             IOLength = pPlc->modbusLength/16;
             maxLength = MAX_WRITE_WORDS;
             if (pollMsec != 0) pPlc->readOnceFunction = MODBUS_READ_COILS;
-            canBlock = ASYN_CANBLOCK;
             break;
        case MODBUS_WRITE_SINGLE_REGISTER:
        case MODBUS_WRITE_MULTIPLE_REGISTERS:
             IOLength = pPlc->modbusLength;
             maxLength = MAX_WRITE_WORDS;
             if (pollMsec != 0) pPlc->readOnceFunction = MODBUS_READ_HOLDING_REGISTERS;
-            canBlock = ASYN_CANBLOCK;
+            break;
+       case MODBUS_WRITE_MULTIPLE_REGISTERS_F23:
+            IOLength = pPlc->modbusLength;
+            maxLength = MAX_WRITE_WORDS;
+            if (pollMsec != 0) pPlc->readOnceFunction = MODBUS_READ_INPUT_REGISTERS_F23;
             break;
        default:
             errlogPrintf("%s::drvModbusAsynConfig port %s unsupported"
@@ -393,7 +418,7 @@ int drvModbusAsynConfigure(char *portName,
     pPlc->pasynUserTrace->userPvt = pPlc;
 
     status = pasynManager->registerPort(pPlc->portName,
-                                        ASYN_MULTIDEVICE | canBlock,
+                                        ASYN_MULTIDEVICE | ASYN_CANBLOCK,
                                         1, /* autoconnect */
                                         0, /* medium priority */
                                         0); /* default stack size */
@@ -437,11 +462,8 @@ int drvModbusAsynConfigure(char *portName,
     
     /* If this is an output function do a readOnce operation if required. */
     if (pPlc->readOnceFunction) {
-        /* If this is a Wago device then the readback address is offset by 0x200. */
-        if (strstr(pPlc->plcType, WAGO_ID_STRING) != NULL) 
-            readbackOffset = 0x200;
-        status = doModbusIO(pPlc, pPlc->modbusSlave, pPlc->readOnceFunction, 
-                            (pPlc->modbusStartAddress + readbackOffset), 
+         status = doModbusIO(pPlc, pPlc->modbusSlave, pPlc->readOnceFunction, 
+                            (pPlc->modbusStartAddress + pPlc->readbackOffset), 
                             pPlc->data, pPlc->modbusLength);
         if (status == asynSuccess) pPlc->readOnceDone = 1;
     }
@@ -578,6 +600,7 @@ static void asynReport(void *drvPvt, FILE *fp, int details)
         fprintf(fp, "    pollDelay:          %f\n", pPlc->pollDelay);
         fprintf(fp, "    Time for last I/O   %d msec\n", pPlc->lastIOMsec);
         fprintf(fp, "    Max. I/O time:      %d msec\n", pPlc->maxIOMsec);
+        fprintf(fp, "    Time per hist. bin: %d msec\n", pPlc->histogramMsPerBin);
     }
 
 }
@@ -609,6 +632,7 @@ static asynStatus readUInt32D(void *drvPvt, asynUser *pasynUser, epicsUInt32 *va
                 case MODBUS_READ_DISCRETE_INPUTS:
                 case MODBUS_READ_HOLDING_REGISTERS:
                 case MODBUS_READ_INPUT_REGISTERS:
+                case MODBUS_READ_INPUT_REGISTERS_F23:
                     *value = pPlc->data[offset];
                     if ((mask != 0 ) && (mask != 0xFFFF)) *value &= mask;
                     break;
@@ -616,6 +640,7 @@ static asynStatus readUInt32D(void *drvPvt, asynUser *pasynUser, epicsUInt32 *va
                 case MODBUS_WRITE_MULTIPLE_COILS:
                 case MODBUS_WRITE_SINGLE_REGISTER:
                 case MODBUS_WRITE_MULTIPLE_REGISTERS:
+                case MODBUS_WRITE_MULTIPLE_REGISTERS_F23:
                     if (!pPlc->readOnceDone) return asynError;
                     *value = pPlc->data[offset];
                     if ((mask != 0 ) && (mask != 0xFFFF)) *value &= mask;
@@ -680,7 +705,7 @@ static asynStatus writeUInt32D(void *drvPvt, asynUser *pasynUser, epicsUInt32 va
                                              modbusAddress, &data, 1);
                     } else {
                         status = doModbusIO(pPlc, pPlc->modbusSlave, MODBUS_READ_HOLDING_REGISTERS,
-                                            modbusAddress, &data, 1);
+                                            modbusAddress + pPlc->readbackOffset, &data, 1);
                         if (status != asynSuccess) return(status);
                         /* Set bits that are set in the value and set in the mask */
                         data |=  (value & mask);
@@ -777,6 +802,7 @@ static asynStatus readInt32 (void *drvPvt, asynUser *pasynUser, epicsInt32 *valu
                     break;
                 case MODBUS_READ_HOLDING_REGISTERS:
                 case MODBUS_READ_INPUT_REGISTERS:
+                case MODBUS_READ_INPUT_REGISTERS_F23:
                     status = readPlcInt(pPlc, offset, value);
                     if (status != asynSuccess) return status;
                     break;
@@ -787,6 +813,7 @@ static asynStatus readInt32 (void *drvPvt, asynUser *pasynUser, epicsInt32 *valu
                     break;
                 case MODBUS_WRITE_SINGLE_REGISTER:
                 case MODBUS_WRITE_MULTIPLE_REGISTERS:
+                case MODBUS_WRITE_MULTIPLE_REGISTERS_F23:
                     if (!pPlc->readOnceDone) return asynError;
                     status = readPlcInt(pPlc, offset, value);
                     if (status != asynSuccess) return status;
@@ -818,6 +845,9 @@ static asynStatus readInt32 (void *drvPvt, asynUser *pasynUser, epicsInt32 *valu
             break;
         case modbusMaxIOTimeCommand: 
             *value = pPlc->maxIOMsec;
+            break;
+        case modbusHistogramBinTimeCommand: 
+            *value = pPlc->histogramMsPerBin;
             break;
         default:
             asynPrint(pPlc->pasynUserTrace, ASYN_TRACE_ERROR,
@@ -868,6 +898,7 @@ static asynStatus writeInt32(void *drvPvt, asynUser *pasynUser, epicsInt32 value
                     if (status != asynSuccess) return(status);
                     break;
                 case MODBUS_WRITE_MULTIPLE_REGISTERS:
+                case MODBUS_WRITE_MULTIPLE_REGISTERS_F23:
                     status = writePlcInt(pPlc, offset, value, buffer, &bufferLen);
                     if (status != asynSuccess) return(status);
                     status = doModbusIO(pPlc, pPlc->modbusSlave, pPlc->modbusFunction,
@@ -886,6 +917,22 @@ static asynStatus writeInt32(void *drvPvt, asynUser *pasynUser, epicsInt32 value
                       " modbusAddress=0%o, buffer[0]=0x%x, bufferLen=%d\n",
                       driver, pPlc->portName, pPlc->modbusFunction, 
                       modbusAddress, buffer[0], bufferLen);
+            break;            
+        case modbusReadCommand:
+            /* Read the data for this driver.  This can be used when the poller is disabled. */
+            status = doModbusIO(pPlc, pPlc->modbusSlave, pPlc->modbusFunction,
+                                        pPlc->modbusStartAddress, pPlc->data, pPlc->modbusLength);
+            if (status != asynSuccess) return(status);
+            break;
+        case modbusHistogramBinTimeCommand:
+            /* Set the time per histogram bin in ms */
+            pPlc->histogramMsPerBin = value;
+            if (pPlc->histogramMsPerBin < 1) pPlc->histogramMsPerBin = 1;
+            /* Since the time might have changed erase existing data */
+            for (i=0; i<HISTOGRAM_LENGTH; i++) {
+                pPlc->timeHistogram[i] = 0;
+                pPlc->histogramTimeAxis[i] = i * pPlc->histogramMsPerBin;
+            }
             break;
         default:
             asynPrint(pPlc->pasynUserTrace, ASYN_TRACE_ERROR,
@@ -941,6 +988,7 @@ static asynStatus readFloat64 (void *drvPvt, asynUser *pasynUser, epicsFloat64 *
                      break;
                 case MODBUS_READ_HOLDING_REGISTERS:
                 case MODBUS_READ_INPUT_REGISTERS:
+                case MODBUS_READ_INPUT_REGISTERS_F23:
                     status = readPlcFloat(pPlc, offset, value);
                     if (status != asynSuccess) return status;
                     break;
@@ -951,6 +999,7 @@ static asynStatus readFloat64 (void *drvPvt, asynUser *pasynUser, epicsFloat64 *
                     break;
                 case MODBUS_WRITE_SINGLE_REGISTER:
                 case MODBUS_WRITE_MULTIPLE_REGISTERS:
+                case MODBUS_WRITE_MULTIPLE_REGISTERS_F23:
                     if (!pPlc->readOnceDone) return asynError;
                     status = readPlcFloat(pPlc, offset, value);
                     break;
@@ -1018,6 +1067,7 @@ static asynStatus writeFloat64 (void *drvPvt, asynUser *pasynUser, epicsFloat64 
                     }
                     break;
                 case MODBUS_WRITE_MULTIPLE_REGISTERS:
+                case MODBUS_WRITE_MULTIPLE_REGISTERS_F23:
                     status = writePlcFloat(pPlc, offset, value, buffer, &bufferLen);
                     status = doModbusIO(pPlc, pPlc->modbusSlave, pPlc->modbusFunction,
                                         modbusAddress, buffer, bufferLen);
@@ -1077,6 +1127,7 @@ static asynStatus readInt32Array (void *drvPvt, asynUser *pasynUser, epicsInt32 
                     break;
                 case MODBUS_READ_HOLDING_REGISTERS:
                 case MODBUS_READ_INPUT_REGISTERS:
+                case MODBUS_READ_INPUT_REGISTERS_F23:
                     for (i=0; i<nread; i++) {
                         status = readPlcInt(pPlc, i, &data[i]);
                         if (status != asynSuccess) return status;
@@ -1092,6 +1143,7 @@ static asynStatus readInt32Array (void *drvPvt, asynUser *pasynUser, epicsInt32 
                     break;
                 case MODBUS_WRITE_SINGLE_REGISTER:
                 case MODBUS_WRITE_MULTIPLE_REGISTERS:
+                case MODBUS_WRITE_MULTIPLE_REGISTERS_F23:
                     if (!pPlc->readOnceDone) return asynError;
                     for (i=0; i<nread; i++) {
                         status = readPlcInt(pPlc, i, &data[i]);
@@ -1118,6 +1170,15 @@ static asynStatus readInt32Array (void *drvPvt, asynUser *pasynUser, epicsInt32 
             *nactual = nread;
             for (i=0; i<nread; i++) {
                 data[i] = pPlc->timeHistogram[i];
+            }
+            break;
+        
+        case modbusHistogramTimeAxisCommand:
+            nread = maxChans;
+            if (nread > HISTOGRAM_LENGTH) nread = HISTOGRAM_LENGTH;
+            *nactual = nread;
+            for (i=0; i<nread; i++) {
+                data[i] = pPlc->histogramTimeAxis[i];
             }
             break;
         
@@ -1159,6 +1220,7 @@ static asynStatus writeInt32Array (void *drvPvt, asynUser *pasynUser, epicsInt32
                     if (status != asynSuccess) return(status);
                     break;
                 case MODBUS_WRITE_MULTIPLE_REGISTERS:
+                case MODBUS_WRITE_MULTIPLE_REGISTERS_F23:
                     nwrite = maxChans;
                     if (nwrite > pPlc->modbusLength) nwrite = pPlc->modbusLength;
                     for (i=0; i<nwrite; i++) {
@@ -1232,10 +1294,14 @@ static void readPoller(PLC_ID pPlc)
                                  "drvModbusAsyn::readPoller");
     int32Data = callocMustSucceed(pPlc->modbusLength, sizeof(epicsInt32), 
                                  "drvModbusAsyn::readPoller");
-
+                            
     /* Loop forever */    
     while (1)
     {
+        /* Lock the port.  It is important that the port be locked so other threads cannot access the pPlc
+         * structure while the poller thread is running. */
+        pasynManager->lockPort(pPlc->pasynUserTrace);
+         
         /* Read the data */
         pPlc->ioStatus = doModbusIO(pPlc, pPlc->modbusSlave, pPlc->modbusFunction,
                                     pPlc->modbusStartAddress, pPlc->data, pPlc->modbusLength);
@@ -1246,15 +1312,21 @@ static void readPoller(PLC_ID pPlc)
         /* If the I/O status has changed then force callbacks */
         if (pPlc->ioStatus != prevIOStatus) pPlc->forceCallback = 1;
         
-        /* We process callbacks to device support.  
-         * Don't do this until EPICS interruptAccept flag is set. */
-        if (!interruptAccept) goto sleep;
-                            
         /* See if any memory location has actually changed.  
          * If not, no need to do callbacks. */
         anyChanged = memcmp(pPlc->data, prevData, 
                             pPlc->modbusLength*sizeof(epicsUInt16));
  
+        /* Don't start polling until EPICS interruptAccept flag is set, 
+         * because it does callbacks to device support. */
+        while (!interruptAccept) {
+            pasynManager->unlockPort(pPlc->pasynUserTrace);
+            epicsThreadSleep(0.1);
+            pasynManager->lockPort(pPlc->pasynUserTrace);
+        }
+
+        /* Process callbacks to device support. */
+
         /* See if there are any asynUInt32Digital callbacks registered to be called
          * when data changes.  These callbacks only happen if the value has changed */
         if (pPlc->forceCallback || anyChanged){
@@ -1322,7 +1394,7 @@ static void readPoller(PLC_ID pPlc)
             asynPrint(pPlc->pasynUserTrace, ASYN_TRACE_FLOW,
                       "%s::readPoller, calling client %p"
                       "callback=%p, data=0x%x\n",
-                      pInt32, pInt32->callback, int32Value);
+                      driver, pInt32, pInt32->callback, int32Value);
             pInt32->callback(pInt32->userPvt, pInt32->pasynUser,
                              int32Value);
             pnode = (interruptNode *)ellNext(&pnode->node);
@@ -1355,7 +1427,7 @@ static void readPoller(PLC_ID pPlc)
             asynPrint(pPlc->pasynUserTrace, ASYN_TRACE_FLOW,
                       "%s::readPoller, calling client %p"
                       "callback=%p, data=%f\n",
-                      pFloat64, pFloat64->callback, float64Value);
+                      driver, pFloat64, pFloat64->callback, float64Value);
             pFloat64->callback(pFloat64->userPvt, pFloat64->pasynUser,
                                float64Value);
             pnode = (interruptNode *)ellNext(&pnode->node);
@@ -1386,7 +1458,7 @@ static void readPoller(PLC_ID pPlc)
                 asynPrint(pPlc->pasynUserTrace, ASYN_TRACE_FLOW,
                           "%s::readPoller, calling client %p"
                           "callback=%p\n",
-                           pInt32Array, pInt32Array->callback);
+                           driver, pInt32Array, pInt32Array->callback);
                 pInt32Array->callback(pInt32Array->userPvt, pInt32Array->pasynUser,
                                       int32Data, pPlc->modbusLength);
                 pnode = (interruptNode *)ellNext(&pnode->node);
@@ -1404,9 +1476,9 @@ static void readPoller(PLC_ID pPlc)
         memcpy(prevData, pPlc->data, pPlc->modbusLength*sizeof(epicsUInt16));
 
         sleep:
-        /* Sleep for the poll delay */
+        /* Sleep for the poll delay with the port unlocked */
+        pasynManager->unlockPort(pPlc->pasynUserTrace);
         epicsThreadSleep(pPlc->pollDelay);
-
     }
 }
 
@@ -1421,6 +1493,7 @@ static int doModbusIO(PLC_ID pPlc, int slave, int function, int start,
     modbusWriteSingleResponse *writeSingleResp;
     modbusWriteMultipleRequest *writeMultipleReq;
     modbusWriteMultipleResponse *writeMultipleResp;
+    modbusReadWriteMultipleRequest *readWriteMultipleReq;
     modbusExceptionResponse *exceptionResp;
     int requestSize=0;
     int replySize;
@@ -1435,13 +1508,10 @@ static int doModbusIO(PLC_ID pPlc, int slave, int function, int start,
     int eomReason;
     double dT;
     int msec;
+    int bin;
     unsigned char mask=0;
     int autoConnect;
  
-    /* We need to protect the code in this function with a Mutex, because it uses the 
-     * data buffers in the pPlc stucture for the I/O, and that is not thread safe. */
-    epicsMutexMustLock(pPlc->mutexId);
-
     /* If the Octet driver is not set for autoConnect then do connection management ourselves */
     status = pasynManager->isAutoConnect(pPlc->pasynUserOctet, &autoConnect);
     if (!autoConnect) {
@@ -1491,7 +1561,7 @@ static int doModbusIO(PLC_ID pPlc, int slave, int function, int start,
             readReq->numRead = htons((epicsUInt16)len);
             requestSize = sizeof(modbusReadRequest);
             /* The -1 below is because the modbusReadResponse struct already has 1 byte of data */
-            replySize = sizeof(modbusReadResponse) -1 + len/8;
+            replySize = sizeof(modbusReadResponse) - 1 + len/8;
             if (len % 8) replySize++;
             break;
         case MODBUS_READ_HOLDING_REGISTERS:
@@ -1503,7 +1573,26 @@ static int doModbusIO(PLC_ID pPlc, int slave, int function, int start,
             readReq->numRead = htons((epicsUInt16)len);
             requestSize = sizeof(modbusReadRequest);
             /* The -1 below is because the modbusReadResponse struct already has 1 byte of data */
-            replySize = sizeof(modbusReadResponse) -1 + len*2;
+            replySize = sizeof(modbusReadResponse) - 1 + len*2;
+            break;
+        case MODBUS_READ_INPUT_REGISTERS_F23:
+            readWriteMultipleReq = (modbusReadWriteMultipleRequest *)pPlc->modbusRequest;
+            readWriteMultipleReq->slave = slave;
+            readWriteMultipleReq->fcode = MODBUS_READ_WRITE_MULTIPLE_REGISTERS;
+            readWriteMultipleReq->startReadReg = htons((epicsUInt16)start);
+            readWriteMultipleReq->numRead = htons((epicsUInt16)len);
+            readWriteMultipleReq->startWriteReg = htons((epicsUInt16)start);
+            /* It seems that one cannot specify numOutput=0 to not write values, at least the Modbus Slave
+             * simulator does not allow this.  
+             * But nothing will be written if the data part of the message is 0 length.
+             * So we set numOutput to one word and set the message so the data length is 0. */
+            readWriteMultipleReq->numOutput = htons(1);
+            readWriteMultipleReq->byteCount = 2;
+            /* The -1 below is because the modbusReadWriteMultipleRequest struct already has 1 byte of data,
+               and we don't want to send it. */
+            requestSize = sizeof(modbusReadWriteMultipleRequest) - 1;
+            /* The -1 below is because the modbusReadResponse struct already has 1 byte of data */
+            replySize = sizeof(modbusReadResponse) - 1 + len*2;
             break;
         case MODBUS_WRITE_SINGLE_COIL:
             writeSingleReq = (modbusWriteSingleRequest *)pPlc->modbusRequest;
@@ -1583,6 +1672,35 @@ static int doModbusIO(PLC_ID pPlc, int slave, int function, int start,
             requestSize = sizeof(modbusWriteMultipleRequest) + byteCount - 1;
             replySize = sizeof(modbusWriteMultipleResponse);
             break;
+        case MODBUS_WRITE_MULTIPLE_REGISTERS_F23:
+            readWriteMultipleReq = (modbusReadWriteMultipleRequest *)pPlc->modbusRequest;
+            readWriteMultipleReq->slave = slave;
+            readWriteMultipleReq->fcode = MODBUS_READ_WRITE_MULTIPLE_REGISTERS;
+            readWriteMultipleReq->startReadReg = htons((epicsUInt16)start);
+            /* We don't actually do anything with the values read from the device, but it does not
+             * seem to be allowed to specify numRead=0, so we always read one word from the same address
+             * we write to. */
+            nread = 1;
+            readWriteMultipleReq->numRead = htons(nread);
+            readWriteMultipleReq->startWriteReg = htons((epicsUInt16)start);
+            pShortIn = (epicsUInt16 *)data;
+            pShortOut = (epicsUInt16 *)&readWriteMultipleReq->data;
+            for (i=0; i<len; i++, pShortOut++) {
+                *pShortOut = htons(*pShortIn++);
+            }
+            readWriteMultipleReq->numOutput = htons(len);
+            byteCount = 2*len;
+            readWriteMultipleReq->byteCount = byteCount;
+            asynPrintIO(pPlc->pasynUserTrace, ASYN_TRACEIO_DRIVER, 
+                        (char *)readWriteMultipleReq->data, byteCount, 
+                        "%s::doModbusIO port %s WRITE_MULTIPLE_REGISTERS_F23\n",
+                        driver, pPlc->portName);
+            requestSize = sizeof(modbusReadWriteMultipleRequest) + byteCount - 1;
+            /* The -1 below is because the modbusReadResponse struct already has 1 byte of data */
+            replySize = sizeof(modbusReadResponse) + 2*nread - 1;
+            break;
+
+
         default:
             asynPrint(pPlc->pasynUserTrace, ASYN_TRACE_ERROR, 
                       "%s::doModbusIO, port %s unsupported function code %d\n", 
@@ -1609,7 +1727,7 @@ static int doModbusIO(PLC_ID pPlc, int slave, int function, int start,
                  "%s::doModbusIO port %s error calling writeRead,"
                  " error=%s, nwrite=%d/%d, nread=%d\n", 
                  driver, pPlc->portName, 
-                 pPlc->pasynUserOctet->errorMessage, nwrite, requestSize, nread);
+                 pPlc->pasynUserOctet->errorMessage, (int)nwrite, requestSize, (int)nread);
         pPlc->IOErrors++;
         goto done;
     }
@@ -1619,9 +1737,11 @@ static int doModbusIO(PLC_ID pPlc, int slave, int function, int start,
     pPlc->lastIOMsec = msec;
     if (msec > pPlc->maxIOMsec) pPlc->maxIOMsec = msec;
     if (pPlc->enableHistogram) {
+        bin = msec / pPlc->histogramMsPerBin;
+        if (bin < 0) bin = 0;
         /* Longer times go in last bin of histogram */
-        if (msec >= HISTOGRAM_LENGTH-1) msec = HISTOGRAM_LENGTH-1; 
-        pPlc->timeHistogram[msec]++;
+        if (bin >= HISTOGRAM_LENGTH-1) bin = HISTOGRAM_LENGTH-1; 
+        pPlc->timeHistogram[bin]++;
     }     
 
     /* See if there is a Modbus exception */
@@ -1663,6 +1783,7 @@ static int doModbusIO(PLC_ID pPlc, int slave, int function, int start,
             break;
         case MODBUS_READ_HOLDING_REGISTERS:
         case MODBUS_READ_INPUT_REGISTERS:
+        case MODBUS_READ_INPUT_REGISTERS_F23:
             pPlc->readOK++;
             readResp = (modbusReadResponse *)pPlc->modbusReply;
             nread = readResp->byteCount/2;
@@ -1688,6 +1809,10 @@ static int doModbusIO(PLC_ID pPlc, int slave, int function, int start,
             pPlc->writeOK++;
             writeMultipleResp = (modbusWriteMultipleResponse *)pPlc->modbusReply;
             break;
+        case MODBUS_WRITE_MULTIPLE_REGISTERS_F23:
+            pPlc->writeOK++;
+            readResp = (modbusReadResponse *)pPlc->modbusReply;
+            break;
         default:
             asynPrint(pPlc->pasynUserTrace, ASYN_TRACE_ERROR,
                       "%s::doModbusIO, port %s unsupported function code %d\n", 
@@ -1697,7 +1822,6 @@ static int doModbusIO(PLC_ID pPlc, int slave, int function, int start,
     }
 
     done:
-    epicsMutexUnlock(pPlc->mutexId);
     return(status);
 }
 

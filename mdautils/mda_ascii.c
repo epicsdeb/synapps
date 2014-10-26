@@ -1,5 +1,5 @@
 /*************************************************************************\
-* Copyright (c) 2013 UChicago Argonne, LLC,
+* Copyright (c) 2014 UChicago Argonne, LLC,
 *               as Operator of Argonne National Laboratory.
 * This file is distributed subject to a Software License Agreement
 * found in file LICENSE that is included with this distribution. 
@@ -46,13 +46,9 @@
   1.3.0 -- February 2013
            Used printf better, removed formatting strings
            Refactored the -f code to make less weird
-
-*/
-
-/*
-  In case you are able to get the program to compile under Windows,
-  then use "#define WINDOWS" to enable the changing of backslashes 
-  in directories to forward slahes.
+  1.3.1 -- February 2014
+           Keep program from stopping while decoding after finding an 
+           invalid file, a problem when processing multiple files.
 */
 
 /********************  mda_ascii.c  ***************/
@@ -67,9 +63,9 @@
 
 #include "mda-load.h"
 
-#define VERSION       "1.3.0 (February 2013)"
-#define YEAR          "2013"
-#define VERSIONNUMBER "1.3.0"
+#define VERSION       "1.3.1 (February 2014)"
+#define YEAR          "2014"
+#define VERSIONNUMBER "1.3.1"
 
 
 
@@ -1146,7 +1142,7 @@ int main( int argc, char *argv[])
       if( (mda = mda_load( input)) == NULL )
 	{
 	  fprintf(stderr, "Loading file \"%s\" failed!\n", argv[i]);
-	  return 1;
+	  continue;
 	}
       fclose(input);
       

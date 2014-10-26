@@ -3,9 +3,10 @@ FILENAME...	motordevCom.h
 USAGE...	This file contains definitions and structures that
 		are common to all motor record device support modules.
 
-Version:	$Revision: 1.6 $
-Modified By:	$Author: rivers $
-Last Modified:	$Date: 2005-12-08 00:11:26 $
+Version:	$Revision: 16591 $
+Modified By:	$Author: sluiter $
+Last Modified:	$Date: 2013-06-17 09:23:05 -0500 (Mon, 17 Jun 2013) $
+HeadURL:        $URL: https://subversion.xray.aps.anl.gov/synApps/motor/tags/R6-8-1/motorApp/MotorSrc/motordevCom.h $
 */
 
 /*

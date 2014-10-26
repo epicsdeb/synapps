@@ -12,6 +12,7 @@
 <UL>
 <LI><A HREF="#Overview">Overview</A>
 <LI><A HREF="#Fields">Field Descriptions</A>
+<LI><A HREF="#Expressions">Expressions</A>
 <LI><A HREF="#Files">Files</A>
 <LI><A HREF="#Restrictions">Restrictions</A>
 <LI><A HREF="#Release notes">Release notes</A>
@@ -143,7 +144,23 @@ devices, we can calculate readback values for the virtual devices as well.
 <P>We could have accomplished nearly the same effect with six CALC records and
 some FANOUTs, but two of the drive fields (A,B,C,D) would always be
 inconsistent with their readbacks.
-<P> 
+<P>
+
+<A NAME="Expressions"> <H2>Expressions</H2></A> Expressions for the transform
+record are described in  <a href="sCalcoutRecord.html">sCalcoutRecord.html</a>,
+because the transform record uses the same expression evaluation software.
+
+<H3>Synonyms</H3>
+<P>In addition to conventional expression, like "A+B", you can specify
+<i>synonyms</i> for the variables "A" through "P", as demonstrated below:
+
+<P><center><IMG SRC="oldTransform.adl.jpg"><br>conventional expressions</IMG></center>
+<P><center><IMG SRC="newTransform.adl.jpg"><br>expressions with user specified synonyms</IMG></center>
+
+<P>To specify a synonym for the variable "A", you begin the comment field "CMTA"
+with the synonym, which must begin with '$', and which is terminated
+by the first nonalphanumeric character.  For example, in the comment "$left:the left slit",
+the synonym is "$left".
 
 <A NAME="Fields">
 <H2>Field Descriptions</H2></A>

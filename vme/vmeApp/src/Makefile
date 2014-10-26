@@ -62,3 +62,6 @@ include $(TOP)/configure/RULES
 #----------------------------------------
 #  ADD RULES AFTER THIS LINE
 
+# Parallel build sometimes fails.
+# Make dependences on epidRecord.h explicit.
+vmeRecord$(OBJ):          $(COMMON_DIR)/vmeRecord.h

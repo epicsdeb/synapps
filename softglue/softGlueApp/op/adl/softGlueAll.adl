@@ -1,7 +1,7 @@
 
 file {
 	name="/home/oxygen/MOONEY/epics/synApps/support/softGlue/softGlueApp/op/adl/softGlueAll.adl"
-	version=030105
+	version=030107
 }
 display {
 	object {
@@ -564,4 +564,38 @@ composite {
 			}
 		}
 	}
+}
+"related display" {
+	object {
+		x=1305
+		y=750
+		width=50
+		height=20
+	}
+	display[1] {
+		label="all but I/O"
+		name="softGlueAllButIO.adl"
+		args="P=$(P),H=$(H)"
+		policy="replace display"
+	}
+	clr=0
+	bclr=63
+	label="-No I/O"
+}
+"related display" {
+	object {
+		x=1304
+		y=725
+		width=50
+		height=20
+	}
+	display[1] {
+		label="all with labels"
+		name="softGlueAll_label.adl"
+		args="P=$(P),H=$(H)"
+		policy="replace display"
+	}
+	clr=0
+	bclr=63
+	label="-Labels"
 }

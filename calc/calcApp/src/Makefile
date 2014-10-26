@@ -54,9 +54,11 @@ include $(TOP)/configure/RULES
 # Parallel build sometimes fails.
 # Make dependences on new records explicit.
 aCalcoutRecord$(OBJ): $(COMMON_DIR)/aCalcoutRecord.h
+devaCalcoutSoft$(OBJ): $(COMMON_DIR)/aCalcoutRecord.h
 transformRecord$(OBJ): $(COMMON_DIR)/transformRecord.h
 sseqRecord$(OBJ): $(COMMON_DIR)/sseqRecord.h
 sCalcoutRecord$(OBJ): $(COMMON_DIR)/sCalcoutRecord.h
+devsCalcoutSoft$(OBJ): $(COMMON_DIR)/sCalcoutRecord.h
 swaitRecord$(OBJ): $(COMMON_DIR)/swaitRecord.h
 
 # calcSupport.dbd is for use by an ioc directory that needs stuff from the
@@ -68,8 +70,10 @@ swaitRecord$(OBJ): $(COMMON_DIR)/swaitRecord.h
 
 ifdef SSCAN
 calcSupport.dbd: ../calcSupport_LOCAL.dbd ../calcSupport_withSSCAN.dbd
-	perl ../cat.pl ../calcSupport_LOCAL.dbd ../calcSupport_withSSCAN.dbd calcSupport.dbd
+	$(PERL) -MExtUtils::Command -e cat $^ > $@
+	#perl ../cat.pl ../calcSupport_LOCAL.dbd ../calcSupport_withSSCAN.dbd calcSupport.dbd
 else
 calcSupport.dbd: ../calcSupport_LOCAL.dbd
-	perl ../cat.pl ../calcSupport_LOCAL.dbd calcSupport.dbd
+	$(PERL) -MExtUtils::Command -e cat $^ > $@
+	#perl ../cat.pl ../calcSupport_LOCAL.dbd calcSupport.dbd
 endif

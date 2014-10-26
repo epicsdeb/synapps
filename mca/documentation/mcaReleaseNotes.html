@@ -9,6 +9,43 @@
   <h1 style="text-align: center">
     mca Release Notes</h1>
   <h2 style="text-align: center">
+    Release 7-5 (27-June-2014)</h2>
+  <ul>
+    <li>Fixed a serious bug in the Canberra support when libpcap was being used on Linux.
+      Previously pcap_open_live was being called with a timeout of -1 (ms). This actually
+      causes pcap to enter a tight polling loop where it uses 100% of the CPU time. The
+      timeout was changed to 0, which means wait for a packet to arrive. The CPU time
+      was reduced to 1%-2% for the test IOC, but the MCA and ICB performance (updates/sec,
+      etc.) appears to be the same. Note that timeout of 0 does NOT work on Windows, and
+      the previous value of -1 works fine, so the timeout was not changed on Windows or
+      Cygwin.</li>
+    <li>Minor changes to the Canberra support to work on Darwin. Darwin uses the BSD "bpf"
+      library for raw packet reading. It requires setting the Ethernet interface into
+      BIOCIMMEDIATE mode to receive packets immediately, and not have the OS buffer them.</li>
+    <li>Minor bug fix for SIS38XX.cpp when stopping mca acquisition. Don't issue error
+      if unit is in scaler mode and mcaStopAcquire is received as long as it is not acquiring.</li>
+    <li>Previously the WinPcap DLL files were installed into the mca/bin/$(ARCH) directories.
+      This does not work with Windows 7, because the DLLs that work on XP don't work on
+      Windows 7. The DLLs are no longer distributed with mca. They were actually never
+      needed because it was always necessary to install the WinPcap package to run an
+      application built with Canberra support. This is because it requires drivers that
+      were not distributed with mca. So the required DLLs will always be available on
+      the target machine, and they are guaranteed to be the correct versions.</li>
+    <li>Added support for the programmable high-voltage power supply in the Canberra DSA-2000.
+      The MCA and DSP controls in the DSA-2000 were already supported. The file iocBoot/iocLinux/st_DSA2000.cmd
+      is used to test this, and the mcaTest.adl medm screen can be used to load the new
+      DSA2000_HVPS.adl screen.</li>
+    <li>Cleaned up SIS38XX_SNL.st by removing unneeded empty strings in assign statements.</li>
+    <li>Added new iocDarwin and iocWindows example directories, removed iocCygwin.</li>
+  </ul>
+  <h2 style="text-align: center">
+    Release 7-4 (10-June-2013)</h2>
+  <ul>
+    <li>Changes to the Canberra support for vxWorks 6.x. These were done by Ron Sluiter.
+      This vxWorks 6.x support requires that the Board Support Package (BSP) be built
+      with the INCLUDE_NET_POOL option. </li>
+  </ul>
+  <h2 style="text-align: center">
     Release 7-3-1 (8-March-2013)</h2>
   <ul>
     <li>mcaRecord
@@ -281,9 +318,9 @@
       </tr>
       <tr>
         <th align="center" colspan="2">
-          R6-12-5 </th>
+          R6-12-5</th>
         <th align="center" colspan="2">
-          R7-0 </th>
+          R7-0</th>
       </tr>
       <tr>
         <th>

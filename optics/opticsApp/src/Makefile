@@ -47,7 +47,10 @@ optics_SRCS   += matrix3.c, orient.c, orient_st.st
 
 # Support for XIA PF4 filter (dual)
 optics_SNCFLAGS += +d -c +r -w
-optics_SRCS += pf4.st
+optics_SRCS += pf4.st chantler.c
+
+# Alternative support for XIA PF4 filter
+optics_SRCS += filterDrive.st
 
 # Pete Jemian's (SNL program) support for
 #    Oxford Quad X-ray Beam Position Monitor
@@ -59,4 +62,6 @@ optics_LIBS += $(EPICS_BASE_IOC_LIBS)
 include $(TOP)/configure/RULES
 #----------------------------------------
 #  ADD RULES AFTER THIS LINE
-
+# Parallel build sometimes fails.
+# Make dependences on tableRecord.h explicit.
+tableRecord$(OBJ): $(COMMON_DIR)/tableRecord.h

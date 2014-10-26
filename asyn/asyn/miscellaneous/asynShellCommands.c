@@ -20,15 +20,15 @@
 #include <epicsStdioRedirect.h>
 #include <iocsh.h>
 #include <gpHash.h>
+#include <registryFunction.h>
 
-#define epicsExportSharedSymbols
-#include <shareLib.h>
 #include "asynDriver.h"
 #include "asynOctet.h"
 #include "asynOption.h"
 #include "asynOctetSyncIO.h"
-#include "asynShellCommands.h"
+
 #include <epicsExport.h>
+#include "asynShellCommands.h"
 
 #define MAX_EOS_LEN 10
 typedef struct asynIOPvt {
@@ -679,6 +679,42 @@ static void asynSetTraceIOMaskCall(const iocshArgBuf * args) {
     asynSetTraceIOMask(portName,addr,mask);
 }
 
+static const iocshArg asynSetTraceInfoMaskArg0 = {"portName", iocshArgString};
+static const iocshArg asynSetTraceInfoMaskArg1 = {"addr", iocshArgInt};
+static const iocshArg asynSetTraceInfoMaskArg2 = {"mask", iocshArgInt};
+static const iocshArg *const asynSetTraceInfoMaskArgs[] = {
+    &asynSetTraceInfoMaskArg0,&asynSetTraceInfoMaskArg1,&asynSetTraceInfoMaskArg2};
+static const iocshFuncDef asynSetTraceInfoMaskDef =
+    {"asynSetTraceInfoMask", 3, asynSetTraceInfoMaskArgs};
+epicsShareFunc int
+ asynSetTraceInfoMask(const char *portName,int addr,int mask)
+{
+    asynUser *pasynUser=NULL;
+    asynStatus status;
+
+    if (portName && (strlen(portName) > 0)) {
+        pasynUser = pasynManager->createAsynUser(0,0);
+        status = pasynManager->connectDevice(pasynUser,portName,addr);
+        if(status!=asynSuccess) {
+            printf("%s\n",pasynUser->errorMessage);
+            pasynManager->freeAsynUser(pasynUser);
+            return -1;
+        }
+    }
+    status = pasynTrace->setTraceInfoMask(pasynUser,mask);
+    if(status!=asynSuccess) {
+        printf("%s\n",pasynUser->errorMessage);
+    }
+    if (pasynUser) pasynManager->freeAsynUser(pasynUser);
+    return 0;
+}
+static void asynSetTraceInfoMaskCall(const iocshArgBuf * args) {
+    const char *portName = args[0].sval;
+    int addr = args[1].ival;
+    int mask = args[2].ival;
+    asynSetTraceInfoMask(portName,addr,mask);
+}
+
 epicsShareFunc int
  asynSetTraceFile(const char *portName,int addr,const char *filename)
 {
@@ -984,6 +1020,68 @@ static void asynSetAutoConnectTimeoutCall(const iocshArgBuf * args) {
     pasynManager->setAutoConnectTimeout(timeout);
 }
 
+static const iocshArg asynRegisterTimeStampSourceArg0 = { "portName",iocshArgString};
+static const iocshArg asynRegisterTimeStampSourceArg1 = { "functionName",iocshArgString};
+static const iocshArg * const asynRegisterTimeStampSourceArgs[] = {
+    &asynRegisterTimeStampSourceArg0, &asynRegisterTimeStampSourceArg1};
+static const iocshFuncDef asynRegisterTimeStampSourceDef = 
+    {"asynRegisterTimeStampSource",2,asynRegisterTimeStampSourceArgs};
+static const iocshFuncDef asynUnregisterTimeStampSourceDef = 
+    {"asynUnregisterTimeStampSource",1,asynRegisterTimeStampSourceArgs};
+
+static void asynRegisterTimeStampSourceCall(const iocshArgBuf *args)
+{
+    asynRegisterTimeStampSource(args[0].sval, args[1].sval);
+}
+
+static void asynUnregisterTimeStampSourceCall(const iocshArgBuf *args)
+{
+    asynUnregisterTimeStampSource(args[0].sval);
+}
+epicsShareFunc int asynRegisterTimeStampSource(const char *portName, const char *functionName)
+{
+    asynUser *pasynUser;
+    asynStatus status;
+    timeStampCallback pFunction;
+    
+    if (!portName || !functionName || (strlen(portName) == 0) || (strlen(functionName) == 0)) {
+        printf("Usage: registerUserTimeStampSource portName functionName\n");
+        return -1;
+    }
+    pasynUser = pasynManager->createAsynUser(0, 0);
+    status = pasynManager->connectDevice(pasynUser, portName, 0);
+    if (status) {
+        printf("asynRegisterUserStampSource, cannot connect to port %s\n", portName);
+        return -1;
+    }
+    pFunction = (timeStampCallback)registryFunctionFind(functionName);
+    if (!pFunction) {
+        printf("asynRegisterUserStampSource, cannot find function %s\n", functionName);
+        return -1;
+    }
+    pasynManager->registerTimeStampSource(pasynUser, 0, pFunction);
+    return 0;
+}
+
+epicsShareFunc int asynUnregisterTimeStampSource(const char *portName)
+{
+    asynUser *pasynUser;
+    asynStatus status;
+    
+    if (!portName || (strlen(portName) == 0)) {
+        printf("Usage: asynUnregisterTimeStampSource portName\n");
+        return -1;
+    }
+    pasynUser = pasynManager->createAsynUser(0, 0);
+    status = pasynManager->connectDevice(pasynUser, portName, 0);
+    if (status) {
+        printf("asynUnregisterTimeStampSource, cannot connect to port %s\n", portName);
+        return -1;
+    }
+    pasynManager->unregisterTimeStampSource(pasynUser);
+    return 0;
+}
+
 
 static void asynRegister(void)
 {
@@ -995,6 +1093,7 @@ static void asynRegister(void)
     iocshRegister(&asynShowOptionDef,asynShowOptionCall);
     iocshRegister(&asynSetTraceMaskDef,asynSetTraceMaskCall);
     iocshRegister(&asynSetTraceIOMaskDef,asynSetTraceIOMaskCall);
+    iocshRegister(&asynSetTraceInfoMaskDef,asynSetTraceInfoMaskCall);
     iocshRegister(&asynSetTraceFileDef,asynSetTraceFileCall);
     iocshRegister(&asynSetTraceIOTruncateSizeDef,asynSetTraceIOTruncateSizeCall);
     iocshRegister(&asynEnableDef,asynEnableCall);
@@ -1011,5 +1110,7 @@ static void asynRegister(void)
     iocshRegister(&asynOctetGetOutputEosDef,asynOctetGetOutputEosCall);
     iocshRegister(&asynWaitConnectDef,asynWaitConnectCall);
     iocshRegister(&asynSetAutoConnectTimeoutDef,asynSetAutoConnectTimeoutCall);
+    iocshRegister(&asynRegisterTimeStampSourceDef, asynRegisterTimeStampSourceCall);
+    iocshRegister(&asynUnregisterTimeStampSourceDef, asynUnregisterTimeStampSourceCall);
 }
 epicsExportRegistrar(asynRegister);

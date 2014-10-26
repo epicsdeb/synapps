@@ -34,6 +34,7 @@ class XPSAxis : public asynMotorAxis
   public:
   /* These are the methods we override from the base class */
   XPSAxis(XPSController *pController, int axisNo, const char *positionerName, double stepSize);
+  void report(FILE *fp, int details);
   asynStatus move(double position, int relative, double min_velocity, double max_velocity, double acceleration);
   asynStatus moveVelocity(double min_velocity, double max_velocity, double acceleration);
   asynStatus home(double min_velocity, double max_velocity, double acceleration, int forwards);
@@ -41,6 +42,12 @@ class XPSAxis : public asynMotorAxis
   asynStatus poll(bool *moving);
   asynStatus doMoveToHome();
   asynStatus setPosition(double position);
+  asynStatus setLowLimit(double limit);
+  asynStatus setHighLimit(double limit);
+  asynStatus setPGain(double gain);
+  asynStatus setIGain(double gain);
+  asynStatus setDGain(double gain);
+  asynStatus setClosedLoop(bool closedLoop);
 
   virtual asynStatus defineProfile(double *positions, size_t numPoints);
   virtual asynStatus readbackProfile();
@@ -77,12 +84,13 @@ class XPSAxis : public asynMotorAxis
   char *groupName_;
   int positionerError_;
   int axisStatus_;
+  bool moving_;
   double profilePreDistance_;
   double profilePostDistance_;
   xpsCorrectorInfo_t xpsCorrectorInfo_;
   double deferredPosition_;
-  int deferredMove_;
-  int deferredRelative_;
+  bool deferredMove_;
+  bool deferredRelative_;
 
   friend class XPSController;
 };

@@ -1,0 +1,311 @@
+
+file {
+	name="/net/s30dserv/xorApps/epics/synApps_5_6/ioc/30idd/30iddApp/op/adl/NeslabEX.adl"
+	version=030107
+}
+display {
+	object {
+		x=100
+		y=175
+		width=300
+		height=240
+	}
+	clr=14
+	bclr=4
+	cmap=""
+	gridSpacing=5
+	gridOn=0
+	snapToGrid=0
+}
+"color map" {
+	ncolors=65
+	colors {
+		ffffff,
+		ececec,
+		dadada,
+		c8c8c8,
+		bbbbbb,
+		aeaeae,
+		9e9e9e,
+		919191,
+		858585,
+		787878,
+		696969,
+		5a5a5a,
+		464646,
+		2d2d2d,
+		000000,
+		00d800,
+		1ebb00,
+		339900,
+		2d7f00,
+		216c00,
+		fd0000,
+		de1309,
+		be190b,
+		a01207,
+		820400,
+		5893ff,
+		597ee1,
+		4b6ec7,
+		3a5eab,
+		27548d,
+		fbf34a,
+		f9da3c,
+		eeb62b,
+		e19015,
+		cd6100,
+		ffb0ff,
+		d67fe2,
+		ae4ebc,
+		8b1a96,
+		610a75,
+		a4aaff,
+		8793e2,
+		6a73c1,
+		4d52a4,
+		343386,
+		c7bb6d,
+		b79d5c,
+		a47e3c,
+		7d5627,
+		58340f,
+		99ffff,
+		73dfff,
+		4ea5f9,
+		2a63e4,
+		0a00b8,
+		ebf1b5,
+		d4db9d,
+		bbc187,
+		a6a462,
+		8b8239,
+		73ff6b,
+		52da3b,
+		3cb420,
+		289315,
+		1a7309,
+	}
+}
+"text update" {
+	object {
+		x=83
+		y=82
+		width=100
+		height=35
+	}
+	monitor {
+		chan="$(P)NL:$(S):T"
+		clr=54
+		bclr=4
+	}
+	align="horiz. centered"
+	limits {
+	}
+}
+"text entry" {
+	object {
+		x=77
+		y=132
+		width=104
+		height=27
+	}
+	control {
+		chan="$(P)NL:$(S):spT"
+		clr=54
+		bclr=2
+	}
+	limits {
+	}
+}
+menu {
+	object {
+		x=77
+		y=203
+		width=108
+		height=26
+	}
+	control {
+		chan="$(P)NL:$(S):getT.SCAN"
+		clr=14
+		bclr=4
+	}
+}
+"text entry" {
+	object {
+		x=77
+		y=42
+		width=165
+		height=23
+	}
+	control {
+		chan="$(P)NL:$(S):T.DESC"
+		clr=14
+		bclr=4
+	}
+	limits {
+	}
+}
+text {
+	object {
+		x=5
+		y=40
+		width=66
+		height=21
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Desc:"
+	align="horiz. right"
+}
+text {
+	object {
+		x=5
+		y=86
+		width=66
+		height=21
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Temp:"
+	align="horiz. right"
+}
+text {
+	object {
+		x=5
+		y=135
+		width=66
+		height=21
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="SetP:"
+	align="horiz. right"
+}
+text {
+	object {
+		x=188
+		y=86
+		width=66
+		height=21
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="DegC"
+}
+text {
+	object {
+		x=30
+		y=5
+		width=240
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Thermo Neslab EX Chiller"
+}
+polyline {
+	object {
+		x=22
+		y=23
+		width=256
+		height=0
+	}
+	"basic attribute" {
+		clr=14
+	}
+	points {
+		(22,23)
+		(278,23)
+	}
+}
+text {
+	object {
+		x=5
+		y=203
+		width=66
+		height=21
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Scan:"
+	align="horiz. right"
+}
+"text update" {
+	object {
+		x=78
+		y=163
+		width=100
+		height=20
+	}
+	monitor {
+		chan="$(P)NL:$(S):SP"
+		clr=54
+		bclr=4
+	}
+	limits {
+	}
+}
+text {
+	object {
+		x=188
+		y=135
+		width=66
+		height=21
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="DegC"
+}
+text {
+	object {
+		x=5
+		y=165
+		width=66
+		height=15
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="rdbk:"
+	align="horiz. right"
+}
+text {
+	object {
+		x=192
+		y=181
+		width=99
+		height=14
+	}
+	"basic attribute" {
+		clr=30
+	}
+	"dynamic attribute" {
+		vis="if not zero"
+		chan="$(P)NL:$(S):low_level_Warn"
+	}
+	textix="Low Level WARN"
+}
+text {
+	object {
+		x=192
+		y=198
+		width=99
+		height=14
+	}
+	"basic attribute" {
+		clr=20
+	}
+	"dynamic attribute" {
+		vis="if not zero"
+		chan="$(P)NL:$(S):low_level_Fault"
+	}
+	textix="Low Level FAULT"
+}

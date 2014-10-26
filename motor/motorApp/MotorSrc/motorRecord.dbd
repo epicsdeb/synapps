@@ -1,9 +1,9 @@
 # FILENAME...   motorRecord.dbd
 
-# Version:       $Revision: 10799 $
+# Version:       $Revision: 16592 $
 # Modified By:   $Author: sluiter $
-# Last Modified: $Date: 2010-04-21 13:24:59 -0500 (Wed, 21 Apr 2010) $
-# HeadURL:       $URL $
+# Last Modified: $Date: 2013-06-17 09:31:34 -0500 (Mon, 17 Jun 2013) $
+# HeadURL:       $URL: https://subversion.xray.aps.anl.gov/synApps/motor/tags/R6-8-1/motorApp/MotorSrc/motorRecord.dbd $
 
 # Experimental Physics and Industrial Control System (EPICS)
 
@@ -68,8 +68,9 @@ menu(motorSTUP) {
 }
 menu(motorRMOD) {
         choice(motorRMOD_D,"Default")
-        choice(motorRMOD_A,"Arthmetic")
+        choice(motorRMOD_A,"Arithmetic")
         choice(motorRMOD_G,"Geometric")
+        choice(motorRMOD_I,"In-Position")
 }
 
 include "menuOmsl.dbd"
@@ -483,12 +484,14 @@ recordtype(motor) {
         field(TWF,DBF_SHORT) {
                 asl(ASL0)
                 prompt("Tweak motor Forward")
+                special(SPC_MOD)
                 pp(TRUE)
                 interest(1)
         }
         field(TWR,DBF_SHORT) {
                 asl(ASL0)
                 prompt("Tweak motor Reverse")
+                special(SPC_MOD)
                 pp(TRUE)
                 interest(1)
         }

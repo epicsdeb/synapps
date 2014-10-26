@@ -22,8 +22,6 @@ March 4, 2011
 
 #define CtlY 25
 
-#define ACR_TIMEOUT 1.0
-
 static const char *driverName = "ACRMotorDriver";
 
 /** Creates a new ACRController object.
@@ -36,15 +34,14 @@ static const char *driverName = "ACRMotorDriver";
 ACRController::ACRController(const char *portName, const char *ACRPortName, int numAxes, 
                              double movingPollPeriod, double idlePollPeriod)
   :  asynMotorController(portName, numAxes, NUM_ACR_PARAMS, 
-                         asynInt32Mask | asynFloat64Mask | asynUInt32DigitalMask, 
-                         asynInt32Mask | asynFloat64Mask | asynUInt32DigitalMask,
+                         asynUInt32DigitalMask, 
+                         asynUInt32DigitalMask,
                          ASYN_CANBLOCK | ASYN_MULTIDEVICE, 
                          1, // autoconnect
                          0, 0)  // Default priority and stack size
 {
   int axis;
   asynStatus status;
-  ACRAxis *pAxis;
   static const char *functionName = "ACRController";
 
   binaryInReg_  = 4096;
@@ -58,17 +55,14 @@ ACRController::ACRController(const char *portName, const char *ACRPortName, int 
   createParam(ACRBinaryOutRBVString, asynParamUInt32Digital, &ACRBinaryOutRBV_);
 
   /* Connect to ACR controller */
-  status = pasynOctetSyncIO->connect(ACRPortName, 0, &pasynUserACR_, NULL);
+  status = pasynOctetSyncIO->connect(ACRPortName, 0, &pasynUserController_, NULL);
   if (status) {
     asynPrint(this->pasynUserSelf, ASYN_TRACE_ERROR, 
       "%s:%s: cannot connect to ACR controller\n",
       driverName, functionName);
   }
   // Turn off command echoing
-  sprintf(outString_, "BIT1792=0");
-  writeController();
-   // Turn off command prompt
-  sprintf(outString_, "BIT1794=1");
+  sprintf(outString_, "ECHO 4");
   writeController();
   // Wait a short while so that any responses to the above commands have time to arrive so we can flush
   // them in the next writeReadController()
@@ -79,7 +73,7 @@ ACRController::ACRController(const char *portName, const char *ACRPortName, int 
   setUIntDigitalParam(0, ACRBinaryOut_, binaryOutRBV_, 0xFFFFFFFF);
   // Create the axis objects
   for (axis=0; axis<numAxes; axis++) {
-    pAxis = new ACRAxis(this, axis);
+    new ACRAxis(this, axis);
   }
 
   startPoller(movingPollPeriod, idlePollPeriod, 2);
@@ -97,9 +91,7 @@ ACRController::ACRController(const char *portName, const char *ACRPortName, int 
 extern "C" int ACRCreateController(const char *portName, const char *ACRPortName, int numAxes, 
                                    int movingPollPeriod, int idlePollPeriod)
 {
-  ACRController *pACRController
-    = new ACRController(portName, ACRPortName, numAxes, movingPollPeriod/1000., idlePollPeriod/1000.);
-  pACRController = NULL;
+  new ACRController(portName, ACRPortName, numAxes, movingPollPeriod/1000., idlePollPeriod/1000.);
   return(asynSuccess);
 }
 
@@ -112,28 +104,14 @@ extern "C" int ACRCreateController(const char *portName, const char *ACRPortName
   */
 void ACRController::report(FILE *fp, int level)
 {
-  int axis;
-  ACRAxis *pAxis;
-
   fprintf(fp, "ACR motor driver %s, numAxes=%d, moving poll period=%f, idle poll period=%f\n", 
     this->portName, numAxes_, movingPollPeriod_, idlePollPeriod_);
 
   if (level > 0) {
     fprintf(fp, "  binary input = 0x%x\n", binaryIn_);
     fprintf(fp, "  binary output readback = 0x%x\n", binaryOutRBV_);
-    for (axis=0; axis<numAxes_; axis++) {
-      pAxis = getAxis(axis);
-      fprintf(fp, "  axis %d\n"
-              "  pulsesPerUnit_ = %f\n"
-              "    encoder position=%f\n"
-              "    theory position=%f\n"
-              "    limits=0x%x\n"
-              "    flags=0x%x\n", 
-              pAxis->axisNo_, pAxis->pulsesPerUnit_, 
-              pAxis->encoderPosition_, pAxis->theoryPosition_,
-              pAxis->currentLimits_, pAxis->currentFlags_);
-    }
   }
+
 
   // Call the base class method
   asynMotorController::report(fp, level);
@@ -172,20 +150,11 @@ asynStatus ACRController::writeInt32(asynUser *pasynUser, epicsInt32 value)
   ACRAxis *pAxis = getAxis(pasynUser);
   static const char *functionName = "writeInt32";
   
-  
   /* Set the parameter and readback in the parameter library.  This may be overwritten when we read back the
    * status at the end, but that's OK */
   status = setIntegerParam(pAxis->axisNo_, function, value);
   
-  if (function == motorSetClosedLoop_)
-  {
-    sprintf(outString_, "DRIVE %s %s", value ? "ON":"OFF", pAxis->axisName_);
-    writeController();
-    asynPrint(pasynUser, ASYN_TRACE_FLOW,
-      "%s:%s: %s setting closed loop=%d on %s\n",
-      driverName, functionName, this->portName, value, pAxis->axisName_);
-  } 
-  else if (function == ACRReadBinaryIO_)
+  if (function == ACRReadBinaryIO_)
   {
     readBinaryIO();
   }
@@ -302,58 +271,6 @@ asynStatus ACRController::readBinaryIO()
   return status;
 }
 
-/** Writes a string to the ACR controller.
-  * Calls writeController() with a default location of the string to write and a default timeout. */ 
-asynStatus ACRController::writeController()
-{
-  return writeController(outString_, ACR_TIMEOUT);
-}
-
-/** Writes a string to the ACR controller.
-  * \param[in] output The string to be written.
-  * \param[in] timeout Timeout before returning an error.*/
-asynStatus ACRController::writeController(const char *output, double timeout)
-{
-  size_t nwrite;
-  asynStatus status;
-  // const char *functionName="writeController";
-  
-  status = pasynOctetSyncIO->write(pasynUserACR_, output,
-                                   strlen(output), timeout, &nwrite);
-                                  
-  return status ;
-}
-
-/** Writes a string to the ACR controller and reads the response.
-  * Calls writeReadController() with default locations of the input and output strings
-  * and default timeout. */ 
-asynStatus ACRController::writeReadController()
-{
-  size_t nread;
-  return writeReadController(outString_, inString_, sizeof(inString_), &nread, ACR_TIMEOUT);
-}
-
-/** Writes a string to the ACR controller and reads a response.
-  * \param[in] output Pointer to the output string.
-  * \param[out] input Pointer to the input string location.
-  * \param[in] maxChars Size of the input buffer.
-  * \param[out] nread Number of characters read.
-  * \param[out] timeout Timeout before returning an error.*/
-asynStatus ACRController::writeReadController(const char *output, char *input, size_t maxChars, size_t *nread, double timeout)
-{
-  size_t nwrite;
-  asynStatus status;
-  int eomReason;
-  // const char *functionName="writeReadController";
-  
-  status = pasynOctetSyncIO->writeRead(pasynUserACR_, output,
-                                       strlen(output), input, maxChars, timeout,
-                                       &nwrite, nread, &eomReason);
-                        
-  return status;
-}
-
-
 // These are the ACRAxis methods
 
 /** Creates a new ACRAxis object.
@@ -386,6 +303,32 @@ ACRAxis::ACRAxis(ACRController *pC, int axisNo)
   }
   callParamCallbacks();
 }
+
+/** Reports on status of the driver
+  * \param[in] fp The file pointer on which report information will be written
+  * \param[in] level The level of report detail desired
+  *
+  * If details > 0 then information is printed about each axis.
+  * After printing controller-specific information calls asynMotorController::report()
+  */
+void ACRAxis::report(FILE *fp, int level)
+{
+  if (level > 0) {
+    fprintf(fp, "  axis %d\n"
+            "    pulsesPerUnit_ = %f\n"
+            "    encoder position=%f\n"
+            "    theory position=%f\n"
+            "    limits=0x%x\n"
+            "    flags=0x%x\n", 
+            axisNo_, pulsesPerUnit_, 
+            encoderPosition_, theoryPosition_,
+            currentLimits_, currentFlags_);
+  }
+
+  // Call the base class method
+  asynMotorAxis::report(fp, level);
+}
+
 
 asynStatus ACRAxis::move(double position, int relative, double minVelocity, double maxVelocity, double acceleration)
 {
@@ -444,14 +387,10 @@ asynStatus ACRAxis::moveVelocity(double minVelocity, double maxVelocity, double 
 asynStatus ACRAxis::stop(double acceleration )
 {
   asynStatus status;
-  static const char *functionName = "stopAxis";
+  //static const char *functionName = "stopAxis";
 
   sprintf(pC_->outString_, "%s JOG OFF", axisName_);
   status = pC_->writeController();
-
-  asynPrint(pasynUser_, ASYN_TRACE_FLOW, 
-    "%s:%s: Set axis %d to stop, status=%d\n",
-    driverName, functionName, axisNo_, status);
   return status;
 }
 
@@ -462,6 +401,15 @@ asynStatus ACRAxis::setPosition(double position)
   sprintf(pC_->outString_, "%s RES %f", axisName_, position/pulsesPerUnit_);
   status = pC_->writeController();
   sprintf(pC_->outString_, "%s JOG REN", axisName_);
+  status = pC_->writeController();
+  return status;
+}
+
+asynStatus ACRAxis::setClosedLoop(bool closedLoop)
+{
+  asynStatus status;
+
+  sprintf(pC_->outString_, "DRIVE %s %s", closedLoop ? "ON":"OFF", axisName_);
   status = pC_->writeController();
   return status;
 }

@@ -12,11 +12,11 @@
     <h1>
       Driver Support for Modbus Protocol under EPICS</h1>
     <h2>
-      Release 2-4</h2>
+      Release 2-7</h2>
     <h2>
       Mark Rivers</h2>
     <h2>
-      May 22, 2012</h2>
+      August 19, 2014</h2>
     <hr />
   </div>
   <h2>
@@ -77,8 +77,8 @@
         <td>
           RTU</td>
         <td>
-          RTU uses an additional CRC for packet checking. RTU is normally run over serial
-          communicaton linke, i.e. RS-232, RS-422, or RS-485. The protocol directly transmits
+          RTU is normally run over serial communicaton linke, i.e. RS-232, RS-422, or RS-485.
+          RTU uses an additional CRC for packet checking. The protocol directly transmits
           each byte as 8 data bits, so uses "binary" rather than ASCII encoding. When using
           serial links start and end of message frames is detected by timing rather than by
           specific characters. RTU can also be run over TCP, though this is less common than
@@ -89,11 +89,12 @@
           Serial ASCII</td>
         <td>
           Serial protocol, which is normally run over serial communication links, i.e. RS-232,
-          RS-422, or RS-485. The protocol encodes each byte as 2 ASCII characters. The start
-          and end of message frames is detected by specific characters (":" to start a message
-          and CR/LF to end a message). This protocol is less efficient than RTU, but may be
-          more reliable in some environments. ASCII can also be run over TCP, though this
-          is much less common than the standard Modbus TCP.</td>
+          RS-422, or RS-485. Serial ASCII uses an additional LRC for packet checking. The
+          protocol encodes each byte as 2 ASCII characters. The start and end of message frames
+          is detected by specific characters (":" to start a message and CR/LF to end a message).
+          This protocol is less efficient than RTU, but may be more reliable in some environments.
+          ASCII can also be run over TCP, though this is much less common than the standard
+          Modbus TCP.</td>
       </tr>
     </tbody>
   </table>
@@ -178,7 +179,7 @@
   <h3>
     Modbus function codes</h3>
   <p>
-    <b>modbus</b> supports the following 8 Modbus function codes:
+    <b>modbus</b> supports the following 9 Modbus function codes:
   </p>
   <table border="1" cellpadding="2" cellspacing="2" style="text-align: left">
     <tbody>
@@ -257,6 +258,14 @@
           Write Multiple Registers</td>
         <td>
           16</td>
+      </tr>
+      <tr>
+        <td>
+          16-bit word access</td>
+        <td>
+          Read/Write Multiple Registers</td>
+        <td>
+          23</td>
       </tr>
     </tbody>
   </table>
@@ -520,8 +529,8 @@
     C300-C377.
   </p>
   <p>
-    The behavior of the port driver differs for read function codes (1, 2, 3, 4) and
-    write function codes (5, 6, 15, 16).
+    The behavior of the port driver differs for read function codes (1, 2, 3, 4), write
+    function codes (5, 6, 15, 16), and read/write function codes (23).
   </p>
   <h3>
     Modbus read functions</h3>
@@ -532,8 +541,9 @@
     when the port driver is created, and can be changed later at run-time. The values
     are read by EPICS using the standard asyn interfaces (asynUInt32Digital, asynInt32,
     asynFloat64, etc.) The values that are read are the last stored values from the
-    poller thread. This means that EPICS read operations are <i>synchronous</i>, i.e.
-    they do not block because no Modbus I/O is required.
+    poller thread. The means that EPICS read operations are <i>asynchronous</i>, i.e.
+    they can block. This is because although they do not directly result in Modbus I/O,
+    they do need to wait for a mutex that indicates that the poller thread is done.
   </p>
   <p>
     For read functions it is possible to set the EPICS records to "I/O Intr" scanning.
@@ -546,9 +556,9 @@
   <p>
     For write function codes the driver does not itself create a separate thread. Rather
     the driver does the Modbus I/O immediately in response to the write operations on
-    the standard asyn interfaces. This means that EPICS write operations are <i>asynchronous</i>,
-    i.e. they do block because Modbus I/O is required. When the <b>modbus</b> driver
-    is created it tells asynManager that it can block, and asynManager creates a separate
+    the standard asyn interfaces. This means that EPICS write operations are also <i>asynchronous</i>,
+    i.e. they block because Modbus I/O is required. When the <b>modbus</b> driver is
+    created it tells asynManager that it can block, and asynManager creates a separate
     thread that executes the write operations.
   </p>
   <p>
@@ -568,6 +578,26 @@
     Modbus RTU specifies a minimum delay of 3.5 character times between writes to the
     device. The modbusInterposeConfig function allows one to specify a write delay in
     msec before each write.</p>
+  <h3>
+    Modbus write/read functions</h3>
+  <p>
+    Modbus function code 23 allows for writing a set of registers and reading a set
+    of registers in a single operation. The read operation is performed after the write
+    operation, and the register range to be read can be different from the register
+    range to be written. Function code 23 is not widely used, and the write/read operation
+    is not a good fit to the <b>modbus</b> driver model of read-only and write-only
+    drivers. Function code 23 is implemented in <b>modbus</b> with the following restrictions:</p>
+  <ul>
+    <li>A driver that uses Modbus function code 23 is either <i>read-only</i> or <i>write-only</i>.</li>
+    <li>A read-only driver is created by specifying function code 123 to the drvModbusAsynConfigure
+      command described below. The driver will use Modbus function code 23 for the Modbus
+      protocol. It will only read registers (like function codes 3 and 4), it will not
+      write any data to the device.</li>
+    <li>A write-only driver is created by specifying function code 223 to the drvModbusAsynConfigure
+      command described below. The driver will use Modbus function code 23 for the Modbus
+      protocol. It will only write registers (like function code 16), it will not read
+      any data from the device.</li>
+  </ul>
   <h3>
     Platform independence</h3>
   <p>
@@ -799,7 +829,8 @@ asynOctetSetInputEos("Koyo1",0,"\r\n")
         <td>
           int</td>
         <td>
-          Modbus function code (1, 2, 3, 4, 5, 6, 15, or 16).</td>
+          Modbus function code (1, 2, 3, 4, 5, 6, 15, 16, 123 (for 23 read-only), or 223 (for
+          23 write-only)).</td>
       </tr>
       <tr>
         <td>
@@ -818,9 +849,9 @@ asynOctetSetInputEos("Koyo1",0,"\r\n")
         <td>
           The length of the Modbus data segment to be accessed.<br />
           This is specified in bits for Modbus functions 1, 2, 5 and 15.<br />
-          It is specified in 16-bit words for Modbus functions 3, 4, 6 and 16.<br />
+          It is specified in 16-bit words for Modbus functions 3, 4, 6, 16, or 23.<br />
           Length limit is 2000 for functions 1 and 2, 1968 for functions 5 and 15,<br />
-          125 for functions 3 and 4, and 123 for functions 6 and 16. </td>
+          125 for functions 3 and 4, and 123 for functions 6, 16, and 23. </td>
       </tr>
       <tr>
         <td>
@@ -1155,7 +1186,7 @@ field(INP,"@asynMask(portName,offset,mask,timeout)drvUser")
       </tr>
       <tr>
         <td>
-          3, 4</td>
+          3, 4, 23</td>
         <td>
           16-bit word</td>
         <td>
@@ -1290,13 +1321,13 @@ field(INP,"@asyn(portName,offset,timeout)drvUser")
         <td>
           MODBUS_DATA</td>
         <td>
-          ai, mbbi, longin</td>
+          ai, bi, mbbi, longin</td>
         <td>
           value = (epicsUInt32)Modbus data</td>
       </tr>
       <tr>
         <td>
-          3, 4</td>
+          3, 4, 23</td>
         <td>
           16-bit words</td>
         <td>
@@ -1318,13 +1349,13 @@ field(INP,"@asyn(portName,offset,timeout)drvUser")
         <td>
           MODBUS_DATA</td>
         <td>
-          ao, mbbo, longout</td>
+          ao, bo, mbbo, longout</td>
         <td>
           Modbus write value</td>
       </tr>
       <tr>
         <td>
-          6,16</td>
+          6, 16, 23</td>
         <td>
           16-bit words</td>
         <td>
@@ -1344,9 +1375,24 @@ field(INP,"@asyn(portName,offset,timeout)drvUser")
         <td>
           NA</td>
         <td>
+          MODBUS_READ</td>
+        <td>
+          ao, bo, longout</td>
+        <td>
+          Writing to a Modbus input driver with this drvUser value will force the driver to
+          do a Modbus read operation, independent of the poller thread.</td>
+      </tr>
+      <tr>
+        <td>
+          Any</td>
+        <td>
+          NA</td>
+        <td>
+          NA</td>
+        <td>
           READ_OK</td>
         <td>
-          ai, mbbi, longin</td>
+          ai, longin</td>
         <td>
           Returns number of successful read operations on this asyn port</td>
       </tr>
@@ -1360,7 +1406,7 @@ field(INP,"@asyn(portName,offset,timeout)drvUser")
         <td>
           WRITE_OK</td>
         <td>
-          ai, mbbi, longin</td>
+          ai, longin</td>
         <td>
           Returns number of successful write operations on this asyn port</td>
       </tr>
@@ -1374,7 +1420,7 @@ field(INP,"@asyn(portName,offset,timeout)drvUser")
         <td>
           IO_ERRORS</td>
         <td>
-          ai, mbbi, longin</td>
+          ai, longin</td>
         <td>
           Returns number of I/O errors on this asyn port</td>
       </tr>
@@ -1388,7 +1434,7 @@ field(INP,"@asyn(portName,offset,timeout)drvUser")
         <td>
           LAST_IO_TIME</td>
         <td>
-          ai, mbbi, longin</td>
+          ai, longin</td>
         <td>
           Returns number of milliseconds for last I/O operation</td>
       </tr>
@@ -1402,9 +1448,23 @@ field(INP,"@asyn(portName,offset,timeout)drvUser")
         <td>
           MAX_IO_TIME</td>
         <td>
-          ai, mbbi, longin</td>
+          ai, longin</td>
         <td>
           Returns maximum number of milliseconds for I/O operations</td>
+      </tr>
+      <tr>
+        <td>
+          Any</td>
+        <td>
+          NA</td>
+        <td>
+          NA</td>
+        <td>
+          HISTOGRAM_BIN_TIME</td>
+        <td>
+          ao, longout</td>
+        <td>
+          Sets the time per bin in msec in the statistics histogram</td>
       </tr>
     </tbody>
   </table>
@@ -1456,7 +1516,7 @@ field(INP,"@asyn(portName,offset,timeout)drvUser")</pre>
       </tr>
       <tr>
         <td>
-          3, 4</td>
+          3, 4, 23</td>
         <td>
           16-bit words</td>
         <td>
@@ -1484,7 +1544,7 @@ field(INP,"@asyn(portName,offset,timeout)drvUser")</pre>
       </tr>
       <tr>
         <td>
-          6, 16</td>
+          6, 16, 23</td>
         <td>
           16-bit word</td>
         <td>
@@ -1566,7 +1626,7 @@ field(INP,"@asyn(portName,offset,timeout)drvUser")
       </tr>
       <tr>
         <td>
-          3, 4</td>
+          3, 4, 23</td>
         <td>
           NA</td>
         <td>
@@ -1594,7 +1654,7 @@ field(INP,"@asyn(portName,offset,timeout)drvUser")
       </tr>
       <tr>
         <td>
-          16</td>
+          16, 23</td>
         <td>
           NA</td>
         <td>
@@ -1620,6 +1680,21 @@ field(INP,"@asyn(portName,offset,timeout)drvUser")
         <td>
           Returns a histogram array of the I/O times in milliseconds since histogramming was
           last enabled.</td>
+      </tr>
+      <tr>
+        <td>
+          Any</td>
+        <td>
+          NA</td>
+        <td>
+          NA</td>
+        <td>
+          HISTOGRAM_TIME_AXIS</td>
+        <td>
+          waveform (input)</td>
+        <td>
+          Returns the time axis of the histogram data. Each element is HISTOGRAM_BIN_TIME
+          msec.</td>
       </tr>
     </tbody>
   </table>

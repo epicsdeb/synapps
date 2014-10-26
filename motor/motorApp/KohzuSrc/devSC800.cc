@@ -5,7 +5,7 @@ USAGE...        Motor record device level support for Kohzu SC800 motor controll
 Version:        $Revision: 9857 $
 Modified By:    $Author: sluiter $
 Last Modified:  $Date: 2009-12-09 10:21:24 -0600 (Wed, 09 Dec 2009) $
-HeadURL:        $URL: https://subversion.xor.aps.anl.gov/synApps/motor/tags/R6-7-1/motorApp/KohzuSrc/devSC800.cc $
+HeadURL:        $URL: https://subversion.xray.aps.anl.gov/synApps/motor/tags/R6-8-1/motorApp/KohzuSrc/devSC800.cc $
 
 */
 

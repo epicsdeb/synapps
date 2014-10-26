@@ -1,5 +1,5 @@
-MDA Utilities v1.3.0
-February 2013
+MDA Utilities v1.3.1
+February 2014
 
 Written by Dohn A. Arms, Argonne National Laboratory
 Send comments to dohnarms@anl.gov
@@ -69,7 +69,7 @@ MDA Utilities can be compiled using a C99-compatible compiler (such as
 gcc), make, and ar (if the library is to be made).  C99 compatiblity
 is needed only so far as <stdint.h>.  MDA Utilities have been
 successfully compiled on Linux, Solaris, and Mac OS X, while it can
-also be compiled on Windows using MinGW.
+also be compiled on Windows (I use MinGW).
 
 The only extra library requirement is access to the standard XDR
 routines.  With Linux and Mac OS X, they're part of the standard C
@@ -77,22 +77,31 @@ library; with Solaris, they're part of the standard Networking
 Services Library (nsl). No extra packages should have to be installed
 with these systems.
 
-There are no XDR routines in Windows, and an external library has to
-be used.  I used portablexdr 4.0.11, with a bug fix for floating point
-numbers.  The Makefile has to be modified to make this all work.
+Windows does not come standard with XDR routines.  Either an extra
+library has be used, or an included XDR reading hack can be enabled
+(using the xdr_hack code). Either way, the Makefile has to be modified
+to make this all work.
 
-The program mdatree2ascii is a script, and needs the following programs
-(other than mda2ascii): bash, find, and sed.  These programs are very
-standard, and should already be installed on your system.
+The program mdatree2ascii is a script, and needs the following
+programs (other than mda2ascii): bash, find, and sed.  These programs
+are very standard (other than on Windows), and should already be
+installed on your system.
 
 
 
 Compiling:
 ----------
 
-If building from source code, all you need to do is type "make" when
-in the source directory, and the executables and library should be
-made.
+If building from source code, except for Windows, all you need to do
+is type "make" when in the source directory, and the executables and
+library should be made.
+
+With Windows, the Makefile has to be edited.  The line in the Windows
+comment block has to be uncommented.  If using the included XDR
+support, the first two lines of the XDR block as well as the
+little-endian (LE) line have to be uncommented.  The names of the
+resulting executables need to be renamed to inlude the .exe suffix as
+well.  The GCC and AR definitions might have to be changed.
 
 
 

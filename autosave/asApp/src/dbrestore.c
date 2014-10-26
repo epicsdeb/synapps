@@ -60,7 +60,7 @@
  * 09/11/09  tmm  v4.12 If recordname is an alias (>=3.14.11), don't search for info nodes.
  *                
  */
-#define VERSION "4.12"
+#define VERSION "5.1"
 
 #include	<stdio.h>
 #include	<errno.h>
@@ -86,6 +86,7 @@
 #include	"save_restore.h"
 #include	<epicsExport.h>
 #include	<special.h>
+#include	<macLib.h>
 
 #ifndef vxWorks
 #define OK 0
@@ -96,16 +97,10 @@
 #define LT_EPICSBASE(v,r,l) ((EPICS_VERSION<=(v)) && (EPICS_REVISION<=(r)) && (EPICS_MODIFICATION<(l)))
 #define GE_EPICSBASE(v,r,l) ((EPICS_VERSION>=(v)) && (EPICS_REVISION>=(r)) && (EPICS_MODIFICATION>=(l)))
 
-STATIC char 	*RESTORE_VERSION = VERSION;
+int restoreFileListsInitialized=0;
 
-struct restoreList restoreFileList = {0, 0, 
-			{NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL},
-			{0,0,0,0,0,0,0,0},
-			{NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL},
-			{NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL},
-			{0,0,0,0,0,0,0,0},
-			{NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL}
-};
+ELLLIST pass0List;
+ELLLIST pass1List;
 
 void myPrintErrno(char *s, char *file, int line) {
 	errlogPrintf("%s(%d): [0x%x]=%s:%s\n", file, line, errno, s, strerror(errno));
@@ -127,25 +122,36 @@ STATIC float mySafeDoubleToFloat(double d)
 	return(f);
 }
 
+void maybeInitRestoreFileLists() {
+	if (!restoreFileListsInitialized) {
+		ellInit(&pass0List);
+		ellInit(&pass1List);
+		restoreFileListsInitialized = 1;
+	}
+}
+
 void dbrestoreShow(void)
 {
-	int i;
-	printf("  '     filename     ' -  status  - 'message'\n");
+	struct restoreFileListItem *pLI;
+
+	maybeInitRestoreFileLists();
+
+	printf("  '     filename     ' -  status  - 'message' - 'macro string'\n");
 	printf("  pass 0:\n");
-	for (i=0; i<MAXRESTOREFILES; i++) {
-		if (restoreFileList.pass0files[i]) {
-			printf("  '%s' - %s - '%s'\n", restoreFileList.pass0files[i],
-				SR_STATUS_STR[restoreFileList.pass0Status[i]],
-				restoreFileList.pass0StatusStr[i]);
-		}
+	pLI = (struct restoreFileListItem *) ellFirst(&pass0List);
+	while (pLI) {
+		printf("  '%s' - %s - '%s' - '%s'\n", pLI->filename,
+			SR_STATUS_STR[pLI->restoreStatus], pLI->restoreStatusStr,
+			pLI->macrostring ? pLI->macrostring : "None");
+		pLI = (struct restoreFileListItem *) ellNext(&(pLI->node));
 	}
+
 	printf("  pass 1:\n");
-	for (i=0; i<MAXRESTOREFILES; i++) {
-		if (restoreFileList.pass1files[i]) {
-			printf("  '%s' - %s - '%s'\n", restoreFileList.pass1files[i],
-				SR_STATUS_STR[restoreFileList.pass1Status[i]],
-				restoreFileList.pass1StatusStr[i]);
-		}
+	pLI = (struct restoreFileListItem *) ellFirst(&pass1List);
+	while (pLI) {
+		printf("  '%s' - %s - '%s'\n", pLI->filename,
+			SR_STATUS_STR[pLI->restoreStatus], pLI->restoreStatusStr);
+		pLI = (struct restoreFileListItem *) ellNext(&(pLI->node));
 	}
 }
 
@@ -252,7 +258,7 @@ STATIC long scalar_restore(int pass, DBENTRY *pdbentry, char *PVname, char *valu
 				errlogPrintf("save_restore: for '%s', dbVerify() says '%s'\n", PVname, s);
 				status = -1;
 			}
-		} else if (save_restoreDebug >= 1) {
+		} else if (save_restoreDebug > 1) {
 				errlogPrintf("dbrestore:scalar_restore: Can't restore link field (%s) in pass 1.\n", PVname);
 		}
 		break;
@@ -273,6 +279,10 @@ STATIC long scalar_restore(int pass, DBENTRY *pdbentry, char *PVname, char *valu
 				/* record initilization may have changed the field type */
 				field_type = paddr->field_type;
 				if (field_type <= DBF_MENU) {
+					if (save_restoreDebug > 1) {
+						errlogPrintf("dbrestore:scalar_restore: calling dbFastPutConvertRoutine for field (%s), type %d, with value '%s'.\n",
+							PVname, field_type, value_string);
+					}
 					status = (*dbFastPutConvertRoutine[DBR_STRING][field_type])
 						(value_string, paddr->pfield, paddr);
 					if (status) {
@@ -281,7 +291,7 @@ STATIC long scalar_restore(int pass, DBENTRY *pdbentry, char *PVname, char *valu
 					}
 				}
 			}
-		} else if (save_restoreDebug >= 1) {
+		} else if (save_restoreDebug > 1) {
 			errlogPrintf("dbrestore:scalar_restore: Can't restore DBF_NOACCESS field (%s) in pass 0.\n", PVname);
 		}
 		break;
@@ -449,7 +459,87 @@ long SR_array_restore(int pass, FILE *inp_fd, char *PVname, char *value_string, 
 	if (save_restoreDebug >= 11) {
 		errlogPrintf("dbrestore:SR_array_restore: parsing buffer '%s'\n", value_string);
 	}
-	if ((bp = strchr(value_string, (int)ARRAY_BEGIN)) != NULL) {
+
+	if (value_string==NULL || *value_string=='\0') {
+		if (save_restoreDebug >= 11) {
+			errlogPrintf("dbrestore:SR_array_restore: value_string is null or empty\n");
+		}
+		/* nothing to write; write zero or "" */
+		if (p_data) {
+			switch (field_type) {
+			case DBF_STRING:
+				strcpy(p_char, "");
+				break;
+			case DBF_ENUM: case DBF_USHORT: case DBF_MENU:
+				p_ushort[num_read++] = (unsigned short)0;
+				break;
+			case DBF_UCHAR:
+				p_uchar[num_read++] = (unsigned char)0;
+				break;
+			case DBF_CHAR:
+				p_char[num_read++] = (char)0;
+				break;
+			case DBF_SHORT:
+				p_short[num_read++] = (short)0;
+				break;
+			case DBF_LONG:
+				p_long[num_read++] = (epicsInt32) 0;
+				break;
+			case DBF_ULONG:
+				p_ulong[num_read++] = (epicsUInt32) 0;
+				break;
+			case DBF_FLOAT:
+				p_float[num_read++] = 0;
+				break;
+			case DBF_DOUBLE:
+				p_double[num_read++] = 0;
+				break;
+			case DBF_NOACCESS:
+			default:
+				break;
+			}
+		}
+	} else if ((bp = strchr(value_string, (int)ARRAY_BEGIN)) == NULL) {
+		if (save_restoreDebug >= 11) {
+			errlogPrintf("dbrestore:SR_array_restore: ARRAY_BEGIN not found\n");
+		}
+		/* doesn't look like array data.  just restore what we have */
+		if (p_data) {
+			switch (field_type) {
+			case DBF_STRING:
+				/* future: translate escape sequence */
+				strncpy(&(p_char[(num_read++)*MAX_STRING_SIZE]), value_string, MAX_STRING_SIZE);
+				break;
+			case DBF_ENUM: case DBF_USHORT: case DBF_MENU:
+				p_ushort[num_read++] = (unsigned short)atol(value_string);
+				break;
+			case DBF_UCHAR:
+				p_uchar[num_read++] = (unsigned char)atol(value_string);
+				break;
+			case DBF_CHAR:
+				p_char[num_read++] = (char)atol(value_string);
+				break;
+			case DBF_SHORT:
+				p_short[num_read++] = (short)atol(value_string);
+				break;
+			case DBF_LONG:
+				p_long[num_read++] = (epicsInt32) atol(value_string);
+				break;
+			case DBF_ULONG:
+				p_ulong[num_read++] = (epicsUInt32) strtoul(value_string,NULL,0);
+				break;
+			case DBF_FLOAT:
+				p_float[num_read++] = mySafeDoubleToFloat(atof(value_string));
+				break;
+			case DBF_DOUBLE:
+				p_double[num_read++] = atof(value_string);
+				break;
+			case DBF_NOACCESS:
+			default:
+				break;
+			}
+		}
+	} else if ((bp = strchr(value_string, (int)ARRAY_BEGIN)) != NULL) {
 		begin_mark_found = 1;
 		if (save_restoreDebug >= 10) {
 			errlogPrintf("dbrestore:SR_array_restore: parsing array buffer '%s'\n", bp);
@@ -459,7 +549,9 @@ long SR_array_restore(int pass, FILE *inp_fd, char *PVname, char *value_string, 
 			if (save_restoreDebug >= 10) {
 				errlogPrintf("dbrestore:SR_array_restore: looking for element[%ld] \n", num_read);
 			}
-			while ((*bp != ELEMENT_BEGIN) && !end_mark_found && !end_of_file) {
+			/* If truncated-file detector (checkFile) fails, test for end of file before
+			 * using *bp */
+			while (!end_mark_found && !end_of_file && (*bp != ELEMENT_BEGIN)) {
 				if (save_restoreDebug >= 12) {
 					errlogPrintf("dbrestore:SR_array_restore: ...buffer contains '%s'\n", bp);
 				}
@@ -509,7 +601,7 @@ long SR_array_restore(int pass, FILE *inp_fd, char *PVname, char *value_string, 
 					errlogPrintf("dbrestore:SR_array_restore: element[%ld] value = '%s'\n", num_read, string);
 					if (bp) errlogPrintf("dbrestore:SR_array_restore: look for element-end: buffer contains '%s'\n", bp);
 				}
-					/*
+				/*
 				 * We've accumulated all the characters, or all we can handle in string[].
 				 * If there are more characters than we can handle, just pretend we read them.
 				 */
@@ -552,7 +644,8 @@ long SR_array_restore(int pass, FILE *inp_fd, char *PVname, char *value_string, 
 							p_long[num_read++] = (epicsInt32) atol(string);
 							break;
 						case DBF_ULONG:
-							p_ulong[num_read++] = (epicsUInt32) atol(string);
+							/*p_ulong[num_read++] = (epicsUInt32) atol(string);*/
+							p_ulong[num_read++] = (epicsUInt32) strtoul(string,NULL,0);
 							break;
 						case DBF_FLOAT:
 							p_float[num_read++] = mySafeDoubleToFloat(atof(string));
@@ -636,12 +729,7 @@ long SR_array_restore(int pass, FILE *inp_fd, char *PVname, char *value_string, 
 		}
 	} else {
 		if (save_restoreDebug >= 10) {
-			errlogPrintf("dbrestore:SR_array_restore: ARRAY_BEGIN wasn't found; going to next line of input file\n");
-		}
-		status = -1;
-		/* just get next line, assuming it contains the next PV */
-		if (!end_of_file) {
-			if ((bp = fgets(buffer, BUF_SIZE, inp_fd)) == NULL) end_of_file = 1;
+			errlogPrintf("dbrestore:SR_array_restore: ARRAY_BEGIN wasn't found.\n");
 		}
 	}
 	if (!status && end_of_file) status = end_of_file;
@@ -697,11 +785,12 @@ int reboot_restore(char *filename, initHookState init_state)
 	char		PVname[81]; /* Must be greater than max field width ("%80s") in the sscanf format below */
 	char		bu_filename[PATH_SIZE+1], fname[PATH_SIZE+1] = "";
 	char		buffer[BUF_SIZE], *bp;
+	char		ebuffer[BUF_SIZE];
 	char		value_string[BUF_SIZE];
 	char		datetime[32];
 	char		c;
 	FILE		*inp_fd;
-	int			i, found_field, pass;
+	int			found_field, pass;
 	DBENTRY		dbentry;
 	DBENTRY		*pdbentry = &dbentry;
 	long		status;
@@ -710,9 +799,13 @@ int reboot_restore(char *filename, initHookState init_state)
 	char		*statusStr = 0;
 	char		realName[64];	/* name without trailing '$' */
 	int			is_long_string;
+	struct restoreFileListItem *pLI;
+	/* macrostring */
+	MAC_HANDLE	*handle = NULL;
+	char		**pairs = NULL;
+	char		*macrostring = NULL;
 
 	errlogPrintf("reboot_restore: entry for file '%s'\n", filename);
-	printf("reboot_restore (v%s): entry for file '%s'\n", RESTORE_VERSION, filename);
 	/* initialize database access routines */
 	if (!pdbbase) {
 		errlogPrintf("reboot_restore: No Database Loaded\n");
@@ -720,25 +813,23 @@ int reboot_restore(char *filename, initHookState init_state)
 	}
 	dbInitEntry(pdbbase,pdbentry);
 
+	maybeInitRestoreFileLists();
 	/* what are we supposed to do here? */
 	if (init_state >= initHookAfterInitDatabase) {
 		pass = 1;
-		for (i = 0; i < restoreFileList.pass1cnt; i++) {
-			if (restoreFileList.pass1files[i] &&
-				(strcmp(filename, restoreFileList.pass1files[i]) == 0)) {
-				pStatusVal = &(restoreFileList.pass1Status[i]);
-				statusStr = restoreFileList.pass1StatusStr[i];
-			}
-		}
+		pLI = (struct restoreFileListItem *) ellFirst(&pass1List);
 	} else {
 		pass = 0;
-		for (i = 0; i < restoreFileList.pass0cnt; i++) {
-			if (restoreFileList.pass0files[i] &&
-				(strcmp(filename, restoreFileList.pass0files[i]) == 0)) {
-				pStatusVal = &(restoreFileList.pass0Status[i]);
-				statusStr = restoreFileList.pass0StatusStr[i];
-			}
+		pLI = (struct restoreFileListItem *) ellFirst(&pass0List);
+	}
+	while (pLI) {
+		if (pLI->filename && (strcmp(filename, pLI->filename) == 0)) {
+			pStatusVal = &(pLI->restoreStatus);
+			statusStr = pLI->restoreStatusStr;
+			macrostring = pLI->macrostring;
+			break;
 		}
+		pLI = (struct restoreFileListItem *) ellNext(&(pLI->node));
 	}
 
 	if ((pStatusVal == 0) || (statusStr == 0)) {
@@ -750,7 +841,11 @@ int reboot_restore(char *filename, initHookState init_state)
 	}
 
 	/* open file */
-	makeNfsPath(fname, saveRestoreFilePath, filename);
+	if (filename[0] == '/') {
+		strncpy(fname, filename, PATH_SIZE);
+	} else {
+		makeNfsPath(fname, saveRestoreFilePath, filename);
+	}
 	errlogPrintf("*** restoring from '%s' at initHookState %d (%s record/device init) ***\n",
 		fname, (int)init_state, pass ? "after" : "before");
 	if ((inp_fd = fopen_and_check(fname, &status)) == NULL) {
@@ -765,6 +860,20 @@ int reboot_restore(char *filename, initHookState init_state)
 		if (statusStr) strcpy(statusStr, "Bad .sav(B) files; used seq. backup");
 	}
 
+	/* Prepare to use macro substitution */
+	if (macrostring && macrostring[0]) {
+		macCreateHandle(&handle, NULL);
+		if (handle) {
+			macParseDefns(handle, macrostring, &pairs);
+			if (pairs) macInstallMacros(handle, pairs);
+			if (save_restoreDebug >= 5) {
+				errlogPrintf("save_restore:reboot_restore: Current macro definitions:\n");
+				macReportMacros(handle);
+				errlogPrintf("save_restore:reboot_restore: --------------------------\n");
+			}
+		}
+	}
+
 	(void)fgets(buffer, BUF_SIZE, inp_fd); /* discard header line */
 	if (save_restoreDebug >= 1) {
 		errlogPrintf("dbrestore:reboot_restore: header line '%s'\n", buffer);
@@ -775,6 +884,16 @@ int reboot_restore(char *filename, initHookState init_state)
 	/* restore from data file */
 	num_errors = 0;
 	while ((bp=fgets(buffer, BUF_SIZE, inp_fd))) {
+		if (handle && pairs) {
+			ebuffer[0] = '\0';
+			macExpandString(handle, buffer, ebuffer, BUF_SIZE-1);
+			bp = ebuffer;
+			if (save_restoreDebug >= 1) {
+				printf("dbrestore:reboot_restore: buffer='%s'\n", buffer);
+				printf("                         ebuffer='%s'\n", ebuffer);
+			}
+		}
+
 		/*
 		 * get PV_name, one space character, value
 		 * (value may be a string with leading whitespace; it may be
@@ -815,12 +934,25 @@ int reboot_restore(char *filename, initHookState init_state)
 			if (strchr(PVname,'.') == 0) strcat(PVname,".VAL"); /* if no field name, add default */
 			is_scalar = strncmp(value_string, ARRAY_MARKER, ARRAY_MARKER_LEN);
 			if (save_restoreDebug > 9) errlogPrintf("\n");
+			if (is_scalar) {
+				long num_elements, field_size, field_type;
+				/* check the field itself, because an empty string is saved as no value at all , which would look like a scalar. */
+				SR_get_array_info(PVname, &num_elements, &field_size, &field_type);
+				if (num_elements > 1) {
+					if (save_restoreDebug >= 5) {
+						printf("reboot_restore: PV '%s' is scalar in .sav file, but has %ld elements.  Treating as array.\n",
+							PVname, num_elements);
+					}
+					is_scalar = 0;
+				}
+			}
 			if (save_restoreDebug >= 10) {
 				errlogPrintf("dbrestore:reboot_restore: Attempting to put %s '%s' to '%s'\n",
 					is_scalar?"scalar":"array", value_string, PVname);
 			}
 
 			/* dbStatic doesn't know about long-string fields (PV name with appended '$'). */
+			is_long_string = 0;
 			strcpy(realName, PVname);
 			if (realName[strlen(realName)-1] == '$') {
 				realName[strlen(realName)-1] = '\0';
@@ -830,13 +962,22 @@ int reboot_restore(char *filename, initHookState init_state)
 					/* No, we didn't.  One more read will certainly accumulate a value string of length BUF_SIZE */
 					if (save_restoreDebug > 9) printf("reboot_restore: did not reach end of line for long-string PV\n");
 					bp = fgets(buffer, BUF_SIZE, inp_fd);
+					if (handle && pairs) {
+						ebuffer[0] = '\0';
+						macExpandString(handle, buffer, ebuffer, BUF_SIZE-1);
+						bp = ebuffer;
+						if (save_restoreDebug >= 1) {
+							printf("dbrestore:reboot_restore: buffer='%s'\n", buffer);
+							printf("                         ebuffer='%s'\n", ebuffer);
+						}
+					}
 					n = BUF_SIZE-strlen(value_string)-1;
 					strncat(value_string, bp, n);
 					/* we don't want that '\n' in the string */
 					if (value_string[strlen(value_string)-1] == '\n') value_string[strlen(value_string)-1] = '\0';
 				}
-				/* Discard additional characters until end of line */
-				while (bp[strlen(bp)-1] != '\n') fgets(buffer, BUF_SIZE, inp_fd);
+				/* We aren't prepared to handle more than BUF_SIZE characters.  Discard additional characters until end of line */
+				while (bp[strlen(bp)-1] != '\n') bp = fgets(buffer, BUF_SIZE, inp_fd);
 			}
 
 			found_field = 1;
@@ -848,7 +989,7 @@ int reboot_restore(char *filename, initHookState init_state)
 				num_errors++; found_field = 0;
 			}
 			if (found_field) {
-				if (is_scalar) {
+				if (is_scalar || is_long_string) {
 					status = scalar_restore(pass, pdbentry, PVname, value_string);
 				} else {
 					status = SR_array_restore(pass, inp_fd, PVname, value_string, 0);
@@ -877,6 +1018,8 @@ int reboot_restore(char *filename, initHookState init_state)
 			if (!save_restoreIncompleteSetsOk) {
 				errlogPrintf("aborting restore\n");
 				fclose(inp_fd);
+				if (handle) macDeleteHandle(handle);
+				if (pairs) free(pairs);
 				dbFinishEntry(pdbentry);
 				if (pStatusVal) *pStatusVal = SR_STATUS_FAIL;
 				if (statusStr) strcpy(statusStr, "restore aborted");
@@ -888,18 +1031,25 @@ int reboot_restore(char *filename, initHookState init_state)
 		}
 	}
 	fclose(inp_fd);
+	if (handle) macDeleteHandle(handle);
+	if (pairs) free(pairs);
 	dbFinishEntry(pdbentry);
 
 	/* If this is the second pass for a restore file, don't write backup file again.*/
 	write_backup = 1;
 	if (init_state >= initHookAfterInitDatabase) {
-		for(i = 0; i < restoreFileList.pass0cnt; i++) {
-			if (strcmp(filename, restoreFileList.pass0files[i]) == 0) {
+		pLI = (struct restoreFileListItem *) ellFirst(&pass0List);
+		while (pLI) {
+			if (strcmp(filename, pLI->filename) == 0) {
 				write_backup = 0;
 				break;
 			}
+			pLI = (struct restoreFileListItem *) ellNext(&(pLI->node));
 		}
 	}
+
+	/* For now, don't write boot-time backups for files specified with full path. */
+	if (filename[0] == '/') write_backup = 0;
 
 	if (write_backup) {
 		/* write  backup file*/
@@ -946,54 +1096,59 @@ int reboot_restore(char *filename, initHookState init_state)
 }
 
 
-int set_pass0_restoreFile( char *filename)
+static int set_restoreFile(int pass, char *filename, char *macrostring)
 {
-	char *cp;
-	int fileNum = restoreFileList.pass0cnt;
+	struct restoreFileListItem *pLI;
 
-	if (fileNum >= MAXRESTOREFILES) {
-		errlogPrintf("set_pass0_restoreFile: MAXFILE count exceeded\n");
+	maybeInitRestoreFileLists();
+
+	pLI = calloc(1, sizeof(struct restoreFileListItem));
+	if (pLI == NULL) {
+		errlogPrintf("set_pass%d_restoreFile: calloc failed\n", pass);
 		return(ERROR);
 	}
-	cp = (char *)calloc(strlen(filename) + 4,sizeof(char));
-	restoreFileList.pass0files[fileNum] = cp;
-	if (cp == NULL) {
-		errlogPrintf("set_pass0_restoreFile: calloc failed\n");
-		restoreFileList.pass0StatusStr[fileNum] = (char *)0;
+
+	pLI->filename = (char *)calloc(strlen(filename) + 4,sizeof(char));
+	if (pLI->filename == NULL) {
+		errlogPrintf("set_pass%d_restoreFile: calloc failed\n", pass);
+		free(pLI);
 		return(ERROR);
 	}
-	strcpy(cp, filename);
-	cp = (char *)calloc(STRING_LEN, 1);
-	restoreFileList.pass0StatusStr[fileNum] = cp;
-	strcpy(cp, "Unknown, probably failed");
-	restoreFileList.pass0Status[fileNum] = SR_STATUS_INIT;
-	restoreFileList.pass0cnt++;
+	strcpy(pLI->filename, filename);
+
+	pLI->restoreStatusStr = (char *)calloc(STRING_LEN, 1);
+	if (pLI->restoreStatusStr == NULL) {
+		errlogPrintf("set_pass%d_restoreFile: calloc failed\n", pass);
+		free(pLI->filename);
+		free(pLI);
+		return(ERROR);
+	}
+	strcpy(pLI->restoreStatusStr, "Unknown, probably failed");
+
+	if (macrostring && macrostring[0]) {
+		pLI->macrostring = (char *)calloc(strlen(macrostring),sizeof(char));
+		strcpy(pLI->macrostring, macrostring);
+	}
+
+
+	pLI->restoreStatus = SR_STATUS_INIT;
+
+	if (pass==1) {
+		ellAdd(&pass1List, &(pLI->node));
+	} else {
+		ellAdd(&pass0List, &(pLI->node));
+	}
 	return(OK);
 }
 
-int set_pass1_restoreFile(char *filename)
+int set_pass0_restoreFile(char *filename, char *macrostring)
 {
-	char *cp;
-	int fileNum = restoreFileList.pass1cnt;
-	
-	if (fileNum >= MAXRESTOREFILES) {
-		errlogPrintf("set_pass1_restoreFile: MAXFILE count exceeded\n");
-		return(ERROR);
-	}
-	cp = (char *)calloc(strlen(filename) + 4,sizeof(char));
-	restoreFileList.pass1files[fileNum] = cp;
-	if (cp == NULL) {
-		errlogPrintf("set_pass1_restoreFile: calloc failed\n");
-		restoreFileList.pass1StatusStr[fileNum] = (char *)0;
-		return(ERROR);
-	}
-	strcpy(cp, filename);
-	cp = (char *)calloc(STRING_LEN, 1);
-	restoreFileList.pass1StatusStr[fileNum] = cp;
-	strcpy(cp, "Unknown, probably failed");
-	restoreFileList.pass1Status[fileNum] = SR_STATUS_INIT;
-	restoreFileList.pass1cnt++;
-	return(OK);
+	return(set_restoreFile(0, filename, macrostring));
+}
+
+int set_pass1_restoreFile(char *filename, char *macrostring)
+{
+	return(set_restoreFile(1, filename, macrostring));
 }
 
 /* file is ok if it ends in either of the two following ways:
@@ -1009,6 +1164,8 @@ FILE *checkFile(const char *file)
 	char datetime[32];
 	int status;
 
+	if (save_restoreDebug >= 2) printf("checkFile: entry\n");
+
 	if ((inp_fd = fopen(file, "r")) == NULL) {
 		errlogPrintf("save_restore: Can't open file '%s'.\n", file);
 		return(0);
@@ -1016,7 +1173,8 @@ FILE *checkFile(const char *file)
 
 	/* Get the version number of the code that wrote the file */
 	fgets(tmpstr, 29, inp_fd);
-	versionstr = strchr(tmpstr,(int)'V');
+	versionstr = strchr(tmpstr,(int)'R');
+	if (!versionstr) versionstr = strchr(tmpstr,(int)'V');
 	if (!versionstr) {
 		/* file has no version number */
 		status = fseek(inp_fd, 0, SEEK_SET); /* go to beginning */
@@ -1027,6 +1185,7 @@ FILE *checkFile(const char *file)
 		version = atof(versionstr+1);
 	else
 		version = 0;
+	if (save_restoreDebug >= 2) printf("checkFile: version=%f\n", version);
 
 	/* <END> check started in v1.8 */
 	if (version < 1.8) {
@@ -1038,6 +1197,7 @@ FILE *checkFile(const char *file)
 	status = fseek(inp_fd, -6, SEEK_END);
 	if (status) myPrintErrno("checkFile: fseek error ", __FILE__, __LINE__);
 	fgets(tmpstr, 6, inp_fd);
+	if (save_restoreDebug >= 5) printf("checkFile: files ends with '%s'\n", tmpstr);
 	if (strncmp(tmpstr, "<END>", 5) == 0) {
 		status = fseek(inp_fd, 0, SEEK_SET); /* file is ok.  go to beginning */
 		if (status) myPrintErrno("checkFile: fseek error ", __FILE__, __LINE__);
@@ -1047,6 +1207,7 @@ FILE *checkFile(const char *file)
 	status = fseek(inp_fd, -7, SEEK_END);
 	if (status) myPrintErrno("checkFile: fseek error ", __FILE__, __LINE__);
 	fgets(tmpstr, 7, inp_fd);
+	if (save_restoreDebug >= 5) printf("checkFile: files ends with '%s'\n", tmpstr);
 	if (strncmp(tmpstr, "<END>", 5) == 0) {
 		status = fseek(inp_fd, 0, SEEK_SET); /* file is ok.  go to beginning */
 		if (status) myPrintErrno("checkFile: fseek error ", __FILE__, __LINE__);
@@ -1080,6 +1241,7 @@ FILE *fopen_and_check(const char *fname, long *status)
 	*status = 0;	/* presume success */
 	strncpy(file, fname, PATH_SIZE);
 	inp_fd = checkFile(file);
+	if (save_restoreDebug >=1) printf("fopen_and_check: checkFile returned %p\n", inp_fd);
 	if (inp_fd) return(inp_fd);
 
 	/* Still here?  Try the backup file. */
@@ -1140,7 +1302,7 @@ FILE *fopen_and_check(const char *fname, long *status)
 
 	errlogPrintf("save_restore: Can't find a file to restore from...");
 	errlogPrintf("save_restore: ...last tried '%s'. I give up.\n", file);
-	errlogPrintf("save_restore: **********************************\n\n");
+	printf("save_restore: **********************************\n\n");
 	return(0);
 }
 
@@ -1368,19 +1530,20 @@ void makeAutosaveFiles() {
 }
 
 /* set_pass0_restoreFile() */
-STATIC const iocshArg set_passN_Arg = {"file",iocshArgString};
-STATIC const iocshArg * const set_passN_Args[1] = {&set_passN_Arg};
-STATIC const iocshFuncDef set_pass0_FuncDef = {"set_pass0_restoreFile",1,set_passN_Args};
+STATIC const iocshArg set_passN_Arg1 = {"file",iocshArgString};
+STATIC const iocshArg set_passN_Arg2 = {"macrostring",iocshArgString};
+STATIC const iocshArg * const set_passN_Args[2] = {&set_passN_Arg1, &set_passN_Arg2};
+STATIC const iocshFuncDef set_pass0_FuncDef = {"set_pass0_restoreFile",2,set_passN_Args};
 STATIC void set_pass0_CallFunc(const iocshArgBuf *args)
 {
-    set_pass0_restoreFile(args[0].sval);
+    set_pass0_restoreFile(args[0].sval, args[1].sval);
 }
 
 /* set_pass1_restoreFile() */
-STATIC const iocshFuncDef set_pass1_FuncDef = {"set_pass1_restoreFile",1,set_passN_Args};
+STATIC const iocshFuncDef set_pass1_FuncDef = {"set_pass1_restoreFile",2,set_passN_Args};
 STATIC void set_pass1_CallFunc(const iocshArgBuf *args)
 {
-    set_pass1_restoreFile(args[0].sval);
+    set_pass1_restoreFile(args[0].sval, args[1].sval);
 }
 
 /* void dbrestoreShow(void) */

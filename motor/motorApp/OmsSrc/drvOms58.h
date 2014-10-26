@@ -6,7 +6,7 @@ USAGE...        OMS driver level "include" information that is specific to OMS
 Version:        $Revision: 12209 $
 Modified By:    $Author: sluiter $
 Last Modified:  $Date: 2011-01-26 13:13:47 -0600 (Wed, 26 Jan 2011) $
-HeadURL:        $URL: https://subversion.xor.aps.anl.gov/synApps/motor/tags/R6-7-1/motorApp/OmsSrc/drvOms58.h $
+HeadURL:        $URL: https://subversion.xray.aps.anl.gov/synApps/motor/tags/R6-8-1/motorApp/OmsSrc/drvOms58.h $
 */
 
 /*

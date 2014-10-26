@@ -3,9 +3,10 @@ FILENAME...	devMDrive.cc
 USAGE...	Motor record device level support for Intelligent Motion
 		Systems, Inc. MDrive series of controllers.
 
-Version:	$Revision: 1.7 $
+Version:	$Revision: 16590 $
 Modified By:	$Author: sluiter $
-Last Modified:	$Date: 2008-03-14 20:10:01 $
+Last Modified:	$Date: 2013-06-17 09:20:08 -0500 (Mon, 17 Jun 2013) $
+HeadURL:	$URL: https://subversion.xray.aps.anl.gov/synApps/motor/tags/R6-8-1/motorApp/ImsSrc/devMDrive.cc $
 */
 
 /*

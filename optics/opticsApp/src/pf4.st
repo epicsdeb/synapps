@@ -613,7 +613,7 @@ double GlassAbsorptionLength(double keV)
 int isLegalOther(char *s) {
 	int i;
 	for (i=0; i<NUM_SPECIES; i++) {
-		if (strcmp(filt[i].name, s) == 0) break;
+		if (strcmp(filtermat[i].name, s) == 0) break;
 	}
 	if (i >= NUM_SPECIES) return(0);
 	return(1);
@@ -624,24 +624,24 @@ double OtherAbsorptionLength(double keV, char *species) {
 	double mu, frac, absLen;
 
 	for (i=0; i<NUM_SPECIES; i++) {
-		if (strcmp(filt[i].name, species) == 0) break;
+		if (strcmp(filtermat[i].name, species) == 0) break;
 	}
 	if (i >= NUM_SPECIES) {
 		/* printf("pf4.st: Filter material '%s' not found\n", species);*/
 		return(0.);
 	}
 	/*printf("pf4.st: species='%s', index=%d\n", species, i);*/
-	for (j=0; j<filt[i].numEntries; j++) {
-		if (keV < filt[i].keV[j]) break;
+	for (j=0; j<filtermat[i].numEntries; j++) {
+		if (keV < filtermat[i].keV[j]) break;
 	}
-	if (j >= filt[i].numEntries) {
+	if (j >= filtermat[i].numEntries) {
 		/*printf("pf4.st: Energy '%f' not found in filter data\n", keV);*/
 		return(0.);
 	}
-	/* mu is in cm^2/g, density is g/cm^3, want absorption length in microns */
-	frac = (keV - filt[i].keV[j]) / (filt[i].keV[j+1] - filt[i].keV[j]);
-	mu = filt[i].mu[j] + frac * (filt[i].mu[j+1] - filt[i].mu[j]);
-	absLen = 1/(density[i]*mu);
+	/* mu is in cm^2/g, matdensity is g/cm^3, want absorption length in microns */
+	frac = (keV - filtermat[i].keV[j]) / (filtermat[i].keV[j+1] - filtermat[i].keV[j]);
+	mu = filtermat[i].mu[j] + frac * (filtermat[i].mu[j+1] - filtermat[i].mu[j]);
+	absLen = 1/(matdensity[i]*mu);
 	absLen *= 1.e4; /* cm to microns */
 	return(absLen);
 }
@@ -799,20 +799,20 @@ static int fillShowArrays(char *species, int N, float *E, float *T) {
 	int i, j, k;
 
 	for (i=0; i<NUM_SPECIES; i++) {
-		if (strcmp(filt[i].name, species) == 0) break;
+		if (strcmp(filtermat[i].name, species) == 0) break;
 	}
 	if (i >= NUM_SPECIES) {
 		return(1);
 	}
 	/*printf("pf4.st: species='%s', index=%d\n", species, i);*/
-	for (j=0; j<filt[i].numEntries; j++) {
-		E[j] = filt[i].keV[j];
-		T[j] = filt[i].mu[j];
+	for (j=0; j<filtermat[i].numEntries; j++) {
+		E[j] = filtermat[i].keV[j];
+		T[j] = filtermat[i].mu[j];
 	}
 	k = j-1;
 	for (; j<N; j++) {
-		E[j] = filt[i].keV[k];
-		T[j] = filt[i].mu[k];
+		E[j] = filtermat[i].keV[k];
+		T[j] = filtermat[i].mu[k];
 	}
 	return(0);
 }

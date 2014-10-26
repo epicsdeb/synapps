@@ -19,7 +19,7 @@ in the file LICENSE that is included with this distribution.
 
 #ifndef __WIN32__
 #   if defined(_WIN32) || defined(WIN32)
-#	define __WIN32__
+#       define __WIN32__
 #   endif
 #endif
 
@@ -36,7 +36,7 @@ extern int access(const char *path, int mode);
 #endif
 
 /* #define PRIVATE static */
-#define PRIVATE static
+#define PRIVATE
 
 #ifdef TEST
 #define MAXRHS 5       /* Set low to exercise exception code */
@@ -45,24 +45,7 @@ extern int access(const char *path, int mode);
 #endif
 
 static int showPrecedenceConflict = 0;
-static const char **made_files = NULL;
-static int made_files_count = 0;
-static int successful_exit = 0;
-static void LemonAtExit(void)
-{
-    /* if we failed, delete (most) files we made, to unconfuse build tools. */
-    int i;
-    for (i = 0; i < made_files_count; i++) {
-        if (!successful_exit) {
-            remove(made_files[i]);
-        }
-    }
-    free(made_files);
-    made_files_count = 0;
-    made_files = NULL;
-}
-
-static char *msort(char*,unsigned long,int(*)(const char*,const char*));
+static char *msort(char*,char**,int(*)(const char*,const char*));
 
 /*
 ** Compilers are getting increasingly pedantic about type conversions
@@ -138,8 +121,6 @@ void ResortStates(struct lemon *);
 void  SetSize(int);             /* All sets will be of size N */
 char *SetNew(void);               /* A new set for element 0..N */
 void  SetFree(char*);             /* Deallocate a set */
-
-char *SetNew(void);               /* A new set for element 0..N */
 int SetAdd(char*,int);            /* Add element to a set */
 int SetUnion(char *,char *);    /* A <- A U B, thru element N */
 #define SetFind(X,Y) (X[Y])       /* True if Y is in set X */
@@ -320,8 +301,6 @@ struct lemon {
   memory_error(); \
 }
 
-#define OFFSETOF(p,n) ((char*)&((p)->n) - (char*)(p))
-
 /**************** From the file "table.h" *********************************/
 /*
 ** All code in this file has been automatically generated
@@ -421,7 +400,7 @@ static int actioncmp(
 static struct action *Action_sort(
   struct action *ap
 ){
-  ap = (struct action *)msort((char *)ap,OFFSETOF(ap,next),
+  ap = (struct action *)msort((char *)ap,(char **)&ap->next,
                               (int(*)(const char*,const char*))actioncmp);
   return ap;
 }
@@ -679,7 +658,7 @@ void FindRulePrecedences(struct lemon *xp)
           }
         }else if( sp->prec>=0 ){
           rp->precsym = rp->rhs[i];
-	}
+        }
       }
     }
   }
@@ -710,8 +689,9 @@ void FindFirstSets(struct lemon *lemp)
     for(rp=lemp->rule; rp; rp=rp->next){
       if( rp->lhs->lambda ) continue;
       for(i=0; i<rp->nrhs; i++){
-         struct symbol *sp = rp->rhs[i];
-         if( sp->type!=TERMINAL || sp->lambda==LEMON_FALSE ) break;
+        struct symbol *sp = rp->rhs[i];
+        assert( sp->type==NONTERMINAL || sp->lambda==LEMON_FALSE );
+        if( sp->lambda==LEMON_FALSE ) break;
       }
       if( i==rp->nrhs ){
         rp->lhs->lambda = LEMON_TRUE;
@@ -736,12 +716,12 @@ void FindFirstSets(struct lemon *lemp)
             progress += SetAdd(s1->firstset,s2->subsym[j]->index);
           }
           break;
-	}else if( s1==s2 ){
+        }else if( s1==s2 ){
           if( s1->lambda==LEMON_FALSE ) break;
-	}else{
+        }else{
           progress += SetUnion(s1->firstset,s2->firstset);
           if( s2->lambda==LEMON_FALSE ) break;
-	}
+        }
       }
     }
   }while( progress );
@@ -984,8 +964,8 @@ void FindFollowSets(struct lemon *lemp)
           if( change ){
             plp->cfp->status = INCOMPLETE;
             progress = 1;
-	  }
-	}
+          }
+        }
         cfp->status = COMPLETE;
       }
     }
@@ -1018,7 +998,7 @@ void FindActions(struct lemon *lemp)
             ** rule "cfp->rp" if the lookahead symbol is "lemp->symbols[j]" */
             Action_add(&stp->ap,REDUCE,lemp->symbols[j],(char *)cfp->rp);
           }
-	}
+        }
       }
     }
   }
@@ -1142,7 +1122,6 @@ static int resolve_conflict(
   }
   return errcnt;
 }
-
 /********************* From the file "configlist.c" *************************/
 /*
 ** Routines to processing a configuration list and building a state
@@ -1289,11 +1268,11 @@ void Configlist_closure(struct lemon *lemp)
               SetAdd(newcfp->fws, xsp->subsym[k]->index);
             }
             break;
-	  }else{
+          }else{
             SetUnion(newcfp->fws,xsp->firstset);
             if( xsp->lambda==LEMON_FALSE ) break;
-	  }
-	}
+          }
+        }
         if( i==rp->nrhs ) Plink_add(&cfp->fplp,newcfp);
       }
     }
@@ -1303,14 +1282,14 @@ void Configlist_closure(struct lemon *lemp)
 
 /* Sort the configuration list */
 void Configlist_sort(){
-  current = (struct config *)msort((char *)current,OFFSETOF(current,next),Configcmp);
+  current = (struct config *)msort((char *)current,(char **)&(current->next),Configcmp);
   currentend = 0;
   return;
 }
 
 /* Sort the basis configuration list */
 void Configlist_sortbasis(){
-  basis = (struct config *)msort((char *)current,OFFSETOF(current,bp),Configcmp);
+  basis = (struct config *)msort((char *)current,(char **)&(current->bp),Configcmp);
   basisend = 0;
   return;
 }
@@ -1348,7 +1327,6 @@ void Configlist_eat(struct config *cfp)
   }
   return;
 }
-
 /***************** From the file "error.c" *********************************/
 /*
 ** Code for printing error message.
@@ -1362,7 +1340,6 @@ void ErrorMsg(const char *filename, int lineno, const char *format, ...){
   va_end(ap);
   fprintf(stderr, "\n");
 }
-
 /**************** From the file "main.c" ************************************/
 /*
 ** Main program file for the LEMON parser generator.
@@ -1445,8 +1422,6 @@ int main(int argc, char **argv)
   int exitcode;
   struct lemon lem;
 
-  atexit(LemonAtExit);
-
   OptInit(argv,options,stderr);
   if( version ){
      printf("Lemon version 1.0\n");
@@ -1487,7 +1462,7 @@ int main(int argc, char **argv)
   for(i=0; i<=lem.nsymbol; i++) lem.symbols[i]->index = i;
   qsort(lem.symbols,lem.nsymbol+1,sizeof(struct symbol*), Symbolcmpp);
   for(i=0; i<=lem.nsymbol; i++) lem.symbols[i]->index = i;
-  for(i=1; isupper((unsigned char)lem.symbols[i]->name[0]); i++);
+  for(i=1; isupper(lem.symbols[i]->name[0]); i++);
   lem.nterminal = i;
 
   /* Generate a reprint of the grammar, if requested on the command line */
@@ -1549,12 +1524,10 @@ int main(int argc, char **argv)
   }
 
   /* return 0 on success, 1 on failure. */
-  exitcode = ((lem.errorcnt > 0)) ? 1 : 0;
-  successful_exit = (exitcode == 0);
+  exitcode = (lem.errorcnt > 0);
   exit(exitcode);
   return (exitcode);
 }
-
 /******************** From the file "msort.c" *******************************/
 /*
 ** A generic merge-sort program.
@@ -1582,7 +1555,7 @@ int main(int argc, char **argv)
 /*
 ** Return a pointer to the next structure in the linked list.
 */
-#define NEXT(A) (*(char**)(((unsigned long)A)+offset))
+#define NEXT(A) (*(char**)(((char*)A)+offset))
 
 /*
 ** Inputs:
@@ -1640,7 +1613,7 @@ static char *merge(
 /*
 ** Inputs:
 **   list:      Pointer to a singly-linked list of structures.
-**   offset:    Offset to 'next' pointer in a list element struct.
+**   next:      Pointer to pointer to the second element of the list.
 **   cmp:       A comparison function.
 **
 ** Return Value:
@@ -1653,12 +1626,14 @@ static char *merge(
 #define LISTSIZE 30
 static char *msort(
   char *list,
-  unsigned long offset,
+  char **next,
   int (*cmp)(const char*,const char*)
 ){
+  unsigned long offset;
   char *ep;
   char *set[LISTSIZE];
   int i;
+  offset = (unsigned long)next - (unsigned long)list;
   for(i=0; i<LISTSIZE; i++) set[i] = 0;
   while( list ){
     ep = list;
@@ -1674,7 +1649,6 @@ static char *msort(
   for(i=0; i<LISTSIZE; i++) if( set[i] ) ep = merge(set[i],ep,cmp,offset);
   return ep;
 }
-
 /************************ From the file "option.c" **************************/
 static char **argv;
 static struct s_options *op;
@@ -1949,7 +1923,6 @@ void OptPrint(){
     }
   }
 }
-
 /*********************** From the file "parse.c" ****************************/
 /*
 ** Input file parser for the LEMON parser generator.
@@ -2021,7 +1994,7 @@ static void parseonetoken(struct pstate *psp)
     case WAITING_FOR_DECL_OR_RULE:
       if( x[0]=='%' ){
         psp->state = WAITING_FOR_DECL_KEYWORD;
-      }else if( islower((unsigned char)x[0]) ){
+      }else if( islower(x[0]) ){
         psp->lhs = Symbol_new(x);
         psp->nrhs = 0;
         psp->lhsalias = 0;
@@ -2029,10 +2002,10 @@ static void parseonetoken(struct pstate *psp)
       }else if( x[0]=='{' ){
         if( psp->prevrule==0 ){
           ErrorMsg(psp->filename,psp->tokenlineno,
-"There is no prior rule opon which to attach the code \
+"There is no prior rule upon which to attach the code \
 fragment which begins on this line.");
           psp->errorcnt++;
-	}else if( psp->prevrule->code!=0 ){
+        }else if( psp->prevrule->code!=0 ){
           ErrorMsg(psp->filename,psp->tokenlineno,
 "Code fragment beginning on this line is not the first \
 to follow the previous rule.");
@@ -2040,7 +2013,7 @@ to follow the previous rule.");
         }else{
           psp->prevrule->line = psp->tokenlineno;
           psp->prevrule->code = &x[1];
-	}
+        }
       }else if( x[0]=='[' ){
         psp->state = PRECEDENCE_MARK_1;
       }else{
@@ -2051,7 +2024,7 @@ to follow the previous rule.");
       }
       break;
     case PRECEDENCE_MARK_1:
-      if( !isupper((unsigned char)x[0]) ){
+      if( !isupper(x[0]) ){
         ErrorMsg(psp->filename,psp->tokenlineno,
           "The precedence symbol must be a terminal.");
         psp->errorcnt++;
@@ -2091,7 +2064,7 @@ to follow the previous rule.");
       }
       break;
     case LHS_ALIAS_1:
-      if( isalpha((unsigned char)x[0]) ){
+      if( isalpha(x[0]) ){
         psp->lhsalias = x;
         psp->state = LHS_ALIAS_2;
       }else{
@@ -2133,7 +2106,7 @@ to follow the previous rule.");
             "Can't allocate enough memory for this rule.");
           psp->errorcnt++;
           psp->prevrule = 0;
-	}else{
+        }else{
           int i;
           rp->ruleline = psp->tokenlineno;
           rp->rhs = (struct symbol**)&rp[1];
@@ -2141,7 +2114,7 @@ to follow the previous rule.");
           for(i=0; i<psp->nrhs; i++){
             rp->rhs[i] = psp->rhs[i];
             rp->rhsalias[i] = psp->alias[i];
-	  }
+          }
           rp->lhs = psp->lhs;
           rp->lhsalias = psp->lhsalias;
           rp->nrhs = psp->nrhs;
@@ -2153,25 +2126,25 @@ to follow the previous rule.");
           rp->next = 0;
           if( psp->firstrule==0 ){
             psp->firstrule = psp->lastrule = rp;
-	  }else{
+          }else{
             psp->lastrule->next = rp;
             psp->lastrule = rp;
-	  }
+          }
           psp->prevrule = rp;
-	}
+        }
         psp->state = WAITING_FOR_DECL_OR_RULE;
-      }else if( isalpha((unsigned char)x[0]) ){
+      }else if( isalpha(x[0]) ){
         if( psp->nrhs>=MAXRHS ){
           ErrorMsg(psp->filename,psp->tokenlineno,
             "Too many symbols on RHS of rule beginning at \"%s\".",
             x);
           psp->errorcnt++;
           psp->state = RESYNC_AFTER_RULE_ERROR;
-	}else{
+        }else{
           psp->rhs[psp->nrhs] = Symbol_new(x);
           psp->alias[psp->nrhs] = 0;
           psp->nrhs++;
-	}
+        }
       }else if( (x[0]=='|' || x[0]=='/') && psp->nrhs>0 ){
         struct symbol *msp = psp->rhs[psp->nrhs-1];
         if( msp->type!=MULTITERMINAL ){
@@ -2189,7 +2162,7 @@ to follow the previous rule.");
         msp->subsym = (struct symbol **) realloc(msp->subsym,
           sizeof(struct symbol*)*msp->nsubsym);
         msp->subsym[msp->nsubsym-1] = Symbol_new(&x[1]);
-        if( islower((unsigned char)x[1]) || islower((unsigned char)msp->subsym[0]->name[0]) ){
+        if( islower(x[1]) || islower(msp->subsym[0]->name[0]) ){
           ErrorMsg(psp->filename,psp->tokenlineno,
             "Cannot form a compound containing a non-terminal");
           psp->errorcnt++;
@@ -2204,7 +2177,7 @@ to follow the previous rule.");
       }
       break;
     case RHS_ALIAS_1:
-      if( isalpha((unsigned char)x[0]) ){
+      if( isalpha(x[0]) ){
         psp->alias[psp->nrhs-1] = x;
         psp->state = RHS_ALIAS_2;
       }else{
@@ -2226,7 +2199,7 @@ to follow the previous rule.");
       }
       break;
     case WAITING_FOR_DECL_KEYWORD:
-      if( isalpha((unsigned char)x[0]) ){
+      if( isalpha(x[0]) ){
         psp->declkeyword = x;
         psp->declargslot = 0;
         psp->decllinenoslot = 0;
@@ -2235,24 +2208,24 @@ to follow the previous rule.");
         if( strcmp(x,"name")==0 ){
           psp->declargslot = &(psp->gp->name);
           psp->insertLineMacro = 0;
-	}else if( strcmp(x,"include")==0 ){
+        }else if( strcmp(x,"include")==0 ){
           psp->declargslot = &(psp->gp->include);
-	}else if( strcmp(x,"code")==0 ){
+        }else if( strcmp(x,"code")==0 ){
           psp->declargslot = &(psp->gp->extracode);
-	}else if( strcmp(x,"token_destructor")==0 ){
+        }else if( strcmp(x,"token_destructor")==0 ){
           psp->declargslot = &psp->gp->tokendest;
-	}else if( strcmp(x,"default_destructor")==0 ){
+        }else if( strcmp(x,"default_destructor")==0 ){
           psp->declargslot = &psp->gp->vardest;
-	}else if( strcmp(x,"token_prefix")==0 ){
+        }else if( strcmp(x,"token_prefix")==0 ){
           psp->declargslot = &psp->gp->tokenprefix;
           psp->insertLineMacro = 0;
-	}else if( strcmp(x,"syntax_error")==0 ){
+        }else if( strcmp(x,"syntax_error")==0 ){
           psp->declargslot = &(psp->gp->error);
-	}else if( strcmp(x,"parse_accept")==0 ){
+        }else if( strcmp(x,"parse_accept")==0 ){
           psp->declargslot = &(psp->gp->accept);
-	}else if( strcmp(x,"parse_failure")==0 ){
+        }else if( strcmp(x,"parse_failure")==0 ){
           psp->declargslot = &(psp->gp->failure);
-	}else if( strcmp(x,"stack_overflow")==0 ){
+        }else if( strcmp(x,"stack_overflow")==0 ){
           psp->declargslot = &(psp->gp->overflow);
         }else if( strcmp(x,"extra_argument")==0 ){
           psp->declargslot = &(psp->gp->arg);
@@ -2281,9 +2254,9 @@ to follow the previous rule.");
           psp->preccounter++;
           psp->declassoc = NONE;
           psp->state = WAITING_FOR_PRECEDENCE_SYMBOL;
-	}else if( strcmp(x,"destructor")==0 ){
+        }else if( strcmp(x,"destructor")==0 ){
           psp->state = WAITING_FOR_DESTRUCTOR_SYMBOL;
-	}else if( strcmp(x,"type")==0 ){
+        }else if( strcmp(x,"type")==0 ){
           psp->state = WAITING_FOR_DATATYPE_SYMBOL;
         }else if( strcmp(x,"fallback")==0 ){
           psp->fallback = 0;
@@ -2295,7 +2268,7 @@ to follow the previous rule.");
             "Unknown declaration keyword: \"%%%s\".",x);
           psp->errorcnt++;
           psp->state = RESYNC_AFTER_DECL_ERROR;
-	}
+        }
       }else{
         ErrorMsg(psp->filename,psp->tokenlineno,
           "Illegal declaration keyword: \"%s\".",x);
@@ -2304,7 +2277,7 @@ to follow the previous rule.");
       }
       break;
     case WAITING_FOR_DESTRUCTOR_SYMBOL:
-      if( !isalpha((unsigned char)x[0]) ){
+      if( !isalpha(x[0]) ){
         ErrorMsg(psp->filename,psp->tokenlineno,
           "Symbol name missing after %%destructor keyword");
         psp->errorcnt++;
@@ -2318,7 +2291,7 @@ to follow the previous rule.");
       }
       break;
     case WAITING_FOR_DATATYPE_SYMBOL:
-      if( !isalpha((unsigned char)x[0]) ){
+      if( !isalpha(x[0]) ){
         ErrorMsg(psp->filename,psp->tokenlineno,
           "Symbol name missing after %%type keyword");
         psp->errorcnt++;
@@ -2343,17 +2316,17 @@ to follow the previous rule.");
     case WAITING_FOR_PRECEDENCE_SYMBOL:
       if( x[0]=='.' ){
         psp->state = WAITING_FOR_DECL_OR_RULE;
-      }else if( isupper((unsigned char)x[0]) ){
+      }else if( isupper(x[0]) ){
         struct symbol *sp;
         sp = Symbol_new(x);
         if( sp->prec>=0 ){
           ErrorMsg(psp->filename,psp->tokenlineno,
             "Symbol \"%s\" has already be given a precedence.",x);
           psp->errorcnt++;
-	}else{
+        }else{
           sp->prec = psp->preccounter;
           sp->assoc = psp->declassoc;
-	}
+        }
       }else{
         ErrorMsg(psp->filename,psp->tokenlineno,
           "Can't assign a precedence to \"%s\".",x);
@@ -2361,7 +2334,7 @@ to follow the previous rule.");
       }
       break;
     case WAITING_FOR_DECL_ARG:
-      if( x[0]=='{' || x[0]=='\"' || isalnum((unsigned char)x[0]) ){
+      if( x[0]=='{' || x[0]=='\"' || isalnum(x[0]) ){
         const char *zOld, *zNew;
         char *zBuf, *z;
         int nOld, n, nLine, nNew, nBack;
@@ -2422,7 +2395,7 @@ to follow the previous rule.");
     case WAITING_FOR_FALLBACK_ID:
       if( x[0]=='.' ){
         psp->state = WAITING_FOR_DECL_OR_RULE;
-      }else if( !isupper((unsigned char)x[0]) ){
+      }else if( !isupper(x[0]) ){
         ErrorMsg(psp->filename, psp->tokenlineno,
           "%%fallback argument \"%s\" should be a token", x);
         psp->errorcnt++;
@@ -2443,7 +2416,7 @@ to follow the previous rule.");
     case WAITING_FOR_WILDCARD_ID:
       if( x[0]=='.' ){
         psp->state = WAITING_FOR_DECL_OR_RULE;
-      }else if( !isupper((unsigned char)x[0]) ){
+      }else if( !isupper(x[0]) ){
         ErrorMsg(psp->filename, psp->tokenlineno,
           "%%wildcard argument \"%s\" should be a token", x);
         psp->errorcnt++;
@@ -2482,7 +2455,7 @@ static void preprocess_input(char *z){
   for(i=0; z[i]; i++){
     if( z[i]=='\n' ) lineno++;
     if( z[i]!='%' || (i>0 && z[i-1]!='\n') ) continue;
-    if( strncmp(&z[i],"%endif",6)==0 && isspace((unsigned char)z[i+6]) ){
+    if( strncmp(&z[i],"%endif",6)==0 && isspace(z[i+6]) ){
       if( exclude ){
         exclude--;
         if( exclude==0 ){
@@ -2490,13 +2463,13 @@ static void preprocess_input(char *z){
         }
       }
       for(j=i; z[j] && z[j]!='\n'; j++) z[j] = ' ';
-    }else if( (strncmp(&z[i],"%ifdef",6)==0 && isspace((unsigned char)z[i+6]))
-          || (strncmp(&z[i],"%ifndef",7)==0 && isspace((unsigned char)z[i+7])) ){
+    }else if( (strncmp(&z[i],"%ifdef",6)==0 && isspace(z[i+6]))
+          || (strncmp(&z[i],"%ifndef",7)==0 && isspace(z[i+7])) ){
       if( exclude ){
         exclude++;
       }else{
-        for(j=i+7; isspace((unsigned char)z[j]); j++){}
-        for(n=0; z[j+n] && !isspace((unsigned char)z[j+n]); n++){}
+        for(j=i+7; isspace(z[j]); j++){}
+        for(n=0; z[j+n] && !isspace(z[j+n]); n++){}
         exclude = 1;
         for(k=0; k<nDefine; k++){
           if( strncmp(azDefine[k],&z[j],n)==0 && lemonStrlen(azDefine[k])==n ){
@@ -2552,10 +2525,10 @@ void Parse(struct lemon *gp)
   filesize = ftell(fp);
   rewind(fp);
   filebuf = (char *)malloc( filesize+1 );
-  if( filebuf==0 ){
-    ErrorMsg(ps.filename,0,"Can't allocate %d of memory to hold this file.",
-      filesize+1);
+  if( filesize>100000000 || filebuf==0 ){
+    ErrorMsg(ps.filename,0,"Input file too large.");
     gp->errorcnt++;
+    fclose(fp);
     return;
   }
   if( fread(filebuf,1,filesize,fp)!=filesize ){
@@ -2563,6 +2536,7 @@ void Parse(struct lemon *gp)
       filesize);
     free(filebuf);
     gp->errorcnt++;
+    fclose(fp);
     return;
   }
   fclose(fp);
@@ -2575,7 +2549,7 @@ void Parse(struct lemon *gp)
   lineno = 1;
   for(cp=filebuf; (c= *cp)!=0; ){
     if( c=='\n' ) lineno++;              /* Keep track of the line number */
-    if( isspace((unsigned char)c) ){ cp++; continue; }  /* Skip all white space */
+    if( isspace(c) ){ cp++; continue; }  /* Skip all white space */
     if( c=='/' && cp[1]=='/' ){          /* Skip C++ style comments */
       cp+=2;
       while( (c= *cp)!=0 && c!='\n' ) cp++;
@@ -2621,12 +2595,12 @@ void Parse(struct lemon *gp)
             if( c=='\n' ) lineno++;
             prevc = c;
             cp++;
-	  }
-	}else if( c=='/' && cp[1]=='/' ){  /* Skip C++ style comments too */
+          }
+        }else if( c=='/' && cp[1]=='/' ){  /* Skip C++ style comments too */
           cp = &cp[2];
           while( (c= *cp)!=0 && c!='\n' ) cp++;
           if( c ) lineno++;
-	}else if( c=='\'' || c=='\"' ){    /* String a character literals */
+        }else if( c=='\'' || c=='\"' ){    /* String a character literals */
           int startchar, prevc;
           startchar = c;
           prevc = 0;
@@ -2634,8 +2608,8 @@ void Parse(struct lemon *gp)
             if( c=='\n' ) lineno++;
             if( prevc=='\\' ) prevc = 0;
             else              prevc = c;
-	  }
-	}
+          }
+        }
       }
       if( c==0 ){
         ErrorMsg(ps.filename,ps.tokenlineno,
@@ -2645,15 +2619,15 @@ void Parse(struct lemon *gp)
       }else{
         nextcp = cp+1;
       }
-    }else if( isalnum((unsigned char)c) ){          /* Identifiers */
-      while( (c= *cp)!=0 && (isalnum((unsigned char)c) || c=='_') ) cp++;
+    }else if( isalnum(c) ){          /* Identifiers */
+      while( (c= *cp)!=0 && (isalnum(c) || c=='_') ) cp++;
       nextcp = cp;
     }else if( c==':' && cp[1]==':' && cp[2]=='=' ){ /* The operator "::=" */
       cp += 3;
       nextcp = cp;
-    }else if( (c=='/' || c=='|') && isalpha((unsigned char)cp[1]) ){
+    }else if( (c=='/' || c=='|') && isalpha(cp[1]) ){
       cp += 2;
-      while( (c = *cp)!=0 && (isalnum((unsigned char)c) || c=='_') ) cp++;
+      while( (c = *cp)!=0 && (isalnum(c) || c=='_') ) cp++;
       nextcp = cp;
     }else{                          /* All other (one character) operators */
       cp++;
@@ -2669,7 +2643,6 @@ void Parse(struct lemon *gp)
   gp->rule = ps.firstrule;
   gp->errorcnt = ps.errorcnt;
 }
-
 /*************************** From the file "plink.c" *********************/
 /*
 ** Routines processing configuration follow-set propagation links
@@ -2732,7 +2705,6 @@ void Plink_delete(struct plink *plp)
     plp = nextpl;
   }
 }
-
 /*********************** From the file "report.c" **************************/
 /*
 ** Procedures for generating reports and tables in the LEMON parser generator.
@@ -2800,23 +2772,6 @@ PRIVATE FILE *file_open(
     fprintf(stderr,"Can't open file \"%s\".\n",lemp->outname);
     lemp->errorcnt++;
     return 0;
-  }
-
-  /* Add files we create to a list, so we can delete them if we fail. This
-  ** is to keep makefiles from getting confused. We don't include .out files,
-  ** though: this is debug information, and you don't want it deleted if there
-  ** was an error you need to track down.
-  */
-  if(( *mode=='w' ) && (strcmp(suffix, ".out") != 0)){
-    const char **ptr = (const char **)
-        realloc(made_files, sizeof (const char **) * (made_files_count + 1));
-    const char *fname = Strsafe(lemp->outname);
-    if ((ptr == NULL) || (fname == NULL)) {
-        free(ptr);
-        memory_error();
-    }
-    made_files = ptr;
-    made_files[made_files_count++] = fname;
   }
   return fp;
 }
@@ -3122,7 +3077,7 @@ PRIVATE void tplt_xfer(char *name, FILE *in, FILE *out, int *lineno)
     if( name ){
       for(i=0; line[i]; i++){
         if( line[i]=='P' && strncmp(&line[i],"Parse",5)==0
-          && (i==0 || !isalpha((unsigned char)line[i-1]))
+          && (i==0 || !isalpha(line[i-1]))
         ){
           if( i>iStart ) fprintf(out,"%.*s",i-iStart,&line[iStart]);
           fprintf(out,"%s",name);
@@ -3355,9 +3310,9 @@ PRIVATE void translate_code(struct lemon *lemp, struct rule *rp){
 
   /* This const cast is wrong but harmless, if we're careful. */
   for(cp=(char *)rp->code; *cp; cp++){
-    if( isalpha((unsigned char)*cp) && (cp==rp->code || (!isalnum((unsigned char)cp[-1]) && cp[-1]!='_')) ){
+    if( isalpha(*cp) && (cp==rp->code || (!isalnum(cp[-1]) && cp[-1]!='_')) ){
       char saved;
-      for(xp= &cp[1]; isalnum((unsigned char)*xp) || *xp=='_'; xp++);
+      for(xp= &cp[1]; isalnum(*xp) || *xp=='_'; xp++);
       saved = *xp;
       *xp = 0;
       if( rp->lhsalias && strcmp(cp,rp->lhsalias)==0 ){
@@ -3468,12 +3423,16 @@ void print_stack_union(
   int maxdtlength;          /* Maximum length of any ".datatype" field. */
   char *stddt;              /* Standardized name for a datatype */
   int i,j;                  /* Loop counters */
-  int hash;                 /* For hashing the name of a type */
+  unsigned hash;            /* For hashing the name of a type */
   const char *name;         /* Name of the parser */
 
   /* Allocate and initialize types[] and allocate stddt[] */
   arraysize = lemp->nsymbol * 2;
   types = (char**)calloc( arraysize, sizeof(char*) );
+  if( types==0 ){
+    fprintf(stderr,"Out of memory.\n");
+    exit(1);
+  }
   for(i=0; i<arraysize; i++) types[i] = 0;
   maxdtlength = 0;
   if( lemp->vartype ){
@@ -3487,7 +3446,7 @@ void print_stack_union(
     if( len>maxdtlength ) maxdtlength = len;
   }
   stddt = (char*)malloc( maxdtlength*2 + 1 );
-  if( types==0 || stddt==0 ){
+  if( stddt==0 ){
     fprintf(stderr,"Out of memory.\n");
     exit(1);
   }
@@ -3512,9 +3471,9 @@ void print_stack_union(
     cp = sp->datatype;
     if( cp==0 ) cp = lemp->vartype;
     j = 0;
-    while( isspace((unsigned char)*cp) ) cp++;
+    while( isspace(*cp) ) cp++;
     while( *cp ) stddt[j++] = *cp++;
-    while( j>0 && isspace((unsigned char)stddt[j-1]) ) j--;
+    while( j>0 && isspace(stddt[j-1]) ) j--;
     stddt[j] = 0;
     if( lemp->tokentype && strcmp(stddt, lemp->tokentype)==0 ){
       sp->dtnum = 0;
@@ -3531,7 +3490,7 @@ void print_stack_union(
         break;
       }
       hash++;
-      if( hash>=arraysize ) hash = 0;
+      if( hash>=(unsigned)arraysize ) hash = 0;
     }
     if( types[hash]==0 ){
       sp->dtnum = hash + 1;
@@ -3713,8 +3672,8 @@ void ReportTable(
   if( lemp->arg && lemp->arg[0] ){
     int i;
     i = lemonStrlen(lemp->arg);
-    while( i>=1 && isspace((unsigned char)lemp->arg[i-1]) ) i--;
-    while( i>=1 && (isalnum((unsigned char)lemp->arg[i-1]) || lemp->arg[i-1]=='_') ) i--;
+    while( i>=1 && isspace(lemp->arg[i-1]) ) i--;
+    while( i>=1 && (isalnum(lemp->arg[i-1]) || lemp->arg[i-1]=='_') ) i--;
     fprintf(out,"#define %sARG_SDECL %s;\n",name,lemp->arg);  lineno++;
     fprintf(out,"#define %sARG_PDECL ,%s\n",name,lemp->arg);  lineno++;
     fprintf(out,"#define %sARG_FETCH %s = yypParser->%s\n",
@@ -4094,12 +4053,14 @@ void ReportHeader(struct lemon *lemp)
   else                    prefix = "";
   in = file_open(lemp,".h","rb");
   if( in ){
+    int nextChar;
     for(i=1; i<lemp->nterminal && fgets(line,LINESIZE,in); i++){
       sprintf(pattern,"#define %s%-30s %2d\n",prefix,lemp->symbols[i]->name,i);
       if( strcmp(line,pattern) ) break;
     }
+    nextChar = fgetc(in);
     fclose(in);
-    if( i==lemp->nterminal ){
+    if( i==lemp->nterminal && nextChar==EOF ){
       /* No change in the file.  Don't rewrite it. */
       return;
     }
@@ -4236,6 +4197,7 @@ void ResortStates(struct lemon *lemp)
   }
 }
 
+
 /***************** From the file "set.c" ************************************/
 /*
 ** Set manipulation routines for the LEMON parser generator.
@@ -4291,7 +4253,6 @@ int SetUnion(char *s1, char *s2)
   }
   return progress;
 }
-
 /********************** From the file "table.c" ****************************/
 /*
 ** All code in this file has been automatically generated
@@ -4305,10 +4266,10 @@ int SetUnion(char *s1, char *s2)
 ** Code for processing tables in the LEMON parser generator.
 */
 
-PRIVATE int strhash(const char *x)
+PRIVATE unsigned strhash(const char *x)
 {
-  int h = 0;
-  while( *x) h = h*13 + *(x++);
+  unsigned h = 0;
+  while( *x ) h = h*13 + *(x++);
   return h;
 }
 
@@ -4363,8 +4324,7 @@ void Strsafe_init(){
   if( x1a ){
     x1a->size = 1024;
     x1a->count = 0;
-    x1a->tbl = (x1node*)malloc( 
-      (sizeof(x1node) + sizeof(x1node*))*1024 );
+    x1a->tbl = (x1node*)calloc(1024, sizeof(x1node) + sizeof(x1node*));
     if( x1a->tbl==0 ){
       free(x1a);
       x1a = 0;
@@ -4380,8 +4340,8 @@ void Strsafe_init(){
 int Strsafe_insert(const char *data)
 {
   x1node *np;
-  int h;
-  int ph;
+  unsigned h;
+  unsigned ph;
 
   if( x1a==0 ) return 0;
   ph = strhash(data);
@@ -4401,8 +4361,7 @@ int Strsafe_insert(const char *data)
     struct s_x1 array;
     array.size = size = x1a->size*2;
     array.count = x1a->count;
-    array.tbl = (x1node*)malloc(
-      (sizeof(x1node) + sizeof(x1node*))*size );
+    array.tbl = (x1node*)calloc(size, sizeof(x1node) + sizeof(x1node*));
     if( array.tbl==0 ) return 0;  /* Fail due to malloc failure */
     array.ht = (x1node**)&(array.tbl[size]);
     for(i=0; i<size; i++) array.ht[i] = 0;
@@ -4435,7 +4394,7 @@ int Strsafe_insert(const char *data)
 ** if no such key. */
 const char *Strsafe_find(const char *key)
 {
-  int h;
+  unsigned h;
   x1node *np;
 
   if( x1a==0 ) return 0;
@@ -4460,7 +4419,7 @@ struct symbol *Symbol_new(const char *x)
     sp = (struct symbol *)calloc(1, sizeof(struct symbol) );
     MemoryCheck(sp);
     sp->name = Strsafe(x);
-    sp->type = isupper((unsigned char)*x) ? TERMINAL : NONTERMINAL;
+    sp->type = isupper(*x) ? TERMINAL : NONTERMINAL;
     sp->rule = 0;
     sp->fallback = 0;
     sp->prec = -1;
@@ -4529,8 +4488,7 @@ void Symbol_init(){
   if( x2a ){
     x2a->size = 128;
     x2a->count = 0;
-    x2a->tbl = (x2node*)malloc( 
-      (sizeof(x2node) + sizeof(x2node*))*128 );
+    x2a->tbl = (x2node*)calloc(128, sizeof(x2node) + sizeof(x2node*));
     if( x2a->tbl==0 ){
       free(x2a);
       x2a = 0;
@@ -4546,8 +4504,8 @@ void Symbol_init(){
 int Symbol_insert(struct symbol *data, const char *key)
 {
   x2node *np;
-  int h;
-  int ph;
+  unsigned h;
+  unsigned ph;
 
   if( x2a==0 ) return 0;
   ph = strhash(key);
@@ -4567,8 +4525,7 @@ int Symbol_insert(struct symbol *data, const char *key)
     struct s_x2 array;
     array.size = size = x2a->size*2;
     array.count = x2a->count;
-    array.tbl = (x2node*)malloc(
-      (sizeof(x2node) + sizeof(x2node*))*size );
+    array.tbl = (x2node*)calloc(size, sizeof(x2node) + sizeof(x2node*));
     if( array.tbl==0 ) return 0;  /* Fail due to malloc failure */
     array.ht = (x2node**)&(array.tbl[size]);
     for(i=0; i<size; i++) array.ht[i] = 0;
@@ -4603,7 +4560,7 @@ int Symbol_insert(struct symbol *data, const char *key)
 ** if no such key. */
 struct symbol *Symbol_find(const char *key)
 {
-  int h;
+  unsigned h;
   x2node *np;
 
   if( x2a==0 ) return 0;
@@ -4677,9 +4634,9 @@ PRIVATE int statecmp(struct config *a, struct config *b)
 }
 
 /* Hash a state */
-PRIVATE int statehash(struct config *a)
+PRIVATE unsigned statehash(struct config *a)
 {
-  int h=0;
+  unsigned h=0;
   while( a ){
     h = h*571 + a->rp->index*37 + a->dot;
     a = a->bp;
@@ -4728,8 +4685,7 @@ void State_init(){
   if( x3a ){
     x3a->size = 128;
     x3a->count = 0;
-    x3a->tbl = (x3node*)malloc( 
-      (sizeof(x3node) + sizeof(x3node*))*128 );
+    x3a->tbl = (x3node*)calloc(128, sizeof(x3node) + sizeof(x3node*));
     if( x3a->tbl==0 ){
       free(x3a);
       x3a = 0;
@@ -4745,8 +4701,8 @@ void State_init(){
 int State_insert(struct state *data, struct config *key)
 {
   x3node *np;
-  int h;
-  int ph;
+  unsigned h;
+  unsigned ph;
 
   if( x3a==0 ) return 0;
   ph = statehash(key);
@@ -4766,8 +4722,7 @@ int State_insert(struct state *data, struct config *key)
     struct s_x3 array;
     array.size = size = x3a->size*2;
     array.count = x3a->count;
-    array.tbl = (x3node*)malloc(
-      (sizeof(x3node) + sizeof(x3node*))*size );
+    array.tbl = (x3node*)calloc(size, sizeof(x3node) + sizeof(x3node*));
     if( array.tbl==0 ) return 0;  /* Fail due to malloc failure */
     array.ht = (x3node**)&(array.tbl[size]);
     for(i=0; i<size; i++) array.ht[i] = 0;
@@ -4802,7 +4757,7 @@ int State_insert(struct state *data, struct config *key)
 ** if no such key. */
 struct state *State_find(struct config *key)
 {
-  int h;
+  unsigned h;
   x3node *np;
 
   if( x3a==0 ) return 0;
@@ -4824,7 +4779,7 @@ struct state **State_arrayof()
   int i,size;
   if( x3a==0 ) return 0;
   size = x3a->count;
-  array = (struct state **)malloc( sizeof(struct state *)*size );
+  array = (struct state **)calloc(size, sizeof(struct state *));
   if( array ){
     for(i=0; i<size; i++) array[i] = x3a->tbl[i].data;
   }
@@ -4832,9 +4787,9 @@ struct state **State_arrayof()
 }
 
 /* Hash a configuration */
-PRIVATE int confighash(struct config *a)
+PRIVATE unsigned confighash(struct config *a)
 {
-  int h=0;
+  unsigned h=0;
   h = h*571 + a->rp->index*37 + a->dot;
   return h;
 }
@@ -4870,8 +4825,7 @@ void Configtable_init(){
   if( x4a ){
     x4a->size = 64;
     x4a->count = 0;
-    x4a->tbl = (x4node*)malloc( 
-      (sizeof(x4node) + sizeof(x4node*))*64 );
+    x4a->tbl = (x4node*)calloc(64, sizeof(x4node) + sizeof(x4node*));
     if( x4a->tbl==0 ){
       free(x4a);
       x4a = 0;
@@ -4887,8 +4841,8 @@ void Configtable_init(){
 int Configtable_insert(struct config *data)
 {
   x4node *np;
-  int h;
-  int ph;
+  unsigned h;
+  unsigned ph;
 
   if( x4a==0 ) return 0;
   ph = confighash(data);
@@ -4908,8 +4862,7 @@ int Configtable_insert(struct config *data)
     struct s_x4 array;
     array.size = size = x4a->size*2;
     array.count = x4a->count;
-    array.tbl = (x4node*)malloc(
-      (sizeof(x4node) + sizeof(x4node*))*size );
+    array.tbl = (x4node*)calloc(size, sizeof(x4node) + sizeof(x4node*));
     if( array.tbl==0 ) return 0;  /* Fail due to malloc failure */
     array.ht = (x4node**)&(array.tbl[size]);
     for(i=0; i<size; i++) array.ht[i] = 0;

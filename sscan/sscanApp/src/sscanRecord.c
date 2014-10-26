@@ -329,6 +329,7 @@
 #include	"recDynLink.h"
 #include "epicsExport.h"
 
+#include "menuSscan.h"
 #define GEN_SIZE_OFFSET
 #include "sscanRecord.h"
 #undef  GEN_SIZE_OFFSET
@@ -355,8 +356,13 @@
 #define NINT(f)	(long)((f)>0 ? (f)+0.5 : (f)-0.5)
 #define MAX(a,b) ((a)>(b)?(a):(b))
 #define MIN(a,b) ((a)<(b)?(a):(b))
+
 /* Less than EPICS base version test.*/
-#define LT_EPICSBASE(v,r,l) ((EPICS_VERSION<=(v)) && (EPICS_REVISION<=(r)) && (EPICS_MODIFICATION<(l)))
+#ifndef EPICS_VERSION_INT
+#define VERSION_INT(V,R,M,P) ( ((V)<<24) | ((R)<<16) | ((M)<<8) | (P))
+#define EPICS_VERSION_INT VERSION_INT(EPICS_VERSION, EPICS_REVISION, EPICS_MODIFICATION, EPICS_PATCH_LEVEL)
+#endif
+#define LT_EPICSBASE(V,R,M,P) (EPICS_VERSION_INT < VERSION_INT((V),(R),(M),(P)))
 
 /***************************
   Declare constants
@@ -1074,6 +1080,9 @@ process(sscanRecord *psscan)
 				epicsThreadGetIdSelf(), epicsThreadGetNameSelf());
 		}
 		db_post_events(psscan, &psscan->data, DBE_VAL_LOG);
+		if (sscanRecordDebug >= 1) {
+			printf("%s(%s): posting data==0\n", psscan->name,  epicsThreadGetNameSelf());
+		}
 		if (sscanRecordDebug >= 5) errlogPrintf("%s:process: new sscan\n", psscan->name);
 		if (psscan->wait) {psscan->wait = 0; POST(&psscan->wait);}
 		if (psscan->wcnt) {psscan->wcnt = 0; POST(&psscan->wcnt);}
@@ -1290,15 +1299,7 @@ special(struct dbAddr *paddr, int after)
 		switch (fieldIndex) {
 		case sscanRecordEXSC:
 			if (psscan->exsc) {
-#if 0
-				if (psscan->paus) {
-					sprintf(psscan->smsg, "Scan is paused"); POST(&psscan->smsg);
-					if (!psscan->xsc) {psscan->exsc = 0; POST(&psscan->exsc);}
-					return(-1);
-				} else if (psscan->xsc) {
-#else
 				if (psscan->xsc) {
-#endif
 					/* redundant request to start scan */
 					sprintf(psscan->smsg, "Already scanning"); POST(&psscan->smsg);
 					return(-1);
@@ -1551,7 +1552,7 @@ special(struct dbAddr *paddr, int after)
 				if (psscan->wtng && (psscan->wcnt == 0)) {
 					psscan->wtng = 0; POST(&psscan->wtng);
 					if (psscan->paus) {
-						sprintf(psscan->smsg, "Scan is paused ...");
+						sprintf(psscan->smsg, "Wait end, but scan is paused ...");
 						POST(&psscan->smsg);
 					} else {
 						sprintf(psscan->smsg, "Scanning ...");
@@ -2157,6 +2158,9 @@ checkMonitors(sscanRecord *psscan)
 		/* Tell clients that new array data have been posted */
 		psscan->data = 1;
 		db_post_events(psscan, &psscan->data, DBE_VAL_LOG);
+		if (sscanRecordDebug >= 1) {
+			printf("%s(%s): posting data==1\n", psscan->name,  epicsThreadGetNameSelf());
+		}
 		if (psscan->aawait == sscanNOYES_YES) {
 			psscan->await = 1;
 			POST(&psscan->await);
@@ -2481,7 +2485,9 @@ userGetCallback(recDynLink * precDynLink)
 		psscan->name, numGetCb);
 }
 
-
+
+/*** end for debugging */
+
 LOCAL void 
 pvSearchCallback(recDynLink * precDynLink)
 {
@@ -2501,11 +2507,15 @@ pvSearchCallback(recDynLink * precDynLink)
 	long            options = DBR_UNITS | DBR_PRECISION | DBR_GR_DOUBLE | DBR_CTRL_DOUBLE;
 	int             i, precision;
 
+
 	/*
 	 * Positioner PVs have two links, so we will have two connection callbacks
 	 * competing for access to the shared link-status bitmap *pPvStat.
 	 */
 	epicsMutexLock(precPvt->pvStatSem);
+
+/* We might be calling db_post_events(), which assumes caller has called dbScanLock() */
+/* if (interruptAccept) dbScanLock((dbCommon*)psscan);*/
 
 	pPvStat = &psscan->p1nv + pvIndex;	/* pointer arithmetic */
 	PvStat = *pPvStat;	/* start with previous status value */
@@ -2564,7 +2574,7 @@ pvSearchCallback(recDynLink * precDynLink)
 					&options, &nRequest, NULL);
 			if (status == OK) {
 				strcpy(pPos->p_eu, precPvt->pDynLinkInfo->units);
-#if LT_EPICSBASE(3,14,10)
+#if LT_EPICSBASE(3,14,10,0)
 				pPos->p_pr = precPvt->pDynLinkInfo->precision;
 #else
 				pPos->p_pr = precPvt->pDynLinkInfo->precision.dp;
@@ -2598,7 +2608,7 @@ pvSearchCallback(recDynLink * precDynLink)
 					&options, &nRequest, NULL);
 			if (status == OK) {
 				strcpy(pDet->d_eu, precPvt->pDynLinkInfo->units);
-#if LT_EPICSBASE(3,14,10)
+#if LT_EPICSBASE(3,14,10,0)
 				pPos->p_pr = precPvt->pDynLinkInfo->precision;
 #else
 				pDet->d_pr = precPvt->pDynLinkInfo->precision.dp;
@@ -2667,9 +2677,14 @@ pvSearchCallback(recDynLink * precDynLink)
 
 	/* Announce link status to the rest of the world */
 	if (*pPvStat != PvStat) {
-		*pPvStat = PvStat; POST(pPvStat);
+		*pPvStat = PvStat;
+		if (sscanRecordDebug >= 1) {
+			printf("%s(%s): posting pxnv=%d\n", psscan->name,  epicsThreadGetNameSelf(), *pPvStat);
+		}
+		POST(pPvStat);
 	}
 	epicsMutexUnlock(precPvt->pvStatSem);
+/* if (interruptAccept) dbScanUnlock((dbCommon*)psscan);*/
 
 	if (PvStat != PV_OK) return;
 

@@ -1,0 +1,12 @@
+# FILE... fb_epid.req
+# USAGE... epid-based feedback
+
+$(P):on.VAL
+
+file epid.req            P=$(P)
+file swait_settings.req  P=$(P):in
+file swait_settings.req  P=$(P):obuf
+file swait_settings.req  P=$(P):out
+file swait_settings.req  P=$(P):enable
+file swait_settings.req  P=$(P):resume
+file swait_settings.req  P=$(P):sim

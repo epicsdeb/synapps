@@ -158,6 +158,8 @@ struct state_set
 	/* these are arrays, one for each channel */
 	epicsEventId	*getSemId;	/* semaphores for async get */
 	epicsEventId	*putSemId;	/* semaphores for async put */
+	PVREQ		**getReq;	/* get requests */
+	PVREQ		**putReq;	/* put requests */
 	/* safe mode */
 	boolean		*dirty;		/* array of flags, one for each channel */
 	USER_VAR	*var;		/* variable value block */

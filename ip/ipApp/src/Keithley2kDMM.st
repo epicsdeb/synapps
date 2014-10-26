@@ -156,6 +156,8 @@ sync    ch_mode_sel ch_mode_sel_mon;
 int done_read;
 assign  done_read to "{P}{Dmm}done_read.VAL";
 monitor done_read;
+evflag  done_read_mon;
+sync    done_read done_read_mon;
 
 int dmm_chan;
 assign  dmm_chan to "{P}{Dmm}dmm_chan.VAL";
@@ -324,7 +326,7 @@ ss read_meter {
         } state wait_read
     }
     state wait_read {
-        when(done_read == 1) {
+        when(efTestAndClear(done_read_mon) && (done_read == 1)) {
         } state read_channel
     }
     state read_channel {

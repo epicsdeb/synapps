@@ -4,11 +4,14 @@
 
 TEMPLATE_TOP=$(EPICS_BASE)/templates/makeBaseApp/top
 
+SUPPORT=/corvette/home/epics/devel
+-include $(TOP)/../configure/SUPPORT.$(EPICS_HOST_ARCH)
+
 #If using the sequencer, point SNCSEQ at its top directory:
-#SNCSEQ=$(SUPPORT)/seq
+SNCSEQ=$(SUPPORT)/seq-2-1-9
 
 # EPICS_BASE usually appears last so other apps can override stuff:
-EPICS_BASE=/corvette/usr/local/epics/base-3.14.12.1
+EPICS_BASE=/corvette/usr/local/epics/base-3.14.12.2
 -include $(TOP)/../configure/EPICS_BASE.$(EPICS_HOST_ARCH)
 
 #Capfast users may need the following definitions

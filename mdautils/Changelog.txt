@@ -1,6 +1,27 @@
 MDA Utilities Version Changelog
 
 
+From 1.3.0 to 1.3.1
+
+mda-load library: 
+    Added another check for corrupted files.
+
+mda2ascii: 
+    When processing multiple files, the program will now skip an
+    invalid file instead of stopping execution.
+
+mda-ls: 
+    The program will no longer halt when it encounters an invalid
+    file.
+
+xdr_hack:
+    To help Windows users, added code for faking enough of the XDR
+    routines that are needed for decoding the MDA format (which
+    Windows lacks).  This code should NOT be used if there is native
+    support, and has to be manually enabled in the Makefile.  There is
+    support for both big- and little-endian systems.
+
+
 From 1.2.2 to 1.3.0
 
 mda-load library: 

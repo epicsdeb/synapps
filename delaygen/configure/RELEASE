@@ -15,21 +15,21 @@ TEMPLATE_TOP=$(EPICS_BASE)/templates/makeBaseApp/top
 #INSTALL_LOCATION_APP=$(TOP)/target
 
 # synApps support modules
-SUPPORT=/home/oxygen/MOONEY/distrib/synApps_5_6/support
+SUPPORT=/home/oxygen/MOONEY/epics/synAppsSVN/support
 -include $(TOP)/../configure/SUPPORT.$(EPICS_HOST_ARCH)
 
 # Modules required for building module
-ASYN=$(SUPPORT)/asyn-4-18
-STD=$(SUPPORT)/std-3-1
-IP=$(SUPPORT)/ip-2-13
-STREAM=$(SUPPORT)/stream-2-5-1
-IPAC=$(SUPPORT)/ipac-2-11
+ASYN=$(SUPPORT)/asyn-4-21
+CALC=$(SUPPORT)/calc-3-2
+IP=$(SUPPORT)/ip-2-14
+STREAM=$(SUPPORT)/stream-2-6
+IPAC=$(SUPPORT)/ipac-2-12
 
 # Modules required for building module application
-AUTOSAVE=$(SUPPORT)/autosave-4-8
+AUTOSAVE=$(SUPPORT)/autosave-5-1
 
 # EPICS_BASE usually appears last so other apps can override stuff:
-EPICS_BASE=/home/oxygen/MOONEY/epics/base-3.14.12.1
+EPICS_BASE=/home/oxygen/MOONEY/epics/bazaar/base-3.14
 -include $(TOP)/../configure/EPICS_BASE.$(EPICS_HOST_ARCH)
 
 #Capfast users may need the following definitions

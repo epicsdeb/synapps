@@ -30,6 +30,10 @@
  * Fix for motor simulator stuck in Moving state after multiple LOAD_POS
  * commands to the same position; set needUpdate = 1 in asynCallback() before
  * dbProcess.
+ * 
+ * .03 2013-01-02 rls
+ * Support for motor record raw actual velocity (RVEL).
+ * 
  */
 
 #include <stddef.h>
@@ -46,6 +50,7 @@
 #include <alarm.h>
 #include <epicsEvent.h>
 #include <cantProceed.h> /* !! for callocMustSucceed() */
+#include <dbEvent.h>
 
 #include <asynDriver.h>
 #include <asynInt32.h>
@@ -99,9 +104,9 @@ typedef enum motorCommand {
     motorPosition,
     motorResolution,
     motorEncRatio,
-    motorPgain,
-    motorIgain,
-    motorDgain,
+    motorPGain,
+    motorIGain,
+    motorDGain,
     motorHighLimit,
     motorLowLimit,
     motorSetClosedLoop,
@@ -291,13 +296,13 @@ static long init_record(struct motorRecord * pmr )
     if (findDrvInfo(pmr, pasynUser, motorAccelString,                  motorAccel)) goto bad;
     if (findDrvInfo(pmr, pasynUser, motorPositionString,               motorPosition)) goto bad;
     if (findDrvInfo(pmr, pasynUser, motorResolutionString,             motorResolution)) goto bad;
-    if (findDrvInfo(pmr, pasynUser, motorEncRatioString,               motorEncRatio)) goto bad;
-    if (findDrvInfo(pmr, pasynUser, motorPgainString,                  motorPgain)) goto bad;
-    if (findDrvInfo(pmr, pasynUser, motorIgainString,                  motorIgain)) goto bad;
-    if (findDrvInfo(pmr, pasynUser, motorDgainString,                  motorDgain)) goto bad;
+    if (findDrvInfo(pmr, pasynUser, motorEncoderRatioString,           motorEncRatio)) goto bad;
+    if (findDrvInfo(pmr, pasynUser, motorPGainString,                  motorPGain)) goto bad;
+    if (findDrvInfo(pmr, pasynUser, motorIGainString,                  motorIGain)) goto bad;
+    if (findDrvInfo(pmr, pasynUser, motorDGainString,                  motorDGain)) goto bad;
     if (findDrvInfo(pmr, pasynUser, motorHighLimitString,              motorHighLimit)) goto bad;
     if (findDrvInfo(pmr, pasynUser, motorLowLimitString,               motorLowLimit)) goto bad;
-    if (findDrvInfo(pmr, pasynUser, motorSetClosedLoopString,          motorSetClosedLoop)) goto bad;
+    if (findDrvInfo(pmr, pasynUser, motorClosedLoopString,             motorSetClosedLoop)) goto bad;
     if (findDrvInfo(pmr, pasynUser, motorStatusString,                 motorStatus)) goto bad;
     if (findDrvInfo(pmr, pasynUser, motorUpdateStatusString,           motorUpdateStatus)) goto bad;
     
@@ -373,7 +378,7 @@ static long init_record(struct motorRecord * pmr )
     /* Finally, indicate to the motor record that these values can be used. */
     pasynManager->freeAsynUser(pasynUser);
     pPvt->needUpdate = 1;
-
+    
     return(0);
 bad:
     pmr->pact=1;
@@ -393,10 +398,18 @@ CALLBACK_VALUE update_values(struct motorRecord * pmr)
         "%s devMotorAsyn::update_values, needUpdate=%d\n",
         pmr->name, pPvt->needUpdate);
     if ( pPvt->needUpdate ) {
+	epicsInt32 rawvel;
 	pmr->rmp = (epicsInt32)floor(pPvt->status.position + 0.5);
 	pmr->rep = (epicsInt32)floor(pPvt->status.encoderPosition + 0.5);
 	/* pmr->rvel = (epicsInt32)round(pPvt->status.velocity); */
 	pmr->msta = pPvt->status.status;
+	rawvel = (epicsInt32)floor(pPvt->status.velocity);
+	if (pmr->rvel != rawvel)
+	{
+	    pmr->rvel = rawvel;
+	    db_post_events(pmr, &pmr->rvel, DBE_VAL_LOG);
+	}
+
 	rc = CALLBACK_DATA;
 	pPvt->needUpdate = 0;
     }
@@ -503,17 +516,18 @@ static RTN_STATUS build_trans( motor_cmnd command,
     case JOG_VELOCITY:
 	pmsg->command = motorMoveVel;
 	pmsg->dvalue = *param;
+	pPvt->moveRequestPending++;
 	break;
     case SET_PGAIN:
-	pmsg->command = motorPgain;
+	pmsg->command = motorPGain;
 	pmsg->dvalue = *param;
 	break;
     case SET_IGAIN:
-	pmsg->command = motorIgain;
+	pmsg->command = motorIGain;
 	pmsg->dvalue = *param;
 	break;
     case SET_DGAIN:
-	pmsg->command = motorDgain;
+	pmsg->command = motorDGain;
 	pmsg->dvalue = *param;
 	break;
     case ENABLE_TORQUE:
@@ -584,10 +598,10 @@ static void asynCallback(asynUser *pasynUser)
     int status;
     int commandIsMove = 0;
 
-    asynPrint(pasynUser, ASYN_TRACE_FLOW,
-              "devMotorAsyn::asynCallback: %s command=%d, ivalue=%d, dvalue=%f\n",
-              pmr->name, pmsg->command, pmsg->ivalue, pmsg->dvalue);
     pasynUser->reason = pPvt->driverReasons[pmsg->command];
+    asynPrint(pasynUser, ASYN_TRACE_FLOW,
+              "devMotorAsyn::asynCallback: %s command=%d, ivalue=%d, dvalue=%f, pasynUser->reason=%d\n",
+              pmr->name, pmsg->command, pmsg->ivalue, pmsg->dvalue, pasynUser->reason);
 
     switch (pmsg->command) {
     case motorStatus:
@@ -611,6 +625,7 @@ static void asynCallback(asynUser *pasynUser)
     case motorMoveRel:
     case motorHome:
     case motorPosition:
+    case motorMoveVel:
 	commandIsMove = 1;
 	/* Intentional fall-through */
     default:

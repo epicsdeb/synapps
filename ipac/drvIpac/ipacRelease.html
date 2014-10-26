@@ -4,7 +4,7 @@
 <META NAME="Author" CONTENT="Andrew Johnson">
 <META NAME="Description" CONTENT="Release Notes for the vxWorks/EPICS IPAC driver software">
 <META NAME="KeyWords" CONTENT="vxWorks, IPAC, EPICS">
-<META NAME="Version" CONTENT="$Id: ipacRelease.html 184 2010-04-19 15:48:34Z anj $">
+<META NAME="Version" CONTENT="$Id: ipacRelease.html 210 2013-07-29 19:26:26Z anj $">
 </HEAD>
 <BODY>
 
@@ -17,6 +17,34 @@
 IndustryPack driver as it has evolved since first release.  The earliest
 version appears at the bottom, with more recent releases above it.</P>
 
+<HR>
+<H2>Version 2.12</H2>
+
+<p>Added:</P>
+<UL>
+
+<LI>New iocsh command <TT>ipacAddNullCarrier</TT>, so iocsh users can reserve a
+carrier number for a board that is not currently installed or in use.</LI>
+
+<LI>New routine <TT>int ipcCheckId(ipac_idProm_t *id);</TT> added for carrier
+drivers that need to check for the existence of module ID proms at
+initialization time.</LI>
+
+<LI>Added carrier driver for the Hytec VICB8002 and 8004 VME64x 4-slot carrier
+boards. The 8004 module can configure the IP module clock frequency separately
+for each slot; the carrier driver will normally set this automatically based on
+information provide in the module's ID prom.</LI>
+
+</UL>
+
+<p>Changed:</P>
+<UL>
+
+<LI>Fixed a problem with the drvXy9660 carrier driver controlling an AVME-9668
+carrier, which would never detect and configure a module that supports the 32MHz
+IP clock frequency.</LI>
+
+</UL>
 <HR>
 
 <H2>Version 2.11</H2>

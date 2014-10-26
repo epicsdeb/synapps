@@ -8,10 +8,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <iostream>
-using std::endl;
-using std::cout;
-
 #include <epicsThread.h>
 
 #include <asynPortDriver.h>
@@ -21,7 +17,6 @@ using std::cout;
 #include "asynMotorController.h"
 
 static const char *driverName = "asynMotorAxis";
-
 
 
 /** Creates a new asynMotorAxis object.
@@ -64,7 +59,6 @@ asynMotorAxis::asynMotorAxis(class asynMotorController *pC, int axisNo)
 }
 
 
-
 /** Move the motor to an absolute location or by a relative amount.
   * \param[in] position  The absolute position to move to (if relative=0) or the relative distance to move 
   * by (if relative=1). Units=steps.
@@ -74,9 +68,8 @@ asynMotorAxis::asynMotorAxis(class asynMotorController *pC, int axisNo)
   * \param[in] acceleration The acceleration value. Units=steps/sec/sec. */
 asynStatus asynMotorAxis::move(double position, int relative, double minVelocity, double maxVelocity, double acceleration)
 {
-  return asynError;
+  return asynSuccess;
 }
-
 
 
 /** Move the motor at a fixed velocity until told to stop.
@@ -85,9 +78,8 @@ asynStatus asynMotorAxis::move(double position, int relative, double minVelocity
   * \param[in] acceleration The acceleration value. Units=steps/sec/sec. */
 asynStatus asynMotorAxis::moveVelocity(double minVelocity, double maxVelocity, double acceleration)
 {
-  return asynError;
+  return asynSuccess;
 }
-
 
 
 /** Move the motor to the home position.
@@ -98,18 +90,16 @@ asynStatus asynMotorAxis::moveVelocity(double minVelocity, double maxVelocity, d
   *                      Some controllers need to be told the direction, others know which way to go to home. */
 asynStatus asynMotorAxis::home(double minVelocity, double maxVelocity, double acceleration, int forwards)
 {
-  return asynError;
+  return asynSuccess;
 }
-
 
 
 /** Stop the motor.
   * \param[in] acceleration The acceleration value. Units=steps/sec/sec. */
 asynStatus asynMotorAxis::stop(double acceleration)
 {
-  return asynError;
+  return asynSuccess;
 }
-
 
 
 /** Poll the axis.
@@ -119,8 +109,86 @@ asynStatus asynMotorAxis::stop(double acceleration)
   * \param[out] moving A flag that the function must set indicating that the axis is moving (1) or done (0). */
 asynStatus asynMotorAxis::poll(bool *moving)
 {
-  return asynError;
+  return asynSuccess;
 }
+
+
+/** Set the current position of the motor.
+  * \param[in] position The new absolute motor position that should be set in the hardware. Units=steps.*/
+asynStatus asynMotorAxis::setPosition(double position)
+{
+  return asynSuccess;
+}
+
+
+/** Set the current encoder position of the motor.
+  * \param[in] position The new absolute encoder position that should be set in the hardware. Units=steps.*/
+asynStatus asynMotorAxis::setEncoderPosition(double position)
+{
+  return asynSuccess;
+}
+
+
+/** Set the high limit position of the motor.
+  * \param[in] highLimit The new high limit position that should be set in the hardware. Units=steps.*/
+asynStatus asynMotorAxis::setHighLimit(double highLimit)
+{
+  return asynSuccess;
+}
+
+
+/** Set the low limit position of the motor.
+  * \param[in] lowLimit The new low limit position that should be set in the hardware. Units=steps.*/
+asynStatus asynMotorAxis::setLowLimit(double lowLimit)
+{
+  return asynSuccess;
+}
+
+
+/** Set the proportional gain of the motor.
+  * \param[in] pGain The new proportional gain. */
+asynStatus asynMotorAxis::setPGain(double pGain)
+{
+  return asynSuccess;
+}
+
+
+/** Set the integral gain of the motor.
+  * \param[in] iGain The new integral gain. */
+asynStatus asynMotorAxis::setIGain(double iGain)
+{
+  return asynSuccess;
+}
+
+
+/** Set the derivative gain of the motor.
+  * \param[in] dGain The new derivative gain. */
+asynStatus asynMotorAxis::setDGain(double dGain)
+{
+  return asynSuccess;
+}
+
+
+/** Set the motor closed loop status. 
+  * \param[in] closedLoop true = close loop, false = open looop. */
+asynStatus asynMotorAxis::setClosedLoop(bool closedLoop)
+{
+  return asynSuccess;
+}
+
+
+/** Set the motor encoder ratio. 
+  * \param[in] ratio The new encoder ratio */
+asynStatus asynMotorAxis::setEncoderRatio(double ratio)
+{
+  return asynSuccess;
+}
+
+
+void asynMotorAxis::report(FILE *fp, int details)
+{
+}
+
 
 /**
  * Default implementation of doMoveToHome. 
@@ -129,9 +197,14 @@ asynStatus asynMotorAxis::poll(bool *moving)
  */
 asynStatus asynMotorAxis::doMoveToHome()
 {
-  cout << "Dummy implementation of asynMotorAxis::doMoveToHome. Axis: " << pC_->moveToHomeAxis_ << endl;
-  return asynError;
+  static const char *functionName="doMoveToHome";
+  
+  asynPrint(pasynUser_, ASYN_TRACE_ERROR, 
+    "%s:%s: Axis=%d no implementation\n",
+    driverName, functionName, pC_->moveToHomeAxis_);
+  return asynSuccess;
 }
+
 
 /**
  * Set method for referencingModeMove_
@@ -141,6 +214,7 @@ void  asynMotorAxis::setReferencingModeMove(int distance)
   referencingModeMove_ = distance; 
 }
 
+
 /**
  * Get method for referencingModeMove_
  */
@@ -149,14 +223,6 @@ int  asynMotorAxis::getReferencingModeMove()
   return referencingModeMove_;
 }
 
-
-
-/** Set the current position of the motor.
-  * \param[in] position The new absolute motor position that should be set in the hardware. Units=steps.*/
-asynStatus asynMotorAxis::setPosition(double position)
-{
-  return asynError;
-}
 
 
 
@@ -261,7 +327,7 @@ asynStatus asynMotorAxis::defineProfile(double *positions, size_t numPoints)
   int status=0;
   static const char *functionName = "defineProfile";
   
-  asynPrint(pC_->pasynUserSelf, ASYN_TRACE_FLOW,
+  asynPrint(pasynUser_, ASYN_TRACE_FLOW,
             "%s:%s: axis=%d, numPoints=%d, positions[0]=%f\n",
             driverName, functionName, axisNo_, numPoints, positions[0]);
 
@@ -270,7 +336,7 @@ asynStatus asynMotorAxis::defineProfile(double *positions, size_t numPoints)
   status |= pC_->getDoubleParam(axisNo_, pC_->profileMotorResolution_, &resolution);
   status |= pC_->getDoubleParam(axisNo_, pC_->profileMotorOffset_, &offset);
   status |= pC_->getIntegerParam(axisNo_, pC_->profileMotorDirection_, &direction);
-  asynPrint(pC_->pasynUserSelf, ASYN_TRACE_FLOW,
+  asynPrint(pasynUser_, ASYN_TRACE_FLOW,
             "%s:%s: axis=%d, status=%d, offset=%f direction=%d, resolution=%f\n",
             driverName, functionName, axisNo_, status, offset, direction, resolution);
   if (status) return asynError;
@@ -282,7 +348,7 @@ asynStatus asynMotorAxis::defineProfile(double *positions, size_t numPoints)
   for (i=0; i<numPoints; i++) {
     profilePositions_[i] = (positions[i] - offset)*scale;
   }
-  asynPrint(pC_->pasynUserSelf, ASYN_TRACE_FLOW,
+  asynPrint(pasynUser_, ASYN_TRACE_FLOW,
             "%s:%s: axis=%d, scale=%f, offset=%f positions[0]=%f, profilePositions_[0]=%f\n",
             driverName, functionName, axisNo_, scale, offset, positions[0], profilePositions_[0]);
   return asynSuccess;

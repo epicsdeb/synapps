@@ -1,0 +1,930 @@
+# Tabor8024.db
+
+# Mark Rivers
+# November 16, 2013
+
+# Database file for Tabor 8024 Arbitrary Waveform Generator
+#
+# The Tabor 8024 is an older device, and is no longer supported.  However, Tabor has newer models
+# that are very similar, and which use most of the same command set.  One could load this database
+# and then a small database for the new device that replaced some fields and added new records.
+# Or one could create a new database using this one as an example.  The newer devices have different
+# ranges for FREQUENCY, etc. so the DRVH and DRVL values need to change, etc.
+#
+# This support uses StreamDevice.
+# It supports nearly all features of the device except:
+#   Amplitude modulation (:AM command)
+#   Sequences of arbitrary waveforms (:SEQ command)
+#
+# For simplicity it provides access to only 4 user-defineable waveforms, rather than
+# all 99 user-defineable waveforms that the device supports.
+#
+# The device has 64536 channels of total user-defineable waveform memory.  This support
+# allows that memory to be split between the 4 waveforms in any manner, e.g. each with 15000
+# points, or one with 64000 points and the others with 100 each, etc.
+#
+# User-defineable waveforms are downloaded by selecting the desired waveform (1-4) with the
+# TraceSelect record and then writing the waveform to the UserWaveform waveform record.
+# 
+# The UserWaveform record has FTVL=SHORT, and the waveform values must be in the 
+# range -2048 to +2048, corresponding to -10V to +10V into 50 ohms.  The waveform record size
+# can be large enough to hold the maximum length waveform that the device supports (64536).
+# The actual number of values written to UserWaveform can be any length between 10 and the
+# value of NELM used when loading the database.  The time per user waveform point can be in
+# the range of 1e-2 to 1e-8 seconds.
+#
+# Macro parameters required when loading this database:
+#  P = Record name prefix
+#  R = Base record name
+#  PORT = Name of asyn port for the GPIB or VXI-11 driver for the device
+#  ADDR = GPIB address of the device
+#  NELM = Maximum number of elements in the UserWaveform waveform record
+#
+
+
+###
+### Source control
+###
+record(mbbo,"$(P)$(R)Mode") {
+    field(PINI, "YES")
+    field(DTYP, "stream")
+    field(OUT,  "@Tabor8024.proto setString(:SOUR:FUNC:MODE) $(PORT) $(ADDR)")
+    field(ZRVL, "0")
+    field(ZRST, "FIX")
+    field(ONVL, "1")
+    field(ONST, "USER")
+    field(TWVL, "2")
+    field(TWST, "SEQ")
+    field(FLNK, "$(P)$(R)Mode_RBV.PROC")
+}
+
+record(mbbi,"$(P)$(R)Mode_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@Tabor8024.proto getString(:SOUR:FUNC:MODE) $(PORT) $(ADDR)")
+    field(ZRVL, "0")
+    field(ZRST, "FIX")
+    field(ONVL, "1")
+    field(ONST, "USER")
+    field(TWVL, "2")
+    field(TWST, "SEQ")
+}
+
+record(mbbo,"$(P)$(R)Shape") {
+    field(PINI, "YES")
+    field(DTYP, "stream")
+    field(OUT,  "@Tabor8024.proto setString(:SOUR:FUNC:SHAP) $(PORT) $(ADDR)")
+    field(ZRVL, "0")
+    field(ZRST, "SIN")
+    field(ONVL, "1")
+    field(ONST, "TRI")
+    field(TWVL, "2")
+    field(TWST, "SQU")
+    field(THVL, "3")
+    field(THST, "PULS")
+    field(FRVL, "4")
+    field(FRST, "RAMP")
+    field(FVVL, "5")
+    field(FVST, "SINC")
+    field(SXVL, "6")
+    field(SXST, "EXP")
+    field(SVVL, "7")
+    field(SVST, "GAUS")
+    field(EIVL, "8")
+    field(EIST, "DC")
+    field(FLNK, "$(P)$(R)Shape_RBV.PROC")
+}
+
+record(mbbi,"$(P)$(R)Shape_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@Tabor8024.proto getString(:SOUR:FUNC:SHAP) $(PORT) $(ADDR)")
+    field(ZRVL, "0")
+    field(ZRST, "SIN")
+    field(ONVL, "1")
+    field(ONST, "TRI")
+    field(TWVL, "2")
+    field(TWST, "SQU")
+    field(THVL, "3")
+    field(THST, "PULS")
+    field(FRVL, "4")
+    field(FRST, "RAMP")
+    field(FVVL, "5")
+    field(FVST, "SINC")
+    field(SXVL, "6")
+    field(SXST, "EXP")
+    field(SVVL, "7")
+    field(SVST, "GAUS")
+    field(EIVL, "8")
+    field(EIST, "DC")
+}
+
+record(ao,"$(P)$(R)SinPhase") {
+    field(PINI, "YES")
+    field(DTYP, "stream")
+    field(OUT,  "@Tabor8024.proto setInt(:SOUR:SIN:PHAS) $(PORT) $(ADDR)")
+    field(DRVL, "0")
+    field(DRVH, "360")
+    field(LOPR, "0")
+    field(HOPR, "360")
+    field(PREC, "0")
+    field(FLNK, "$(P)$(R)SinPhase_RBV.PROC")
+}
+
+record(ai,"$(P)$(R)SinPhase_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@Tabor8024.proto getInt(:SOUR:SIN:PHAS) $(PORT) $(ADDR)")
+    field(LOPR, "0")
+    field(HOPR, "360")
+    field(PREC, "0")
+}
+
+record(ao,"$(P)$(R)SinPower") {
+    field(PINI, "YES")
+    field(DTYP, "stream")
+    field(OUT,  "@Tabor8024.proto setInt(:SOUR:SIN:POW) $(PORT) $(ADDR)")
+    field(DRVL, "1")
+    field(DRVH, "9")
+    field(LOPR, "1")
+    field(HOPR, "9")
+    field(PREC, "0")
+    field(VAL,  "1")
+    field(FLNK, "$(P)$(R)SinPower_RBV.PROC")
+}
+
+record(ai,"$(P)$(R)SinPower_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@Tabor8024.proto getInt(:SOUR:SIN:POW) $(PORT) $(ADDR)")
+    field(LOPR, "1")
+    field(HOPR, "9")
+    field(PREC, "0")
+}
+
+record(ao,"$(P)$(R)TriPhase") {
+    field(PINI, "YES")
+    field(DTYP, "stream")
+    field(OUT,  "@Tabor8024.proto setInt(:SOUR:TRI:PHAS) $(PORT) $(ADDR)")
+    field(DRVL, "0")
+    field(DRVH, "360")
+    field(LOPR, "0")
+    field(HOPR, "360")
+    field(PREC, "0")
+    field(FLNK, "$(P)$(R)TriPhase_RBV.PROC")
+}
+
+record(ai,"$(P)$(R)TriPhase_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@Tabor8024.proto getInt(:SOUR:TRI:PHAS) $(PORT) $(ADDR)")
+    field(LOPR, "0")
+    field(HOPR, "360")
+    field(PREC, "0")
+}
+
+record(ao,"$(P)$(R)TriPower") {
+    field(PINI, "YES")
+    field(DTYP, "stream")
+    field(OUT,  "@Tabor8024.proto setInt(:SOUR:TRI:POW) $(PORT) $(ADDR)")
+    field(DRVL, "1")
+    field(DRVH, "9")
+    field(LOPR, "1")
+    field(HOPR, "9")
+    field(PREC, "0")
+    field(VAL,  "1")
+    field(FLNK, "$(P)$(R)TriPower_RBV.PROC")
+}
+
+record(ai,"$(P)$(R)TriPower_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@Tabor8024.proto getInt(:SOUR:TRI:POW) $(PORT) $(ADDR)")
+    field(LOPR, "1")
+    field(HOPR, "9")
+    field(PREC, "0")
+}
+
+record(ao,"$(P)$(R)SquDuty") {
+    field(PINI, "YES")
+    field(DTYP, "stream")
+    field(OUT,  "@Tabor8024.proto setInt(:SOUR:SQU:DCYC) $(PORT) $(ADDR)")
+    field(DRVL, "1")
+    field(DRVH, "99")
+    field(LOPR, "1")
+    field(HOPR, "99")
+    field(PREC, "0")
+    field(VAL,  "50")
+    field(FLNK, "$(P)$(R)SquDuty_RBV.PROC")
+}
+
+record(ai,"$(P)$(R)SquDuty_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@Tabor8024.proto getInt(:SOUR:SQU:DCYC) $(PORT) $(ADDR)")
+    field(LOPR, "1")
+    field(HOPR, "99")
+    field(PREC, "0")
+}
+
+record(ao,"$(P)$(R)PulseDelay") {
+    field(PINI, "YES")
+    field(DTYP, "stream")
+    field(OUT,  "@Tabor8024.proto setFloat(:SOUR:PULS:DEL) $(PORT) $(ADDR)")
+    field(DRVL, "0")
+    field(DRVH, "99.9")
+    field(LOPR, "0")
+    field(HOPR, "99.9")
+    field(PREC, "1")
+    field(FLNK, "$(P)$(R)PulseDelay_RBV.PROC")
+}
+
+record(ai,"$(P)$(R)PulseDelay_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@Tabor8024.proto getFloat(:SOUR:PULS:DEL) $(PORT) $(ADDR)")
+    field(LOPR, "0")
+    field(HOPR, "99.9")
+    field(PREC, "1")
+}
+
+record(ao,"$(P)$(R)PulseWidth") {
+    field(PINI, "YES")
+    field(DTYP, "stream")
+    field(OUT,  "@Tabor8024.proto setFloat(:SOUR:PULS:WIDT) $(PORT) $(ADDR)")
+    field(DRVL, "0")
+    field(DRVH, "99.9")
+    field(LOPR, "0")
+    field(HOPR, "99.9")
+    field(PREC, "1")
+    field(VAL,  "10")
+    field(FLNK, "$(P)$(R)PulseWidth_RBV.PROC")
+}
+
+record(ai,"$(P)$(R)PulseWidth_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@Tabor8024.proto getFloat(:SOUR:PULS:WIDT) $(PORT) $(ADDR)")
+    field(LOPR, "0")
+    field(HOPR, "99.9")
+    field(PREC, "1")
+}
+
+record(ao,"$(P)$(R)PulseRise") {
+    field(PINI, "YES")
+    field(DTYP, "stream")
+    field(OUT,  "@Tabor8024.proto setFloat(:SOUR:PULS:TRAN) $(PORT) $(ADDR)")
+    field(DRVL, "0")
+    field(DRVH, "99.9")
+    field(LOPR, "0")
+    field(HOPR, "99.9")
+    field(PREC, "1")
+    field(VAL,  "10")
+    field(FLNK, "$(P)$(R)PulseRise_RBV.PROC")
+}
+
+record(ai,"$(P)$(R)PulseRise_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@Tabor8024.proto getFloat(:SOUR:PULS:TRAN) $(PORT) $(ADDR)")
+    field(LOPR, "0")
+    field(HOPR, "99.9")
+    field(PREC, "1")
+}
+
+record(ao,"$(P)$(R)PulseFall") {
+    field(PINI, "YES")
+    field(DTYP, "stream")
+    field(OUT,  "@Tabor8024.proto setFloat(:SOUR:PULS:TRAN:TRA) $(PORT) $(ADDR)")
+    field(DRVL, "0")
+    field(DRVH, "99.9")
+    field(LOPR, "0")
+    field(HOPR, "99.9")
+    field(PREC, "1")
+    field(VAL,  "10")
+    field(FLNK, "$(P)$(R)PulseFall_RBV.PROC")
+}
+
+record(ai,"$(P)$(R)PulseFall_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@Tabor8024.proto getFloat(:SOUR:PULS:TRAN:TRA) $(PORT) $(ADDR)")
+    field(LOPR, "0")
+    field(HOPR, "99.9")
+    field(PREC, "1")
+}
+
+record(ao,"$(P)$(R)RampDelay") {
+    field(PINI, "YES")
+    field(DTYP, "stream")
+    field(OUT,  "@Tabor8024.proto setFloat(:SOUR:RAMP:DEL) $(PORT) $(ADDR)")
+    field(DRVL, "0")
+    field(DRVH, "99.9")
+    field(LOPR, "0")
+    field(HOPR, "99.9")
+    field(PREC, "1")
+    field(FLNK, "$(P)$(R)RampDelay_RBV.PROC")
+}
+
+record(ai,"$(P)$(R)RampDelay_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@Tabor8024.proto getFloat(:SOUR:RAMP:DEL) $(PORT) $(ADDR)")
+    field(LOPR, "0")
+    field(HOPR, "99.9")
+    field(PREC, "1")
+}
+
+record(ao,"$(P)$(R)RampRise") {
+    field(PINI, "YES")
+    field(DTYP, "stream")
+    field(OUT,  "@Tabor8024.proto setFloat(:SOUR:RAMP:TRAN) $(PORT) $(ADDR)")
+    field(DRVL, "0")
+    field(DRVH, "99.9")
+    field(LOPR, "0")
+    field(HOPR, "99.9")
+    field(PREC, "1")
+    field(VAL,  "10")
+    field(FLNK, "$(P)$(R)RampRise_RBV.PROC")
+}
+
+record(ai,"$(P)$(R)RampRise_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@Tabor8024.proto getFloat(:SOUR:RAMP:TRAN) $(PORT) $(ADDR)")
+    field(LOPR, "0")
+    field(HOPR, "99.9")
+    field(PREC, "1")
+}
+
+record(ao,"$(P)$(R)RampFall") {
+    field(PINI, "YES")
+    field(DTYP, "stream")
+    field(OUT,  "@Tabor8024.proto setFloat(:SOUR:RAMP:TRAN:TRA) $(PORT) $(ADDR)")
+    field(DRVL, "0")
+    field(DRVH, "99.9")
+    field(LOPR, "0")
+    field(HOPR, "99.9")
+    field(PREC, "1")
+    field(VAL,  "10")
+    field(FLNK, "$(P)$(R)RampFall_RBV.PROC")
+}
+
+record(ai,"$(P)$(R)RampFall_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@Tabor8024.proto getFloat(:SOUR:RAMP:TRAN:TRA) $(PORT) $(ADDR)")
+    field(LOPR, "0")
+    field(HOPR, "99.9")
+    field(PREC, "1")
+}
+
+record(longout,"$(P)$(R)SincCycles") {
+    field(PINI, "YES")
+    field(DTYP, "stream")
+    field(OUT,  "@Tabor8024.proto setInt(:SOUR:SINC:NCYC) $(PORT) $(ADDR)")
+    field(DRVL, "4")
+    field(DRVH, "999")
+    field(LOPR, "4")
+    field(HOPR, "999")
+    field(VAL,  "10")
+    field(FLNK, "$(P)$(R)SincCycles_RBV.PROC")
+}
+
+record(longin,"$(P)$(R)SincCycles_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@Tabor8024.proto getInt(:SOUR:SINC:NCYC) $(PORT) $(ADDR)")
+    field(LOPR, "4")
+    field(HOPR, "999")
+}
+
+record(longout,"$(P)$(R)GaussExponent") {
+    field(PINI, "YES")
+    field(DTYP, "stream")
+    field(OUT,  "@Tabor8024.proto setInt(:SOUR:GAUS:EXP) $(PORT) $(ADDR)")
+    field(DRVL, "1")
+    field(DRVH, "65535")
+    field(LOPR, "1")
+    field(HOPR, "65535")
+    field(VAL,  "1000")
+    field(FLNK, "$(P)$(R)GaussExponent_RBV.PROC")
+}
+
+record(longin,"$(P)$(R)GaussExponent_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@Tabor8024.proto getInt(:SOUR:GAUS:EXP) $(PORT) $(ADDR)")
+    field(LOPR, "1")
+    field(HOPR, "65535")
+}
+
+record(ao,"$(P)$(R)ExpExponent") {
+    field(PINI, "YES")
+    field(DTYP, "stream")
+    field(OUT,  "@Tabor8024.proto setFloat(:SOUR:EXP:EXP) $(PORT) $(ADDR)")
+    field(DRVL, "0.01")
+    field(DRVH, "20.0")
+    field(LOPR, "0.01")
+    field(HOPR, "20.0")
+    field(PREC, "2")
+    field(VAL,  "1.0")
+    field(FLNK, "$(P)$(R)ExpExponent_RBV.PROC")
+}
+
+record(ai,"$(P)$(R)ExpExponent_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@Tabor8024.proto getFloat(:SOUR:EXP:EXP) $(PORT) $(ADDR)")
+    field(LOPR, "0.01")
+    field(HOPR, "20.0")
+    field(PREC, "2")
+}
+
+record(ao,"$(P)$(R)DCAmplitude") {
+    field(PINI, "YES")
+    field(DTYP, "stream")
+    field(OUT,  "@Tabor8024.proto setInt(:SOUR:DC) $(PORT) $(ADDR)")
+    field(DRVL, "0.")
+    field(DRVH, "100.")
+    field(LOPR, "0.")
+    field(HOPR, "100.")
+    field(PREC, "0")
+    field(VAL,  "100.")
+    field(FLNK, "$(P)$(R)DCAmplitude_RBV.PROC")
+}
+
+record(ai,"$(P)$(R)DCAmplitude_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@Tabor8024.proto getInt(:SOUR:DC) $(PORT) $(ADDR)")
+    field(LOPR, "0.")
+    field(HOPR, "100.")
+    field(PREC, "0")
+}
+
+record(mbbo,"$(P)$(R)TraceSelect") {
+    field(PINI, "YES")
+    field(DTYP, "stream")
+    field(OUT,  "@Tabor8024.proto setInt(:TRAC:SEL) $(PORT) $(ADDR)")
+    field(ZRVL, "1")
+    field(ZRST, "1")
+    field(ONVL, "2")
+    field(ONST, "2")
+    field(TWVL, "3")
+    field(TWST, "3")
+    field(THVL, "4")
+    field(THST, "4")
+    field(FLNK, "$(P)$(R)TraceSelect_RBV.PROC")
+}
+
+record(mbbi,"$(P)$(R)TraceSelect_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@Tabor8024.proto getInt(:TRAC:SEL) $(PORT) $(ADDR)")
+    field(ZRVL, "1")
+    field(ZRST, "1")
+    field(ONVL, "2")
+    field(ONST, "2")
+    field(TWVL, "3")
+    field(TWST, "3")
+    field(THVL, "4")
+    field(THST, "4")
+}
+
+record(ao,"$(P)$(R)Frequency") {
+    field(PINI, "YES")
+    field(DTYP, "stream")
+    field(OUT,  "@Tabor8024.proto setFloat(:SOUR:FREQ:CW) $(PORT) $(ADDR)")
+    field(DRVL, "10.e-6")
+    field(DRVH, "50.e6")
+    field(LOPR, "10.e-6")
+    field(HOPR, "50.e6")
+    field(PREC, "3")
+    field(VAL,  "1.e6")
+    field(FLNK, "$(P)$(R)Frequency_RBV.PROC")
+}
+
+record(ai,"$(P)$(R)Frequency_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@Tabor8024.proto getFloat(:SOUR:FREQ:CW) $(PORT) $(ADDR)")
+    field(LOPR, "10.e-6")
+    field(HOPR, "50.e6")
+    field(PREC, "3")
+}
+
+record(ao,"$(P)$(R)UserFrequency") {
+    field(PINI, "YES")
+    field(DTYP, "stream")
+    field(OUT,  "@Tabor8024.proto setFloat(:SOUR:FREQ:RAST) $(PORT) $(ADDR)")
+    field(DRVL, "10.e-3")
+    field(DRVH, "100.e6")
+    field(LOPR, "10.e-3")
+    field(HOPR, "100.e6")
+    field(PREC, "3")
+    field(VAL,  "1.e6")
+    field(FLNK, "$(P)$(R)UserFrequency_RBV.PROC")
+}
+
+record(ai,"$(P)$(R)UserFrequency_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@Tabor8024.proto getFloat(:SOUR:FREQ:RAST) $(PORT) $(ADDR)")
+    field(LOPR, "10.e-3")
+    field(HOPR, "100.e6")
+    field(PREC, "3")
+}
+
+record(mbbo,"$(P)$(R)UserFrequencySource") {
+    field(PINI, "YES")
+    field(DTYP, "stream")
+    field(OUT,  "@Tabor8024.proto setString(:SOUR:FREQ:RAST:SOUR) $(PORT) $(ADDR)")
+    field(ZRVL, "0")
+    field(ZRST, "INT")
+    field(ONVL, "1")
+    field(ONST, "EXT")
+    field(TWVL, "2")
+    field(TWST, "XTAL")
+    field(FLNK, "$(P)$(R)UserFrequencySource_RBV.PROC")
+}
+
+record(mbbi,"$(P)$(R)UserFrequencySource_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@Tabor8024.proto getString(:SOUR:FREQ:RAST:SOUR) $(PORT) $(ADDR)")
+    field(ZRVL, "0")
+    field(ZRST, "INT")
+    field(ONVL, "1")
+    field(ONST, "EXT")
+    field(TWVL, "2")
+    field(TWST, "XTAL")
+}
+
+
+
+###
+### User-defined waveforms
+###
+record(waveform,"$(P)$(R)UserWaveform") {
+    field(DTYP, "stream")
+    field(INP,  "@Tabor8024.proto setWaveform $(PORT) $(ADDR)")
+    field(FTVL, "SHORT")
+    field(NELM, "$(NELM)")
+}
+
+record(bo,"$(P)$(R)ClearWaveforms") {
+    field(PINI, "NO")
+    field(DTYP, "stream")
+    field(OUT,  "@Tabor8024.proto setNone(:TRAC:DEL:ALL) $(PORT) $(ADDR)")
+    field(ZNAM, "Done")
+    field(ONAM, "Clear")
+}
+
+record(longout,"$(P)$(R)UserWf1Size") {
+    field(PINI, "YES")
+    field(DTYP, "stream")
+    field(OUT,  "@Tabor8024.proto setUserWfSize(1) $(PORT) $(ADDR)")
+    field(DRVL, "10")
+    field(DRVH, "64536")
+    field(LOPR, "10")
+    field(HOPR, "64536")
+    field(VAL,  "15000")
+}
+
+record(longout,"$(P)$(R)UserWf2Size") {
+    field(PINI, "YES")
+    field(DTYP, "stream")
+    field(OUT,  "@Tabor8024.proto setUserWfSize(2) $(PORT) $(ADDR)")
+    field(DRVL, "10")
+    field(DRVH, "64536")
+    field(LOPR, "10")
+    field(HOPR, "64536")
+    field(VAL,  "15000")
+}
+
+record(longout,"$(P)$(R)UserWf3Size") {
+    field(PINI, "YES")
+    field(DTYP, "stream")
+    field(OUT,  "@Tabor8024.proto setUserWfSize(3) $(PORT) $(ADDR)")
+    field(DRVL, "10")
+    field(DRVH, "64536")
+    field(LOPR, "10")
+    field(HOPR, "64536")
+    field(VAL,  "15000")
+}
+
+record(longout,"$(P)$(R)UserWf4Size") {
+    field(PINI, "YES")
+    field(DTYP, "stream")
+    field(OUT,  "@Tabor8024.proto setUserWfSize(4) $(PORT) $(ADDR)")
+    field(DRVL, "10")
+    field(DRVH, "64536")
+    field(LOPR, "10")
+    field(HOPR, "64536")
+    field(VAL,  "15000")
+}
+
+###
+### Output control
+###
+record(ao,"$(P)$(R)Amplitude") {
+    field(PINI, "YES")
+    field(DTYP, "stream")
+    field(OUT,  "@Tabor8024.proto setFloat(:SOUR:VOLT:LEV:IMM:AMPL) $(PORT) $(ADDR)")
+    field(DRVL, ".01")
+    field(DRVH, "9.99")
+    field(LOPR, "0.01")
+    field(HOPR, "9.99")
+    field(PREC, "2")
+    field(VAL,  "5.0")
+    field(FLNK, "$(P)$(R)Amplitude_RBV.PROC")
+}
+
+record(ai,"$(P)$(R)Amplitude_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@Tabor8024.proto getFloat(:SOUR:VOLT:LEV:IMM:AMPL) $(PORT) $(ADDR)")
+    field(LOPR, "0.01")
+    field(HOPR, "9.99")
+    field(PREC, "2")
+}
+
+record(ao,"$(P)$(R)Offset") {
+    field(PINI, "YES")
+    field(DTYP, "stream")
+    field(OUT,  "@Tabor8024.proto setFloat(:SOUR:VOLT:LEV:IMM:OFFS) $(PORT) $(ADDR)")
+    field(DRVL, "-4.50")
+    field(DRVH, "4.50")
+    field(LOPR, "-4.50")
+    field(HOPR, "4.50")
+    field(PREC, "2")
+    field(VAL,  "0.0")
+    field(FLNK, "$(P)$(R)Offset_RBV.PROC")
+}
+
+record(ai,"$(P)$(R)Offset_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@Tabor8024.proto getFloat(:SOUR:VOLT:LEV:IMM:OFFS) $(PORT) $(ADDR)")
+    field(LOPR, "-4.50")
+    field(HOPR, "4.50")
+    field(PREC, "2")
+}
+
+record(bo,"$(P)$(R)OutputState") {
+    field(PINI, "YES")
+    field(DTYP, "stream")
+    field(OUT,  "@Tabor8024.proto setString(:OUTP:STAT) $(PORT) $(ADDR)")
+    field(ZNAM, "OFF")
+    field(ONAM, "ON")
+    field(FLNK, "$(P)$(R)OutputState_RBV.PROC")
+}
+
+record(bi,"$(P)$(R)OutputState_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@Tabor8024.proto getInt(:OUTP:STAT) $(PORT) $(ADDR)")
+    field(ZNAM, "OFF")
+    field(ONAM, "ON")
+    field(VAL,  "1")
+}
+
+###
+### Filter control
+###
+record(mbbo,"$(P)$(R)FilterFrequency") {
+    field(PINI, "YES")
+    field(DTYP, "stream")
+    field(OUT,  "@Tabor8024.proto setString(:OUTP:FILT:LPAS:FREQ) $(PORT) $(ADDR)")
+    field(ZRVL, "0")
+    field(ZRST, "20MHz")
+    field(ONVL, "1")
+    field(ONST, "25MHz")
+    field(TWVL, "2")
+    field(TWST, "50MHz")
+    field(FLNK, "$(P)$(R)FilterFrequency_RBV.PROC")
+}
+
+record(mbbi,"$(P)$(R)FilterFrequency_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@Tabor8024.proto getString(:OUTP:FILT:LPAS:FREQ) $(PORT) $(ADDR)")
+    field(ZRVL, "0")
+    field(ZRST, "20MHz")
+    field(ONVL, "1")
+    field(ONST, "25MHz")
+    field(TWVL, "2")
+    field(TWST, "50MHz")
+}
+
+record(bo,"$(P)$(R)FilterState") {
+    field(PINI, "YES")
+    field(DTYP, "stream")
+    field(OUT,  "@Tabor8024.proto setString(:OUTP:FILT:LPAS:STAT) $(PORT) $(ADDR)")
+    field(ZNAM, "OFF")
+    field(ONAM, "ON")
+    field(FLNK, "$(P)$(R)FilterState_RBV.PROC")
+}
+
+record(bi,"$(P)$(R)FilterState_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@Tabor8024.proto getInt(:OUTP:FILT:LPAS:STAT) $(PORT) $(ADDR)")
+    field(ZNAM, "OFF")
+    field(ONAM, "ON")
+}
+
+
+###
+### Trigger control
+###
+record(bo,"$(P)$(R)TriggerState") {
+    field(PINI, "YES")
+    field(DTYP, "stream")
+    field(OUT,  "@Tabor8024.proto setString(:TRIG:STAT) $(PORT) $(ADDR)")
+    field(ZNAM, "OFF")
+    field(ONAM, "ON")
+    field(FLNK, "$(P)$(R)TriggerState_RBV.PROC")
+}
+
+record(bi,"$(P)$(R)TriggerState_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@Tabor8024.proto getInt(:TRIG:STAT) $(PORT) $(ADDR)")
+    field(ZNAM, "OFF")
+    field(ONAM, "ON")
+}
+
+record(mbbo,"$(P)$(R)TriggerSource") {
+    field(PINI, "YES")
+    field(DTYP, "stream")
+    field(OUT,  "@Tabor8024.proto setString(:TRIG:SOUR) $(PORT) $(ADDR)")
+    field(ZRVL, "0")
+    field(ZRST, "INT")
+    field(ONVL, "1")
+    field(ONST, "EXT")
+    field(TWVL, "2")
+    field(TWST, "BUS")
+    field(FLNK, "$(P)$(R)TriggerSource_RBV.PROC")
+}
+
+record(mbbi,"$(P)$(R)TriggerSource_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@Tabor8024.proto getString(:TRIG:SOUR) $(PORT) $(ADDR)")
+    field(ZRVL, "0")
+    field(ZRST, "INT")
+    field(ONVL, "1")
+    field(ONST, "EXT")
+    field(TWVL, "2")
+    field(TWST, "BUS")
+}
+
+record(ao,"$(P)$(R)TriggerPeriod") {
+    field(PINI, "YES")
+    field(DTYP, "stream")
+    field(OUT,  "@Tabor8024.proto setFloat(:TRIG:INT:RATE) $(PORT) $(ADDR)")
+    field(DRVL, "20.e-6")
+    field(DRVH, "999")
+    field(LOPR, "10.e-6")
+    field(HOPR, "999")
+    field(PREC, "3")
+    field(VAL,  "1")
+    field(FLNK, "$(P)$(R)TriggerPeriod_RBV.PROC")
+}
+
+record(ai,"$(P)$(R)TriggerPeriod_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@Tabor8024.proto getFloat(:TRIG:INT:RATE) $(PORT) $(ADDR)")
+    field(LOPR, "10.e-6")
+    field(HOPR, "999")
+    field(PREC, "3")
+}
+
+record(bo,"$(P)$(R)TriggerOnce") {
+    field(PINI, "NO")
+    field(DTYP, "stream")
+    field(OUT,  "@Tabor8024.proto setNone(:TRIG:IMM) $(PORT) $(ADDR)")
+    field(ZNAM, "Off")
+    field(ONAM, "Trigger")
+}
+
+###
+### Burst control
+###
+record(longout,"$(P)$(R)BurstCycles") {
+    field(PINI, "YES")
+    field(DTYP, "stream")
+    field(OUT,  "@Tabor8024.proto setInt(:BM:NCYC) $(PORT) $(ADDR)")
+    field(VAL,  "1")
+    field(FLNK, "$(P)$(R)BurstCycles_RBV.PROC")
+}
+
+record(longin,"$(P)$(R)BurstCycles_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@Tabor8024.proto getInt(:BM:NCYC) $(PORT) $(ADDR)")
+}
+
+record(bo,"$(P)$(R)BurstState") {
+    field(PINI, "YES")
+    field(DTYP, "stream")
+    field(OUT,  "@Tabor8024.proto setString(:BM:STAT) $(PORT) $(ADDR)")
+    field(ZNAM, "OFF")
+    field(ONAM, "ON")
+    field(FLNK, "$(P)$(R)BurstState_RBV.PROC")
+}
+
+record(bi,"$(P)$(R)BurstState_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@Tabor8024.proto getInt(:BM:STAT) $(PORT) $(ADDR)")
+    field(ZNAM, "OFF")
+    field(ONAM, "ON")
+}
+
+record(mbbo,"$(P)$(R)BurstSource") {
+    field(PINI, "YES")
+    field(DTYP, "stream")
+    field(OUT,  "@Tabor8024.proto setString(:BM:SOUR) $(PORT) $(ADDR)")
+    field(ZRVL, "0")
+    field(ZRST, "INT")
+    field(ONVL, "1")
+    field(ONST, "EXT")
+    field(TWVL, "2")
+    field(TWST, "BUS")
+    field(FLNK, "$(P)$(R)BurstSource_RBV.PROC")
+}
+
+record(mbbi,"$(P)$(R)BurstSource_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@Tabor8024.proto getString(:BM:SOUR) $(PORT) $(ADDR)")
+    field(ZRVL, "0")
+    field(ZRST, "INT")
+    field(ONVL, "1")
+    field(ONST, "EXT")
+    field(TWVL, "2")
+    field(TWST, "BUS")
+}
+
+record(ao,"$(P)$(R)BurstPeriod") {
+    field(PINI, "YES")
+    field(DTYP, "stream")
+    field(OUT,  "@Tabor8024.proto setFloat(:BM:INT:RATE) $(PORT) $(ADDR)")
+    field(DRVL, "20.e-6")
+    field(DRVH, "999")
+    field(LOPR, "20.e-6")
+    field(HOPR, "999")
+    field(PREC, "3")
+    field(VAL,  "1")
+    field(FLNK, "$(P)$(R)BurstPeriod_RBV.PROC")
+}
+
+record(ai,"$(P)$(R)BurstPeriod_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@Tabor8024.proto getFloat(:BM:INT:RATE) $(PORT) $(ADDR)")
+    field(LOPR, "20.e-6")
+    field(HOPR, "999")
+    field(PREC, "3")
+}
+
+record(bo,"$(P)$(R)BurstOnce") {
+    field(PINI, "NO")
+    field(DTYP, "stream")
+    field(OUT,  "@Tabor8024.proto setNone(:BM:IMM) $(PORT) $(ADDR)")
+    field(ZNAM, "Off")
+    field(ONAM, "Burst")
+}
+
+
+###
+### Gate control
+###
+record(bo,"$(P)$(R)GateState") {
+    field(PINI, "YES")
+    field(DTYP, "stream")
+    field(OUT,  "@Tabor8024.proto setString(:GM:STAT) $(PORT) $(ADDR)")
+    field(ZNAM, "OFF")
+    field(ONAM, "ON")
+    field(FLNK, "$(P)$(R)GateState_RBV.PROC")
+}
+
+record(bi,"$(P)$(R)GateState_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@Tabor8024.proto getInt(:GM:STAT) $(PORT) $(ADDR)")
+    field(ZNAM, "OFF")
+    field(ONAM, "ON")
+    field(FLNK, "$(P)$(R)Error_RBV.PROC")
+}
+
+
+###
+### Model
+###
+record(stringin,"$(P)$(R)Model_RBV") {
+    field(PINI, "YES")
+    field(DTYP, "stream")
+    field(INP,  "@Tabor8024.proto getString(*IDN) $(PORT) $(ADDR)")
+}
+
+###
+### Status control
+###
+record(bo,"$(P)$(R)ReadStatusScan") {
+    field(SCAN, "Passive")
+    field(FLNK, "$(P)$(R)ReadStatus.PROC")
+}
+
+record(bo,"$(P)$(R)ReadStatus") {
+    field(PINI, "YES")
+    field(FLNK, "$(P)$(R)Error_RBV.PROC")
+}
+
+record(stringin,"$(P)$(R)Error_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@Tabor8024.proto getError $(PORT) $(ADDR)")
+}
+
+record(bo,"$(P)$(R)ClearStatus") {
+    field(DTYP, "stream")
+    field(OUT,  "@Tabor8024.proto setNone(*CLS) $(PORT) $(ADDR)")
+}
+
+###
+### Asyn record
+###
+record(asyn,"$(P)$(R)Asyn") {
+    field(PORT, "$(PORT)")
+    field(ADDR, "$(ADDR)")
+}
+

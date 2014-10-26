@@ -2,11 +2,11 @@
 /**/
 #include <stdio.h>
 #include <time.h>
-#define epicsExportSharedSymbols
-#include <shareLib.h>
 #include "XPS_C8_drivers.h"
 #include "Socket.h"
 #include "xps_ftp.h"
+#define epicsExportSharedSymbols
+#include <shareLib.h>
 
 #define XPS_ADDRESS "164.54.160.124"
 #define NUM_TRAJECTORY_ELEMENTS 6
@@ -25,7 +25,7 @@
 int main(int argc, char *argv[])
 {
     int status,poll_socket,drive_socket,end=0;
-    int ftpSocket;
+    SOCKET ftpSocket;
     char *gatheringData = "GROUP1.PHI.SetpointPosition;"
                           "GROUP1.PHI.CurrentPosition;"
                           "GROUP1.KAPPA.SetpointPosition;"
@@ -215,7 +215,7 @@ int main(int argc, char *argv[])
     }
     status = GatheringDataMultipleLinesGet(drive_socket, 0, currentSamples, buffer);
     printf("GatheringDataMultipleLinesGet, status=%d, currentSamples=%d\n", status, currentSamples);
-    printf("Buffer length=%d, buffer=\n%s\n", strlen(buffer), buffer);    
+    printf("Buffer length=%ld, buffer=\n%s\n", (long)strlen(buffer), buffer);    
     return 0;
 }
 

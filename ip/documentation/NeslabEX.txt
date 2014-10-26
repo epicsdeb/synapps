@@ -1,0 +1,34 @@
+Thermo Scientific Neslab EX Setup Info
+--------------------------------------
+
+- StreamDevice RS232 support written by Kurt Goetze
+
+- EPICS Files: NeslabEX.db, NeslabEX.proto, NeslabEX.adl, NeslabEX.req
+
+- Neslab EX Digital Plus Controller Settings (set from front panel):
+   BAUD:    19200 (default)
+   SERL:    232 (default)
+   MODE:    Computer (press this front panel button)
+
+- In serial.cmd:
+  tyGSAsynInit("serial3",  "UART_0", 2,19200,'N',1,8,'N',"","")  /* Neslab EX Chiller*/
+  
+  # Thermo Neslab Chiller streams support
+  dbLoadRecords("$(IP)/ipApp/Db/NeslabEX.db","P=xxx:,S=1,PORT=serial3")
+  
+- In auto_settings.req:
+  $(P)NL:1:T.DESC
+  $(P)NL:1:spT
+  $(P)NL:1:getT.SCAN
+
+- RS-232 connection:
+  From the Manual, db9 pin #
+  2 - Tx
+  3 - Rx
+  5 - Gnd
+  
+- Note:
+  This is minimal support, based on the requirements of APS/sec.30.
+  Presently the functions supported are set/read temperature, readback
+  the programmed temperature, and warn and fail states for low H2O level.
+  More functionality may be added at a later date.

@@ -11,6 +11,11 @@ Omega DP41 Setup Info
    SERCNF:  0,0
    DAT FT:  0,0,1,0,0,0,0,0
    BUS FT:  0,0,1,0,1,0,0,1
+                ^
+                |
+  *** NOTE ***  |.. Third bit of BUS FT is "ECHO response".  This is the command echo.
+                    It should be on (1) for the newer streamDevice support, off (0)
+                    if using the older database-only support.
 
 - Omega_DP41.substitutions (create this file in your ioc directory):
   file "$(IP)/ipApp/Db/Omega_DP41.db"
@@ -24,6 +29,9 @@ Omega DP41 Setup Info
 
   # OMEGA DP41 Panel Meter
   dbLoadTemplate("Omega_DP41.substitutions")
+
+- Omega_DP41.substitutions sets the PREC parameter.  This MUST MATCH the
+  display precision of the DP41 meter.
 
 - RS-232 connection:
   RJ12  db9

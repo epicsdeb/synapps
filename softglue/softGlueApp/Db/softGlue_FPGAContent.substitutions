@@ -239,21 +239,6 @@ pattern {SIG   ADDR}
 {8MHZ_CLOCK			0x8007A0}
 }
 
-
-## Old 16-bit DnCntr's, and DivByN's.
-#file "softGlue_Register.db"
-#{
-#pattern {SIG     	ADDR 		CALC}
-#{DnCntr-1_PRESET	0x8005F8	A-1}
-#{DnCntr-2_PRESET	0x800628	A-1}
-#{DnCntr-3_PRESET	0x800658	A-1}
-#{DnCntr-4_PRESET	0x800688	A-1}
-#{DivByN-1_N			0x8006B8	A-1}
-#{DivByN-2_N			0x8006E8	A-1}
-#{DivByN-3_N			0x800718	A-1}
-#{DivByN-4_N			0x800748	A-1}
-#}
-
 file "softGlue_Register32.db"
 {
 pattern {SIG	   ADDR_MSW    ADDR_LSW    CALC}
@@ -275,3 +260,45 @@ pattern {SIG     	ADDR_MSW	ADDR_LSW}
 {UpCntr-3_COUNTS	0x8005B0	0x8005A8}
 {UpCntr-4_COUNTS	0x8005D8	0x8005D0}
 }
+
+file "softGlue_description.db"
+{
+pattern {SIG N}
+{circuit 300}
+{8MHZ_CLOCK 80}
+{AND-1 80}
+{AND-2 80}
+{AND-3 80}
+{AND-4 80}
+{BUFFER-1 80}
+{BUFFER-2 80}
+{BUFFER-3 80}
+{BUFFER-4 80}
+{DEMUX2-1 80}
+{DEMUX2-2 80}
+{DFF-1 80}
+{DFF-2 80}
+{DFF-3 80}
+{DFF-4 80}
+{DivByN-1 80}
+{DivByN-2 80}
+{DivByN-3 80}
+{DivByN-4 80}
+{DnCntr-1 80}
+{DnCntr-2 80}
+{DnCntr-3 80}
+{DnCntr-4 80}
+{MUX2-1 80}
+{MUX2-2 80}
+{OR-1 80}
+{OR-2 80}
+{OR-3 80}
+{OR-4 80}
+{UpCntr-1 80}
+{UpCntr-2 80}
+{UpCntr-3 80}
+{UpCntr-4 80}
+{XOR-1 80}
+{XOR-2 80}
+}
+

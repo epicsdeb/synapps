@@ -1,0 +1,1619 @@
+
+file {
+	name="/home/epics/support/ip-2-14/ipApp/op/adl/Tabor8024.adl"
+	version=030107
+}
+display {
+	object {
+		x=153
+		y=30
+		width=855
+		height=590
+	}
+	clr=14
+	bclr=4
+	cmap=""
+	gridSpacing=5
+	gridOn=0
+	snapToGrid=0
+}
+"color map" {
+	ncolors=65
+	colors {
+		ffffff,
+		ececec,
+		dadada,
+		c8c8c8,
+		bbbbbb,
+		aeaeae,
+		9e9e9e,
+		919191,
+		858585,
+		787878,
+		696969,
+		5a5a5a,
+		464646,
+		2d2d2d,
+		000000,
+		00d800,
+		1ebb00,
+		339900,
+		2d7f00,
+		216c00,
+		fd0000,
+		de1309,
+		be190b,
+		a01207,
+		820400,
+		5893ff,
+		597ee1,
+		4b6ec7,
+		3a5eab,
+		27548d,
+		fbf34a,
+		f9da3c,
+		eeb62b,
+		e19015,
+		cd6100,
+		ffb0ff,
+		d67fe2,
+		ae4ebc,
+		8b1a96,
+		610a75,
+		a4aaff,
+		8793e2,
+		6a73c1,
+		4d52a4,
+		343386,
+		c7bb6d,
+		b79d5c,
+		a47e3c,
+		7d5627,
+		58340f,
+		99ffff,
+		73dfff,
+		4ea5f9,
+		2a63e4,
+		0a00b8,
+		ebf1b5,
+		d4db9d,
+		bbc187,
+		a6a462,
+		8b8239,
+		73ff6b,
+		52da3b,
+		3cb420,
+		289315,
+		1a7309,
+	}
+}
+rectangle {
+	object {
+		x=0
+		y=5
+		width=855
+		height=40
+	}
+	"basic attribute" {
+		clr=52
+	}
+}
+text {
+	object {
+		x=5
+		y=10
+		width=421
+		height=26
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Tabor 8024 Arbitrary Waveform Generator"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=450
+		y=10
+		width=155
+		height=26
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="$(P)$(R)"
+}
+text {
+	object {
+		x=169
+		y=60
+		width=143
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Source"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=150
+		y=85
+		width=40
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Mode"
+	align="horiz. right"
+}
+text {
+	object {
+		x=140
+		y=110
+		width=50
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Shape"
+	align="horiz. right"
+}
+text {
+	object {
+		x=100
+		y=135
+		width=90
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Frequency"
+	align="horiz. right"
+}
+text {
+	object {
+		x=60
+		y=160
+		width=130
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="User waveform"
+	align="horiz. right"
+}
+text {
+	object {
+		x=30
+		y=185
+		width=160
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="User wave. freq."
+	align="horiz. right"
+}
+text {
+	object {
+		x=20
+		y=210
+		width=170
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="User freq. source"
+	align="horiz. right"
+}
+menu {
+	object {
+		x=197
+		y=85
+		width=80
+		height=20
+	}
+	control {
+		chan="$(P)$(R)Mode"
+		clr=14
+		bclr=51
+	}
+}
+"text update" {
+	object {
+		x=282
+		y=85
+		width=120
+		height=20
+	}
+	monitor {
+		chan="$(P)$(R)Mode_RBV"
+		clr=53
+		bclr=4
+	}
+	limits {
+	}
+}
+menu {
+	object {
+		x=197
+		y=110
+		width=80
+		height=20
+	}
+	control {
+		chan="$(P)$(R)Shape"
+		clr=14
+		bclr=51
+	}
+}
+"text update" {
+	object {
+		x=282
+		y=110
+		width=120
+		height=20
+	}
+	monitor {
+		chan="$(P)$(R)Shape_RBV"
+		clr=53
+		bclr=4
+	}
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=282
+		y=135
+		width=120
+		height=20
+	}
+	monitor {
+		chan="$(P)$(R)Frequency_RBV"
+		clr=53
+		bclr=4
+	}
+	format="exponential"
+	limits {
+	}
+}
+"text entry" {
+	object {
+		x=196
+		y=135
+		width=80
+		height=20
+	}
+	control {
+		chan="$(P)$(R)Frequency"
+		clr=14
+		bclr=51
+	}
+	format="exponential"
+	limits {
+	}
+}
+menu {
+	object {
+		x=197
+		y=160
+		width=80
+		height=20
+	}
+	control {
+		chan="$(P)$(R)TraceSelect"
+		clr=14
+		bclr=51
+	}
+}
+"text update" {
+	object {
+		x=282
+		y=160
+		width=120
+		height=20
+	}
+	monitor {
+		chan="$(P)$(R)TraceSelect_RBV"
+		clr=53
+		bclr=4
+	}
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=282
+		y=185
+		width=120
+		height=20
+	}
+	monitor {
+		chan="$(P)$(R)UserFrequency_RBV"
+		clr=53
+		bclr=4
+	}
+	format="exponential"
+	limits {
+	}
+}
+"text entry" {
+	object {
+		x=196
+		y=185
+		width=80
+		height=20
+	}
+	control {
+		chan="$(P)$(R)UserFrequency"
+		clr=14
+		bclr=51
+	}
+	format="exponential"
+	limits {
+	}
+}
+menu {
+	object {
+		x=197
+		y=210
+		width=80
+		height=20
+	}
+	control {
+		chan="$(P)$(R)UserFrequencySource"
+		clr=14
+		bclr=51
+	}
+}
+"text update" {
+	object {
+		x=282
+		y=210
+		width=120
+		height=20
+	}
+	monitor {
+		chan="$(P)$(R)UserFrequencySource_RBV"
+		clr=53
+		bclr=4
+	}
+	limits {
+	}
+}
+rectangle {
+	object {
+		x=5
+		y=55
+		width=420
+		height=180
+	}
+	"basic attribute" {
+		clr=14
+		fill="outline"
+	}
+}
+composite {
+	object {
+		x=5
+		y=240
+		width=420
+		height=160
+	}
+	"composite name"=""
+	children {
+		text {
+			object {
+				x=169
+				y=245
+				width=143
+				height=20
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="Output"
+			align="horiz. centered"
+		}
+		text {
+			object {
+				x=70
+				y=270
+				width=120
+				height=20
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="Output state"
+			align="horiz. right"
+		}
+		text {
+			object {
+				x=70
+				y=320
+				width=120
+				height=20
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="Filter state"
+			align="horiz. right"
+		}
+		text {
+			object {
+				x=30
+				y=295
+				width=160
+				height=20
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="Filter frequency"
+			align="horiz. right"
+		}
+		text {
+			object {
+				x=100
+				y=345
+				width=90
+				height=20
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="Amplitude"
+			align="horiz. right"
+		}
+		text {
+			object {
+				x=130
+				y=370
+				width=60
+				height=20
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="Offset"
+			align="horiz. right"
+		}
+		menu {
+			object {
+				x=197
+				y=270
+				width=80
+				height=20
+			}
+			control {
+				chan="$(P)$(R)OutputState"
+				clr=14
+				bclr=51
+			}
+		}
+		"text update" {
+			object {
+				x=282
+				y=270
+				width=120
+				height=20
+			}
+			monitor {
+				chan="$(P)$(R)OutputState_RBV"
+				clr=53
+				bclr=4
+			}
+			limits {
+			}
+		}
+		menu {
+			object {
+				x=197
+				y=320
+				width=80
+				height=20
+			}
+			control {
+				chan="$(P)$(R)FilterState"
+				clr=14
+				bclr=51
+			}
+		}
+		"text update" {
+			object {
+				x=282
+				y=320
+				width=120
+				height=20
+			}
+			monitor {
+				chan="$(P)$(R)FilterState_RBV"
+				clr=53
+				bclr=4
+			}
+			limits {
+			}
+		}
+		menu {
+			object {
+				x=197
+				y=295
+				width=80
+				height=20
+			}
+			control {
+				chan="$(P)$(R)FilterFrequency"
+				clr=14
+				bclr=51
+			}
+		}
+		"text update" {
+			object {
+				x=282
+				y=295
+				width=120
+				height=20
+			}
+			monitor {
+				chan="$(P)$(R)FilterFrequency_RBV"
+				clr=53
+				bclr=4
+			}
+			limits {
+			}
+		}
+		"text update" {
+			object {
+				x=282
+				y=345
+				width=120
+				height=20
+			}
+			monitor {
+				chan="$(P)$(R)Amplitude_RBV"
+				clr=53
+				bclr=4
+			}
+			limits {
+			}
+		}
+		"text entry" {
+			object {
+				x=196
+				y=345
+				width=80
+				height=20
+			}
+			control {
+				chan="$(P)$(R)Amplitude"
+				clr=14
+				bclr=51
+			}
+			limits {
+			}
+		}
+		"text update" {
+			object {
+				x=282
+				y=370
+				width=120
+				height=20
+			}
+			monitor {
+				chan="$(P)$(R)Offset_RBV"
+				clr=53
+				bclr=4
+			}
+			limits {
+			}
+		}
+		"text entry" {
+			object {
+				x=196
+				y=370
+				width=80
+				height=20
+			}
+			control {
+				chan="$(P)$(R)Offset"
+				clr=14
+				bclr=51
+			}
+			limits {
+			}
+		}
+		rectangle {
+			object {
+				x=5
+				y=240
+				width=420
+				height=160
+			}
+			"basic attribute" {
+				clr=14
+				fill="outline"
+			}
+		}
+	}
+}
+"text update" {
+	object {
+		x=196
+		y=436
+		width=200
+		height=20
+	}
+	monitor {
+		chan="$(P)$(R)Model_RBV"
+		clr=53
+		bclr=4
+	}
+	limits {
+	}
+}
+text {
+	object {
+		x=130
+		y=436
+		width=60
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Model"
+	align="horiz. right"
+}
+text {
+	object {
+		x=169
+		y=410
+		width=143
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Status"
+	align="horiz. centered"
+}
+rectangle {
+	object {
+		x=5
+		y=405
+		width=420
+		height=180
+	}
+	"basic attribute" {
+		clr=14
+		fill="outline"
+	}
+}
+text {
+	object {
+		x=9
+		y=485
+		width=180
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Reset error status"
+	align="horiz. right"
+}
+text {
+	object {
+		x=90
+		y=460
+		width=100
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Last error"
+	align="horiz. right"
+}
+text {
+	object {
+		x=30
+		y=510
+		width=160
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Read status rate"
+	align="horiz. right"
+}
+text {
+	object {
+		x=80
+		y=535
+		width=110
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Read status"
+	align="horiz. right"
+}
+text {
+	object {
+		x=80
+		y=560
+		width=110
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="More"
+	align="horiz. right"
+}
+"text update" {
+	object {
+		x=196
+		y=460
+		width=200
+		height=20
+	}
+	monitor {
+		chan="$(P)$(R)Error_RBV"
+		clr=53
+		bclr=4
+	}
+	format="hexadecimal"
+	limits {
+	}
+}
+"related display" {
+	object {
+		x=196
+		y=560
+		width=80
+		height=20
+	}
+	display[0] {
+		label="More settings"
+		name="Tabor8024_more.adl"
+		args="P=$(P), R=$(R)"
+	}
+	display[1] {
+		label="asyn record"
+		name="asynRecord.adl"
+		args="P=$(P), R=$(R)Asyn"
+	}
+	clr=14
+	bclr=51
+	label="More"
+}
+menu {
+	object {
+		x=196
+		y=511
+		width=83
+		height=18
+	}
+	control {
+		chan="$(P)$(R)ReadStatusScan.SCAN"
+		clr=14
+		bclr=51
+	}
+}
+"message button" {
+	object {
+		x=195
+		y=535
+		width=80
+		height=20
+	}
+	control {
+		chan="$(P)$(R)ReadStatus.PROC"
+		clr=14
+		bclr=51
+	}
+	label="Read"
+	press_msg="1"
+}
+"message button" {
+	object {
+		x=196
+		y=485
+		width=80
+		height=20
+	}
+	control {
+		chan="$(P)$(R)ClearStatus.PROC"
+		clr=14
+		bclr=51
+	}
+	label="Reset"
+	press_msg="1"
+}
+composite {
+	object {
+		x=430
+		y=55
+		width=420
+		height=55
+	}
+	"composite name"=""
+	children {
+		text {
+			object {
+				x=594
+				y=60
+				width=143
+				height=20
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="Gate"
+			align="horiz. centered"
+		}
+		text {
+			object {
+				x=515
+				y=85
+				width=100
+				height=20
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="Gate state"
+			align="horiz. right"
+		}
+		menu {
+			object {
+				x=622
+				y=85
+				width=80
+				height=20
+			}
+			control {
+				chan="$(P)$(R)GateState"
+				clr=14
+				bclr=51
+			}
+		}
+		"text update" {
+			object {
+				x=707
+				y=85
+				width=120
+				height=20
+			}
+			monitor {
+				chan="$(P)$(R)GateState_RBV"
+				clr=53
+				bclr=4
+			}
+			limits {
+			}
+		}
+		rectangle {
+			object {
+				x=430
+				y=55
+				width=420
+				height=55
+			}
+			"basic attribute" {
+				clr=14
+				fill="outline"
+			}
+		}
+	}
+}
+text {
+	object {
+		x=593
+		y=415
+		width=143
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Valid Ranges"
+	align="horiz. centered"
+}
+rectangle {
+	object {
+		x=429
+		y=410
+		width=420
+		height=175
+	}
+	"basic attribute" {
+		clr=14
+		fill="outline"
+	}
+}
+text {
+	object {
+		x=629
+		y=435
+		width=60
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Min"
+}
+text {
+	object {
+		x=734
+		y=435
+		width=60
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Max"
+}
+text {
+	object {
+		x=525
+		y=455
+		width=90
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Frequency"
+	align="horiz. right"
+}
+text {
+	object {
+		x=525
+		y=480
+		width=90
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="User wave. freq."
+	align="horiz. right"
+}
+text {
+	object {
+		x=525
+		y=505
+		width=90
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Amplitude"
+	align="horiz. right"
+}
+text {
+	object {
+		x=525
+		y=530
+		width=90
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Offset"
+	align="horiz. right"
+}
+text {
+	object {
+		x=525
+		y=555
+		width=90
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Trig./burst period"
+	align="horiz. right"
+}
+"text update" {
+	object {
+		x=628
+		y=455
+		width=100
+		height=20
+	}
+	monitor {
+		chan="$(P)$(R)Frequency.DRVL"
+		clr=53
+		bclr=4
+	}
+	format="exponential"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=628
+		y=480
+		width=100
+		height=20
+	}
+	monitor {
+		chan="$(P)$(R)UserFrequency.DRVL"
+		clr=53
+		bclr=4
+	}
+	format="exponential"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=628
+		y=505
+		width=100
+		height=20
+	}
+	monitor {
+		chan="$(P)$(R)Amplitude.DRVL"
+		clr=53
+		bclr=4
+	}
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=628
+		y=530
+		width=100
+		height=20
+	}
+	monitor {
+		chan="$(P)$(R)Offset.DRVL"
+		clr=53
+		bclr=4
+	}
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=628
+		y=555
+		width=100
+		height=20
+	}
+	monitor {
+		chan="$(P)$(R)TriggerPeriod.DRVL"
+		clr=53
+		bclr=4
+	}
+	format="exponential"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=736
+		y=455
+		width=100
+		height=20
+	}
+	monitor {
+		chan="$(P)$(R)Frequency.DRVH"
+		clr=53
+		bclr=4
+	}
+	format="exponential"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=736
+		y=480
+		width=100
+		height=20
+	}
+	monitor {
+		chan="$(P)$(R)UserFrequency.DRVH"
+		clr=53
+		bclr=4
+	}
+	format="exponential"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=736
+		y=505
+		width=100
+		height=20
+	}
+	monitor {
+		chan="$(P)$(R)Amplitude.DRVH"
+		clr=53
+		bclr=4
+	}
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=736
+		y=530
+		width=100
+		height=20
+	}
+	monitor {
+		chan="$(P)$(R)Offset.DRVH"
+		clr=53
+		bclr=4
+	}
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=736
+		y=555
+		width=100
+		height=20
+	}
+	monitor {
+		chan="$(P)$(R)TriggerPeriod.DRVH"
+		clr=53
+		bclr=4
+	}
+	format="exponential"
+	limits {
+	}
+}
+composite {
+	object {
+		x=430
+		y=115
+		width=420
+		height=130
+	}
+	"composite name"=""
+	children {
+		text {
+			object {
+				x=594
+				y=120
+				width=143
+				height=20
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="Trigger"
+			align="horiz. centered"
+		}
+		text {
+			object {
+				x=475
+				y=145
+				width=140
+				height=20
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="Trigger source"
+			align="horiz. right"
+		}
+		text {
+			object {
+				x=495
+				y=170
+				width=120
+				height=20
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="Trigger period"
+			align="horiz. right"
+		}
+		text {
+			object {
+				x=485
+				y=195
+				width=130
+				height=20
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="Trigger state"
+			align="horiz. right"
+		}
+		text {
+			object {
+				x=495
+				y=220
+				width=120
+				height=20
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="Trigger once"
+			align="horiz. right"
+		}
+		menu {
+			object {
+				x=622
+				y=145
+				width=80
+				height=20
+			}
+			control {
+				chan="$(P)$(R)TriggerSource"
+				clr=14
+				bclr=51
+			}
+		}
+		"text update" {
+			object {
+				x=707
+				y=145
+				width=120
+				height=20
+			}
+			monitor {
+				chan="$(P)$(R)TriggerSource_RBV"
+				clr=53
+				bclr=4
+			}
+			limits {
+			}
+		}
+		"text update" {
+			object {
+				x=707
+				y=170
+				width=120
+				height=20
+			}
+			monitor {
+				chan="$(P)$(R)TriggerPeriod_RBV"
+				clr=53
+				bclr=4
+			}
+			format="exponential"
+			limits {
+			}
+		}
+		"text entry" {
+			object {
+				x=621
+				y=170
+				width=80
+				height=20
+			}
+			control {
+				chan="$(P)$(R)TriggerPeriod"
+				clr=14
+				bclr=51
+			}
+			format="exponential"
+			limits {
+			}
+		}
+		menu {
+			object {
+				x=622
+				y=195
+				width=80
+				height=20
+			}
+			control {
+				chan="$(P)$(R)TriggerState"
+				clr=14
+				bclr=51
+			}
+		}
+		"text update" {
+			object {
+				x=707
+				y=195
+				width=120
+				height=20
+			}
+			monitor {
+				chan="$(P)$(R)TriggerState_RBV"
+				clr=53
+				bclr=4
+			}
+			limits {
+			}
+		}
+		"message button" {
+			object {
+				x=622
+				y=220
+				width=80
+				height=20
+			}
+			control {
+				chan="$(P)$(R)TriggerOnce.PROC"
+				clr=14
+				bclr=51
+			}
+			label="Trigger"
+			press_msg="1"
+		}
+		rectangle {
+			object {
+				x=430
+				y=115
+				width=420
+				height=130
+			}
+			"basic attribute" {
+				clr=14
+				fill="outline"
+			}
+		}
+	}
+}
+composite {
+	object {
+		x=430
+		y=250
+		width=420
+		height=155
+	}
+	"composite name"=""
+	children {
+		text {
+			object {
+				x=594
+				y=255
+				width=143
+				height=20
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="Burst"
+			align="horiz. centered"
+		}
+		text {
+			object {
+				x=495
+				y=305
+				width=120
+				height=20
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="Burst source"
+			align="horiz. right"
+		}
+		text {
+			object {
+				x=505
+				y=355
+				width=110
+				height=20
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="Burst state"
+			align="horiz. right"
+		}
+		text {
+			object {
+				x=515
+				y=380
+				width=100
+				height=20
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="Burst once"
+			align="horiz. right"
+		}
+		text {
+			object {
+				x=515
+				y=330
+				width=100
+				height=20
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="Burst period"
+			align="horiz. right"
+		}
+		text {
+			object {
+				x=495
+				y=280
+				width=120
+				height=20
+			}
+			"basic attribute" {
+				clr=14
+			}
+			textix="Burst cycles"
+			align="horiz. right"
+		}
+		menu {
+			object {
+				x=622
+				y=305
+				width=80
+				height=20
+			}
+			control {
+				chan="$(P)$(R)BurstSource"
+				clr=14
+				bclr=51
+			}
+		}
+		"text update" {
+			object {
+				x=707
+				y=305
+				width=120
+				height=20
+			}
+			monitor {
+				chan="$(P)$(R)BurstSource_RBV"
+				clr=53
+				bclr=4
+			}
+			limits {
+			}
+		}
+		menu {
+			object {
+				x=622
+				y=355
+				width=80
+				height=20
+			}
+			control {
+				chan="$(P)$(R)BurstState"
+				clr=14
+				bclr=51
+			}
+		}
+		"text update" {
+			object {
+				x=707
+				y=355
+				width=120
+				height=20
+			}
+			monitor {
+				chan="$(P)$(R)BurstState_RBV"
+				clr=53
+				bclr=4
+			}
+			limits {
+			}
+		}
+		"message button" {
+			object {
+				x=622
+				y=380
+				width=80
+				height=20
+			}
+			control {
+				chan="$(P)$(R)BurstOnce.PROC"
+				clr=14
+				bclr=51
+			}
+			label="Burst"
+			press_msg="1"
+		}
+		"text entry" {
+			object {
+				x=621
+				y=330
+				width=80
+				height=20
+			}
+			control {
+				chan="$(P)$(R)BurstPeriod"
+				clr=14
+				bclr=51
+			}
+			format="exponential"
+			limits {
+			}
+		}
+		"text update" {
+			object {
+				x=707
+				y=330
+				width=120
+				height=20
+			}
+			monitor {
+				chan="$(P)$(R)BurstPeriod_RBV"
+				clr=53
+				bclr=4
+			}
+			format="exponential"
+			limits {
+			}
+		}
+		"text entry" {
+			object {
+				x=621
+				y=280
+				width=80
+				height=20
+			}
+			control {
+				chan="$(P)$(R)BurstCycles"
+				clr=14
+				bclr=51
+			}
+			limits {
+			}
+		}
+		"text update" {
+			object {
+				x=707
+				y=280
+				width=120
+				height=20
+			}
+			monitor {
+				chan="$(P)$(R)BurstCycles_RBV"
+				clr=53
+				bclr=4
+			}
+			limits {
+			}
+		}
+		rectangle {
+			object {
+				x=430
+				y=250
+				width=420
+				height=155
+			}
+			"basic attribute" {
+				clr=14
+				fill="outline"
+			}
+		}
+	}
+}

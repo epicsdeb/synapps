@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
-<title>asyn: /home/epics/devel/asynR4-21/asyn/asynPortDriver/asynPortDriver.h File Reference</title>
+<title>asyn: /home/epics/devel/asynR4-23/asyn/asynPortDriver/asynPortDriver.h File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <link href="doxygen.css" rel="stylesheet" type="text/css"/>
 </head>
@@ -14,7 +14,7 @@
  <tbody>
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
-   <div id="projectname">asyn&#160;<span id="projectnumber">4-21</span></div>
+   <div id="projectname">asyn&#160;<span id="projectnumber">4-23</span></div>
   </td>
  </tr>
  </tbody>
@@ -38,9 +38,10 @@
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#define-members">Defines</a> &#124;
+<a href="#typedef-members">Typedefs</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
-<div class="title">/home/epics/devel/asynR4-21/asyn/asynPortDriver/asynPortDriver.h File Reference</div>  </div>
+<div class="title">/home/epics/devel/asynR4-23/asyn/asynPortDriver/asynPortDriver.h File Reference</div>  </div>
 </div>
 <div class="contents">
 <div class="textblock"><code>#include &lt;epicsTypes.h&gt;</code><br/>
@@ -71,9 +72,13 @@ Defines</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="asyn_port_driver_8h.html#afe33804668d7cbb31ae4847912c27528">asynFloat64ArrayMask</a>&#160;&#160;&#160;0x00000800</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="asyn_port_driver_8h.html#a16aec9eb32e14d989ddc2d426ea60fc7">asynGenericPointerMask</a>&#160;&#160;&#160;0x00001000</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="asyn_port_driver_8h.html#a2f63051c294f73ed3fc72e294c887338">asynEnumMask</a>&#160;&#160;&#160;0x00002000</td></tr>
+<tr><td colspan="2"><h2><a name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">typedef void(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="asyn_port_driver_8h.html#ad6cd26f00b6bb10a82b4d3f2d52d713c">userTimeStampFunction</a> )(void *userPvt, epicsTimeStamp *pTimeStamp)</td></tr>
 <tr><td colspan="2"><h2><a name="func-members"></a>
 Functions</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">epicsShareFunc void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="asyn_port_driver_8h.html#a4a71e1403f4f938305beb6c95dc09dae">findAsynPortDriver</a> (const char *portName)</td></tr>
+<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Utility function that returns a pointer to an <a class="el" href="classasyn_port_driver.html" title="Base class for asyn port drivers; handles most of the bookkeeping for writing an asyn port driver wit...">asynPortDriver</a> object from its name.  <a href="#a4a71e1403f4f938305beb6c95dc09dae"></a><br/></td></tr>
 </table>
 <hr/><h2>Define Documentation</h2>
 <a class="anchor" id="a75eb8e72f4a1c0751b7fdbbfeb810876"></a><!-- doxytag: member="asynPortDriver.h::asynCommonMask" ref="a75eb8e72f4a1c0751b7fdbbfeb810876" args="" -->
@@ -260,6 +265,20 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<hr/><h2>Typedef Documentation</h2>
+<a class="anchor" id="ad6cd26f00b6bb10a82b4d3f2d52d713c"></a><!-- doxytag: member="asynPortDriver.h::userTimeStampFunction" ref="ad6cd26f00b6bb10a82b4d3f2d52d713c" args=")(void *userPvt, epicsTimeStamp *pTimeStamp)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef void(* <a class="el" href="asyn_port_driver_8h.html#ad6cd26f00b6bb10a82b4d3f2d52d713c">userTimeStampFunction</a>)(void *userPvt, epicsTimeStamp *pTimeStamp)</td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
 <hr/><h2>Function Documentation</h2>
 <a class="anchor" id="a4a71e1403f4f938305beb6c95dc09dae"></a><!-- doxytag: member="asynPortDriver.h::findAsynPortDriver" ref="a4a71e1403f4f938305beb6c95dc09dae" args="(const char *portName)" -->
 <div class="memitem">
@@ -276,10 +295,12 @@ Functions</h2></td></tr>
 </div>
 <div class="memdoc">
 
+<p>Utility function that returns a pointer to an <a class="el" href="classasyn_port_driver.html" title="Base class for asyn port drivers; handles most of the bookkeeping for writing an asyn port driver wit...">asynPortDriver</a> object from its name. </p>
+
 </div>
 </div>
 </div>
-<hr class="footer"/><address class="footer"><small>Generated on Mon Feb 18 2013 for asyn by&#160;
+<hr class="footer"/><address class="footer"><small>Generated on Wed Jun 18 2014 for asyn by&#160;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.7.4 </small></address>
 </body>

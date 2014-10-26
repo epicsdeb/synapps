@@ -1,21 +1,21 @@
 
 file {
-	name="/home/epicsioc/epics/iocs/7idchem1/delaygenApp/op/adl/srsDG645Outputs.adl"
-	version=030101
+	name="/home/oxygen/DOHNARMS/controls/epics/SRS_DG645/ioc/dg645App/op/adl/srsDG645Outputs.adl"
+	version=030107
 }
 display {
 	object {
-		x=159
-		y=138
-		width=668
-		height=385
+		x=26
+		y=229
+		width=650
+		height=315
 	}
 	clr=14
 	bclr=3
 	cmap=""
 	gridSpacing=5
 	gridOn=0
-	snapToGrid=0
+	snapToGrid=1
 }
 "color map" {
 	ncolors=65
@@ -89,124 +89,112 @@ display {
 }
 rectangle {
 	object {
-		x=4
-		y=29
-		width=660
-		height=4
+		x=-5
+		y=30
+		width=670
+		height=3
 	}
 	"basic attribute" {
-		clr=6
+		clr=10
 		width=3
 	}
 }
 text {
 	object {
-		x=19
-		y=183
-		width=78
-		height=18
+		x=5
+		y=180
+		width=90
+		height=20
 	}
 	"basic attribute" {
 		clr=14
 		fill="outline"
 	}
 	textix="Amplitude"
-}
-rectangle {
-	object {
-		x=1
-		y=0
-		width=664
-		height=340
-	}
-	"basic attribute" {
-		clr=14
-		fill="outline"
-		width=3
-	}
+	align="horiz. right"
 }
 text {
 	object {
-		x=19
-		y=264
-		width=78
-		height=18
+		x=5
+		y=260
+		width=90
+		height=20
 	}
 	"basic attribute" {
 		clr=14
 		fill="outline"
 	}
 	textix="Offset"
+	align="horiz. right"
 }
 text {
 	object {
-		x=19
-		y=129
-		width=78
-		height=18
+		x=5
+		y=120
+		width=90
+		height=20
 	}
 	"basic attribute" {
 		clr=14
 		fill="outline"
 	}
 	textix="Polarity"
+	align="horiz. right"
 }
 "text update" {
 	object {
-		x=104
-		y=122
+		x=105
+		y=110
 		width=60
 		height=16
 	}
 	monitor {
-		chan="$(P)$(R)tOutputPolarityBI"
-		clr=14
+		chan="$(P)$(R)T0OutputPolarityBI"
+		clr=54
 		bclr=1
 	}
-	clrmod="alarm"
 	align="horiz. centered"
 	limits {
 	}
 }
 menu {
 	object {
-		x=102
-		y=142
-		width=65
-		height=18
+		x=105
+		y=130
+		width=60
+		height=22
 	}
 	control {
-		chan="$(P)$(R)tOutputPolarityBO"
+		chan="$(P)$(R)T0OutputPolarityBO"
 		clr=14
 		bclr=51
 	}
 }
 "text update" {
 	object {
-		x=109
-		y=174
+		x=110
+		y=160
 		width=50
 		height=16
 	}
 	monitor {
-		chan="$(P)$(R)tOutputAmpAI"
-		clr=14
+		chan="$(P)$(R)T0OutputAmpAI"
+		clr=54
 		bclr=1
 	}
-	clrmod="alarm"
 	align="horiz. centered"
 	limits {
 	}
 }
 "text entry" {
 	object {
-		x=109
-		y=194
+		x=110
+		y=180
 		width=50
 		height=22
 	}
 	control {
-		chan="$(P)$(R)tOutputAmpAO"
+		chan="$(P)$(R)T0OutputAmpAO"
 		clr=14
 		bclr=51
 	}
@@ -215,30 +203,29 @@ menu {
 }
 "text update" {
 	object {
-		x=109
-		y=256
+		x=110
+		y=240
 		width=50
 		height=16
 	}
 	monitor {
-		chan="$(P)$(R)tOutputOffsetAI"
-		clr=14
+		chan="$(P)$(R)T0OutputOffsetAI"
+		clr=54
 		bclr=1
 	}
-	clrmod="alarm"
 	align="horiz. centered"
 	limits {
 	}
 }
 "text entry" {
 	object {
-		x=109
-		y=276
+		x=110
+		y=260
 		width=50
 		height=22
 	}
 	control {
-		chan="$(P)$(R)tOutputOffsetAO"
+		chan="$(P)$(R)T0OutputOffsetAO"
 		clr=14
 		bclr=51
 	}
@@ -247,44 +234,43 @@ menu {
 }
 text {
 	object {
-		x=104
-		y=42
+		x=105
+		y=35
 		width=60
-		height=24
+		height=20
 	}
 	"basic attribute" {
 		clr=14
 		fill="outline"
 	}
-	textix="To"
+	textix="T0"
 	align="horiz. centered"
 }
 "text update" {
 	object {
 		x=220
-		y=122
+		y=110
 		width=60
 		height=16
 	}
 	monitor {
-		chan="$(P)$(R)abOutputPolarityBI"
-		clr=14
+		chan="$(P)$(R)ABOutputPolarityBI"
+		clr=54
 		bclr=1
 	}
-	clrmod="alarm"
 	align="horiz. centered"
 	limits {
 	}
 }
 menu {
 	object {
-		x=218
-		y=142
-		width=65
-		height=18
+		x=220
+		y=130
+		width=60
+		height=22
 	}
 	control {
-		chan="$(P)$(R)abOutputPolarityBO"
+		chan="$(P)$(R)ABOutputPolarityBO"
 		clr=14
 		bclr=51
 	}
@@ -292,16 +278,15 @@ menu {
 "text update" {
 	object {
 		x=225
-		y=174
+		y=160
 		width=50
 		height=16
 	}
 	monitor {
-		chan="$(P)$(R)abOutputAmpAI"
-		clr=14
+		chan="$(P)$(R)ABOutputAmpAI"
+		clr=54
 		bclr=1
 	}
-	clrmod="alarm"
 	align="horiz. centered"
 	limits {
 	}
@@ -309,12 +294,12 @@ menu {
 "text entry" {
 	object {
 		x=225
-		y=194
+		y=180
 		width=50
 		height=22
 	}
 	control {
-		chan="$(P)$(R)abOutputAmpAO"
+		chan="$(P)$(R)ABOutputAmpAO"
 		clr=14
 		bclr=51
 	}
@@ -324,16 +309,15 @@ menu {
 "text update" {
 	object {
 		x=225
-		y=256
+		y=240
 		width=50
 		height=16
 	}
 	monitor {
-		chan="$(P)$(R)abOutputOffsetAI"
-		clr=14
+		chan="$(P)$(R)ABOutputOffsetAI"
+		clr=54
 		bclr=1
 	}
-	clrmod="alarm"
 	align="horiz. centered"
 	limits {
 	}
@@ -341,12 +325,12 @@ menu {
 "text entry" {
 	object {
 		x=225
-		y=276
+		y=260
 		width=50
 		height=22
 	}
 	control {
-		chan="$(P)$(R)abOutputOffsetAO"
+		chan="$(P)$(R)ABOutputOffsetAO"
 		clr=14
 		bclr=51
 	}
@@ -356,9 +340,9 @@ menu {
 text {
 	object {
 		x=220
-		y=42
+		y=35
 		width=60
-		height=24
+		height=20
 	}
 	"basic attribute" {
 		clr=14
@@ -369,60 +353,58 @@ text {
 }
 "text update" {
 	object {
-		x=336
-		y=122
+		x=335
+		y=110
 		width=60
 		height=16
 	}
 	monitor {
-		chan="$(P)$(R)cdOutputPolarityBI"
-		clr=14
+		chan="$(P)$(R)CDOutputPolarityBI"
+		clr=54
 		bclr=1
 	}
-	clrmod="alarm"
 	align="horiz. centered"
 	limits {
 	}
 }
 menu {
 	object {
-		x=334
-		y=142
-		width=65
-		height=18
+		x=335
+		y=130
+		width=60
+		height=22
 	}
 	control {
-		chan="$(P)$(R)cdOutputPolarityBO"
+		chan="$(P)$(R)CDOutputPolarityBO"
 		clr=14
 		bclr=51
 	}
 }
 "text update" {
 	object {
-		x=341
-		y=174
+		x=340
+		y=160
 		width=50
 		height=16
 	}
 	monitor {
-		chan="$(P)$(R)cdOutputAmpAI"
-		clr=14
+		chan="$(P)$(R)CDOutputAmpAI"
+		clr=54
 		bclr=1
 	}
-	clrmod="alarm"
 	align="horiz. centered"
 	limits {
 	}
 }
 "text entry" {
 	object {
-		x=341
-		y=194
+		x=340
+		y=180
 		width=50
 		height=22
 	}
 	control {
-		chan="$(P)$(R)cdOutputAmpAO"
+		chan="$(P)$(R)CDOutputAmpAO"
 		clr=14
 		bclr=51
 	}
@@ -432,16 +414,15 @@ menu {
 "text update" {
 	object {
 		x=340
-		y=256
+		y=240
 		width=50
 		height=16
 	}
 	monitor {
-		chan="$(P)$(R)cdOutputOffsetAI"
-		clr=14
+		chan="$(P)$(R)CDOutputOffsetAI"
+		clr=54
 		bclr=1
 	}
-	clrmod="alarm"
 	align="horiz. centered"
 	limits {
 	}
@@ -449,12 +430,12 @@ menu {
 "text entry" {
 	object {
 		x=340
-		y=276
+		y=260
 		width=50
 		height=22
 	}
 	control {
-		chan="$(P)$(R)cdOutputOffsetAO"
+		chan="$(P)$(R)CDOutputOffsetAO"
 		clr=14
 		bclr=51
 	}
@@ -463,10 +444,10 @@ menu {
 }
 text {
 	object {
-		x=336
-		y=42
+		x=335
+		y=35
 		width=60
-		height=24
+		height=20
 	}
 	"basic attribute" {
 		clr=14
@@ -477,30 +458,29 @@ text {
 }
 "text update" {
 	object {
-		x=457
-		y=174
+		x=455
+		y=160
 		width=50
 		height=16
 	}
 	monitor {
-		chan="$(P)$(R)efOutputAmpAI"
-		clr=14
+		chan="$(P)$(R)EFOutputAmpAI"
+		clr=54
 		bclr=1
 	}
-	clrmod="alarm"
 	align="horiz. centered"
 	limits {
 	}
 }
 "text entry" {
 	object {
-		x=457
-		y=194
+		x=455
+		y=180
 		width=50
 		height=22
 	}
 	control {
-		chan="$(P)$(R)efOutputAmpAO"
+		chan="$(P)$(R)EFOutputAmpAO"
 		clr=14
 		bclr=51
 	}
@@ -509,30 +489,29 @@ text {
 }
 "text update" {
 	object {
-		x=457
-		y=256
+		x=455
+		y=240
 		width=50
 		height=16
 	}
 	monitor {
-		chan="$(P)$(R)efOutputOffsetAI"
-		clr=14
+		chan="$(P)$(R)EFOutputOffsetAI"
+		clr=54
 		bclr=1
 	}
-	clrmod="alarm"
 	align="horiz. centered"
 	limits {
 	}
 }
 "text entry" {
 	object {
-		x=457
-		y=276
+		x=455
+		y=260
 		width=50
 		height=22
 	}
 	control {
-		chan="$(P)$(R)efOutputOffsetAO"
+		chan="$(P)$(R)EFOutputOffsetAO"
 		clr=14
 		bclr=51
 	}
@@ -541,10 +520,10 @@ text {
 }
 text {
 	object {
-		x=452
-		y=42
+		x=455
+		y=35
 		width=60
-		height=24
+		height=20
 	}
 	"basic attribute" {
 		clr=14
@@ -555,60 +534,58 @@ text {
 }
 "text update" {
 	object {
-		x=568
-		y=122
+		x=565
+		y=110
 		width=60
 		height=16
 	}
 	monitor {
-		chan="$(P)$(R)ghOutputPolarityBI"
-		clr=14
+		chan="$(P)$(R)GHOutputPolarityBI"
+		clr=54
 		bclr=1
 	}
-	clrmod="alarm"
 	align="horiz. centered"
 	limits {
 	}
 }
 menu {
 	object {
-		x=566
-		y=142
-		width=65
-		height=18
+		x=565
+		y=130
+		width=60
+		height=22
 	}
 	control {
-		chan="$(P)$(R)ghOutputPolarityBO"
+		chan="$(P)$(R)GHOutputPolarityBO"
 		clr=14
 		bclr=51
 	}
 }
 "text update" {
 	object {
-		x=573
-		y=174
+		x=570
+		y=160
 		width=50
 		height=16
 	}
 	monitor {
-		chan="$(P)$(R)ghOutputAmpAI"
-		clr=14
+		chan="$(P)$(R)GHOutputAmpAI"
+		clr=54
 		bclr=1
 	}
-	clrmod="alarm"
 	align="horiz. centered"
 	limits {
 	}
 }
 "text entry" {
 	object {
-		x=573
-		y=194
+		x=570
+		y=180
 		width=50
 		height=22
 	}
 	control {
-		chan="$(P)$(R)ghOutputAmpAO"
+		chan="$(P)$(R)GHOutputAmpAO"
 		clr=14
 		bclr=51
 	}
@@ -617,30 +594,29 @@ menu {
 }
 "text update" {
 	object {
-		x=573
-		y=256
+		x=570
+		y=240
 		width=50
 		height=16
 	}
 	monitor {
-		chan="$(P)$(R)ghOutputOffsetAI"
-		clr=14
+		chan="$(P)$(R)GHOutputOffsetAI"
+		clr=54
 		bclr=1
 	}
-	clrmod="alarm"
 	align="horiz. centered"
 	limits {
 	}
 }
 "text entry" {
 	object {
-		x=573
-		y=276
+		x=570
+		y=260
 		width=50
 		height=22
 	}
 	control {
-		chan="$(P)$(R)ghOutputOffsetAO"
+		chan="$(P)$(R)GHOutputOffsetAO"
 		clr=14
 		bclr=51
 	}
@@ -649,10 +625,10 @@ menu {
 }
 text {
 	object {
-		x=568
-		y=42
+		x=565
+		y=35
 		width=60
-		height=24
+		height=20
 	}
 	"basic attribute" {
 		clr=14
@@ -661,76 +637,39 @@ text {
 	textix="GH"
 	align="horiz. centered"
 }
-"text update" {
-	object {
-		x=8
-		y=7
-		width=650
-		height=18
-	}
-	monitor {
-		chan="$(P)$(R)identSI"
-		clr=14
-		bclr=3
-	}
-	clrmod="alarm"
-	align="horiz. centered"
-	format="string"
-	limits {
-	}
-}
 menu {
 	object {
 		x=450
-		y=142
-		width=65
-		height=18
+		y=130
+		width=60
+		height=22
 	}
 	control {
-		chan="$(P)$(R)efOutputPolarityBO"
+		chan="$(P)$(R)EFOutputPolarityBO"
 		clr=14
 		bclr=51
 	}
 }
 "text update" {
 	object {
-		x=452
-		y=122
+		x=450
+		y=110
 		width=60
 		height=16
 	}
 	monitor {
-		chan="$(P)$(R)efOutputPolarityBI"
-		clr=14
+		chan="$(P)$(R)EFOutputPolarityBI"
+		clr=54
 		bclr=1
 	}
-	clrmod="alarm"
 	align="horiz. centered"
 	limits {
 	}
 }
 text {
 	object {
-		x=551
-		y=351
-		width=100
-		height=22
-	}
-	"basic attribute" {
-		clr=20
-		fill="outline"
-	}
-	"dynamic attribute" {
-		vis="if not zero"
-		chan="$(P)$(R)statusLI"
-	}
-	textix="ERROR!!"
-	align="horiz. centered"
-}
-text {
-	object {
-		x=472
-		y=353
+		x=520
+		y=10
 		width=74
 		height=18
 	}
@@ -740,38 +679,20 @@ text {
 	}
 	"dynamic attribute" {
 		vis="if not zero"
-		chan="$(P)$(R)disableScanBI"
+		chan="$(P)$(R)DisableScanBI"
 	}
 	textix="OFF LINE"
 	align="horiz. centered"
 }
-text {
-	object {
-		x=474
-		y=353
-		width=74
-		height=18
-	}
-	"basic attribute" {
-		clr=62
-		fill="outline"
-	}
-	"dynamic attribute" {
-		vis="if zero"
-		chan="$(P)$(R)disableScanBI"
-	}
-	textix="ON LINE"
-	align="horiz. centered"
-}
 "text entry" {
 	object {
-		x=109
-		y=220
+		x=110
+		y=205
 		width=50
 		height=22
 	}
 	control {
-		chan="$(P)$(R)tOutputAmpTweakAO"
+		chan="$(P)$(R)T0OutputAmpTweakAO"
 		clr=14
 		bclr=51
 	}
@@ -780,13 +701,13 @@ text {
 }
 "message button" {
 	object {
-		x=80
-		y=220
+		x=85
+		y=205
 		width=25
 		height=22
 	}
 	control {
-		chan="$(P)$(R)tOutputAmpTweakDecCO.PROC"
+		chan="$(P)$(R)T0OutputAmpTweakDecCO.PROC"
 		clr=14
 		bclr=51
 	}
@@ -795,13 +716,13 @@ text {
 }
 "message button" {
 	object {
-		x=163
-		y=220
+		x=160
+		y=205
 		width=25
 		height=22
 	}
 	control {
-		chan="$(P)$(R)tOutputAmpTweakIncCO.PROC"
+		chan="$(P)$(R)T0OutputAmpTweakIncCO.PROC"
 		clr=14
 		bclr=51
 	}
@@ -810,13 +731,13 @@ text {
 }
 "message button" {
 	object {
-		x=80
-		y=302
+		x=85
+		y=285
 		width=25
 		height=22
 	}
 	control {
-		chan="$(P)$(R)tOutputOffsetTweakDecCO.PROC"
+		chan="$(P)$(R)T0OutputOffsetTweakDecCO.PROC"
 		clr=14
 		bclr=51
 	}
@@ -825,13 +746,13 @@ text {
 }
 "text entry" {
 	object {
-		x=109
-		y=302
+		x=110
+		y=285
 		width=50
 		height=22
 	}
 	control {
-		chan="$(P)$(R)tOutputOffsetTweakAO"
+		chan="$(P)$(R)T0OutputOffsetTweakAO"
 		clr=14
 		bclr=51
 	}
@@ -840,13 +761,13 @@ text {
 }
 "message button" {
 	object {
-		x=163
-		y=302
+		x=160
+		y=285
 		width=25
 		height=22
 	}
 	control {
-		chan="$(P)$(R)tOutputOffsetTweakIncCO.PROC"
+		chan="$(P)$(R)T0OutputOffsetTweakIncCO.PROC"
 		clr=14
 		bclr=51
 	}
@@ -855,26 +776,27 @@ text {
 }
 text {
 	object {
-		x=19
+		x=5
 		y=70
-		width=78
-		height=18
+		width=90
+		height=20
 	}
 	"basic attribute" {
 		clr=14
 		fill="outline"
 	}
 	textix="Mode"
+	align="horiz. right"
 }
 "message button" {
 	object {
-		x=196
-		y=220
+		x=200
+		y=205
 		width=25
 		height=22
 	}
 	control {
-		chan="$(P)$(R)abOutputAmpTweakDecCO.PROC"
+		chan="$(P)$(R)ABOutputAmpTweakDecCO.PROC"
 		clr=14
 		bclr=51
 	}
@@ -884,12 +806,12 @@ text {
 "text entry" {
 	object {
 		x=225
-		y=220
+		y=205
 		width=50
 		height=22
 	}
 	control {
-		chan="$(P)$(R)abOutputAmpTweakAO"
+		chan="$(P)$(R)ABOutputAmpTweakAO"
 		clr=14
 		bclr=51
 	}
@@ -898,13 +820,13 @@ text {
 }
 "message button" {
 	object {
-		x=279
-		y=220
+		x=275
+		y=205
 		width=25
 		height=22
 	}
 	control {
-		chan="$(P)$(R)abOutputAmpTweakIncCO.PROC"
+		chan="$(P)$(R)ABOutputAmpTweakIncCO.PROC"
 		clr=14
 		bclr=51
 	}
@@ -913,13 +835,13 @@ text {
 }
 "message button" {
 	object {
-		x=196
-		y=302
+		x=200
+		y=285
 		width=25
 		height=22
 	}
 	control {
-		chan="$(P)$(R)abOutputOffsetTweakDecCO.PROC"
+		chan="$(P)$(R)ABOutputOffsetTweakDecCO.PROC"
 		clr=14
 		bclr=51
 	}
@@ -929,12 +851,12 @@ text {
 "text entry" {
 	object {
 		x=225
-		y=302
+		y=285
 		width=50
 		height=22
 	}
 	control {
-		chan="$(P)$(R)abOutputOffsetTweakAO"
+		chan="$(P)$(R)ABOutputOffsetTweakAO"
 		clr=14
 		bclr=51
 	}
@@ -943,13 +865,13 @@ text {
 }
 "message button" {
 	object {
-		x=279
-		y=302
+		x=275
+		y=285
 		width=25
 		height=22
 	}
 	control {
-		chan="$(P)$(R)abOutputOffsetTweakIncCO.PROC"
+		chan="$(P)$(R)ABOutputOffsetTweakIncCO.PROC"
 		clr=14
 		bclr=51
 	}
@@ -958,148 +880,13 @@ text {
 }
 "message button" {
 	object {
-		x=312
-		y=220
+		x=315
+		y=205
 		width=25
 		height=22
 	}
 	control {
-		chan="$(P)$(R)cdOutputAmpTweakDecCO.PROC"
-		clr=14
-		bclr=51
-	}
-	label="<"
-	press_msg="1"
-}
-"text entry" {
-	object {
-		x=341
-		y=220
-		width=50
-		height=22
-	}
-	control {
-		chan="$(P)$(R)cdOutputAmpTweakAO"
-		clr=14
-		bclr=51
-	}
-	limits {
-	}
-}
-"message button" {
-	object {
-		x=395
-		y=220
-		width=25
-		height=22
-	}
-	control {
-		chan="$(P)$(R)cdOutputAmpTweakIncCO.PROC"
-		clr=14
-		bclr=51
-	}
-	label=">"
-	press_msg="1"
-}
-"message button" {
-	object {
-		x=428
-		y=220
-		width=25
-		height=22
-	}
-	control {
-		chan="$(P)$(R)efOutputAmpTweakDecCO.PROC"
-		clr=14
-		bclr=51
-	}
-	label="<"
-	press_msg="1"
-}
-"text entry" {
-	object {
-		x=457
-		y=220
-		width=50
-		height=22
-	}
-	control {
-		chan="$(P)$(R)efOutputAmpTweakAO"
-		clr=14
-		bclr=51
-	}
-	limits {
-	}
-}
-"message button" {
-	object {
-		x=511
-		y=220
-		width=25
-		height=22
-	}
-	control {
-		chan="$(P)$(R)efOutputAmpTweakIncCO.PROC"
-		clr=14
-		bclr=51
-	}
-	label=">"
-	press_msg="1"
-}
-"message button" {
-	object {
-		x=544
-		y=220
-		width=25
-		height=22
-	}
-	control {
-		chan="$(P)$(R)ghOutputAmpTweakDecCO.PROC"
-		clr=14
-		bclr=51
-	}
-	label="<"
-	press_msg="1"
-}
-"text entry" {
-	object {
-		x=573
-		y=220
-		width=50
-		height=22
-	}
-	control {
-		chan="$(P)$(R)ghOutputAmpTweakAO"
-		clr=14
-		bclr=51
-	}
-	limits {
-	}
-}
-"message button" {
-	object {
-		x=627
-		y=220
-		width=25
-		height=22
-	}
-	control {
-		chan="$(P)$(R)ghOutputAmpTweakIncCO.PROC"
-		clr=14
-		bclr=51
-	}
-	label=">"
-	press_msg="1"
-}
-"message button" {
-	object {
-		x=311
-		y=302
-		width=25
-		height=22
-	}
-	control {
-		chan="$(P)$(R)cdOutputOffsetTweakDecCO.PROC"
+		chan="$(P)$(R)CDOutputAmpTweakDecCO.PROC"
 		clr=14
 		bclr=51
 	}
@@ -1109,12 +896,12 @@ text {
 "text entry" {
 	object {
 		x=340
-		y=302
+		y=205
 		width=50
 		height=22
 	}
 	control {
-		chan="$(P)$(R)cdOutputOffsetTweakAO"
+		chan="$(P)$(R)CDOutputAmpTweakAO"
 		clr=14
 		bclr=51
 	}
@@ -1123,13 +910,13 @@ text {
 }
 "message button" {
 	object {
-		x=394
-		y=302
+		x=390
+		y=205
 		width=25
 		height=22
 	}
 	control {
-		chan="$(P)$(R)cdOutputOffsetTweakIncCO.PROC"
+		chan="$(P)$(R)CDOutputAmpTweakIncCO.PROC"
 		clr=14
 		bclr=51
 	}
@@ -1138,13 +925,13 @@ text {
 }
 "message button" {
 	object {
-		x=428
-		y=302
+		x=430
+		y=205
 		width=25
 		height=22
 	}
 	control {
-		chan="$(P)$(R)efOutputOffsetTweakDecCO.PROC"
+		chan="$(P)$(R)EFOutputAmpTweakDecCO.PROC"
 		clr=14
 		bclr=51
 	}
@@ -1153,13 +940,13 @@ text {
 }
 "text entry" {
 	object {
-		x=457
-		y=302
+		x=455
+		y=205
 		width=50
 		height=22
 	}
 	control {
-		chan="$(P)$(R)efOutputOffsetTweakAO"
+		chan="$(P)$(R)EFOutputAmpTweakAO"
 		clr=14
 		bclr=51
 	}
@@ -1168,13 +955,13 @@ text {
 }
 "message button" {
 	object {
-		x=511
-		y=302
+		x=505
+		y=205
 		width=25
 		height=22
 	}
 	control {
-		chan="$(P)$(R)efOutputOffsetTweakIncCO.PROC"
+		chan="$(P)$(R)EFOutputAmpTweakIncCO.PROC"
 		clr=14
 		bclr=51
 	}
@@ -1183,13 +970,13 @@ text {
 }
 "message button" {
 	object {
-		x=544
-		y=302
+		x=545
+		y=205
 		width=25
 		height=22
 	}
 	control {
-		chan="$(P)$(R)ghOutputOffsetTweakDecCO.PROC"
+		chan="$(P)$(R)GHOutputAmpTweakDecCO.PROC"
 		clr=14
 		bclr=51
 	}
@@ -1198,13 +985,13 @@ text {
 }
 "text entry" {
 	object {
-		x=573
-		y=302
+		x=570
+		y=205
 		width=50
 		height=22
 	}
 	control {
-		chan="$(P)$(R)ghOutputOffsetTweakAO"
+		chan="$(P)$(R)GHOutputAmpTweakAO"
 		clr=14
 		bclr=51
 	}
@@ -1213,13 +1000,13 @@ text {
 }
 "message button" {
 	object {
-		x=627
-		y=302
+		x=620
+		y=205
 		width=25
 		height=22
 	}
 	control {
-		chan="$(P)$(R)ghOutputOffsetTweakIncCO.PROC"
+		chan="$(P)$(R)GHOutputAmpTweakIncCO.PROC"
 		clr=14
 		bclr=51
 	}
@@ -1228,13 +1015,148 @@ text {
 }
 "message button" {
 	object {
-		x=102
-		y=70
-		width=65
-		height=18
+		x=315
+		y=285
+		width=25
+		height=22
 	}
 	control {
-		chan="$(P)$(R)tOutputModeTtlSS.PROC"
+		chan="$(P)$(R)CDOutputOffsetTweakDecCO.PROC"
+		clr=14
+		bclr=51
+	}
+	label="<"
+	press_msg="1"
+}
+"text entry" {
+	object {
+		x=340
+		y=285
+		width=50
+		height=22
+	}
+	control {
+		chan="$(P)$(R)CDOutputOffsetTweakAO"
+		clr=14
+		bclr=51
+	}
+	limits {
+	}
+}
+"message button" {
+	object {
+		x=390
+		y=285
+		width=25
+		height=22
+	}
+	control {
+		chan="$(P)$(R)CDOutputOffsetTweakIncCO.PROC"
+		clr=14
+		bclr=51
+	}
+	label=">"
+	press_msg="1"
+}
+"message button" {
+	object {
+		x=430
+		y=285
+		width=25
+		height=22
+	}
+	control {
+		chan="$(P)$(R)EFOutputOffsetTweakDecCO.PROC"
+		clr=14
+		bclr=51
+	}
+	label="<"
+	press_msg="1"
+}
+"text entry" {
+	object {
+		x=455
+		y=285
+		width=50
+		height=22
+	}
+	control {
+		chan="$(P)$(R)EFOutputOffsetTweakAO"
+		clr=14
+		bclr=51
+	}
+	limits {
+	}
+}
+"message button" {
+	object {
+		x=505
+		y=285
+		width=25
+		height=22
+	}
+	control {
+		chan="$(P)$(R)EFOutputOffsetTweakIncCO.PROC"
+		clr=14
+		bclr=51
+	}
+	label=">"
+	press_msg="1"
+}
+"message button" {
+	object {
+		x=545
+		y=285
+		width=25
+		height=22
+	}
+	control {
+		chan="$(P)$(R)GHOutputOffsetTweakDecCO.PROC"
+		clr=14
+		bclr=51
+	}
+	label="<"
+	press_msg="1"
+}
+"text entry" {
+	object {
+		x=570
+		y=285
+		width=50
+		height=22
+	}
+	control {
+		chan="$(P)$(R)GHOutputOffsetTweakAO"
+		clr=14
+		bclr=51
+	}
+	limits {
+	}
+}
+"message button" {
+	object {
+		x=620
+		y=285
+		width=25
+		height=22
+	}
+	control {
+		chan="$(P)$(R)GHOutputOffsetTweakIncCO.PROC"
+		clr=14
+		bclr=51
+	}
+	label=">"
+	press_msg="1"
+}
+"message button" {
+	object {
+		x=105
+		y=60
+		width=65
+		height=20
+	}
+	control {
+		chan="$(P)$(R)T0OutputModeTtlSS.PROC"
 		clr=14
 		bclr=51
 	}
@@ -1243,13 +1165,13 @@ text {
 }
 "message button" {
 	object {
-		x=102
-		y=88
+		x=105
+		y=80
 		width=65
-		height=18
+		height=20
 	}
 	control {
-		chan="$(P)$(R)tOutputModeNimSS.PROC"
+		chan="$(P)$(R)T0OutputModeNimSS.PROC"
 		clr=14
 		bclr=51
 	}
@@ -1258,13 +1180,13 @@ text {
 }
 "message button" {
 	object {
-		x=218
-		y=70
+		x=220
+		y=60
 		width=65
-		height=18
+		height=20
 	}
 	control {
-		chan="$(P)$(R)abOutputModeTtlSS.PROC"
+		chan="$(P)$(R)ABOutputModeTtlSS.PROC"
 		clr=14
 		bclr=51
 	}
@@ -1273,13 +1195,13 @@ text {
 }
 "message button" {
 	object {
-		x=218
-		y=88
+		x=220
+		y=80
 		width=65
-		height=18
+		height=20
 	}
 	control {
-		chan="$(P)$(R)abOutputModeNimSS.PROC"
+		chan="$(P)$(R)ABOutputModeNimSS.PROC"
 		clr=14
 		bclr=51
 	}
@@ -1288,13 +1210,13 @@ text {
 }
 "message button" {
 	object {
-		x=334
-		y=70
+		x=335
+		y=60
 		width=65
-		height=18
+		height=20
 	}
 	control {
-		chan="$(P)$(R)cdOutputModeTtlSS.PROC"
+		chan="$(P)$(R)CDOutputModeTtlSS.PROC"
 		clr=14
 		bclr=51
 	}
@@ -1303,13 +1225,13 @@ text {
 }
 "message button" {
 	object {
-		x=334
-		y=88
+		x=335
+		y=80
 		width=65
-		height=18
+		height=20
 	}
 	control {
-		chan="$(P)$(R)cdOutputModeNimSS.PROC"
+		chan="$(P)$(R)CDOutputModeNimSS.PROC"
 		clr=14
 		bclr=51
 	}
@@ -1319,12 +1241,12 @@ text {
 "message button" {
 	object {
 		x=450
-		y=70
+		y=60
 		width=65
-		height=18
+		height=20
 	}
 	control {
-		chan="$(P)$(R)efOutputModeTtlSS.PROC"
+		chan="$(P)$(R)EFOutputModeTtlSS.PROC"
 		clr=14
 		bclr=51
 	}
@@ -1334,12 +1256,12 @@ text {
 "message button" {
 	object {
 		x=450
-		y=88
+		y=80
 		width=65
-		height=18
+		height=20
 	}
 	control {
-		chan="$(P)$(R)efOutputModeNimSS.PROC"
+		chan="$(P)$(R)EFOutputModeNimSS.PROC"
 		clr=14
 		bclr=51
 	}
@@ -1348,13 +1270,13 @@ text {
 }
 "message button" {
 	object {
-		x=566
-		y=70
+		x=565
+		y=60
 		width=65
-		height=18
+		height=20
 	}
 	control {
-		chan="$(P)$(R)ghOutputModeTtlSS.PROC"
+		chan="$(P)$(R)GHOutputModeTtlSS.PROC"
 		clr=14
 		bclr=51
 	}
@@ -1363,16 +1285,74 @@ text {
 }
 "message button" {
 	object {
-		x=566
-		y=88
+		x=565
+		y=80
 		width=65
-		height=18
+		height=20
 	}
 	control {
-		chan="$(P)$(R)ghOutputModeNimSS.PROC"
+		chan="$(P)$(R)GHOutputModeNimSS.PROC"
 		clr=14
 		bclr=51
 	}
 	label="NIM"
 	press_msg="1"
+}
+text {
+	object {
+		x=10
+		y=5
+		width=150
+		height=20
+	}
+	"basic attribute" {
+		clr=54
+	}
+	textix="$(P)$(R)"
+	align="horiz. centered"
+}
+"text entry" {
+	object {
+		x=320
+		y=5
+		width=200
+		height=22
+	}
+	control {
+		chan="$(P)$(R)Label"
+		clr=14
+		bclr=50
+	}
+	format="engr. notation"
+	limits {
+	}
+}
+"related display" {
+	object {
+		x=605
+		y=5
+		width=40
+		height=20
+	}
+	display[0] {
+		label="Main Screen"
+		name="srsDG645.adl"
+		args="P=$(P),R=$(R)"
+	}
+	clr=14
+	bclr=32
+	label="-Main"
+}
+text {
+	object {
+		x=5
+		y=35
+		width=100
+		height=20
+	}
+	"basic attribute" {
+		clr=19
+	}
+	textix="OUTPUTS"
+	align="horiz. centered"
 }

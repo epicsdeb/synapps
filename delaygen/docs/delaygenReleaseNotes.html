@@ -1,12 +1,43 @@
 <html>
 <body>
 
+<P>Release 1.1.0
+
+<dl>
+
+<p><dt>Modified drvAsynDG645.cpp, drvDG645.db, and DG645 screens.<br>
+<dd><br>Removed race condition when there were multiple DG645 devices,
+simplified the code a bit, and had driver use DrvInfo field.  Added
+new "Advanced Triggering" fields: mode enable/disable, prescale phases
+and trigger holdoff.  Added a label for the device.  Redid the
+screens, and removed the reference to the asyn record on the main
+screen.  As the delay PV names were changed to make it simpler to open
+the individual delay screens, the rest of the PV names were changed to
+be consistent (where the first letter is now capitalized).
+
+<p><dt>Moved all Gigabuadics support files (digitalDelay.*) into
+file called "digitalDelay.tar.gz", in the "src" directory.<br>
+<dd><br>This code was based on a custom hardware implementation of a
+solution for using a specific Gigabaudics delay generator.  It is
+highly unlikely that anyone has used this code, and if it was used, it
+can be moved back into position by untarring the file in the root of
+the module.
+
+<p><dt>Modified OPI files:<br>
+BNC_505.opi<br>
+colbyMain.opi<br>
+delaygen.opi<br>
+devDG535.opi<br>
+srsDG645.opi<br>
+<dd><br>Remove relative paths
+
+</dl>
+
 <P>Release 1.0.7
 
 <dl>
 
 <p><dt>Modified drvAsynDG645.cpp, srsDG645.adl, and drvDG645.db<br>
-
 <dd><br>Applied Eric Norum's patch to add some additional prescale PVs
 
 </dl>

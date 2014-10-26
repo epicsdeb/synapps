@@ -16,7 +16,7 @@ Author:
 Created:
     1 July 1995
 Version:
-    $Id: drvIpac.h 180 2009-08-20 05:02:11Z anj $
+    $Id: drvIpac.h 199 2013-07-26 20:16:16Z anj $
 
 Copyright (c) 1995-2007 Andrew Johnson
 
@@ -201,6 +201,13 @@ typedef struct {
 
 epicsShareFunc int ipacAddCarrier(ipac_carrier_t *pcarrier, const char *cardParams);
 epicsShareFunc int ipacReport(int interest);
+epicsShareFunc int ipacAddNullCarrier (void);
+epicsShareFunc int ipacLatestCarrier(void);
+
+
+/* Functions for use in IPAC carrier drivers */
+
+epicsShareFunc int ipcCheckId(ipac_idProm_t *id);
 
 
 /* Functions for use in IPAC module drivers */

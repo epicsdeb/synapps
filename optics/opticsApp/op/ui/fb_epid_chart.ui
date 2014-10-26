@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+<class>MainWindow</class>
+<widget class="QMainWindow" name="MainWindow">
+    <property name="geometry">
+        <rect>
+            <x>8</x>
+            <y>56</y>
+            <width>400</width>
+            <height>400</height>
+        </rect>
+    </property>
+    <property name="styleSheet">
+        <string>
+
+QWidget#centralWidget {background: rgba(187, 193, 135, 255);}
+
+</string>
+    </property>
+    <widget class="QWidget" name="centralWidget">
+        <widget class="caLabel" name="caLabel_0">
+            <property name="frameShape">
+                <enum>QFrame::NoFrame</enum>
+            </property>
+            <property name="foreground">
+                <color alpha="255">
+                    <red>0</red>
+                    <green>0</green>
+                    <blue>0</blue>
+                </color>
+            </property>
+            <property name="background">
+                <color alpha="0">
+                    <red>0</red>
+                    <green>0</green>
+                    <blue>0</blue>
+                </color>
+            </property>
+            <property name="text">
+                <string>$(P) fb_epid simulator chart</string>
+            </property>
+            <property name="fontScaleMode">
+                <enum>ESimpleLabel::WidthAndHeight</enum>
+            </property>
+            <property name="alignment">
+                <set>Qt::AlignAbsolute|Qt::AlignHCenter|Qt::AlignVCenter</set>
+            </property>
+            <property name="geometry">
+                <rect>
+                    <x>20</x>
+                    <y>6</y>
+                    <width>360</width>
+                    <height>20</height>
+                </rect>
+            </property>
+        </widget>
+        <widget class="caStripPlot" name="caStripPlot_0">
+            <property name="geometry">
+                <rect>
+                    <x>20</x>
+                    <y>31</y>
+                    <width>360</width>
+                    <height>176</height>
+                </rect>
+            </property>
+            <property name="Title">
+                <string>signal (R) &amp; set point (Y)</string>
+            </property>
+            <property name="scaleColor">
+                <color alpha="255">
+                    <red>0</red>
+                    <green>0</green>
+                    <blue>0</blue>
+                </color>
+            </property>
+            <property name="foreground">
+                <color alpha="255">
+                    <red>187</red>
+                    <green>187</green>
+                    <blue>187</blue>
+                </color>
+            </property>
+            <property name="background">
+                <color alpha="255">
+                    <red>187</red>
+                    <green>187</green>
+                    <blue>187</blue>
+                </color>
+            </property>
+            <property name="color_1">
+                <color alpha="255">
+                    <red>253</red>
+                    <green>0</green>
+                    <blue>0</blue>
+                </color>
+            </property>
+            <property name="YaxisScalingMin_1">
+                <enum>caStripPlot::User</enum>
+            </property>
+            <property name="YaxisScalingMax_1">
+                <enum>caStripPlot::User</enum>
+            </property>
+            <property name="YaxisLimitsMin_1">
+                <double>0.0</double>
+            </property>
+            <property name="YaxisLimitsMax_1">
+                <double>1.0</double>
+            </property>
+            <property name="color_2">
+                <color alpha="255">
+                    <red>249</red>
+                    <green>218</green>
+                    <blue>60</blue>
+                </color>
+            </property>
+            <property name="YaxisScalingMin_2">
+                <enum>caStripPlot::User</enum>
+            </property>
+            <property name="YaxisScalingMax_2">
+                <enum>caStripPlot::User</enum>
+            </property>
+            <property name="YaxisLimitsMin_2">
+                <double>0.0</double>
+            </property>
+            <property name="YaxisLimitsMax_2">
+                <double>1.0</double>
+            </property>
+            <property name="units">
+                <enum>Second</enum>
+            </property>
+            <property name="period">
+                <double>60</double>
+            </property>
+            <property name="channels">
+                <string>$(P).CVAL;$(P).VAL</string>
+            </property>
+            <property name="XaxisType">
+                <enum>ValueScale</enum>
+            </property>
+        </widget>
+        <widget class="caStripPlot" name="caStripPlot_1">
+            <property name="geometry">
+                <rect>
+                    <x>20</x>
+                    <y>226</y>
+                    <width>360</width>
+                    <height>150</height>
+                </rect>
+            </property>
+            <property name="Title">
+                <string>following error</string>
+            </property>
+            <property name="scaleColor">
+                <color alpha="255">
+                    <red>0</red>
+                    <green>0</green>
+                    <blue>0</blue>
+                </color>
+            </property>
+            <property name="foreground">
+                <color alpha="255">
+                    <red>187</red>
+                    <green>187</green>
+                    <blue>187</blue>
+                </color>
+            </property>
+            <property name="background">
+                <color alpha="255">
+                    <red>187</red>
+                    <green>187</green>
+                    <blue>187</blue>
+                </color>
+            </property>
+            <property name="color_1">
+                <color alpha="255">
+                    <red>253</red>
+                    <green>0</green>
+                    <blue>0</blue>
+                </color>
+            </property>
+            <property name="YaxisScalingMin_1">
+                <enum>caStripPlot::Channel</enum>
+            </property>
+            <property name="YaxisScalingMax_1">
+                <enum>caStripPlot::Channel</enum>
+            </property>
+            <property name="YaxisLimitsMin_1">
+                <double>0.0</double>
+            </property>
+            <property name="YaxisLimitsMax_1">
+                <double>1.0</double>
+            </property>
+            <property name="units">
+                <enum>Second</enum>
+            </property>
+            <property name="period">
+                <double>60</double>
+            </property>
+            <property name="channels">
+                <string>$(P).ERR</string>
+            </property>
+            <property name="XaxisType">
+                <enum>ValueScale</enum>
+            </property>
+        </widget>
+        <zorder>caLabel_0</zorder>
+        <zorder>caStripPlot_0</zorder>
+        <zorder>caStripPlot_1</zorder>
+    </widget>
+</widget>
+</ui>

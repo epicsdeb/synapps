@@ -76,3 +76,8 @@ include $(TOP)/configure/RULES
 #------------------------------------------------------------------------------
 #  ADD RULES AFTER THIS LINE
 
+# Parallel build sometimes fails.
+# Make dependences on new records explicit.
+digitelRecord$(OBJ): $(COMMON_DIR)/digitelRecord.h
+vsRecord$(OBJ): $(COMMON_DIR)/vsRecord.h
+

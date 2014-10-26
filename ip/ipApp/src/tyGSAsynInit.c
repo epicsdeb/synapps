@@ -99,7 +99,6 @@ int tyGSAsynInit(char *port, char *moduleName, int channel, int baud, char parit
         printf("tyGSAsynInit: error calling asynSetOption for handshake\n");
         return(ERROR);
     }
-printf("tyGSAsynInit returning %d\n", status);
     return(status);
 }
 

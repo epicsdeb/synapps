@@ -1,6 +1,115 @@
 Known Problems
 ==============
 
+.. _Known_Problems_2.1.16:
+
+Known Problems in Release 2.1.16
+--------------------------------
+
+* Reportedly, there are still situations when building on 64-Bit-Windows
+  fails, due to the same missing epicsShareExtern specifier. I recommend to
+  just disable building the tests, until I have a proper fix for this. To do
+  this, just comment-out the line ::
+
+    DIRS += test
+
+  in the top level Makefile.
+
+* On Windows 8.1 x64 with Visual Studio 2013, the lemon parser generator
+  crashes with an access violation. Freddie Akeroyd
+  <freddie.akeroyd@stfc.ac.uk> sent a fix for that, see release notes for
+  2.2.0.3.
+
+* Tim Mooney <mooney@aps.anl.gov> reported a problem when monitoring large
+  arrays. This could lead to assertion failures, causing CAS-client threads
+  to be suspended. He also analysed the problem, tracing it back to a code
+  snippet in src/pv/pvCa.cc, where a temporary copy of the value from CA is
+  made on the stack. This can cause a stack overflow on systems where the
+  stack size is statically limited, i.e. VxWorks and RTEMS.
+
+  A proper fix would need a large-scale re-structuring of the PV layer. This
+  is not something I am going to do in version 2.1, especially since the PV
+  layer is going to be removed (mostly) anyway in the next version.
+
+  The latest snapshot contains a quick and dirty fix. It lets you set ::
+
+    USE_MALLOC_FOR_TEMPORARY_COPY=YES
+
+  in configure/CONFIG_SITE, which will cause malloc/free to be used to
+  create the temorary copy. Note that this may cause unwanted side-effects
+  like memory fragmentation.
+
+.. _Known_Problems_2.1.15:
+
+Known Problems in Release 2.1.15
+--------------------------------
+
+Building fails on Windows due to a missing epicsShareExtern specifier.
+
+The solution is to add epicsShareExtern to the declaration of the variable
+seq_sync_timeout in src/seq/seq_if.c.
+
+.. _Known_Problems_2.1.14:
+
+Known Problems in Release 2.1.14
+--------------------------------
+
+Janez Golob <janez.golob@cosylab.com> reported a problem where a
+pvAssign led to spurious pvVarMonitorOff() failure message. From that
+moment on, the affected channels do not receive any monitor updates,
+even if the program explicitly calls pvMonitor for them (which is
+normally not needed).
+
+A related (but distinct) problem was discovered that might cause similar
+problems if pvMonitor or pvStopMonitor is called at the same time a CA
+connection or disconnection event arrives.
+
+.. _Known_Problems_2.1.13:
+
+Known Problems in Release 2.1.13
+--------------------------------
+
+Building the tests fails with older base releases (e.g. 3.14.8).
+
+It also fails on solaris/sparc. The reason in this case is that the
+compiler sometimes generates an empty struct definition (i.e. one with
+no members), which the compiler on this architecture doesn't like.
+
+The pvGetComplete and pvPutComplete functions contain a serious bug
+that was introduced in release 2.1.13. The effect is that sometimes
+these functions return a wrong result: they can return TRUE when in
+fact the callback from CA did not yet arrive, which is particularly
+bad with pvGetComplete, since it can mean that if the pvGetComplete is
+used in a when clause then in the code block that follows the result
+is not yet available.
+
+Also note that non-safe mode, this can lead to a race condition
+between update from the CA callback and access from the program,
+possibly corrupting the variable's content. This has always been true
+for monitored variables, but not when using asynchronous pvGet.
+
+(These problems are fixed in 2.1.14.)
+
+
+.. _Known_Problems_2.1.12:
+
+Known Problems in Release 2.1.12
+--------------------------------
+
+If a synchronous pvGet (or pvPut) ever fails to get a callback from
+channel access, then all subsequent attempts to do pvGets on that
+channel will fail.
+
+Carl Lionberger <calionberger@lbl.gov>, who reported this problem,
+also found the reason: the semaphore that makes the state set block
+until the CA callback arrives, times out but is never signalled, so
+the variable never recovers from the situation.
+
+This problem is probably present in all releases of the 2.1 branch.
+
+The problem has been fixed in version 2.1.13, see
+:ref:`Release_Notes_2.1.13`.
+
 .. _Known_Problems_2.1.10:
 
 Known Problems in Release 2.1.10

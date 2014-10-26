@@ -1,0 +1,251 @@
+# CPSyringe.db
+
+# Mark Rivers
+# November 22, 2013
+
+# Database file for Cole-Palmer Syringe Pump
+record(bo,"$(P)$(R)ReadSettings") {
+    field(PINI, "YES")
+    field(ZNAM, "Done")
+    field(ONAM, "Read")
+    field(SCAN, "1 second")
+    field(FLNK, "$(P)$(R)ModeIn_RBV.PROC")
+}
+
+# We use a soft record here to get nicer menus
+record(mbbo,"$(P)$(R)Mode") {
+    field(PINI, "YES")
+    field(ZRVL, "0")
+    field(ZRST, "Infusion")
+    field(ONVL, "1")
+    field(ONST, "Withdrawal")
+    field(TWVL, "2")
+    field(TWST, "Infus./With.")
+    field(THVL, "3")
+    field(THST, "With./Infus.")
+    field(FRVL, "4")
+    field(FRST, "Continuous")
+    field(OUT,  "$(P)$(R)ModeOut PP MS")
+}
+
+record(mbbo,"$(P)$(R)ModeOut") {
+    field(DTYP, "stream")
+    field(OUT,  "@CPSyringe.proto setString(mode) $(PORT)")
+    field(ZRVL, "0")
+    field(ZRST, "I")
+    field(ONVL, "1")
+    field(ONST, "W")
+    field(TWVL, "2")
+    field(TWST, "I/W")
+    field(THVL, "3")
+    field(THST, "W/I")
+    field(FRVL, "4")
+    field(FRST, "CON")
+}
+
+record(mbbi,"$(P)$(R)ModeIn_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@CPSyringe.proto getString(mode) $(PORT)")
+    field(ZRVL, "0")
+    field(ZRST, "I")
+    field(ONVL, "1")
+    field(ONST, "W")
+    field(TWVL, "2")
+    field(TWST, "IW")
+    field(THVL, "3")
+    field(THST, "WI")
+    field(FRVL, "4")
+    field(FRST, "CON")
+    field(FLNK, "$(P)$(R)Mode_RBV.PROC")
+}
+
+record(mbbi,"$(P)$(R)Mode_RBV") {
+    field(INP,  "$(P)$(R)ModeIn_RBV NPP MS")
+    field(ZRVL, "0")
+    field(ZRST, "Infusion")
+    field(ONVL, "1")
+    field(ONST, "Withdrawal")
+    field(TWVL, "2")
+    field(TWST, "Infus./With.")
+    field(THVL, "3")
+    field(THST, "With./Infus.")
+    field(FRVL, "4")
+    field(FRST, "Continuous")
+    field(FLNK, "$(P)$(R)RunIn_RBV.PROC")
+}
+
+record(bo,"$(P)$(R)Run") {
+    field(DTYP, "stream")
+    field(OUT,  "@CPSyringe.proto setNoneString $(PORT)")
+    field(ZNAM, "Stop")
+    field(ONAM, "Run")
+}
+
+record(mbbi,"$(P)$(R)RunIn_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@CPSyringe.proto getRun $(PORT)")
+    field(ZRVL, "0")
+    field(ZRST, ":")
+    field(ONVL, "1")
+    field(ONST, ">")
+    field(TWVL, "2")
+    field(TWST, "<")
+    field(THVL, "3")
+    field(THST, "N")
+    field(FRVL, "4")
+    field(FRST, "E")
+    field(FLNK, "$(P)$(R)State_RBV.PROC")
+}
+
+record(mbbi,"$(P)$(R)State_RBV") {
+    field(INP,  "$(P)$(R)RunIn_RBV NPP MS")
+    field(ZRVL, "0")
+    field(ZRST, "Idle")
+    field(ZRSV, "NO_ALARM")
+    field(ONVL, "1")
+    field(ONST, "Infusing")
+    field(ONSV, "MINOR")
+    field(TWVL, "2")
+    field(TWST, "Withdrawing")
+    field(TWSV, "MINOR")
+    field(THVL, "3")
+    field(THST, "Not applicable")
+    field(THSV, "MINOR")
+    field(FRVL, "4")
+    field(FRST, "Error")
+    field(FRSV, "MAJOR")
+    field(FLNK, "$(P)$(R)SetStop.PROC")
+}
+
+record(calcout,"$(P)$(R)SetStop") {
+    field(INPA, "$(P)$(R)State_RBV")
+    field(CALC, "A")
+    field(OUT,  "$(P)$(R)Run PP MS")
+    field(OOPT, "Transition To Zero")
+    field(FLNK, "$(P)$(R)Diameter_RBV.PROC")
+}
+
+record(ao,"$(P)$(R)Diameter") {
+#    field(PINI, "YES")
+    field(DTYP, "stream")
+    field(OUT,  "@CPSyringe.proto setFloat(dia) $(PORT)")
+    field(EGU,  "mm")
+    field(PREC, "3")
+}
+
+record(ai,"$(P)$(R)Diameter_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@CPSyringe.proto getFloat(dia) $(PORT)")
+    field(PREC, "3")
+    field(FLNK, "$(P)$(R)Delivered_RBV.PROC")
+}
+
+record(ai,"$(P)$(R)Delivered_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@CPSyringe.proto getFloatEGU(del) $(PORT)")
+    field(PREC, "3")
+    field(FLNK, "$(P)$(R)InfusionRate_RBV.PROC")
+}
+
+record(ao,"$(P)$(R)InfusionRate") {
+    field(PINI, "YES")
+    field(DTYP, "stream")
+    field(OUT,  "@CPSyringe.proto setFloat(ratei) $(PORT)")
+    field(EGU,  "ml/m")
+    field(PREC, "3")
+}
+
+record(ai,"$(P)$(R)InfusionRate_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@CPSyringe.proto getFloatEGU(ratei) $(PORT)")
+    field(PREC, "3")
+    field(FLNK, "$(P)$(R)WithdrawalRate_RBV.PROC")
+}
+
+record(ao,"$(P)$(R)WithdrawalRate") {
+    field(PINI, "YES")
+    field(DTYP, "stream")
+    field(OUT,  "@CPSyringe.proto setFloat(ratew) $(PORT)")
+    field(EGU,  "ml/m")
+    field(PREC, "3")
+}
+
+record(ai,"$(P)$(R)WithdrawalRate_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@CPSyringe.proto getFloatEGU(ratew) $(PORT)")
+    field(PREC, "3")
+    field(FLNK, "$(P)$(R)InfusionVolume_RBV.PROC")
+}
+
+record(ao,"$(P)$(R)InfusionVolume") {
+    field(PINI, "YES")
+    field(DTYP, "stream")
+    field(OUT,  "@CPSyringe.proto setFloat(voli) $(PORT)")
+    field(EGU,  "ml")
+    field(PREC, "3")
+}
+
+record(ai,"$(P)$(R)InfusionVolume_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@CPSyringe.proto getFloatEGU(voli) $(PORT)")
+    field(PREC, "3")
+    field(FLNK, "$(P)$(R)WithdrawalVolume_RBV.PROC")
+}
+
+record(ao,"$(P)$(R)WithdrawalVolume") {
+    field(PINI, "YES")
+    field(DTYP, "stream")
+    field(OUT,  "@CPSyringe.proto setFloat(volw) $(PORT)")
+    field(EGU,  "ml")
+    field(PREC, "3")
+}
+
+record(ai,"$(P)$(R)WithdrawalVolume_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@CPSyringe.proto getFloatEGU(volw) $(PORT)")
+    field(PREC, "3")
+    field(FLNK, "$(P)$(R)DirectionIn_RBV.PROC")
+}
+
+record(bo,"$(P)$(R)ReverseDirection") {
+    field(DTYP, "stream")
+    field(OUT,  "@CPSyringe.proto reverseDirection $(PORT)")
+    field(ZNAM, "Done")
+    field(ONAM, "Reverse")
+}
+
+record(mbbi,"$(P)$(R)DirectionIn_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@CPSyringe.proto getString(dir) $(PORT)")
+    field(ZRST, "I")
+    field(ONST, "W")
+    field(TWST, "NA")
+    field(FLNK, "$(P)$(R)Direction_RBV.PROC")
+}
+
+record(mbbi,"$(P)$(R)Direction_RBV") {
+    field(INP,  "$(P)$(R)DirectionIn_RBV NPP MS")
+    field(ZRST, "Infusion")
+    field(ONST, "Withdrawal")
+    field(TWST, "Not available")
+    field(FLNK, "$(P)$(R)Error_RBV.PROC")
+}
+
+record(longin,"$(P)$(R)Error_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@CPSyringe.proto getInt(error) $(PORT)")
+}
+
+record(stringin,"$(P)$(R)Firmware_RBV") {
+    field(PINI, "YES")
+    field(DTYP, "stream")
+    field(INP,  "@CPSyringe.proto getString(prom) $(PORT)")
+}
+
+###
+### Asyn record
+###
+record(asyn,"$(P)$(R)Asyn") {
+    field(PORT, "$(PORT)")
+}
+

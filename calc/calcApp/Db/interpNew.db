@@ -72,6 +72,15 @@ record(aSub, "$(P)interp$(Q=)") {
   field(NOVI, "$(N)")
 }
 
+# If user writes number of elements to $(P)interp$(Q=).VALN, copy to 
+# $(P)interp$(Q=)_n.  The aSub record will do this anyway, but not until
+# it gets processed.
+record(longout, "$(P)interp$(Q=)_copyN") {
+	field(DOL, "$(P)interp$(Q=).VALN CP")
+	field(OMSL, "closed_loop")
+	field(OUT, "$(P)interp$(Q=)_n PP")
+}
+
 record(longout, "$(P)interp$(Q=)_n") {
 }
 

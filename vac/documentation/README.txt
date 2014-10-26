@@ -65,6 +65,12 @@ dbLoadRecords("db/vs.db", "P=MR:,GAUGE=VS3,PORT=serial3,ADDR=0,DEV=MM200,STN=3")
 dbLoadRecords("db/vs.db", "P=MR:,GAUGE=VS4,PORT=serial3,ADDR=0,DEV=MM200,STN=4")
 tyGSAsynInit("serial3",  "UART0", 2, 9600,'N',1,8,'N',"\r","\r")  
 
+#  Alternative for MM200: specify CV1, CV2, and SPT directly.  If you specify more than
+#  one number for STN, the code expects you to specify all four.
+dbLoadRecords("db/vs.db","P=MR:,GAUGE=VS3,PORT=serial3,ADDR=0,DEV=MM200,STN=3 1 0 1")
+dbLoadRecords("db/vs.db","P=MR:,GAUGE=VS4,PORT=serial3,ADDR=0,DEV=MM200,STN=5 1 0 2")
+tyGSAsynInit("serial3",  "UART0", 2, 9600,'N',1,8,'N',"\r","\r")  
+
 
 
 

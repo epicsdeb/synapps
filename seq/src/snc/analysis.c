@@ -179,6 +179,7 @@ VarList **pvar_list_from_scope(Expr *scope)
 	case S_CMPND:
 		return &scope->extra.e_cmpnd;
 	default:
+		report_at_expr(scope, "offending scope->type == %d\n", scope->type);
 		assert(impossible); return NULL;
 	}
 }
@@ -205,6 +206,7 @@ Expr *defn_list_from_scope(Expr *scope)
 	case S_CMPND:
 		return scope->cmpnd_defns;
 	default:
+		report_at_expr(scope, "offending scope->type == %d\n", scope->type);
 		assert(impossible); return NULL;
 	}
 }
@@ -253,9 +255,8 @@ static void analyse_option(Options *options, Expr *defn)
 		  "warning: unknown option '%s'\n", optname);
 		}
 	}
-	if (options->safe && !options->reent) {
+	if (options->safe)
 		options->reent = TRUE;
-	}
 }
 
 /* Options in state declarations. Note: latest given value for option wins. */

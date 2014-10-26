@@ -113,7 +113,7 @@ menu {
 }
 polyline {
 	object {
-		x=-1
+		x=0
 		y=27
 		width=399
 		height=3
@@ -124,8 +124,8 @@ polyline {
 		width=3
 	}
 	points {
-		(0,28)
-		(396,28)
+		(1,28)
+		(397,28)
 	}
 }
 "text entry" {
@@ -1413,7 +1413,7 @@ composite {
 	display[1] {
 		label="plot with input arrays"
 		name="arrayPlot8.adl"
-		args="P=$(P),C=$(C),Y1=$(P)$(C).AVAL,Y2=$(P)$(C).AA,Y3=$(P)$(C).BB,Y4=$(P)$(C).CC,Y5=$(P)$(C).DD,Y6=$(P)$(C).EE,Y7=$(P)$(C).FF,Y8=$(P)$(C).GG"
+		args="P=$(P),C=$(C),Y1=AVAL,Y2=AA,Y3=BB,Y4=CC,Y5=DD,Y6=EE,Y7=FF,Y8=GG"
 	}
 	clr=0
 	bclr=63
@@ -1450,7 +1450,7 @@ composite {
 	display[1] {
 		label="plot AA-HH"
 		name="arrayPlot8.adl"
-		args="P=$(P),C=$(C),Y1=$(P)$(C).AA,Y2=$(P)$(C).BB,Y3=$(P)$(C).CC,Y4=$(P)$(C).DD,Y5=$(P)$(C).EE,Y6=$(P)$(C).FF,Y7=$(P)$(C).GG,Y8=$(P)$(C).HH"
+		args="P=$(P),C=$(C),Y1=AA,Y2=BB,Y3=CC,Y4=DD,Y5=EE,Y6=FF,Y7=GG,Y8=HH"
 	}
 	clr=0
 	bclr=63
@@ -1568,4 +1568,21 @@ text {
 	}
 	limits {
 	}
+}
+"related display" {
+	object {
+		x=295
+		y=418
+		width=40
+		height=20
+	}
+	display[0] {
+		label="arrayCalc (small)"
+		name="yyArrayCalc_small.adl"
+		args="P=$(P),C=$(C)"
+		policy="replace display"
+	}
+	clr=0
+	bclr=63
+	label="-Less"
 }

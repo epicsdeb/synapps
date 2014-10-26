@@ -12,14 +12,16 @@ LIBRARY_IOC += delaygen
 delaygen_SRCS += nigpibInterpose.c
 delaygen_SRCS += drvAsynDG645.cpp
 delaygen_SRCS += drvAsynColby.cpp
-delaygen_SRCS += digitalDelay.c
 delaygen_SRCS += devDG535.c
 delaygen_SRCS += drvAsynCoherentSDG.cpp
 
-delaygen_LIBS += std asyn
+# This file was moved to custom directory
+#delaygen_SRCS += digitalDelay.c
+
+delaygen_LIBS += calc asyn
 delaygen_LIBS += $(EPICS_BASE_IOC_LIBS)
 
-delaygen_LIBS_vxWorks += std asyn TyGSOctal Ipac ip
+delaygen_LIBS_vxWorks += calc asyn TyGSOctal Ipac ip
 delaygen_LIBS_vxWorks += $(EPICS_BASE_IOC_LIBS)
 
 #=============================================================================
@@ -40,9 +42,14 @@ delaygenApp_SRCS_vxWorks += iocdelaygenAppVxWorks_registerRecordDeviceDriver.cpp
 
 #-----------------------------------------------------------------------------
 # Include libraries
-delaygenApp_LIBS += autosave std delaygen stream asyn
+delaygenApp_LIBS += autosave calc delaygen asyn
+ifdef STREAM
+	delaygenApp_LIBS += stream
+endif
 delaygenApp_LIBS_vxWorks += TyGSOctal Ipac ip
 delaygenApp_LIBS += $(EPICS_BASE_IOC_LIBS)
+
+delaygenApp_SYS_LIBS_solaris += socket
 
 #
 #=============================================================================

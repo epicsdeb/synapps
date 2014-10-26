@@ -6,6 +6,10 @@ include $(TOP)/configure/CONFIG
 # must be uncommented to use diagnostic debugging messages.
 #!USR_CXXFLAGS += -DDEBUG
 
+# The Newport XPS_C8_driver.cpp file uses "char *" when they should use "const char *".
+# Turn off warnings when we call this functions with string constants
+USR_CPPFLAGS_Linux += -Wno-write-strings
+
 # Install the XPS header file in case applications in another module need to use it
 INC += XPS_C8_drivers.h
 
@@ -31,6 +35,13 @@ Newport_SRCS += devPM500.cc  drvPM500.cc
 # ESP300 device driver.
 Newport_SRCS += devESP300.cc drvESP300.cc
 
+# SMC100 device driver
+Newport_SRCS += SMC100Driver.cpp
+
+# Agilis device drivers
+Newport_SRCS += AG_UC.cpp
+Newport_SRCS += AG_CONEX.cpp
+
 # XPS C8 device driver
 Newport_SRCS += asynOctetSocket.cpp 
 Newport_SRCS += XPS_C8_drivers.cpp 
@@ -43,7 +54,11 @@ Newport_SRCS += XPSController.cpp
 Newport_SRCS += XPSAxis.cpp
 ifdef SNCSEQ
 Newport_SRCS += XPS_trajectoryScan.st
+Newport_SRCS += xpsSlave.st
 endif
+#
+Newport_SRCS += hxp_drivers.cpp
+Newport_SRCS += HXPDriver.cpp
  
 # strtok_r needed on WIN32
 Newport_SRCS_WIN32 += strtok_r.c

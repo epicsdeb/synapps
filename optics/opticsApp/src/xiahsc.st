@@ -698,6 +698,7 @@ ss xiahsc {
       }
       sprintf (scratch, "M %d %d", pos_a, pos_b);
       WRITE_HSC(TMOD_WRITE, word1, scratch);
+      epicsThreadSleep(.1); /* wait for move to begin */
       PVPUT (locate, 1);		/* expect a readback */
     } state idle
 

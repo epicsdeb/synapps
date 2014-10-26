@@ -82,10 +82,11 @@ option +r;	/* allow more than one copy of the program */
         ASSIGN_MONITOR(TYPE, LOCAL_VAR, PV)              \
         sync   LOCAL_VAR LOCAL_FLAG;
 
+#define MSG_SIZE 39
 #define PVPUT(PV,VAL)  {(PV) = (VAL);  pvPut(PV);}
 #define PVPUTSTR(MSG,TEXT)  {strcpy((MSG), (TEXT)); pvPut(MSG);}
-#define PUTMSG(LINE1)  {strcpy(Msg, (LINE1)); pvPut(Msg); if (orientDebug) printf("orient: %s\n", Msg);}
-#define PUTALERT(LINE1)  {strcpy(Msg, (LINE1)); pvPut(Msg); PVPUT(Alert, 1); printf("orient: %s\n", Msg);}
+#define PUTMSG(LINE1)  {strncpy(Msg, (LINE1), MSG_SIZE); pvPut(Msg); if (orientDebug) printf("orient: %s\n", Msg);}
+#define PUTALERT(LINE1)  {strncpy(Msg, (LINE1), MSG_SIZE); pvPut(Msg); PVPUT(Alert, 1); printf("orient: %s\n", Msg);}
 
 char tmpstr[100];
 char *cp;

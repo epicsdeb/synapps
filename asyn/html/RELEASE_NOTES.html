@@ -1,15 +1,266 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-       "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xml:lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <title>asynDriver: Asynchronous Driver Support - Release Notes</title>
-  <meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type" />
+  <meta content="text/html; charset=ISO-8859-1" http-equiv="Content-Type" />
 </head>
 <body xml:lang="en">
   <div style="text-align: center">
     <h1>
       asynDriver: Asynchronous Driver Support - Release Notes</h1>
   </div>
+  <div style="text-align: center">
+    <hr />
+    <h2>
+      Release 4-23</h2>
+    <h2>
+      June 16, 2014</h2>
+  </div>
+  <h3>
+    asynManager.c</h3>
+  <p>
+    Fixed a bug in pasynManager->memMalloc. It could return a pointer that was not a
+    multiple of 8 bytes. This led to subtle problems on some architectures (e.g. ARM)
+    if a double was stored in the memory returned by memMalloc. Fixed the code so the
+    pointer is always a multiple of 16 bytes (for future safety).</p>
+  <h3>
+    drvAsynUSBTMC</h3>
+  <ul>
+    <li>Added driver for USB TMC (Test and Measurement Class) devices.</li>
+    <li>Works on any system that provides <a href="http://libusb.info">libusb-1.0</a>.</li>
+    <li>Requires no kernel modifications.</li>
+    <li>Tested with StreamDevice on Darwin, Linux and Windows.</li>
+    <li>Enabled by setting DRV_USBTMC=YES in configure/CONFIG_SITE.</li>
+  </ul>
+  <h3>
+    drvAsynSerialPort</h3>
+  <p>
+    Fixed bug: the port was not always being disconnected when the OS returned serious
+    errors. This was preventing USB serial devices from disconnecting and reconnecting
+    properly.</p>
+  <h3>
+    drvAsynSerialPortWin32 (Windows serial port driver)</h3>
+  <p>
+    Fixed 2 bugs in pasynOctet-&gt;read() when pasynUserTimeout=0:</p>
+  <ul>
+    <li>It was not returning immediately, it was waiting 16 ms.</li>
+    <li>If there were no characters to be read it was not returning asynTimeout, it was
+      returning asynSuccess. This prevented StreamDevice from working correctly.</li>
+  </ul>
+  <h3>
+    drvVxi11</h3>
+  <p>
+    Fixed several 32/64 bit issues.</p>
+  <h3>
+    drvAsynIPServerPort</h3>
+  <p>
+    Added support for UDP servers, in addition to TCP servers. Thanks to Helge Brands
+    and Dirk Zimoch from PSI for this.</p>
+  <h3>
+    drvLinuxGpib</h3>
+  <p>
+    Fix to Makefile to link with system libgpib library.</p>
+  <h3>
+    devEpics (asynInt32)</h3>
+  <p>
+    Sign-extend positive or unsigned values as well as negative values when DTYP=asynInt32
+    and asynMask value is non-zero.</p>
+  <h3>
+    devEpics (asynUInt32Digital)</h3>
+  <p>
+    Apply mask to longin and longout records.</p>
+  <h3>
+    asynPortDriver</h3>
+  <p>
+    Undid the change in R4-22 that changed the asynStdInterfaces from protected to private.
+    That change was not compatible with areaDetector R1-9-1.</p>
+  <p>
+    Removed paramList.h and paramList.cpp, put the code into asynPortDriver.cpp. These
+    two classes had many interdependencies, so needed to include each other's header
+    files. This was difficult when building dynamically on Windows, where imported and
+    exported symbols need to be distinguished.</p>
+  <p>
+    Added links to asynPortDriver.html to detailed tutorial on how to write a driver
+    using asynPortDriver.</p>
+  <h3>
+    asynOctetSyncIO</h3>
+  <p>
+    Fixed a bug that could cause the values of *nbytesOut, *nbytesIn, and *eomReason
+    to be garbage if an I/O error occurred.</p>
+  <h3>
+    Many files</h3>
+  <p>
+    Handled exporting symbols consistently, which is important when building dynamically
+    for Windows with Visual Studio. Eliminated all references to epicsSharedSymbols,
+    now just #include &lt;epicsexport.h&gt; just before the #include for the header
+    file that defines symbols for this file, and after all other #include statements.
+    Thanks to Peter Heesterman for the initial version of this fix.</p>
+  <h3>
+    configure directory</h3>
+  <p>
+    Updated the files in the configure directory to the versions from EPICS base 3.14.12.3.
+    Paths to EPICS base and other modules are still defined in configure/RELEASE. However,
+    other configuration values, such as LINUX_GPIB and DRV_USBTMC are now defined in
+    configure/CONFIG_SITE, not in RELEASE.</p>
+  <div style="text-align: center">
+    <hr />
+    <h2>
+      Release 4-22</h2>
+    <h2>
+      October 30, 2013</h2>
+  </div>
+  <h3>
+    asynDriver</h3>
+  <p>
+    Added support functions for setting timestamps in asyn port drivers. These can be
+    used to set the timestamp when the port driver received data. The driver can then
+    set the asynUser-&gt;timeStamp field to this value for all input records on read
+    and callback operations. Records that have TSE=-2 will have this timestamp. There
+    is support for registering a user-supplied function to provide the timestamp, which
+    will override the default source that just calls epicsTimeGetCurrent().
+  </p>
+  <p>
+    Added the following new functions to pasynManager for timestamp support.</p>
+  <pre>asynStatus (*registerTimeStampSource)(asynUser *pasynUser, void *userPvt, timeStampCallback callback);
+asynStatus (*unregisterTimeStampSource)(asynUser *pasynUser);
+asynStatus (*updateTimeStamp)(asynUser *pasynUser);
+asynStatus (*getTimeStamp)(asynUser *pasynUser, epicsTimeStamp *pTimeStamp);
+asynStatus (*setTimeStamp)(asynUser *pasynUser, const epicsTimeStamp *pTimeStamp);
+</pre>
+  <p>
+    Added the following shell commands for timestamp support.</p>
+  <pre>asynRegisterTimeStampSource(const char *portName, const char *functionName);
+asynUnregisterTimeStampSource(const char *portName);
+   </pre>
+  <p>
+    Added a new bit to asynTraceMask, ASYN_TRACE_WARNING. This is intended to be used
+    for messages that are less serious than ASYN_TRACE_ERROR, but more serious than
+    ASYN_TRACE_FLOW.</p>
+  <p>
+    Added new asynTraceInfoMask. This mask controls the information printed at the beginning
+    of each message by asynPrint and asynPrintIO. Thanks to Ulrik Pedersen for help
+    with this. The mask is defined with the following bits:</p>
+  <pre>#define ASYN_TRACEINFO_TIME 0x0001
+#define ASYN_TRACEINFO_PORT 0x0002
+#define ASYN_TRACEINFO_SOURCE 0x0004
+#define ASYN_TRACEINFO_THREAD 0x0008
+    </pre>
+  <ul>
+    <li>ASYN_TRACEINFO_TIME prints what has been printed in previous versions of asyn,
+      the date and time of the message.</li>
+    <li>ASYN_TRACEINFO_PORT prints [port,addr,reason], where port is the port name, addr
+      is the asyn address, and reason is pasynUser-&gt;reason. These are the 3 pieces
+      of "addressing" information in asyn.</li>
+    <li>ASYN_TRACEINFO_SOURCE prints the file name and line number, i.e. [__FILE__,__LINE__]
+      where the asynPrint statement occurs.</li>
+    <li>ASYN_TRACEINFO_THREAD prints the thread name, thread ID and thread priority, i.e.
+      [epicsThreadGetNameSelf(), epicsThreadGetIdSelf(), epicsThreadGetPrioritySelf()].</li>
+  </ul>
+  <p>
+    Added a new shell command to control this mask.</p>
+  <pre>    asynSetTraceInfoMask port,addr,mask
+    </pre>
+  <p>
+    Added asynTrace information to the output of asynReport if details &gt;=1.</p>
+  <h3>
+    asynOctetSyncIO</h3>
+  <p>
+    Use simple lock/unlock operations rather than queueLockPort/queueUnlockPort for
+    end-of-string manipulations (setInputEos, getInputEos, setOutputEos, getOutputEos).
+    This ensures that these operations can take place even with the device disconnected.</p>
+  <h3>
+    devEpics</h3>
+  <p>
+    Finished the support for setting the record TIME field for input records, both for
+    read operations and for callback operations (i.e. records with SCAN=I/O Intr). This
+    work was begun in R4-20, but it was not complete. Fixes were made in devAsynOctet,
+    devAsynInt32, devAsynFloat64, and devAsynUInt32Digital.</p>
+  <p>
+    Changed the ring buffer overflow messages that are printed in devAsynInt32, devAsynFloat64,
+    and devAsynUInt32Digital. These now use the new ASYN_TRACE_WARNING mask. Prior to
+    asyn R4-20 these used ASYN_TRACE_ERROR, and in asyn R4-20 and R4-21 they used ASYN_TRACEIO_DEVICE.</p>
+  <h3>
+    drvAsynIPPort</h3>
+  <p>
+    Fixed a bug in calling poll(). Previously the status return from poll() was not
+    being checked; it was assumed that when poll() returned the port either had new
+    data or had timed out. This is not correct, because poll() can return prematurely
+    with errno=EINTR if a Posix signal occurs before data is received or the timeout
+    expires. This can happen, for example, when the Posix high-resolution timer routines
+    (timer_create, etc.) are used in the IOC. The Prosilica vendor library uses the
+    Posix timer routines, and there were problems using asyn IP ports in IOCs that were
+    also running Prosilica cameras. The problem was fixed by calling poll() again if
+    it returns EINTR and the desired timeout time has not expired since poll() was first
+    called.</p>
+  <p>
+    Added support for AF_UNIX sockets on systems that provide them.</p>
+  <h3>
+    drvAsynSerialPort</h3>
+  <p>
+    Support for all baud rates supported by the operating system.</p>
+  <p>
+    Fix for XON/XOFF support from Dirk Zimoch.</p>
+  <h3>
+    Changes to work with EPICS base 3.15</h3>
+  <p>
+    Removed include of asyn.dbd, from drvAsynSerialPort.dbd, drvAsynIPPort.dbd, drvVxi11.dbd,
+    and drvGsIP488.dbd.
+  </p>
+  <p>
+    Fixed Makefile rule for vxi11intr.h for parallel builds.</p>
+  <h3>
+    drvLinuxGpib</h3>
+  <p>
+    Fixes for eomReason and EOS handling from Dirk Zimoch.</p>
+  <h3>
+    asynOctetSyncIO interface</h3>
+  <p>
+    Removed the openSocket() function from this interface. This method really did not
+    belong in this interface, since it just wrapped the call to drvAsynIPPortConfigure().</p>
+  <h3>
+    asynRecord</h3>
+  <p>
+    Added 4 additional baud rates to the BAUD field (460800, 576000, 921600, 1152000).
+    However, the BAUD field can still only support 16 fixed baud rates because it is
+    type DBF_ENUM.</p>
+  <p>
+    Added a new LBAUD (long baud rate) field of type DBF_LONG. This allows selection
+    of any baud rate, not just those in the BAUD menu. Changing the BAUD field changes
+    the LBAUD field. Changing the LBAUD field changes the BAUD field to the appropriate
+    selection if it is a supported value, or to "Unknown" if not.</p>
+  <p>
+    Added support for ASYN_TRACE_WARNING and asynTraceInfoMask, including the opi screens.</p>
+  <h3>
+    asynPortDriver</h3>
+  <p>
+    Added new virtual methods to support Eos operations on the asynOctet interface.
+    These are setInputEosOctet(), getInputEosOctet(), setOutputEosOctet(), getOutputEosOctet().
+    Changed the report() method to print the current values of the inputEos and outputEos.</p>
+  <p>
+    Added new virtual methods for timestamp support. These are updateTimeStamp(), setTimeStamp(),
+    getTimeStamp().</p>
+  <p>
+    Added new function getAsynStdInterfaces() to access the asynStdInterfaces structure,
+    which is now private.
+  </p>
+  <p>
+    Changed the functions that do callbacks when callParamCallbacks() is called to call
+    pasynManager-&gt;getTimeStamp() and set the pasynUser-&gt;timestamp field to this
+    value in the callbacks.</p>
+  <p>
+    Changed the base class readXXX() functions (e.g. readInt32(), readFloat64(), etc.)
+    to call pasynManager-&gt;getTimeStamp() and set the pasynUser-&gt;timestamp field
+    to this value. The readXXX() functions in derived classes should also do this, so
+    that records with TSE=-2 will get the timestamp from the driver.</p>
+  <h3>
+    testErrorApp, iocTestErrors</h3>
+  <p>
+    Added an example of a user-supplied timestamp source.</p>
+  <h3>
+    testAsynPortDriver</h3>
+  <p>
+    Added calls to lock() and unlock() in simTask. This was previously a serious omission
+    in this example driver. Thanks to Kay Kasemir for spotting this.</p>
   <div style="text-align: center">
     <hr />
     <h2>
@@ -20,14 +271,14 @@
   <h3>
     asynDriver</h3>
   <p>
-    Restored the original versions of pasynManager->lockPort and unlockPort that were
-    used in asyn prior to R4-14. These versions just call epicsMutexLock and epicsMutexUnlock.
+    Restored the original versions of pasynManager-&gt;lockPort and unlockPort that
+    were used in asyn prior to R4-14. These versions just call epicsMutexLock and epicsMutexUnlock.
     In R4-14 these versions were replaced with versions that queued requests to lock
     the port. The R4-14 versions fixed a problem with the interfaces/asynXXXSyncIO functions,
     but it has become clear that the original versions are useful in some circumstances.
     The change was done as follows:</p>
   <ul>
-    <li>The lockPort and unlockPort functions in R4-20 were renamed to pasynManager->queueLockPort
+    <li>The lockPort and unlockPort functions in R4-20 were renamed to pasynManager-&gt;queueLockPort
       and queueUnlockPort.</li>
     <li>The interfaces/asynXXXSyncIO functions were all changed to call the queueLockPort
       and queueUnlockPort, so they function identically to how they have since R4-14.</li>
@@ -35,9 +286,9 @@
       to pasynManager.</li>
   </ul>
   <p>
-    Changed the report() function so that if details<0 then asynManager does not print
-    information for each device (address). It calls pasynCommon->report(-details) in
-    this case so driver report functions will not be affected.</p>
+    Changed the report() function so that if details&lt;0 then asynManager does not
+    print information for each device (address). It calls pasynCommon-&gt;report(-details)
+    in this case so driver report functions will not be affected.</p>
   <p>
     Changed the asynTrace print, printIO, vprint, vprintIO functions so they use EPICS_PRINTF_STYLE.
     This causes the GCC (version 3.0 and higher) and clang compilers to check the agreement
@@ -67,7 +318,7 @@
     in interruptCallbackInput. Thanks to Angus Gratton for this fix.</p>
   <p>
     Fixed a bug in devAsynXXXArray.h to handle case of multiple interrupt callbacks
-    between record processing. Previously this would result in a call to the asynXXXArray->read()
+    between record processing. Previously this would result in a call to the asynXXXArray-&gt;read()
     in the driver, which is not correct. The asynXXXArray device support does not have
     a ring buffer, so multiple interrupt callbacks between processing results in data
     being "lost", i.e. the record processes more than once with the same data. This
@@ -93,7 +344,7 @@
   <p>
     Added new method asynPortDriver::flushOctet(), which implements asynOctet::flush().
     The base class implementation reproduces the behavior of asynOctetBase.c::flushIt,
-    i.e. it calls pasynOctet->read() repeatedly with a timeout of 0.05 seconds until
+    i.e. it calls pasynOctet-&gt;read() repeatedly with a timeout of 0.05 seconds until
     it gets no data back. But now drivers can implement their own version of flush()
     if a different behavior is desired, which was not previously possible.</p>
   <p>
@@ -136,15 +387,15 @@
   <h3>
     asynManager</h3>
   <p>
-    Fixed a bug that caused a deadlock if pasynManager->lockPort was called multiple
-    times without calling pasynManager->unlockPort in between. Thanks to Sebastian Marsching
-    from "aquenos GmbH" for this fix.
+    Fixed a bug that caused a deadlock if pasynManager-&gt;lockPort was called multiple
+    times without calling pasynManager-&gt;unlockPort in between. Thanks to Sebastian
+    Marsching from "aquenos GmbH" for this fix.
   </p>
   <h3>
     devEpics</h3>
   <p>
     Added support for setting the record timestamp from the driver, using a new field,
-    pasynUser->timeStamp. The driver can set this field in read and callback operations.
+    pasynUser-&gt;timeStamp. The driver can set this field in read and callback operations.
   </p>
   <p>
     Fixed a long-standing bug in devAsynXXXArray support for input waveform records
@@ -187,8 +438,8 @@
   <p>
     Added a new interface, asynEnum. This interface is designed to allow drivers to
     set the strings, values, and severities for record enum fields. This can be done
-    both at iocInit(), in init_record() with the pasynEnumSyncIO->read() function, and
-    after iocInit via callbacks to device support.
+    both at iocInit(), in init_record() with the pasynEnumSyncIO-&gt;read() function,
+    and after iocInit via callbacks to device support.
   </p>
   <h3>
     devEpics</h3>
@@ -201,20 +452,20 @@
   <p>
     Improved the support for setting the alarm status of records. Previously for records
     that were not I/O Intr scanned STAT was always to READ_ALARM or WRITE_ALARM, and
-    SEVR was set to INVALID_ALARM. A new function, pasynEpicsUtils->asynStatusToEpicsAlarm()
+    SEVR was set to INVALID_ALARM. A new function, pasynEpicsUtils-&gt;asynStatusToEpicsAlarm()
     was added that converts asynStatus values to EPICS alarm values. This allows records
     to have STAT=TIMEOUT_ALARM, DISABLE_ALARM, etc. More values of STAT can be supported
     in the future by adding more values to the asynStatus enum.</p>
   <p>
     Previously it was not possible for input records with SCAN=I/O Intr to have their
     alarm status set at all. This support has been added. Device support now uses the
-    pasynUser->auxStatus field in the pasynUser passed to the callback function. If
-    auxStatus != asynSuccess then the record alarm STAT and SEVR are set to values based
-    on the asynStatus. asyn port drivers can now signal error status to clients in callback
-    functions by setting pasynUser->auxStatus to asynSuccess, asynTimeout, asynError,
-    etc. This change should be backwards compatible with all drivers because the pasynUser
-    that is used for the callbacks is private to the callback function, and the auxStatus
-    field is initialized to 0, which is asynSuccess.</p>
+    pasynUser-&gt;auxStatus field in the pasynUser passed to the callback function.
+    If auxStatus != asynSuccess then the record alarm STAT and SEVR are set to values
+    based on the asynStatus. asyn port drivers can now signal error status to clients
+    in callback functions by setting pasynUser-&gt;auxStatus to asynSuccess, asynTimeout,
+    asynError, etc. This change should be backwards compatible with all drivers because
+    the pasynUser that is used for the callbacks is private to the callback function,
+    and the auxStatus field is initialized to 0, which is asynSuccess.</p>
   <p>
     Added new waveform record device support, asynInt32TimeSeries and asynFloat64TimeSeries.
     These use callbacks from the driver on those respective interfaces to collect a

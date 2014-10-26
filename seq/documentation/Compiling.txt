@@ -60,6 +60,12 @@ Options may also be set from within the program (somewhere between the
 program name/parameter and the state set definitions), see
 :ref:`option definition` in the :doc:`Reference`.
 
+Prior to Version 1.8 of the sequencer, event flags were cleared
+after a ``when`` statement executed. Currently, event flags must be
+cleared explicitly with either :c:func:`efTestAndClear` or
+:c:func:`efClear`. The :option:`-e` compiler option can be used to
+restore the old behaviour.
+
 Output File
 ^^^^^^^^^^^
 

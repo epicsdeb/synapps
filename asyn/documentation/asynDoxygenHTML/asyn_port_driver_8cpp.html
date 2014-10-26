@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
-<title>asyn: /home/epics/devel/asynR4-21/asyn/asynPortDriver/asynPortDriver.cpp File Reference</title>
+<title>asyn: /home/epics/devel/asynR4-23/asyn/asynPortDriver/asynPortDriver.cpp File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <link href="doxygen.css" rel="stylesheet" type="text/css"/>
 </head>
@@ -14,7 +14,7 @@
  <tbody>
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
-   <div id="projectname">asyn&#160;<span id="projectnumber">4-21</span></div>
+   <div id="projectname">asyn&#160;<span id="projectnumber">4-23</span></div>
   </td>
  </tr>
  </tbody>
@@ -36,10 +36,10 @@
 </div>
 <div class="header">
   <div class="summary">
-<a href="#define-members">Defines</a> &#124;
+<a href="#nested-classes">Classes</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
-<div class="title">/home/epics/devel/asynR4-21/asyn/asynPortDriver/asynPortDriver.cpp File Reference</div>  </div>
+<div class="title">/home/epics/devel/asynR4-23/asyn/asynPortDriver/asynPortDriver.cpp File Reference</div>  </div>
 </div>
 <div class="contents">
 <div class="textblock"><code>#include &lt;stdlib.h&gt;</code><br/>
@@ -51,14 +51,19 @@
 <code>#include &lt;epicsThread.h&gt;</code><br/>
 <code>#include &lt;cantProceed.h&gt;</code><br/>
 <code>#include &lt;dbAccess.h&gt;</code><br/>
-<code>#include &lt;shareLib.h&gt;</code><br/>
-<code>#include &quot;<a class="el" href="asyn_port_driver_8h_source.html">asynPortDriver.h</a>&quot;</code><br/>
-<code>#include &quot;<a class="el" href="param_list_8h_source.html">paramList.h</a>&quot;</code><br/>
+<code>#include &quot;<a class="el" href="param_val_8h_source.html">paramVal.h</a>&quot;</code><br/>
 <code>#include &quot;<a class="el" href="param_errors_8h_source.html">paramErrors.h</a>&quot;</code><br/>
+<code>#include &quot;<a class="el" href="asyn_param_type_8h_source.html">asynParamType.h</a>&quot;</code><br/>
+<code>#include &quot;ParamListInvalidIndex.h&quot;</code><br/>
+<code>#include &quot;ParamValWrongType.h&quot;</code><br/>
+<code>#include &quot;ParamValNotDefined.h&quot;</code><br/>
+<code>#include &lt;epicsExport.h&gt;</code><br/>
+<code>#include &quot;<a class="el" href="asyn_port_driver_8h_source.html">asynPortDriver.h</a>&quot;</code><br/>
 </div><table class="memberdecls">
-<tr><td colspan="2"><h2><a name="define-members"></a>
-Defines</h2></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="asyn_port_driver_8cpp.html#afae12deffb73bbcf61b8a45da8236ec1">epicsExportSharedSymbols</a></td></tr>
+<tr><td colspan="2"><h2><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classparam_list.html">paramList</a></td></tr>
+<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Class to support parameter library (also called parameter list); set and get values indexed by parameter number (pasynUser-&gt;reason) and do asyn callbacks when parameters change.  <a href="classparam_list.html#details">More...</a><br/></td></tr>
 <tr><td colspan="2"><h2><a name="func-members"></a>
 Functions</h2></td></tr>
 <tr><td class="memTemplParams" colspan="2">template&lt;typename epicsType &gt; </td></tr>
@@ -68,21 +73,8 @@ Functions</h2></td></tr>
 <tr><td class="memTemplParams" colspan="2">template&lt;typename interruptType &gt; </td></tr>
 <tr><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="asyn_port_driver_8cpp.html#aaa2456c5fc7e8bf5e58b9e43367a7186">reportInterrupt</a> (FILE *fp, void *interruptPvt, const char *interruptTypeString)</td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="asyn_port_driver_8cpp.html#a5f1767a0432528a8c616d122fda90277">findAsynPortDriver</a> (const char *portName)</td></tr>
+<tr><td class="mdescLeft">&#160;</td><td class="mdescRight">Utility function that returns a pointer to an <a class="el" href="classasyn_port_driver.html" title="Base class for asyn port drivers; handles most of the bookkeeping for writing an asyn port driver wit...">asynPortDriver</a> object from its name.  <a href="#a5f1767a0432528a8c616d122fda90277"></a><br/></td></tr>
 </table>
-<hr/><h2>Define Documentation</h2>
-<a class="anchor" id="afae12deffb73bbcf61b8a45da8236ec1"></a><!-- doxytag: member="asynPortDriver.cpp::epicsExportSharedSymbols" ref="afae12deffb73bbcf61b8a45da8236ec1" args="" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define epicsExportSharedSymbols</td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-
-</div>
-</div>
 <hr/><h2>Function Documentation</h2>
 <a class="anchor" id="a5f1767a0432528a8c616d122fda90277"></a><!-- doxytag: member="asynPortDriver.cpp::findAsynPortDriver" ref="a5f1767a0432528a8c616d122fda90277" args="(const char *portName)" -->
 <div class="memitem">
@@ -98,6 +90,8 @@ Functions</h2></td></tr>
       </table>
 </div>
 <div class="memdoc">
+
+<p>Utility function that returns a pointer to an <a class="el" href="classasyn_port_driver.html" title="Base class for asyn port drivers; handles most of the bookkeeping for writing an asyn port driver wit...">asynPortDriver</a> object from its name. </p>
 
 </div>
 </div>
@@ -213,7 +207,7 @@ template&lt;typename epicsType &gt; </div>
 </div>
 </div>
 </div>
-<hr class="footer"/><address class="footer"><small>Generated on Mon Feb 18 2013 for asyn by&#160;
+<hr class="footer"/><address class="footer"><small>Generated on Wed Jun 18 2014 for asyn by&#160;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.7.4 </small></address>
 </body>

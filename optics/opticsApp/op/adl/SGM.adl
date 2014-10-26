@@ -1,7 +1,7 @@
 
 file {
-	name="/home/beams/BCDA/epics/synApps_R3.13.2_R4.3/share/stdApp/op/adl/SGM_1.9.adl"
-	version=020306
+	name="/home/oxygen/MOONEY/epics/synApps/support/optics/opticsApp/op/adl/SGM.adl"
+	version=030107
 }
 display {
 	object {
@@ -1255,6 +1255,16 @@ polyline {
 		label="limit calcs (debug)"
 		name="yyTransform_full.adl"
 		args="P=$(P),T=SGM$(N):limits"
+	}
+	display[8] {
+		label="init"
+		name="yySeq_full.adl"
+		args="P=$(P),S=SGM$(N):init"
+	}
+	display[9] {
+		label="init1"
+		name="yySeq_full.adl"
+		args="P=$(P),S=SGM$(N):init1"
 	}
 	clr=0
 	bclr=17

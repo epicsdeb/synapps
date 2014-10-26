@@ -81,8 +81,8 @@
  * .22  04-09-03  tmm  v5.6: Change arg list to sCalcPostfix.
  * .23  06-01-03  tmm  v5.7: Added DBE_LOG to all db_post_events() calls..
  * .24  06-26-03  rls  Port to 3.14; alarm() conflicts with alarm declaration in unistd.h
- *			(transformRecord.h->epicsTime.h->osdTime.h->unistd.h) when
- *			compiled with SUNPro.
+ *                     (transformRecord.h->epicsTime.h->osdTime.h->unistd.h) when
+ *                     compiled with SUNPro.
  * .25  01-16-07  tmm  v5.8 Added field COPT (calc option).  If COPT==0 ("Conditional"),
  *                     calcs are not done if there is a corresponding input link, or if the
  *                     corresponding value has changed.  If COPT==1 ("Always") calcs are done
@@ -98,6 +98,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #include <alarm.h>
 #include <dbDefs.h>
@@ -112,6 +113,7 @@
 #include <special.h>
 #include <callback.h>
 #include <taskwd.h>
+#include <epicsString.h>
 #include "sCalcPostfix.h"
 #include "sCalcPostfixPvt.h"	/* define BAD_EXPRESSION */
 
@@ -201,21 +203,193 @@ static void checkLinks();
 #define CA_LINKS_ALL_OK 1
 #define CA_LINKS_NOT_OK 2
 
+/* These must agree with the .dbd file. */
+#define INFIX_SIZE 120
+#define POSTFIX_SIZE SCALC_INFIX_TO_POSTFIX_SIZE(INFIX_SIZE)
+#define MAX_FIELDS 16
+#define COMMENT_SIZE 39
+/* Fldnames should have MAX_FIELDS elements */
+static char Fldnames[MAX_FIELDS][2] =
+{"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P"};
+
+struct macro {
+	char name[COMMENT_SIZE];
+	char c;
+};
+
 struct rpvtStruct {
 	CALLBACK	checkLinkCb;
 	short		pending_checkLinkCB;
 	short		caLinkStat; /* NO_CA_LINKS,CA_LINKS_ALL_OK,CA_LINKS_NOT_OK */
 	short		firstCalcPosted;
+	struct macro macro[MAX_FIELDS];
 };
 
-/* These must agree with the .dbd file. */
-#define INFIX_SIZE 80
-#define POSTFIX_SIZE SCALC_INFIX_TO_POSTFIX_SIZE(INFIX_SIZE)
-#define MAX_FIELDS 16
-/* Fldnames should have MAX_FIELDS elements */
-static char Fldnames[MAX_FIELDS][2] =
-{"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P"};
+/*****************************************************************************
+ * begin macro and shortcut substitution
+ * I want to support expressions like "($xp+$xn)/2", where "$xp" is defined by
+ * the user as a synonym (macro) for, say, the variable A.  However, I already
+ * support shortcuts like "$P(" means "$PRINTF(".  Shortcuts were handled by
+ * sCalcPostfix, but that's not going to work anymore, because the user could
+ * specify "$P" as a synonym for "A", and I don't want to involve the parser in
+ * macro replacement.  Therefore, I'm going to replace shortcuts here, before
+ * even looking for macros.  That means I might need a longer expression buffer,
+ * so I'll use 2*INFIX_SIZE to be safe.
+ */
 
+/* Sort macros according to length, longest first. */
+static void sortMacros(struct macro *m, int n) {
+
+	int i, j;
+	struct macro this;
+
+	for (j=1; j<n; j++) {
+		memcpy((void *)&this, (void *)&m[j], sizeof(struct macro));
+		i = j-1;
+		while ((i >= 0) && (strlen(m[i].name) < strlen(this.name))) {
+			memcpy((void *)&m[i+1], (void *)&m[i], sizeof(struct macro));
+			i--;
+		}
+		memcpy((void *)&m[i+1], (void *)&this, sizeof(struct macro));
+	}
+}
+
+static long getMacros(transformRecord *ptran)
+{
+	struct rpvtStruct *prpvt;
+	int i, j;
+	char *pcomment;
+	struct macro *macro;
+
+	prpvt = (struct rpvtStruct *)ptran->rpvt;
+	macro = (struct macro *) prpvt->macro;
+
+	/* Make sure all comment fields end with string terminators. */
+	for (i=0, pcomment=ptran->cmta; i<MAX_FIELDS; i++, pcomment+=COMMENT_SIZE, macro++) {
+		pcomment[COMMENT_SIZE-1] = '\0';
+		/* clear macro name */
+		macro->name[0] = '\0'; macro->c = '\0';
+		if (transformRecordDebug >= 10) printf("pcomment[%d]='%s'\n", i, pcomment);
+		if (pcomment[0] == '$') {
+			macro->name[0] = pcomment[0];
+			for(j=1; j<COMMENT_SIZE-1 && isalnum((int)pcomment[j]); j++) {
+				macro->name[j] = pcomment[j];
+			}
+			macro->name[j] = '\0';
+			macro->c = Fldnames[i][0];
+		}
+		if (transformRecordDebug >= 10) {
+			if (macro->name[0]) printf("macro->name[%d]='%s':%c\n", i, macro->name, macro->c);
+		}
+	}
+
+	macro = (struct macro *) prpvt->macro;
+	sortMacros(macro, MAX_FIELDS);
+	if (transformRecordDebug >= 5) {
+		for (i=0; i<MAX_FIELDS; i++, macro++) {
+			if (macro->name[0]) printf("getMacros: macro->name[%d]='%s':%c\n", i, macro->name, macro->c);
+		}
+	}
+	return(0);
+}
+
+static long convertMacros(transformRecord *ptran, char *dest, const char *src) {
+	struct rpvtStruct *prpvt;
+	struct macro *macro;
+	const char *c;
+	char *d;
+	int i, lenMacro, taken;
+
+	prpvt = (struct rpvtStruct *)ptran->rpvt;
+	macro = (struct macro *) prpvt->macro;
+	if (transformRecordDebug >= 10) printf("src='%s'\n", src);
+	for (c=src, d=dest; *c;) {
+		taken = 0;
+		if (*c == '$') {
+			for (i=0; *c && i<MAX_FIELDS && macro[i].name[0]; i++) {
+				if (transformRecordDebug >= 10) printf("checking macro '%s'\n", macro[i].name);
+				lenMacro = strlen(macro[i].name);
+				if (epicsStrnCaseCmp(c, macro[i].name, lenMacro) == 0) {
+					if (transformRecordDebug >= 10) printf("replacing macro '%s'\n", macro[i].name);
+					*d++ = macro[i].c;
+					c += lenMacro;
+					taken = 1;
+				}
+			}
+		}
+		if (!taken) {
+			if (transformRecordDebug > 10) printf("copying char'%c'\n", *c);
+			*d++ = *c++;
+		}
+	}
+	*d = '\0';
+	if (transformRecordDebug >= 10) printf("src='%s', dest='%s'\n", src, dest);
+	return(0);
+}
+
+#define NUMSHORTCUTS 6
+#define MAXSHORTCUT 10
+struct shortcut {
+	char target[4];
+	char replace[MAXSHORTCUT];
+} shortcuts[NUMSHORTCUTS] = {
+	{"$P(", "$PRINTF("},
+	{"$T(", "$TR_ESC("},
+	{"$W(", "$WRITE("},
+	{"$S(", "$SSCANF("},
+	{"$R(", "$READ("},
+	{"$E(", "$ESC("}
+};
+
+static int convertShortcut(transformRecord *ptran, char *dest, const char *src, const char *target, const char *replace) {
+	const char *c;
+	char *d;
+	int i, targetLen, replaceLen;
+	int numReplacements=0;
+
+	if (transformRecordDebug >= 10) printf("convertShortcut: src='%s', target='%s', replace='%s'\n", src, target, replace);
+	targetLen = strlen(target);
+	replaceLen = strlen(replace);
+	for (c=src, d=dest; *c;) {
+		if (epicsStrnCaseCmp(c, target, targetLen) == 0) {
+			for (i=0; i<replaceLen; i++) {
+				*d++ = replace[i];
+			}
+			c += targetLen;
+			numReplacements++;
+		} else {
+			*d++ = *c++;
+		}
+	}
+	*d = '\0';
+	if (transformRecordDebug >= 10) printf("convertShortcut: src='%s', dest='%s'\n", src, dest);
+	return(numReplacements);
+}
+
+static int convertShortcuts(transformRecord *ptran, char *dest, const char *src) {
+	char convertBuf[2*INFIX_SIZE];
+	int i;
+
+	(void) convertShortcut(ptran, dest, src, shortcuts[0].target, shortcuts[0].replace);
+	for (i=1; i<NUMSHORTCUTS; i++) {
+		if (convertShortcut(ptran, convertBuf, dest, shortcuts[i].target, shortcuts[i].replace) > 0) {
+			strcpy(dest, convertBuf);
+		}
+	}
+	return(0);
+}
+
+/* Convert shortcuts, then it's safe to convert macros. */
+static int convertExpression(transformRecord *ptran, char *dest, const char *src) {
+	char convertBuf[2*INFIX_SIZE];
+
+	(void) convertShortcuts(ptran, convertBuf, src);
+	(void) convertMacros(ptran, dest, convertBuf);
+	return(0);
+}
+
+/* end macro and shortcut substitution */
+/********************************************************************************/
 
 static long 
 init_record(transformRecord *ptran, int pass)
@@ -228,34 +402,38 @@ init_record(transformRecord *ptran, int pass)
 	/* buffers holding infix, postfix expressions */
 	char			*pclcbuf;
 	unsigned char	*prpcbuf;	
-    unsigned short	*pInLinkValid, *pOutLinkValid;
-    struct dbAddr	dbAddr;
-    struct rpvtStruct	*prpvt;
+	unsigned short	*pInLinkValid, *pOutLinkValid;
+	struct dbAddr	dbAddr;
+	struct rpvtStruct	*prpvt;
+	char convertBuf[2*INFIX_SIZE];
 
 	Debug(15, "init_record: pass = %d\n", pass);
 
 	if (pass == 0) {
 		ptran->vers = VERSION;
-        ptran->rpvt = (void *)calloc(1, sizeof(struct rpvtStruct));
+		ptran->rpvt = (void *)calloc(1, sizeof(struct rpvtStruct));
 		return (0);
 	}
-    prpvt = (struct rpvtStruct *)ptran->rpvt;
+	prpvt = (struct rpvtStruct *)ptran->rpvt;
 
 	/* Gotta have a .val field.  Make its value reproducible. */
 	ptran->val = 0;
 	ptran->map = 0; /* init "marked" bitmap to all unmarked */
 
+	/* search comment fields for macros */
+	(void)getMacros(ptran);
+
 	pinlink = &ptran->inpa;
 	poutlink = &ptran->outa;
-    pInLinkValid = &ptran->iav;
-    pOutLinkValid = &ptran->oav;
+	pInLinkValid = &ptran->iav;
+	pOutLinkValid = &ptran->oav;
 	pvalue = &ptran->a;
 	plvalue = &ptran->la;
 	pclcbuf = ptran->clca;	/* infix expressions */
 	prpcbuf = ptran->rpca;	/* postfix expressions */
 	pcalcInvalid = &ptran->cav;
 	for (i = 0; i < MAX_FIELDS;
-	     i++, pinlink++, poutlink++, pvalue++, plvalue++, pInLinkValid++,
+		i++, pinlink++, poutlink++, pvalue++, plvalue++, pInLinkValid++,
 		pOutLinkValid++, pclcbuf += INFIX_SIZE, prpcbuf += POSTFIX_SIZE,
 		pcalcInvalid++) {
 
@@ -264,33 +442,33 @@ init_record(transformRecord *ptran, int pass)
 		if (pinlink->type == CONSTANT) {
 			recGblInitConstantLink(pinlink,DBF_DOUBLE,pvalue);
 			db_post_events(ptran, pvalue, DBE_VALUE|DBE_LOG);
-            *pInLinkValid = transformIAV_CON;
+			*pInLinkValid = transformIAV_CON;
 		}
-        /* see if the PV resides on this ioc */
-        else if (!dbNameToAddr(pinlink->value.pv_link.pvname, &dbAddr)) {
-            *pInLinkValid = transformIAV_LOC;
-        }
-        /* pv is not on this ioc. Callback later for connection stat */
-        else {
-            *pInLinkValid = transformIAV_EXT_NC;
-             prpvt->caLinkStat = CA_LINKS_NOT_OK;
-        }
-        db_post_events(ptran,pInLinkValid,DBE_VALUE|DBE_LOG);
+		/* see if the PV resides on this ioc */
+		else if (!dbNameToAddr(pinlink->value.pv_link.pvname, &dbAddr)) {
+			*pInLinkValid = transformIAV_LOC;
+		}
+		/* pv is not on this ioc. Callback later for connection stat */
+		else {
+			*pInLinkValid = transformIAV_EXT_NC;
+			prpvt->caLinkStat = CA_LINKS_NOT_OK;
+		}
+		db_post_events(ptran,pInLinkValid,DBE_VALUE|DBE_LOG);
 
 		/*** check output links ***/
 		if (poutlink->type == CONSTANT) {
-            *pOutLinkValid = transformIAV_CON;
+			*pOutLinkValid = transformIAV_CON;
 		}
-        /* see if the PV resides on this ioc */
-        else if (!dbNameToAddr(poutlink->value.pv_link.pvname, &dbAddr)) {
-            *pOutLinkValid = transformIAV_LOC;
-        }
-        /* pv is not on this ioc. Callback later for connection stat */
-        else {
-            *pOutLinkValid = transformIAV_EXT_NC;
-             prpvt->caLinkStat = CA_LINKS_NOT_OK;
-        }
-        db_post_events(ptran,pOutLinkValid,DBE_VALUE|DBE_LOG);
+		/* see if the PV resides on this ioc */
+		else if (!dbNameToAddr(poutlink->value.pv_link.pvname, &dbAddr)) {
+			*pOutLinkValid = transformIAV_LOC;
+		}
+		/* pv is not on this ioc. Callback later for connection stat */
+		else {
+			*pOutLinkValid = transformIAV_EXT_NC;
+			prpvt->caLinkStat = CA_LINKS_NOT_OK;
+		}
+		db_post_events(ptran,pOutLinkValid,DBE_VALUE|DBE_LOG);
 
 		/*** check and convert calc expressions ***/
 		*pcalcInvalid = 0; /* empty expression is valid */
@@ -298,7 +476,9 @@ init_record(transformRecord *ptran, int pass)
 			/* make sure it's no longer than INFIX_SIZE characters */
 			pclcbuf[INFIX_SIZE - 1] = (char) 0;
 			Debug(19, "init_record: infix expression: '%s'\n", pclcbuf);
-			*pcalcInvalid = sCalcPostfix(pclcbuf, prpcbuf, &error_number);
+			(void)convertExpression(ptran, convertBuf, pclcbuf);
+			*pcalcInvalid = sCalcPostfix(convertBuf, prpcbuf, &error_number);
+			/* *pcalcInvalid = sCalcPostfix(pclcbuf, prpcbuf, &error_number); */
 			if (*pcalcInvalid) {
 				recGblRecordError(S_db_badField,(void *)ptran,
 					"transform: init_record: Illegal CALC field");
@@ -308,15 +488,15 @@ init_record(transformRecord *ptran, int pass)
 		*plvalue = *pvalue;
 	}
 
-    callbackSetCallback(checkLinksCallback, &prpvt->checkLinkCb);
-    callbackSetPriority(ptran->prio, &prpvt->checkLinkCb);
-    callbackSetUser(ptran, &prpvt->checkLinkCb);
-    prpvt->pending_checkLinkCB = 0;
+	callbackSetCallback(checkLinksCallback, &prpvt->checkLinkCb);
+	callbackSetPriority(ptran->prio, &prpvt->checkLinkCb);
+	callbackSetUser(ptran, &prpvt->checkLinkCb);
+	prpvt->pending_checkLinkCB = 0;
 
-    if (prpvt->caLinkStat == CA_LINKS_NOT_OK) {
-        prpvt->pending_checkLinkCB = 1;
-        callbackRequestDelayed(&prpvt->checkLinkCb, 1.0);
-    }
+	if (prpvt->caLinkStat == CA_LINKS_NOT_OK) {
+		prpvt->pending_checkLinkCB = 1;
+		callbackRequestDelayed(&prpvt->checkLinkCb, 1.0);
+	}
 
 	return (0);
 }
@@ -330,7 +510,7 @@ process(transformRecord *ptran)
 	double			*pval, *plval;
 	unsigned char	*prpcbuf;
 	char			*pclcbuf;
-    struct rpvtStruct	*prpvt = (struct rpvtStruct *)ptran->rpvt;
+	struct rpvtStruct	*prpvt = (struct rpvtStruct *)ptran->rpvt;
 	int				*pu, *plu;
 
 	if (DEBUG_LEVEL >= 15) {
@@ -451,14 +631,15 @@ special(struct dbAddr *paddr, int after)
 	char			*pclcbuf;
 	unsigned char	*prpcbuf;
 	struct link		*plink = &ptran->inpa;
-    int				fieldIndex = dbGetFieldIndex(paddr);
+	int				fieldIndex = dbGetFieldIndex(paddr);
 	/* link-check stuff */
-    struct rpvtStruct   *prpvt = (struct rpvtStruct *)ptran->rpvt;
-    struct dbAddr	dbAddr;
-    unsigned short	*plinkValid;
-    double			*pvalue;
+	struct rpvtStruct   *prpvt = (struct rpvtStruct *)ptran->rpvt;
+	struct dbAddr	dbAddr;
+	unsigned short	*plinkValid;
+	double			*pvalue;
 	long			status;
 	epicsInt32		*pcalcInvalid;
+	char convertBuf[2*INFIX_SIZE];
 
 	Debug(15, "special: after = %d\n", after);
 
@@ -486,15 +667,19 @@ special(struct dbAddr *paddr, int after)
 			prpcbuf = ptran->rpca;
 			pcalcInvalid = &ptran->cav;
 			for (i = 0;
-			     i < MAX_FIELDS && paddr->pfield != (void *) pclcbuf;
-			     i++, pclcbuf+=INFIX_SIZE, prpcbuf+=POSTFIX_SIZE, pcalcInvalid++);
+				i < MAX_FIELDS && paddr->pfield != (void *) pclcbuf;
+				i++, pclcbuf+=INFIX_SIZE, prpcbuf+=POSTFIX_SIZE, pcalcInvalid++);
 			if (i < MAX_FIELDS) {
 				status = 0; /* empty expression is valid */
 				if (*pclcbuf) {
 					/* make sure it's no longer than INFIX_SIZE chars */
 					pclcbuf[INFIX_SIZE - 1] = (char) 0;
 					Debug(15, "special: infix expression: '%s'\n", pclcbuf);
-					status = sCalcPostfix(pclcbuf, prpcbuf, &error_number);
+					/* search comment fields for macros */
+					(void)getMacros(ptran);
+					(void)convertExpression(ptran, convertBuf, pclcbuf);
+					status = sCalcPostfix(convertBuf, prpcbuf, &error_number);
+					/* status = sCalcPostfix(pclcbuf, prpcbuf, &error_number); */
 					if (status) {
 						recGblRecordError(S_db_badField,(void *)ptran,
 							"transform:special: Illegal CALC field");
@@ -524,33 +709,33 @@ special(struct dbAddr *paddr, int after)
 				pvalue  = &ptran->a    + i;
 				plinkValid = &ptran->iav + i;
 
-		        if (plink->type == CONSTANT) {
+				if (plink->type == CONSTANT) {
 					/* get initial value if this is an input link */
-		            if (fieldIndex < transformRecordOUTA) {
-		                recGblInitConstantLink(plink,DBF_DOUBLE,pvalue);
-		                db_post_events(ptran,pvalue,DBE_VALUE|DBE_LOG);
-		            }
+					if (fieldIndex < transformRecordOUTA) {
+						recGblInitConstantLink(plink,DBF_DOUBLE,pvalue);
+						db_post_events(ptran,pvalue,DBE_VALUE|DBE_LOG);
+					}
 					Debug(15, "special: ...constant link, i=%d\n", i);
-		            *plinkValid = transformIAV_CON;
-		        }
-		        /* see if the PV resides on this ioc */
-		        else if (!dbNameToAddr(plink->value.pv_link.pvname, &dbAddr)) {
-		            *plinkValid = transformIAV_LOC;
+					*plinkValid = transformIAV_CON;
+				}
+				/* see if the PV resides on this ioc */
+				else if (!dbNameToAddr(plink->value.pv_link.pvname, &dbAddr)) {
+					*plinkValid = transformIAV_LOC;
 					Debug(15, "special: ...local link, i=%d\n", i);
-		        }
-		        /* pv is not on this ioc. Callback later for connection stat */
-		        else {
-		            *plinkValid = transformIAV_EXT_NC;
-		            /* DO_CALLBACK, if not already scheduled */
+				}
+				/* pv is not on this ioc. Callback later for connection stat */
+				else {
+					*plinkValid = transformIAV_EXT_NC;
+					/* DO_CALLBACK, if not already scheduled */
 					Debug(15, "special: ...CA link, pending_checkLinkCB=%d\n", prpvt->pending_checkLinkCB);
-		            if (!prpvt->pending_checkLinkCB) {
-		                prpvt->pending_checkLinkCB = 1;
+					if (!prpvt->pending_checkLinkCB) {
+						prpvt->pending_checkLinkCB = 1;
 						callbackRequestDelayed(&prpvt->checkLinkCb, 0.5);
-		                prpvt->caLinkStat = CA_LINKS_NOT_OK;
+						prpvt->caLinkStat = CA_LINKS_NOT_OK;
 						Debug(15, "special: ...CA link, i=%d, req. callback\n", i);
-		            }
-		        }
-		        db_post_events(ptran,plinkValid,DBE_VALUE|DBE_LOG);
+					}
+				}
+				db_post_events(ptran,plinkValid,DBE_VALUE|DBE_LOG);
 			}
 		}
 		return(0);
@@ -565,7 +750,7 @@ static long
 get_precision(struct dbAddr *paddr, long *precision)
 {
 	transformRecord *ptran = (transformRecord *) paddr->precord;
-    int fieldIndex = dbGetFieldIndex(paddr);
+	int fieldIndex = dbGetFieldIndex(paddr);
 
 	*precision = ptran->prec;
 	if (fieldIndex == transformRecordVERS) {
@@ -600,7 +785,7 @@ monitor(transformRecord *ptran)
 	unsigned short      monitor_mask;
 	double              *pnew, *pprev;
 	int                 i;
-    struct rpvtStruct   *prpvt = (struct rpvtStruct *)ptran->rpvt;
+	struct rpvtStruct   *prpvt = (struct rpvtStruct *)ptran->rpvt;
 
 	monitor_mask = recGblResetAlarms(ptran);
 	monitor_mask = DBE_VALUE|DBE_LOG;
@@ -623,11 +808,11 @@ monitor(transformRecord *ptran)
 
 static void checkLinksCallback(CALLBACK *pcallback)
 {
-    struct transformRecord	*ptran;
-    struct rpvtStruct		*prpvt;
+	struct transformRecord	*ptran;
+	struct rpvtStruct		*prpvt;
 
-    callbackGetUser(ptran, pcallback);
-    prpvt = (struct rpvtStruct *)ptran->rpvt;
+	callbackGetUser(ptran, pcallback);
+	prpvt = (struct rpvtStruct *)ptran->rpvt;
 	Debug(15, "checkLinksCallback() for %s\n", ptran->name);
 
 	if (!interruptAccept) {
@@ -645,48 +830,47 @@ static void checkLinksCallback(CALLBACK *pcallback)
 
 static void checkLinks(struct transformRecord *ptran)
 {
-    struct link *plink;
-    struct rpvtStruct   *prpvt = (struct rpvtStruct *)ptran->rpvt;
-    int i;
-    int stat;
-    int caLink   = 0;
-    int caLinkNc = 0;
-    unsigned short *plinkValid;
+	struct link *plink;
+	struct rpvtStruct   *prpvt = (struct rpvtStruct *)ptran->rpvt;
+	int i;
+	int stat;
+	int caLink   = 0;
+	int caLinkNc = 0;
+	unsigned short *plinkValid;
 
-    Debug(15, "checkLinks() for %p\n", ptran);
+	Debug(15, "checkLinks() for %p\n", ptran);
 
-    plink   = &ptran->inpa;
-    plinkValid = &ptran->iav;
+	plink   = &ptran->inpa;
+	plinkValid = &ptran->iav;
 
-    for (i=0; i<2*MAX_FIELDS; i++, plink++, plinkValid++) {
-        if (plink->type == CA_LINK) {
-            caLink = 1;
-            stat = dbCaIsLinkConnected(plink);
-            if (!stat && (*plinkValid == transformIAV_EXT_NC)) {
-                caLinkNc = 1;
-            }
-            else if (!stat && (*plinkValid == transformIAV_EXT)) {
-                *plinkValid = transformIAV_EXT_NC;
-                db_post_events(ptran,plinkValid,DBE_VALUE|DBE_LOG);
-                caLinkNc = 1;
-            } 
-            else if (stat && (*plinkValid == transformIAV_EXT_NC)) {
-                *plinkValid = transformIAV_EXT;
-                db_post_events(ptran,plinkValid,DBE_VALUE|DBE_LOG);
-            } 
-        }
-        
-    }
-    if (caLinkNc)
-        prpvt->caLinkStat = CA_LINKS_NOT_OK;
-    else if (caLink)
-        prpvt->caLinkStat = CA_LINKS_ALL_OK;
-    else
-        prpvt->caLinkStat = NO_CA_LINKS;
+	for (i=0; i<2*MAX_FIELDS; i++, plink++, plinkValid++) {
+		if (plink->type == CA_LINK) {
+			caLink = 1;
+			stat = dbCaIsLinkConnected(plink);
+			if (!stat && (*plinkValid == transformIAV_EXT_NC)) {
+				caLinkNc = 1;
+			}
+			else if (!stat && (*plinkValid == transformIAV_EXT)) {
+				*plinkValid = transformIAV_EXT_NC;
+				db_post_events(ptran,plinkValid,DBE_VALUE|DBE_LOG);
+				caLinkNc = 1;
+			} 
+			else if (stat && (*plinkValid == transformIAV_EXT_NC)) {
+				*plinkValid = transformIAV_EXT;
+				db_post_events(ptran,plinkValid,DBE_VALUE|DBE_LOG);
+			} 
+		}
+	}
+	if (caLinkNc)
+		prpvt->caLinkStat = CA_LINKS_NOT_OK;
+	else if (caLink)
+		prpvt->caLinkStat = CA_LINKS_ALL_OK;
+	else
+		prpvt->caLinkStat = NO_CA_LINKS;
 
-    if (!prpvt->pending_checkLinkCB && caLinkNc) {
-        /* Schedule another CALLBACK */
-        prpvt->pending_checkLinkCB = 1;
-        callbackRequestDelayed(&prpvt->checkLinkCb, 0.5);
-    }
+	if (!prpvt->pending_checkLinkCB && caLinkNc) {
+		/* Schedule another CALLBACK */
+		prpvt->pending_checkLinkCB = 1;
+		callbackRequestDelayed(&prpvt->checkLinkCb, 0.5);
+	}
 }

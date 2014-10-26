@@ -342,6 +342,7 @@ static void processCallbackInput(asynUser *pasynUser)
 
     pPvt->result.status = pPvt->puint32->read(pPvt->uint32Pvt, pPvt->pasynUser,
         &pPvt->result.value,pPvt->mask);
+    pPvt->result.time = pPvt->pasynUser->timestamp;
     if (pPvt->result.status == asynSuccess) {
         asynPrint(pasynUser, ASYN_TRACEIO_DEVICE,
             "%s devAsynUInt32Digital::process value=%u\n",
@@ -507,7 +508,7 @@ static int getCallbackValue(devPvt *pPvt)
     epicsMutexLock(pPvt->mutexId);
     if (pPvt->ringTail != pPvt->ringHead) {
         if (pPvt->ringBufferOverflows > 0) {
-            asynPrint(pPvt->pasynUser, ASYN_TRACEIO_DEVICE,
+            asynPrint(pPvt->pasynUser, ASYN_TRACE_WARNING,
                 "%s devAsynInt32 getCallbackValue warning, %d ring buffer overflows\n",
                                     pPvt->pr->name, pPvt->ringBufferOverflows);
             pPvt->ringBufferOverflows = 0;
@@ -660,7 +661,7 @@ static long processLi(longinRecord *pr)
                 pr->name,pPvt->pasynUser->errorMessage);
         }
     }
-    pr->val = pPvt->result.value; 
+    pr->val = pPvt->result.value & pPvt->mask;
     pr->time = pPvt->result.time; 
     if(pPvt->result.status==asynSuccess) {
         pr->udf=0;
@@ -702,9 +703,9 @@ static long processLo(longoutRecord *pr)
 
     if(getCallbackValue(pPvt)) {
         /* This code is for I/O Intr scanned output records, which are not tested yet. */
-        pr->val = pPvt->result.value;
+        pr->val = pPvt->result.value & pPvt->mask;
     } else if(pr->pact == 0) {
-        pPvt->result.value = pr->val;;
+        pPvt->result.value = pr->val & pPvt->mask;
         if(pPvt->canBlock) pr->pact = 1;
         status = pasynManager->queueRequest(pPvt->pasynUser, 0, 0);
         if((status==asynSuccess) && pPvt->canBlock) return 0;

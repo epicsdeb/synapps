@@ -73,8 +73,8 @@ int ConnectToServer(char *IpAddress, int IpPort, double timeout)
     /* Create a new asyn port */
     epicsSnprintf(ipString, PORT_NAME_SIZE, "%s:%d TCP", IpAddress, IpPort);
     epicsSnprintf(portName, PORT_NAME_SIZE, "%s:%d:%d", IpAddress, IpPort, nextSocket);
-    /* Create port with noAutoConnect and noProcessEos options */
-    drvAsynIPPortConfigure(portName, ipString, 0, 1, 1);
+    /* Create port with autoConnect and noProcessEos options */
+    drvAsynIPPortConfigure(portName, ipString, 0, 0, 1);
 
     /* Connect to driver with asynOctet interface */
     status = pasynOctetSyncIO->connect(portName, 0, &pasynUser, NULL);
@@ -93,14 +93,6 @@ int ConnectToServer(char *IpAddress, int IpPort, double timeout)
         return -1;
     }
     psock->pasynUserCommon = pasynUserCommon;
-
-    /* Connect to controller */
-    status = pasynCommonSyncIO->connectDevice(pasynUserCommon);
-    if (status != asynSuccess) {
-        printf("ConnectToServer, error calling pasynCommonSyncIO->connectDevice port=%s error=%s\n", 
-               portName, pasynUserCommon->errorMessage);
-        return -1;
-    }
     
     /* Create a mutex to prevent more than 1 thread using socket at once
      * Normally the SyncIO-.writeRead function takes care of this, but for long responses
@@ -137,11 +129,11 @@ void SendAndReceive (int SocketIndex, char buffer[], char valueRtrn[], int retur
     int status;
     int retries;
     int errStat;
-    int nread;
+    size_t nread;
 
     /* Check to see if the Socket is valid! */
     
-    bufferLength = strlen(buffer);
+    bufferLength = (int)strlen(buffer);
     if ((SocketIndex < 0) || (SocketIndex >= nextSocket)) {
         printf("SendAndReceive: invalid SocketIndex %d\n", SocketIndex);
         strcpy(valueRtrn,"-22");
@@ -187,7 +179,7 @@ void SendAndReceive (int SocketIndex, char buffer[], char valueRtrn[], int retur
                                             &eomReason);
             asynPrint(psock->pasynUser, ASYN_TRACEIO_DRIVER,
                   "SendAndReceive, received: nread=%d, returnSize-nread=%d, nbytesIn=%d\n",
-                  nread, returnSize-nread, nbytesIn);
+                  (int)nread, returnSize-nread, (int)nbytesIn);
             nread += nbytesIn;
         }
     } else {
@@ -216,6 +208,7 @@ void SendAndReceive (int SocketIndex, char buffer[], char valueRtrn[], int retur
             if (status == asynTimeout) {
                 asynPrint(psock->pasynUser, ASYN_TRACEIO_DRIVER,
                           "SendAndReceive, timeout on read\n");
+                strcpy(valueRtrn, "0");
                 break;
             } else {
                 asynPrint(psock->pasynUser, ASYN_TRACEIO_DRIVER,
@@ -229,9 +222,49 @@ void SendAndReceive (int SocketIndex, char buffer[], char valueRtrn[], int retur
                 break;
             }
         }
-        strcpy(valueRtrn, "0");
+        if (retries == MAX_RETRIES) strcpy(valueRtrn, "0");
     }
     epicsMutexUnlock(psock->mutexId);
+}
+
+
+/***************************************************************************************/
+int ReadXPSSocket (int SocketIndex, char valueRtrn[], int returnSize, double timeout)
+{
+    size_t nbytesIn;
+    int eomReason;
+    socketStruct *psock;
+    int status;
+    size_t nread=0;
+
+    /* Check to see if the Socket is valid! */
+    if ((SocketIndex < 0) || (SocketIndex >= nextSocket)) {
+        printf("ReadXPSSocket: invalid SocketIndex %d\n", SocketIndex);
+        strcpy(valueRtrn,"-22");
+        return -1;
+    }
+    psock = &socketStructs[SocketIndex];
+    if (!psock->connected) {
+        printf("ReadXPSSocket: socket not connected %d\n", SocketIndex);
+        strcpy(valueRtrn,"-22");
+        return -1;
+    }
+
+    /* Loop until we the response contains ",EndOfAPI" or we get an error */
+    do {
+        status = pasynOctetSyncIO->read(psock->pasynUser,
+                                        &valueRtrn[nread],
+                                        returnSize-nread,
+                                        timeout,
+                                        &nbytesIn,
+                                        &eomReason);
+        asynPrint(psock->pasynUser, ASYN_TRACEIO_DRIVER,
+              "ReadXPSSocket, received: nread=%d, returnSize-nread=%d, nbytesIn=%d\n",
+              (int)nread, returnSize-nread, (int)nbytesIn);
+        nread += nbytesIn;
+    } while ((status==asynSuccess) && 
+             (strcmp(valueRtrn + nread - strlen(XPS_TERMINATOR), XPS_TERMINATOR) != 0));
+    return (int)nread;
 }
 
 
@@ -273,7 +306,7 @@ char * GetError(int SocketIndex)
 {
     if ((SocketIndex < 0) || (SocketIndex >= nextSocket)) {
         printf("GetError: invalid SocketIndex %d\n", SocketIndex);
-        return "Invalid socket";
+        return (char *)"Invalid socket";
     }
     return socketStructs[SocketIndex].errorString;
 }

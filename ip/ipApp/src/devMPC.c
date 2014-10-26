@@ -191,7 +191,7 @@ epicsExportAddress(dset,devSiMPC);
 dsetMPC devSoMPC = {6,0,0,initSo,0,writeSo,0};
 epicsExportAddress(dset,devSoMPC);
 
-
+
 static long initCommon(dbCommon *pr, DBLINK *plink, opType ot, recType rt)
 {
    char *port, *userParam;
@@ -444,8 +444,8 @@ static long readAi(aiRecord *pr)
             break;
         case GetSize:
             llen = strchr(pdata, 'L');
-	        if (llen == NULL) {
-	            asynPrint(pPvt->pasynUser, ASYN_TRACE_ERROR,
+            if (llen == NULL) {
+                asynPrint(pPvt->pasynUser, ASYN_TRACE_ERROR,
                     "devMPC::readAi, %s cannot find L, response=%s\n",
                     pr->name, pdata);
                 return(2);
@@ -799,7 +799,7 @@ static long writeSo(stringoutRecord *pr)
     return(0);
 }
 
-
+
 static long startIOCommon(dbCommon* pr)
 {
    devMPCPvt *pPvt = (devMPCPvt *)pr->dpvt;
@@ -846,6 +846,20 @@ static void devMPCCallback(asynUser *pasynUser)
         recGblSetSevr(pr, READ_ALARM, INVALID_ALARM);
         goto done;
     }
+    if (eomReason !=2) {
+        asynPrint(pasynUser, ASYN_TRACE_ERROR,
+                  "devMPC::devMPCCallback %s read error, eomReason=%d\n",
+                  pr->name, eomReason);
+        recGblSetSevr(pr, READ_ALARM, INVALID_ALARM);
+        goto done;
+    }
+    if (nread == MPC_BUFFER_SIZE) {
+        asynPrint(pasynUser, ASYN_TRACE_ERROR,
+                  "devMPC::devMPCCallback %s message too large=%d\n",
+                  pr->name, nread);
+        recGblSetSevr(pr, READ_ALARM, INVALID_ALARM);
+        goto done;
+    }
     asynPrint(pasynUser, ASYN_TRACEIO_DEVICE,
               "devMPC::devMPCCallback %s nread=%d, input=%s\n",
               pr->name, nread, readBuffer);
@@ -882,7 +896,7 @@ static void devMPCCallback(asynUser *pasynUser)
     dbScanUnlock(pr);
 }
 
-
+
 static long MPCConvert(dbCommon* pr,int pass)
 {
    aiRecord* pai = (aiRecord*)pr;

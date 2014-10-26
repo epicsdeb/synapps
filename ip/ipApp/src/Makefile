@@ -21,6 +21,7 @@ ip_SRCS += devAiHeidND261.c
 ip_SRCS += devAiMKS.c
 ip_SRCS += Keithley2kDMM.st
 ip_SRCS += Keithley65xxEM.st
+ip_SRCS += Keithley2kDMM_mf40.st
 ip_SRCS += Federal.st
 ip_SRCS += devMPC.c
 ip_SRCS += devGP307gpib.c  
@@ -50,6 +51,8 @@ ipApp_LIBS += ip
 ipApp_LIBS += asyn
 ipApp_LIBS += seq pv
 ipApp_LIBS += $(EPICS_BASE_IOC_LIBS)
+
+ipApp_SYS_LIBS_solaris += socket
 
 #===========================
 

@@ -1,0 +1,31 @@
+US Digital T7 Single-Axis Absolute Inclinometer:
+
+- Files: USdigital_T7.vdb, USdigital_T7.proto,
+         USdigital_T7_settings.req, USdigital_T7.adl, 
+         USdigital_T7_more.adl
+
+- In serial.cmd:
+tyGSAsynInit("serial5",  "UART_0", 4,19200,'N',1,8,'N',"","")  /* USdigital T7 */
+
+# US Digital X3 Inclinometer
+dbLoadRecords("$(IP)/ipApp/Db/USdigital_T7.vdb","P=kag:,S=1,PORT=serial5")
+
+
+- In top level medm screen, related display button:
+     display[7] {
+             label="US Digital T7"
+             name="USdigital_T7.adl"
+             args="P=kag:,S=1"
+     }
+
+- RS-232 connection:
+Straight-through, with XM-Octal default jumpers (veritical)
+
+- Notes:
+  1.) Use USdigital's "T7Demo" program to change device address to 1.
+
+  2.) This device's default Baud rate is 115K. You can chage it with
+      the "T7Demo" program.
+
+  3.) StreamDevice support used, .proto file must be accessible to ioc.
+

@@ -1,5 +1,5 @@
 /*************************************************************************\
-* Copyright (c) 2013 UChicago Argonne, LLC,
+* Copyright (c) 2014 UChicago Argonne, LLC,
 *               as Operator of Argonne National Laboratory.
 * This file is distributed subject to a Software License Agreement
 * found in file LICENSE that is included with this distribution. 
@@ -27,6 +27,8 @@
   1.2.2 -- June 2012
   1.3.0 -- February 2013
            Used printf better, removed formatting strings
+  1.3.1 -- February 2014
+           If there is an unopenable file, it's ignored instead of halting.
 
  */
 
@@ -43,8 +45,8 @@
 #include "mda-load.h"
 
 
-#define VERSION "1.3.0 (February 2013)"
-#define YEAR "2013"
+#define VERSION "1.3.1 (February 2014)"
+#define YEAR "2014"
 
 // this function relies too much on the input format not changing
 void time_reformat( char *original, char *new)
@@ -238,6 +240,7 @@ int main( int argc, char *argv[])
 
   int opt;
 
+  int skip_line = 0;
 
   int i, j, k, m, n;
 
@@ -309,6 +312,10 @@ int main( int argc, char *argv[])
       return 1;
     }
 
+  allow_count = 0;
+  allow_list = (char *) malloc( dir_number * sizeof(char) );
+  for( i = 0; i < dir_number; i++)
+    allow_list[i] = 0;
   
   fileinfos = (struct mda_fileinfo **) 
     malloc( dir_number * sizeof(struct mda_fileinfo *) );
@@ -316,25 +323,38 @@ int main( int argc, char *argv[])
     {
       if( (fptr = fopen( filelist[i], "rb")) == NULL)
         {
-          printf("Can't open file: \"%s\".\n", filelist[i] );
-          return 1;
+          printf("Can't open file \"%s\", skipping.\n", filelist[i] );
+          fileinfos[i] = NULL;
+          skip_line = 1;
         }
-      fileinfos[i] = mda_info_load( fptr);
-      fclose(fptr);
+      else
+        {
+          fileinfos[i] = mda_info_load( fptr);
+          fclose(fptr);
+          allow_list[i] = 1;
+          allow_count++;
+        }
     }
+
+  if( skip_line)
+    printf("\n");
 
   if( search_flag)
     {
+      // resets the search, as the first one filtered out unreadable files.
       allow_count = 0;
-      allow_list = (char *) malloc( dir_number * sizeof(char) );
+
       for( i = 0; i < dir_number; i++)
-	allow_list[i] = 0;
-      for( i = 0; i < dir_number; i++)
-	{
+        {
+          if( !allow_list[i])
+            continue;
+          else
+            allow_list[i] = 0;
+
           for( k = 0; k < fileinfos[i]->data_rank; k++)
             {
               scinf = fileinfos[i]->scaninfos[k];
-
+              
               if( positioner_flag && scinf->number_positioners)
                 for( j = 0; j < scinf->number_positioners; j++)
                   if( !strcmp( positioner_term, (scinf->positioners[j])->name ))
@@ -349,7 +369,7 @@ int main( int argc, char *argv[])
                     {
                       allow_list[i] = 1;
                       allow_count++;
-                          goto Shortcut;
+                      goto Shortcut;
                     }
               if( trigger_flag && scinf->number_triggers)
                 for( j = 0; j < scinf->number_triggers; j++)
@@ -362,22 +382,21 @@ int main( int argc, char *argv[])
             }
         Shortcut:
           ;
-	}
+        }
+    }
       
-      if( !allow_count)
-	{
-	  printf("No MDA files in the directory fit your search.\n");
-	  return 1;
-	}
+  if( !allow_count)
+    {
+      printf("No MDA files in the directory fit your search.\n");
+      return 1;
     }
 
   max_namelen = 0;
   max_dimlen = 0;
   for( i = 0; i < dir_number; i++)
     {
-      if( search_flag)
-	if( !allow_list[i] )
-	  continue;
+      if( !allow_list[i] )
+        continue;
 
       j = strlen( filelist[i]);
       if( j > max_namelen)
@@ -417,9 +436,8 @@ int main( int argc, char *argv[])
 
   for( i = 0; i < dir_number; i++)
     {
-      if( search_flag)
-	if( !allow_list[i] )
-	  continue;
+      if( !allow_list[i] )
+        continue;
 
       printf("%*s  ", max_namelen, filelist[i]);
 

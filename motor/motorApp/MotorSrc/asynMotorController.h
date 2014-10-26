@@ -11,6 +11,9 @@
 #include <epicsEvent.h>
 #include <epicsTypes.h>
 
+#define MAX_CONTROLLER_STRING_SIZE 256
+#define DEFAULT_CONTROLLER_TIMEOUT 2.0
+
 /** Strings defining parameters for the driver. 
   * These are the values passed to drvUserCreate. 
   * The driver will place in pasynUser->reason an integer to be used when the
@@ -28,13 +31,13 @@
 #define motorDeferMovesString           "MOTOR_DEFER_MOVES"
 #define motorMoveToHomeString           "MOTOR_MOVE_HOME"
 #define motorResolutionString           "MOTOR_RESOLUTION"
-#define motorEncRatioString             "MOTOR_ENC_RATIO"
-#define motorPgainString                "MOTOR_PGAIN"
-#define motorIgainString                "MOTOR_IGAIN"
-#define motorDgainString                "MOTOR_DGAIN"
+#define motorEncoderRatioString         "MOTOR_ENCODER_RATIO"
+#define motorPGainString                "MOTOR_PGAIN"
+#define motorIGainString                "MOTOR_IGAIN"
+#define motorDGainString                "MOTOR_DGAIN"
 #define motorHighLimitString            "MOTOR_HIGH_LIMIT"
 #define motorLowLimitString             "MOTOR_LOW_LIMIT"
-#define motorSetClosedLoopString        "MOTOR_SET_CLOSED_LOOP"
+#define motorClosedLoopString           "MOTOR_CLOSED_LOOP"
 #define motorStatusString               "MOTOR_STATUS"
 #define motorUpdateStatusString         "MOTOR_UPDATE_STATUS"
 #define motorStatusDirectionString      "MOTOR_STATUS_DIRECTION" 
@@ -149,6 +152,7 @@ class epicsShareFunc asynMotorController : public asynPortDriver {
   virtual asynStatus writeFloat64Array(asynUser *pasynUser, epicsFloat64 *value, size_t nElements);
   virtual asynStatus readFloat64Array(asynUser *pasynUser, epicsFloat64 *value, size_t nElements, size_t *nRead);
   virtual asynStatus readGenericPointer(asynUser *pasynUser, void *pointer);
+  virtual void report(FILE *fp, int details);
 
   /* These are the methods that are new to this class */
   virtual asynMotorAxis* getAxis(asynUser *pasynUser);
@@ -156,12 +160,13 @@ class epicsShareFunc asynMotorController : public asynPortDriver {
   virtual asynStatus startPoller(double movingPollPeriod, double idlePollPeriod, int forcedFastPolls);
   virtual asynStatus wakeupPoller();
   virtual asynStatus poll();
+  virtual asynStatus setDeferredMoves(bool defer);
   void asynMotorPoller();  // This should be private but is called from C function
   
   /* Functions to deal with moveToHome.*/
   virtual asynStatus startMoveToHomeThread();
   void asynMotorMoveToHome();
-
+  
   /* These are the functions for profile moves */
   virtual asynStatus initializeProfile(size_t maxPoints);
   virtual asynStatus buildProfile();
@@ -169,6 +174,9 @@ class epicsShareFunc asynMotorController : public asynPortDriver {
   virtual asynStatus abortProfile();
   virtual asynStatus readbackProfile();
   
+  virtual asynStatus setMovingPollPeriod(double movingPollPeriod);
+  virtual asynStatus setIdlePollPeriod(double idlePollPeriod);
+
   int shuttingDown_;   /**< Flag indicating that IOC is shutting down.  Stops poller */
 
   protected:
@@ -189,13 +197,13 @@ class epicsShareFunc asynMotorController : public asynPortDriver {
   int motorDeferMoves_;
   int motorMoveToHome_;
   int motorResolution_;
-  int motorEncRatio_;
-  int motorPgain_;
-  int motorIgain_;
-  int motorDgain_;
+  int motorEncoderRatio_;
+  int motorPGain_;
+  int motorIGain_;
+  int motorDGain_;
   int motorHighLimit_;
   int motorLowLimit_;
-  int motorSetClosedLoop_;
+  int motorClosedLoop_;
   int motorStatus_;
   int motorUpdateStatus_;
 
@@ -265,6 +273,15 @@ class epicsShareFunc asynMotorController : public asynPortDriver {
   double *profileTimes_;        /**< Array of times per profile point */
 
   int moveToHomeAxis_;
+
+  /* These are convenience functions for controllers that use asynOctet interfaces to the hardware */
+  asynStatus writeController();
+  asynStatus writeController(const char *output, double timeout);
+  asynStatus writeReadController();
+  asynStatus writeReadController(const char *output, char *response, size_t maxResponseLen, size_t *responseLen, double timeout);
+  asynUser *pasynUserController_;
+  char outString_[MAX_CONTROLLER_STRING_SIZE];
+  char inString_[MAX_CONTROLLER_STRING_SIZE];
 
   friend class asynMotorAxis;
 };

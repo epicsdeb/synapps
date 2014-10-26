@@ -10,8 +10,100 @@ LispWorks 3.2.2 -->
 
 <H1>
 sCalcout - String Calculation Output Record</H1>
-<HR><A NAME="HEADING14-1"></A>
 
+<!-- TOC -->
+<H2>Contents</H2>
+<DL>
+<DT><A HREF="#HEADING14-1"><B>1. </B>- Introduction</A></DT>
+
+<DT><A HREF="#HEADING14-11"><B>2. </B>- Scan Parameters</A></DT>
+
+<DT><A HREF="#HEADING14-13"><B>3. </B>- Read Parameters</A></DT>
+
+<DT><A HREF="#HEADING14-16"><B>4. </B>- Expressions</A></DT>
+
+<DT><A HREF="#HEADING14-19"><B>4.1. </B>- Operands</A></DT>
+
+<DT><A HREF="#HEADING14-21"><B>4.2. </B>- Algebraic Functions/Operators</A></DT>
+
+<DT><A HREF="#HEADING14-39"><B>4.3. </B>- Trigonometric Functions</A></DT>
+
+<DT><A HREF="#HEADING14-49"><B>4.4. </B>- Relational Operators</A></DT>
+
+<DT><A HREF="#HEADING14-56"><B>4.5. </B>- Logical Operators</A></DT>
+
+<DT><A HREF="#HEADING14-60"><B>4.6. </B>- Bitwise Operators</A></DT>
+
+<DT><A HREF="#HEADING14-69"><B>4.7. </B>- Special Characters</A></DT>
+
+<DT><A HREF="#HEADING14-72"><B>4.8. </B>- Conditional Expression</A></DT>
+
+<DT><A HREF="#HEADING14-73"><B>4.9. </B>- String Functions/Operators</A></DT>
+
+<DT><A HREF="#HEADING14-74"><B>4.10. </B>- Array Operators</A></DT>
+
+<DT><A HREF="#HEADING14-75"><B>4.11. </B>- Miscellaneous Operators</A></DT>
+
+<DT><A HREF="#HEADING14-76"><B>4.12. </B>- Examples</A></DT>
+
+<DT><A HREF="#HEADING14-77">Algebraic</A></DT>
+
+<DT><A HREF="#HEADING14-79">Relational</A></DT>
+
+<DT><A HREF="#HEADING14-83">Question Mark</A></DT>
+
+<DT><A HREF="#HEADING14-91">Logical</A></DT>
+
+<DT><A HREF="#HEADING14-92">String</A></DT>
+
+<DT><A HREF="#HEADING14-93">Argument Array</A></DT>
+
+<DT><A HREF="#HEADING14-94">Store</A></DT>
+
+<DT><A HREF="#HEADING14-95">Loop</A></DT>
+
+<DT><A HREF="#HEADING14-98"><B>5. </B>- Output Parameters</A></DT>
+
+<DT><A HREF="#HEADING14-109"><B>6. </B>- Operator Display Parameters</A></DT>
+
+<DT><A HREF="#HEADING14-122"><B>7. </B>- Alarm Parameters</A></DT>
+
+<DT><A HREF="#HEADING14-126"><B>8. </B>- Monitor Parameters</A></DT>
+
+<DT><A HREF="#HEADING14-128"><B>9. </B>- Run-time Parameters</A></DT>
+
+<DT><A HREF="#HEADING14-132"><B>10. </B>- Record Support Routines</A></DT>
+
+<DT><A HREF="#HEADING14-133">init_record</A></DT>
+
+<DT><A HREF="#HEADING14-136">process</A></DT>
+
+<DT><A HREF="#HEADING14-138">special</A></DT>
+
+<DT><A HREF="#HEADING14-140">get_value</A></DT>
+
+<DT><A HREF="#HEADING14-142">get_units</A></DT>
+
+<DT><A HREF="#HEADING14-144">get_precision</A></DT>
+
+<DT><A HREF="#HEADING14-146">get_graphic_double</A></DT>
+
+<DT><A HREF="#HEADING14-148">get_control_double</A></DT>
+
+<DT><A HREF="#HEADING14-150">get_alarm_double</A></DT>
+
+<DT><A HREF="#HEADING14-156"><B>11. </B>- Record Processing</A></DT>
+
+<DT><A HREF="#HEADING14-157"><B>11.1. </B>- process()</A></DT>
+
+<DT><A HREF="#HEADING14-169"><B>11.2. </B>- execOutput()</A></DT>
+
+<DT><A HREF="#HEADING14-170"><B>12. </B>- Sample Database</A></DT>
+
+</DL>
+
+
+<HR><A NAME="HEADING14-1"></A>
 <H1>
 1. Introduction</H1>
 
@@ -78,8 +170,8 @@ truncates the result to fit into a 40-character string.
 <TD>INLINK</TD>
 <TD>Yes</TD>
 <TD>0</TD>
-<TD>No</TD>
-<TD>No</TD>
+<TD>Yes</TD>
+<TD>Yes</TD>
 <TD>N/A</TD>
 </TR>
 
@@ -89,8 +181,8 @@ truncates the result to fit into a 40-character string.
 <TD>INLINK</TD>
 <TD>Yes</TD>
 <TD>0</TD>
-<TD>No</TD>
-<TD>No</TD>
+<TD>Yes</TD>
+<TD>Yes</TD>
 <TD>N/A</TD>
 </TR>
 
@@ -111,8 +203,8 @@ truncates the result to fit into a 40-character string.
 <TD>INLINK</TD>
 <TD>Yes</TD>
 <TD>0</TD>
-<TD>No</TD>
-<TD>No</TD>
+<TD>Yes</TD>
+<TD>Yes</TD>
 <TD>N/A</TD>
 </TR>
 
@@ -122,8 +214,8 @@ truncates the result to fit into a 40-character string.
 <TD>INLINK</TD>
 <TD>Yes</TD>
 <TD>0</TD>
-<TD>No</TD>
-<TD>No</TD>
+<TD>Yes</TD>
+<TD>Yes</TD>
 <TD>N/A</TD>
 </TR>
 
@@ -133,8 +225,8 @@ truncates the result to fit into a 40-character string.
 <TD>INLINK</TD>
 <TD>Yes</TD>
 <TD>0</TD>
-<TD>No</TD>
-<TD>No</TD>
+<TD>Yes</TD>
+<TD>Yes</TD>
 <TD>N/A</TD>
 </TR>
 
@@ -155,8 +247,8 @@ truncates the result to fit into a 40-character string.
 <TD>INLINK</TD>
 <TD>Yes</TD>
 <TD>0</TD>
-<TD>No</TD>
-<TD>No</TD>
+<TD>Yes</TD>
+<TD>Yes</TD>
 <TD>N/A</TD>
 </TR>
 
@@ -2453,8 +2545,9 @@ the OUT link, and post the event in OEVT (if non-zero).</DD>
 <DD>
 4. If an output delay was implemented, process the forward link.</DD>
 
+</DL>
+<P>&nbsp;
 
-<P>&nbsp;</DL>
 <A NAME="HEADING14-170"></A>
 <H2>
 12. Sample Database</H2>
@@ -2492,97 +2585,10 @@ record(scalcout, "$(P)SRS810:$(N):SetPhas") {
 
 </pre>
 
-<P>&nbsp;</DL>
-<!-- TOC -->
-<DL>
-<DT><A HREF="#HEADING14-1"><B>1. </B>- Introduction</A></DT>
-
-<DT><A HREF="#HEADING14-11"><B>2. </B>- Scan Parameters</A></DT>
-
-<DT><A HREF="#HEADING14-13"><B>3. </B>- Read Parameters</A></DT>
-
-<DT><A HREF="#HEADING14-16"><B>4. </B>- Expressions</A></DT>
-
-<DT><A HREF="#HEADING14-19"><B>4.1. </B>- Operands</A></DT>
-
-<DT><A HREF="#HEADING14-21"><B>4.2. </B>- Algebraic Functions/Operators</A></DT>
-
-<DT><A HREF="#HEADING14-39"><B>4.3. </B>- Trigonometric Functions</A></DT>
-
-<DT><A HREF="#HEADING14-49"><B>4.4. </B>- Relational Operators</A></DT>
-
-<DT><A HREF="#HEADING14-56"><B>4.5. </B>- Logical Operators</A></DT>
-
-<DT><A HREF="#HEADING14-60"><B>4.6. </B>- Bitwise Operators</A></DT>
-
-<DT><A HREF="#HEADING14-69"><B>4.7. </B>- Special Characters</A></DT>
-
-<DT><A HREF="#HEADING14-72"><B>4.8. </B>- Conditional Expression</A></DT>
-
-<DT><A HREF="#HEADING14-73"><B>4.9. </B>- String Functions/Operators</A></DT>
-
-<DT><A HREF="#HEADING14-74"><B>4.10. </B>- Array Operators</A></DT>
-
-<DT><A HREF="#HEADING14-75"><B>4.11. </B>- Miscellaneous Operators</A></DT>
-
-<DT><A HREF="#HEADING14-76"><B>4.12. </B>- Examples</A></DT>
-
-<DT><A HREF="#HEADING14-77">Algebraic</A></DT>
-
-<DT><A HREF="#HEADING14-79">Relational</A></DT>
-
-<DT><A HREF="#HEADING14-83">Question Mark</A></DT>
-
-<DT><A HREF="#HEADING14-91">Logical</A></DT>
-
-<DT><A HREF="#HEADING14-92">String</A></DT>
-
-<DT><A HREF="#HEADING14-93">Argument Array</A></DT>
-
-<DT><A HREF="#HEADING14-94">Store</A></DT>
-
-<DT><A HREF="#HEADING14-95">Loop</A></DT>
-
-<DT><A HREF="#HEADING14-98"><B>5. </B>- Output Parameters</A></DT>
-
-<DT><A HREF="#HEADING14-109"><B>6. </B>- Operator Display Parameters</A></DT>
-
-<DT><A HREF="#HEADING14-122"><B>7. </B>- Alarm Parameters</A></DT>
-
-<DT><A HREF="#HEADING14-126"><B>8. </B>- Monitor Parameters</A></DT>
-
-<DT><A HREF="#HEADING14-128"><B>9. </B>- Run-time Parameters</A></DT>
-
-<DT><A HREF="#HEADING14-132"><B>10. </B>- Record Support Routines</A></DT>
-
-<DT><A HREF="#HEADING14-133">init_record</A></DT>
-
-<DT><A HREF="#HEADING14-136">process</A></DT>
-
-<DT><A HREF="#HEADING14-138">special</A></DT>
-
-<DT><A HREF="#HEADING14-140">get_value</A></DT>
-
-<DT><A HREF="#HEADING14-142">get_units</A></DT>
-
-<DT><A HREF="#HEADING14-144">get_precision</A></DT>
-
-<DT><A HREF="#HEADING14-146">get_graphic_double</A></DT>
-
-<DT><A HREF="#HEADING14-148">get_control_double</A></DT>
-
-<DT><A HREF="#HEADING14-150">get_alarm_double</A></DT>
-
-<DT><A HREF="#HEADING14-156"><B>11. </B>- Record Processing</A></DT>
-
-<DT><A HREF="#HEADING14-157"><B>11.1. </B>- process()</A></DT>
-
-<DT><A HREF="#HEADING14-169"><B>11.2. </B>- execOutput()</A></DT>
-</DL>
+<P>
 
 <HR>
-<ADDRESS>
-Tim Mooney - Nov 18, 2003</ADDRESS>
+<ADDRESS>Tim Mooney</ADDRESS>
 
 </BODY>
 </HTML>

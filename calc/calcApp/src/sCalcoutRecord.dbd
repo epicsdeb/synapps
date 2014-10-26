@@ -3,7 +3,10 @@
 #     National Laboratory.
 #*************************************************************************
 # Note hardwired postfix-buffer size 282 = 2+n*21/6, where n is infix size of 80
-# Hardwired for backward compatibility with streamDevice, which contains device support.
+# Hardwired for backward compatibility with streamDevice, which contains device
+# support that includes the header file that EPICS will generate from this file,
+# and which doesn't yet include sCalcPostfix.h, which defines the
+# SCALC_INFIX_TO_POSTFIX_SIZE macro we should be using for RCPx.
 menu(scalcoutOOPT) {
 	choice(scalcoutOOPT_Every_Time,"Every Time")
 	choice(scalcoutOOPT_On_Change,"On Change")
@@ -868,13 +871,13 @@ recordtype(scalcout) {
 		interest(3)
 	}
 	field(RPCL,DBF_NOACCESS) {
-		prompt("Reverse Polish Calc")
+		prompt("Postfix Calc")
 		special(SPC_NOMOD)
 		interest(4)
 		extra("unsigned char rpcl[282]")
 	}
 	field(ORPC,DBF_NOACCESS) {
-		prompt("Reverse Polish OCalc")
+		prompt("Postfix OCalc")
 		special(SPC_NOMOD)
 		interest(4)
 		extra("unsigned char orpc[282]")

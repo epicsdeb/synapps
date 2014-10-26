@@ -2,10 +2,10 @@
 FILENAME...     motorUtil.cc
 USAGE...        Motor Record Utility Support.
 
-Version:        $Revision: 9857 $
-Modified By:    $Author: sluiter $
-Last Modified:  $Date: 2009-12-09 10:21:24 -0600 (Wed, 09 Dec 2009) $
-HeadURL:        $URL: https://subversion.xor.aps.anl.gov/synApps/motor/tags/R6-7-1/motorApp/MotorSrc/motorUtil.cc $
+Version:        $Revision: 17470 $
+Modified By:    $Author: kpetersn $
+Last Modified:  $Date: 2014-05-28 14:50:36 -0500 (Wed, 28 May 2014) $
+HeadURL:        $URL: https://subversion.xray.aps.anl.gov/synApps/motor/tags/R6-8-1/motorApp/MotorSrc/motorUtil.cc $
 */
 
 
@@ -258,7 +258,10 @@ static void stopAll(chid callback_chid, char *callback_value)
         if (motorMovingCount())
         {
             for(itera=0; itera < numMotors; itera++)
-                ca_put(DBR_SHORT, motorArray[itera].chid_stop, &val);
+	        /* Only stop a motor that is moving.  This should avoid problems caused by trying
+		to stop motor records for which device and driver support have not been loaded.*/
+                if (motorArray[itera].in_motion == 1)
+		    ca_put(DBR_SHORT, motorArray[itera].chid_stop, &val);
             status = ca_flush_io(); 
         }
 
@@ -405,10 +408,20 @@ static void printChIDCallFunc(const iocshArgBuf *args)
     printChIDlist();
 }
 
+static const iocshArg ArgL = {"List moving motors", iocshArgString};
+static const iocshArg * const listMovingMotorsArg[1]  = {&ArgL};
+static const iocshFuncDef listMovingMotorsDef  = {"listMovingMotors", 1, listMovingMotorsArg};
+
+static void listMovingMotorsCallFunc(const iocshArgBuf *args)
+{
+    listMovingMotors();
+}
+
 static void motorUtilRegister(void)
 {
     iocshRegister(&motorUtilDef,  motorUtilCallFunc);
     iocshRegister(&printChIDDef,  printChIDCallFunc);
+    iocshRegister(&listMovingMotorsDef,  listMovingMotorsCallFunc);
 }
 
 epicsExportRegistrar(motorUtilRegister);

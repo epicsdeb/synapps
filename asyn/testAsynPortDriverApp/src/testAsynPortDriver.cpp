@@ -151,12 +151,17 @@ void testAsynPortDriver::simTask(void)
     int run, i, maxPoints;
     double pi=4.0*atan(1.0);
     
+    lock();
     /* Loop forever */    
     while (1) {
         getDoubleParam(P_UpdateTime, &updateTime);
         getIntegerParam(P_Run, &run);
+        // Release the lock while we wait for a command to start or wait for updateTime
+        unlock();
         if (run) epicsEventWaitWithTimeout(eventId_, updateTime);
         else     (void) epicsEventWait(eventId_);
+        // Take the lock again
+        lock(); 
         /* run could have changed while we were waiting */
         getIntegerParam(P_Run, &run);
         if (!run) continue;
@@ -183,6 +188,7 @@ void testAsynPortDriver::simTask(void)
             pData_[i] = NUM_DIVISIONS/2 + yScale * (voltOffset + pData_[i]);
             time += timeStep;
         }
+        updateTimeStamp();
         meanValue = meanValue/maxPoints;
         setDoubleParam(P_MinValue, minValue);
         setDoubleParam(P_MaxValue, maxValue);
@@ -264,6 +270,9 @@ asynStatus testAsynPortDriver::writeFloat64(asynUser *pasynUser, epicsFloat64 va
     if (function == P_UpdateTime) {
         /* Make sure the update time is valid. If not change it and put back in parameter library */
         if (value < MIN_UPDATE_TIME) {
+            asynPrint(pasynUser, ASYN_TRACE_WARNING,
+                "%s:%s: warning, update time too small, changed from %f to %f\n", 
+                driverName, functionName, value, MIN_UPDATE_TIME);
             value = MIN_UPDATE_TIME;
             setDoubleParam(P_UpdateTime, value);
         }
@@ -303,8 +312,11 @@ asynStatus testAsynPortDriver::readFloat64Array(asynUser *pasynUser, epicsFloat6
     size_t ncopy;
     int itemp;
     asynStatus status = asynSuccess;
+    epicsTimeStamp timeStamp;
     const char *functionName = "readFloat64Array";
 
+    getTimeStamp(&timeStamp);
+    pasynUser->timestamp = timeStamp;
     getIntegerParam(P_MaxPoints, &itemp); ncopy = itemp;
     if (nElements < ncopy) ncopy = nElements;
     if (function == P_Waveform) {

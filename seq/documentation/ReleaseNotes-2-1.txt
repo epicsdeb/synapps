@@ -1,0 +1,939 @@
+Release Notes for Version 2.1
+=============================
+
+.. _Release_Notes_2.1.17:
+
+Release 2.1.17
+--------------
+
+* In the tests an internal variable from the runtime system is declared
+  which is (intentionally) not exported through a header file. The
+  declarations now use ``epicsShareExtern`` instead of ``extern``. This
+  should fix the problems when building the tests on Windows.
+
+* Some patches from the lemon parser generator upstream repo have been
+  applied. Among them is the fix for the lemon crash on Windows 8.1 x64 with
+  Visual Studio 2013, proposed by Freddie Akeroyd
+  <freddie.akeroyd@stfc.ac.uk>.
+
+* To avoid stack overflows when monitoring large arrays on systems with a
+  fixed stack size, you can now tell the sequencer to use malloc/free for
+  temporary copies of CA messages (instead of stack allocated memory) by
+  adding the line ::
+
+    USE_MALLOC_FOR_TEMPORARY_COPY=YES
+
+  to configure/CONFIG_SITE before building. Note that this may cause
+  unwanted side-effects (like memory fragmentation on older versions of
+  VxWorks). It would be better to avoid the extra copy, which is how things
+  are done in version 2.2.
+
+* Pulled a test from the 2.2 branch that demonstrates how to use CPP to get
+  conditional compilation for SNL programs depending on the sequencer
+  release. See test/validate/version.st.
+
+* Fixed a potential memory leak in the (sync-)queue destructor.
+
+.. _Release_Notes_2.1.16:
+
+Release 2.1.16
+--------------
+
+This release fixes a build problem on Windows, see :ref:`Known_Problems_2.1.15`.
+
+.. _Release_Notes_2.1.15:
+
+Release 2.1.15
+--------------
+
+This release fixes the two problems decribed in :ref:`Known_Problems_2.1.14`.
+
+.. _Release_Notes_2.1.14:
+
+Release 2.1.14
+--------------
+
+One (major) bug in the sequencer runtime was fixed and two minor build problems.
+See :ref:`Known_Problems_2.1.13` for a description of these problems.
+
+Some more details:
+
+* fixed a bug in pvGet/PutComplete
+  
+  Must not epicsEventSignal when epicsEventTryWait returns
+  epicsEventWaitTimeout, since this means we have not yet been called
+  back by CA. This bug could lead to pvGet/PutComplete erroneously
+  returning TRUE even though the callback did not yet arrive.
+
+* added test for simultaneous pvGetComplete
+
+* pvGet/PutComplete return TRUE if no request is pending
+  
+  We issue a warning message in this case, since this is most
+  probably a logical error in the SNL program.
+
+* pvPut/GetComplete return TRUE in case of unassigned var
+  
+  It is friendlier to just go on than to let the program hang.
+  Note that this is still a user error and a message is issued
+  to indicate it.
+  
+  This change only affects the non-safe mode.
+
+* reduce severity of timeouts and user errors from errlogFatal to errlogMajor
+
+The following are fixes for build problems:
+
+* snc: added a dummy member in case struct UserVar is empty
+  
+  Not all C compilers allow empty struct definitions. This fixes
+  a problem when building on solaris-sparc.
+
+* test: split off subThreadSleep to its own C file
+  
+  This fixes a build error with older base releases.
+
+A number of improvements to the documentation have been made, too:
+
+* re-write of the Using chapter which is now up-to-date
+
+* re-structured explanation of runtime behaviour in Tutorial
+
+* moved explanation for -e switch from Using to Compiling
+
+* distinguish program parameters from CPP macros
+  
+  Program parameters are now consistently referred to as such. The term
+  "macro" is used only for C preprocessor macros. Wordings were adapted
+  accordingly and some related improvements made.
+
+* fix the branch names in the Installation page (thanks to Lewis Muir)
+
+* improved wording of frontpage blurb
+
+
+.. _Release_Notes_2.1.13:
+
+Release 2.1.13
+--------------
+
+:ref:`Known_Problems_2.1.13`
+
+User relevant changes:
+
+* seq: fix problem with synchronous pvPut/pvGet
+  
+  The problem was that that once a synchronous request times out, the
+  variable would never recover from the timeout state. This was because
+  the semaphores would not be signalled on timeout. Thanks to
+  Carl Lionberger <calionberger@lbl.gov> for the original report and
+  initial analysis, and to J. Lewis Muir <jlmuir@imca-cat.org> who
+  suggested using unique IDs in order to correctly discard callbacks
+  for time out requests. See `this tech-talk thread
+  <http://www.aps.anl.gov/epics/tech-talk/2013/msg01164.php>`_.
+  
+  The fix assumes that CA will eventually call the callback for each
+  accepted request, even if the channel disconnects. The CA documentation
+  suggests that this is indeed the case.
+
+* seq: fixed a corner case in ASYNC put/get
+  
+  If epicsEventTryWait succeeds, there could still be a previous request
+  pending that has timed out. This happens e.g. if the user code did not
+  call pvGetComplete resp. pvPutComplete. In that case we must reset the
+  request pointer to NULL in order to invalidate the request so it gets
+  ignored whenever it finally arrives.
+
+* added regression tests for pvGet/pvPut (SYNC) timeout recovery
+
+* added a test for using event flag in C function
+  
+  This has been added after Joe Sullivan <sullivan@aps.anl.gov>
+  noted that in version 2.1 there are no #define'ed constants for
+  event flags, as was the case in version 2.0. See
+  `this thread on tech-talk
+  <http://www.aps.anl.gov/epics/tech-talk/2013/msg00891.php>`_.
+
+Internal changes to the test subsystem:
+
+* no longer use the softIoc binary from base
+  
+  Instead, we use the same binary we produce for the test case, and
+  add an extra switch -t that enables running the sequencer program.
+
+* for testing, add a backdoor to change the default timeout
+  
+  I plan to add extra timeout parameters to pvPut and pvGet in version
+  2.2,  which is why I do not want this to be part of the public
+  (documented) API.
+
+* separate testHarness from startup for vxWorks
+  
+  This is so I can first start up the IOC, then switch to telnet console,
+  and then start the tests. The console output (quite verbose for some of
+  the tests) will be much faster in this way and the tests accordingly
+  more realistic.
+
+Documentation changes:
+
+* added link to known problems in 2.1.12 to release notes page
+* updated the known problems page
+* fixed obsolete email address in latex options
+* added rule for missing/excess PV names in array assign clause
+* make footer style same as header (for html output)
+* adapted README to ReleaseNotes split
+* extended HZB copyright to 2013 (only front page and LICENSE)
+* some html layout improvements
+* some improvements/updates in the Installation chapter
+* new layout and blurb for home page
+* fixed a few bad todo and note items
+* added link to talk slides to home page
+* fixed a typo in the reference
+* re-wrote the front page blurb
+* split release notes into separate files (one per version)
+* explain builtin delay as synonym for elapsed
+
+.. _Release_Notes_2.1.12:
+
+Release 2.1.12
+--------------
+
+:ref:`Known_Problems_2.1.12`
+
+seq: initial wait for channel connect now uses exponential backoff
+
+* The messages about not yet connected/monitored channels appear now
+  at a more user-friendly rate, stabilising at 1 per hour.
+
+build system:
+
+* builds now correctly against base 3.14.8, 3.14.10, 3.14.12, and 3.15
+
+* parallel make supported from base 3.14.12 onward
+
+docs: expanded reference section on C compatibility features
+
+* make clear that you can reference foreign entities
+  directly in action statements w/o recourse to escape syntax
+
+* explain why and how to avoid #include and other CPP directives
+  in multi-line escaped code blocks
+
+.. _Release_Notes_2.1.11:
+
+Release 2.1.11
+--------------
+
+* adjusted build rules to be compatible with base-3.15
+
+* seq: improved runtime error messages
+
+* seq: extended the comment about waking up all threads on connection event
+
+* docs: improved documentation of pvAssign
+
+* docs: clarified the section on user functions
+
+.. _Release_Notes_2.1.10:
+
+Release 2.1.10
+--------------
+
+:ref:`Known_Problems_2.1.10`
+
+snc:
+
+* avoid follow-up syntax error after lexical error,
+  say lexical error when there is one
+
+* fix wrong assumption about delays not being nested
+
+* added assertion and cast to unsigned to silence a warning
+  in the lemon parser template
+
+* fixed a c99-ism in the parser template
+
+seq:
+
+* revert seq() back to returning thread id of 1st state set
+  instead of void
+
+examples:
+
+* added new cmdButtons example (thanks to Wesley Moore)
+
+docs:
+
+* updated the README file
+
+* fixed safe mode documentation (thanks to Eric Norum)
+
+.. _Release_Notes_2.1.9:
+
+Release 2.1.9
+-------------
+
+Fixed a stupid error in src/snc/Makefile that caused the fix to
+the build rules for snc to not work on Windows.
+This is the only change w.r.t. 2.1.8.
+
+.. _Release_Notes_2.1.8:
+
+Release 2.1.8
+-------------
+
+* Fixed the two bugs listed under :ref:`Known_Problems_2.1.7`.
+
+.. _Release_Notes_2.1.7:
+
+Release 2.1.7
+-------------
+
+:ref:`Known_Problems_2.1.7`
+
+Functional changes
+
+* use epicsThreadOnce to lazily initialize globals and register programs
+
+  This means we need the registrar(<programName>) dbd file entry only
+  in case an IOC shell is actually used.
+
+* fixed behaviour of seqQryFind if tid argument is NULL
+
+  This should in any case call seqShowAll and then return NULL.
+  Previously, it would return any state set which has not yet been
+  started (for instance because the first state set thread is still
+  blocked waiting for PVs to connect).
+
+* fixed interactive behaviour of seqChanShow and seqQueueShow
+
+  There were some edge cases where the user input was not parsed
+  as one would expect. The behaviour now follows exactly the
+  description in the reference.
+
+* USR_CFLAGS -> USR_INCLUDES fixes a build problem on some systems
+
+  William Steele reported and solved this.
+
+* snc: issue warning if a state is not reachable from the first; also
+  added a compiler test for this.
+
+  Thanks to Lewis Muir for suggesting this feature.
+
+Documentation
+
+* documented the -i compiler option (i.e. suppress generation of iocsh
+  registrar procedure)
+
+* explained the versioning policy and added a link on the download page
+
+Minor stuff
+
+* fixed darcs repository location on download page
+
+* removed auto-generated todo list in docs, fixed release number in
+  documentation/conf.py
+
+* fixed some typos in documentation/Notes.txt
+
+* fixed my mail address (bessy -> helmholtz-berlin)
+
+* started improving pvSync test, needs more work
+
+* added prefix macro to examples/demo PVs
+
+* renamed the 1st argument of shell commands that except a threadID
+  from "sequencer" to "program/threadID"
+
+* enlarged table column widths in output of seqShow (with no arguments)
+
+.. _Release_Notes_2.1.6:
+
+Release 2.1.6
+-------------
+
+:ref:`Known_Problems_2.1.6`
+
+Bug fixes:
+
+* fixed order of state set wakeup and signalling of completions
+
+  This was a subtle concurrency bug discovered and analyzed by Lewis Muir:
+  if pvPutComplete or pvGetComplete are used inside a when-clause, waking
+  up the state set before signalling completion could result in a deadlock.
+  See :ref:`Known_Problems_2.1.5` for details.
+
+* fixed 'lost events' bug (safe mode only), an even subtler bug which
+  happened only in safe mode. See :ref:`Known_Problems_2.1.5` for details.
+  Thanks to Lewis Muir for providing a test case that makes this bug
+  reproducible.
+
+  The fix is to make efTest and efTestAndClear synchronization points
+  for all variables sync'ed to the event flag. See the updated sections
+  in the reference (under :c:func:`efTest` and :c:func:`efTestAndClear`).
+
+* fix pvPut/pvGet hanger on disconnect
+
+  The connection handler now releases all semaphores waiting for an
+  event on this PV. Furthermore, the pvGet/pvPut[Complete] built-in
+  functions check the connected status whenever they successfully waited
+  for such a semaphore.
+
+* fixed compiler crash in case of excess PVs given in an assign clause
+
+* fixed memory bug in the lexer
+
+  This bug led to wrong reported line numbers in #include'd SNL code.
+  It could also potentially result in compiler crashes.
+
+* emulate the 'first monitor event' for anonymous PVs in safe mode
+
+* work around small rounding errors in seq_delay
+
+Other changes (seq/snc):
+
+* renamed NO_EVENT_FLAG to NOEVFLAG, fix support for passing it as argument to pvSync
+
+* add pvStatXXX and pvSevrXXX to known constants
+
+  This fixes the long-standing problem that pvStatOK are not known
+  to snc and thus must be declared as foreign (or you get a warning).
+
+* revert back to generating names, not values, for known constants
+
+* avoid warning on 64 bit systems when debug messages are switched on
+
+Tests:
+
+* added regression tests for some of the new bugs
+
+* no longer runs all tests under valgrind by default
+
+  This is now configurable in test/validate/Makefile.
+
+* add pvGetAsync test but dont run it on vxWorks
+
+* run tests on vxWorks with standard, lowered, and increased priority
+
+* added instructions for running a single test
+
+Docs:
+
+* improved documentation of event flags in safe mode
+
+* extended safe mode explanation with a remark on priorities
+
+* documented some deficiencies of pvAssign, pvMonitor, etc w.r.t. the syntax versions
+
+* added NOEVFLAG constant and its use in pvSync
+
+* added built-in constants to reference
+
+* documented side effects of efTest and efTestAndClear
+
+* updated the known problems page
+
+* added instructions for running a single test
+
+* added more prominent warnings for out-dated information
+
+* fixed documentation of sync
+
+  A sync'ed event flag gets set on any kind of event:
+  monitor, as well as put and get completion.
+
+* streamlined repository branch layout on web server
+
+  See documentation/Installation.txt for details.
+
+* fixed several small errors and typos
+
+
+.. _Release_Notes_2.1.5:
+
+Release 2.1.5
+-------------
+
+:ref:`Known_Problems_2.1.5`
+
+* fixed two bugs in pvAssign:
+
+  - after an initially unassigned variable gets assigned using
+    pvAssign in safe mode, pvGet crashed the program
+
+  - when pvAssign was used to re-assign an already connected PV,
+    this was not correctly accounted for and a wrong warning
+    message was issued
+
+* extended the 'reassign' test to cover these issues
+
+* functions pvAssign and seq_connect (internal) leaked memory
+  when something fails; this has been fixed
+
+* several documentation fixes (thanks to Lewis Muir)
+
+* fixed a build problem with older base releases
+  (thanks to Bruce Hill)
+
+* internal renamings: SEQ_VERSION->SEQ_RELEASE, seqVersion->seq_release
+
+* know problems of published releases will from now on be
+  listed on an extra documentation page, with a link from the
+  release notes
+
+
+.. _Release_Notes_2.1.4:
+
+Release 2.1.4
+-------------
+
+:ref:`Known_Problems_2.1.4`
+
+* snc: fixed parser stack overflow
+
+  This appeared when compiling deeply nested statements.
+  The solution is to use a dynamically growing stack.
+
+* pv: only install public interface header files
+
+* pv: fixed a build problem on mingw32
+
+  The solution is to use epicsShareClass on class
+  declarations, instead of epicsShareFunc on methods.
+
+* test: fix Makefile to allow building if sources are read-only
+
+* docs: fixed some typos and a build problem with note:: directives
+
+* configure: made 3.14.12.2 the default base release
+
+
+.. _Release_Notes_2.1.3:
+
+Release 2.1.3
+-------------
+
+* snc: several more or less necessary changes to the lexer
+
+  - make lexer spec compatible with re2c 0.9.9
+
+  - run re2c with options -s and -b (for efficiency)
+
+  - fixed line marker parsing on windows, so that
+    error and warning refer to the original source file
+
+  - allow whitespace before and after the '#' in line markers
+
+  - allow only octal digits in '\ooo' char constants
+
+  - replace memcpy with memmove when collecting garbage in the buffer
+
+  - read input with stdio, not the low-level io calls; fix eof and read error handling
+
+  - fixed a bug in the lexer which only becomes apparent
+    when compiling long source files with many macros
+
+  - input and stderr are now unbuffered, output is block buffered;
+    note that windows does not support line buffering
+    which was used for stdout and stderr before
+
+  - fixed a big bad buffer overrun bug in gen_tables.c which caused
+    snc to crash when fed with programs that
+    use more than a few hands full of assigned variables.
+
+* seq:
+
+  - fixed wait for initial connect and monitor
+
+  - replaced boolean -> seqBool, bitMask -> seqMask in public interface (seqCom.h)
+
+* tests:
+
+  - added regression test for clean compilation when including windows.h
+    (thanks to Mark Rivers who suggested this test)
+
+* docs:
+
+  - document 0.9.9 as the minimum re2c version required
+
+* configure:
+
+  - made 3.14.12.1 the default base release
+
+
+.. _Release_Notes_2.1.2:
+
+Release 2.1.2
+-------------
+
+* re-added support for the C comma operator
+
+  As turned out, the 2.0.x branch supported this, so it has been added
+  for compatibility.
+
+.. _Release_Notes_2.1.1:
+
+Release 2.1.1
+-------------
+
+* sync and syncq clauses no longer require monitors
+
+  This was a regression against the 2.0.x branch. The feature fell victim
+  to an attempt at simplifying detection of nonsensical combinations of
+  assign/monitor/sync/syncq at compile time. However, the rules did not
+  take the dynamic pvAssign, pvMonitor etc. into account. The rules have
+  been revised accordingly.
+
+* seq: in seqShow, call pvXxxComplete only if in safe mode or variable is
+  assigned
+
+  This avoids annoying (and misleading) error messages intrrupting the
+  output of seqShow.
+
+* seq,snc: change type of member 'offset' of channel structure from
+  ptrdiff_t to size_t, in non-reentrant mode, cast address of variable to
+  size_t instead of subtracting (char*)0
+
+  Clang complained about the expression "(char*)x - (char*)0" not being
+  constant (even though it obviously is), so to make it happy we remove the
+  " - (char*)0" part and cast to size_t.
+
+  (Incidentally, this makes the code more robust, too, as the address could
+  be greater than the maximum of the (signed) ptrdiff_t type, leading to an
+  overflow. This can now no longer happen.)
+
+* fixed built-in function pvAssign
+
+  There were a number of bugs leading to crashes and/or assertion failures.
+
+* run regression tests under valgrind if available
+
+  Among other things this ensures that each call to malloc results in a
+  different pointer, which is necessary to check for certain subtle bugs.
+  Under windows this leads to a number of extra messages (valgrind: command
+  not found), which is harmless.
+
+* documentation changes:
+
+  - overhaul of the first few subsections of the tutorial
+
+  - added many cross references to the tutorial
+
+  - clean up some typos, add subsection about run time behaviour
+
+* changed license to EPICS Open License
+
+
+.. _Release_Notes_2.1.0:
+
+Release 2.1.0
+-------------
+
+Safe Mode
+^^^^^^^^^
+
+After releasing 2.0.99 for testing, I found a serious bug in the sequencer,
+see http://www.aps.anl.gov/epics/tech-talk/2010/msg00605.php for a
+detailed description of the problem. To summarise, variables that are
+
+* shared between separate state sets, or
+* assigned to a pv and monitored
+
+were **not** protected against concurrent access in any way. This
+means data corruption has been a real possibility, at least for variables
+that are not read/written atomically (i.e. at least all arrays and,
+depending on architecture and C compiler, some numeric types like
+``double`` as well).
+
+This version of the sequencer offers a clean and simple solution to the
+problem. However, this solution is not completely backwards compatible. You
+must therefore explicitly enable it with a command line option
+:option:`+s`, for :ref:`safe mode`. In safe mode, program semantics
+deviates from the traditional one, in that state sets are completely
+isolated against each other and against updates from the CA layer.
+Assignment to a variable (even indirect, via pointers or C functions) never
+directly affect the values as seen by other state sets. The new value must
+instead be published explicitly by calling pvPut on the variable.
+
+To facilitate internal communication between state sets, variables assigned
+to an empty string are treated as anonymous pseudo PVs, see :ref:`anonymous
+pvs` for details. For anonymous PVs, pvPut directly writes to an internal
+buffer, bypassing the CA layer. Other state sets will see such an explicit
+update only if they themselves perform a pvGet on them, or else --if the
+variable is monitored-- after a state change is initiated i.e. one of the
+when-conditions fires. In safe mode, the value of a program variable is
+completely under the control of the executing state set. This implies that
+all conditions given inside the transition rule that has fired are still
+valid when the action block runs and can only be destroyed by the actions
+themselves, not from the outside.
+
+Callback-based pvPut/pvGet
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In this version of the sequencer, only one callback-based put and one get
+operation can be active for any given combination of variable and state set.
+If there is already such a call pending, then behaviour depends on whether
+the call is blocking (SYNC) or not (ASYNC): A non-blocking operation
+immediately fails, while a blocking call will be delayed
+until the pending operation is complete or a timeout occurs. Note that in
+the latter case the timeout includes the time needed to complete the previous
+call.
+
+Also note that callback-based pvPut (i.e. either SYNC or ASYNC is given) may
+fail silently (i.e. CA returns a success status) if any of the records that
+need to be processed as a result of the put operation is either active (PACT
+is set), or currently involved in another callback-based put operation.
+
+Initialization
+^^^^^^^^^^^^^^
+
+Initialization for variables with global life time is now enforced
+to happen before any actions are executed and before connections are
+established. It is an error if an initializer for such a variable is not
+a constant (compile-time calculable) expression.
+
+Variables with local lifetime are handled as before i.e. exactly like local
+variables in C.
+
+Other Changes
+^^^^^^^^^^^^^
+
+Added keyword "connect" as a synonym for "assign". I think it is more
+descriptive; ultimately I want to move away from the term "assign" to avoid
+confusion with the usual notion of assigning a value to a variable; thus
+"assign" will probably be deprecated in some future version.
+
+Added pvSync function, analogous to pvMonitor etc.
+
+Foreign declarations (introduced in 2.0.99) now use the keyword "foreign",
+instead of "declare" as this is more specific and fits better with the
+new extended declaration features (see next paragraph).
+
+Lifted many restrictions on declarations: You can now arbitrarily nest
+pointer and array specifiers, initializers are supported (you may use any
+valid SNL expression), and multiple declarations with the same base type
+can be grouped just as in C. I did that mostly to get rid of the ugly and
+ad hoc way variable types were handled before. The new code is not *that*
+much more complicated and it is certainly easier to extend with new
+features.
+
+Integer types that (in C) are longer than 32 bits are no longer allowed to
+be "assigned" to PVs, since CA does not natively support such types.
+Instead, the standard fixed size integer types from int8_t up to uint32_t
+can be used in SNL code. For compatibility these are currently translated to
+the corresponding epicsInt8...epicsUInt32.
+
+The main procedure (:option:`+m`) is no longer hard-coded, so you can easily
+provide your own version. See :ref:`Building a Stand-alone Program`.
+
+In the sequencer library interface, bitMask is now a synonym for epicsUInt32,
+not unsigned long.
+
+Lots of internal restructuring in the sequencer library.
+
+Changed the type of all "count" variables (and members and formal arguments)
+from int to unsigned in the pv layer.
+
+The whole pv layer over CA (or KTL) is now **deprecated**. It will be
+removed in one of the next releases unless I hear of people who need it.
+Still I made a number of improvements to it, mostly to reduce dynamic
+memory allocation at runtime. I also changed the size of the pvString
+type to 40 as in EPICS, so that now arrays values
+can be copied with a single memcpy.
+
+Many improvements to the documentation, especially the SNL reference.
+
+Added a number of automated regression tests, using the regression test
+framework from EPICS base. The make target "runtests"  performs all these
+tests just like in base.
+
+Separated example programs from test programs.
+
+.. _Release_Notes_2.0.99:
+
+Release 2.0.99
+--------------
+
+This is a beta release for version 2.1.0.
+
+Most of the changes relative to 2.0.12 are to the SNL compiler, but a
+small number of changes have been made to the runtime library as well.
+
+The extensions are mostly conservative: existing SNL programs should
+compile and work just as with 2.0.12 (with one exception, see next
+paragraph). This is not easy to guarantee, however, as there are many
+corner cases where the manual is imprecise and the code was convoluted
+(and possibly erroneous), especially with regard to the :token:`syncq`
+feature.
+
+There is one (mis-)feature I have removed: 2.0.x  allowed more than one
+entry or exit block inside the same state. This has no semantic value,
+the action statements are simply concatenated as if they had been
+written in one block. So if you (for whatever reason) relied on this,
+then for each state you'll have to merge all its entry blocks into one
+(and similar for its exit blocks).
+
+For 2.1, the documentation has been converted to reStructuredText. We
+use Sphinx (http://sphinx.pocoo.org/) to generate web pages from the
+rst source files. What Sphinx does to a hand full of drab (almost)
+plain text files is simply phantastic. Thanks and Kudos to the creators
+of Sphinx!
+
+New Features
+^^^^^^^^^^^^
+
+The most important extensions are local definitions and the new state
+change command. Suggestions, criticism, or encouragements regarding
+these extensions are welcome, of course. (Send them to
+tech-talk@aps.anl.gov, core-talk@aps.anl.gov, or
+benjamin.franksen@bessy.de).
+
+Local Definitions
+~~~~~~~~~~~~~~~~~
+
+Here, "definitions" is to be understood as in the :ref:`SNL reference
+<Definitions>`, i.e. :token:`option`\s, :token:`variable declarations
+<declaration>`, :token:`assign`, :token:`monitor`, :token:`sync`, and
+:token:`syncq` constructs. These definitions have to appear (in any order)
+right after the opening brace and before any other content (code,
+states,transitions), similar as in C. However, not every definition is
+allowed everywhere:
+
+- :token:`option` definitions are restricted just as before, i.e. at the
+  top level (for program options) and inside a state (for state options)
+- :token:`assign`, :token:`monitor`, :token:`sync`, and :token:`syncq`
+  can appear inside a :token:`state_set` and
+  inside a :token:`state`, in addition to the  top level
+- foreign declarations (see below) and event flag declarations are
+  restricted to the top-level
+- variable declarations can appear at the start of any block
+  (:token:`state_set`, :token:`state`, :token:`when`, :token:`entry`,
+  :token:`exit`, and compound statement :token:`block`\s);
+  their scope is always limited (statically) to the smallest enclosing
+  block
+
+Local variable declarations come in two flavours, depending on where
+they appear:
+
+#. Variables of *unlimited life time* are global variables and those
+   which are local to a state set or a state clause. Only variables of
+   this sort can be assigned to a process variable, monitored, synced
+   etc.
+#. Variables declared in any other block have lifetime *limited to the
+   enclosing block*, they disappear when the block exits, just as block
+   local variables in C.
+
+Variable declarations are restricted to the small set of types offered
+by SNL just as before. Scalar variable declarations may be initialized
+with an arbitrary expression (for top-level variables the C compiler
+will only allow constant expressions, but this isn't checked by the SNL
+compiler).
+
+State Change Command
+~~~~~~~~~~~~~~~~~~~~
+
+This is an experimental feature. It adds a new primitive action
+statement ::
+
+    state <state-name>;
+
+Its operational meaning is to immediately return from the enclosing
+transition action block and to enter the named state, instead of the
+default state that is given after the block as before. Entry and exit
+blocks are respected exactly as with all other state changes.
+
+I have termed this an experimental feature because I am not sure it is
+good to offer something like that. It is certainly similar to a "goto",
+in that it enables unstructured control flow. I am interested in your
+opinion!
+
+Minor Extensions/Improvements
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- You can avoid the usual 'warning: variable xxx used but not defined'
+  by declaring foreign (i.e. C) variables, using a *foreign
+  declaration statement*. The syntax is simple::
+
+    declare xxx;
+
+  declares that ``xxx`` is defined somewhere outside the control of the
+  SNL compiler. Foreign declarations may appear only at the top-level
+  scope.
+- Fixed the generated line markers, so that error and warning messages
+  now correctly point to the source location (this was seriously
+  broken in the old version).
+- The syntax now accepts a larger subset of C. For instance,
+  "character" literals are now recognized, as well as the
+  ``continue`` statement.
+
+Download
+^^^^^^^^
+
+The project has been moved to
+
+   http://www-csr.bessy.de/control/SoftDist/sequencer/
+
+Releases can be downloaded from
+
+   http://www-csr.bessy.de/control/SoftDist/sequencer/releases/
+
+A darcs repository containing the latest changes is located at
+
+   http://www-csr.bessy.de/control/SoftDist/sequencer/repo/
+
+Build and Install
+^^^^^^^^^^^^^^^^^
+
+Apart from EPICS base (and its dependencies, e.g. Perl), building this
+version of seq requires an additional tool named re2c to be installed.
+This can be downloaded from http://sourceforge.net/projects/re2c/files/
+(sources and Windows binaries), the home page is http://re2c.org/. If
+you are on a linux system, you will probably want to use the re2c
+package your distribution provides.
+
+Internals
+^^^^^^^^^
+
+The compiler is not a re-write from scratch, but changes are numerous
+and pervasive.
+
+The ancient versions of yacc and lex that are bundled with EPICS base
+(in a modified version and thus never upgraded) are no longer used.
+Since lex/yacc suffers from severe backward compatibility disease
+(witness all the traditional-C stuff they still carry around, global
+vars and everything), I decided to look for something better. Shying
+away from more radical steps (for instance, it would have been much,
+much easier to re-implement the whole compiler in Haskell) because of
+all the usual issues involved (portability, nobody else would
+understand the code, etc, etc), I chose a more conservative approach:
+the new snc version uses re2c as the lexer generator, and lemon as the
+parser generator. Re2c is available for many platforms (including
+Windows), whereas lemon consists of just one source file (plus one
+template file) and so can be easily bundled with the sequencer. Both
+tools generate very fast code (reportedly better than lex/yacc).
+
+Other internal changes include:
+
+* use standard ANSI C
+* clean separation between compiler stages: lexing, parsing, analysis,
+  code generation
+* no global variables, very few static ones
+* unified error, warning, and debug reporting
+* improved type safety by using unions instead of casts
+  (plus a number of supporting macros) e.g. for the various syntactic
+  constructs; added many new struct types
+* use a hash table (the gpHash from libCom) for name lookup instead of
+  doing linear search all over the place
+* complete re-implementation of lexing and parsing (using re2c and
+  lemon); the new parser spec has only three parsing conflicts and
+  these are unavoidable: one is the well-known if-else ambiguity, the
+  remaining two are due to escaped C code, where the parser cannot
+  decide whether it is a declaration or a statement (the old version
+  had a total of 744 conflicts)
+* generated code contains fewer '#define's making accidental name
+  clashes less probable
+* the interface between the sequencer library and the generated code
+  is now more type safe (no more XXX_FUNC casts, SS_ID and USER_VAR
+  became anonymous struct types)
+* in order to implement the state change command, an additional
+  argument is needed for the action callback

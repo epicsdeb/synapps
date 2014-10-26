@@ -22,14 +22,14 @@
 extern "C" {
 #endif
 
-epicsShareFunc void epicsShareAPI myFreeListInitPvt(void **ppvt,int size,int nmalloc);
-epicsShareFunc void * epicsShareAPI myFreeListCalloc(void *pvt);
-epicsShareFunc void * epicsShareAPI myFreeListMalloc(void *pvt);
-epicsShareFunc void epicsShareAPI myFreeListFree(void *pvt,void*pmem);
-epicsShareFunc void epicsShareAPI myFreeListCleanup(void *pvt);
-epicsShareFunc size_t epicsShareAPI myFreeListItemsAvail(void *pvt);
-epicsShareFunc size_t epicsShareAPI myFreeListItemsTotal(void *pvt);
-epicsShareFunc epicsTimeStamp epicsShareAPI myFreeListTimeLastUsed(void *pvt);
+void myFreeListInitPvt(void **ppvt,int size,int nmalloc);
+void *myFreeListCalloc(void *pvt);
+void *myFreeListMalloc(void *pvt);
+void myFreeListFree(void *pvt,void*pmem);
+void myFreeListCleanup(void *pvt);
+size_t myFreeListItemsAvail(void *pvt);
+size_t myFreeListItemsTotal(void *pvt);
+epicsTimeStamp myFreeListTimeLastUsed(void *pvt);
 
 #define freeListInitPvt(a,b,c)	myFreeListInitPvt((a),(b),(c))
 #define freeListCalloc(a)		myFreeListCalloc((a))

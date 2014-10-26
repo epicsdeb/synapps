@@ -58,6 +58,7 @@
 #include	<special.h>
 #include	<recSup.h>
 #include	<recGbl.h>
+#include	"menuSscan.h"
 #define GEN_SIZE_OFFSET
 #include	"scanparmRecord.h"
 #undef GEN_SIZE_OFFSET

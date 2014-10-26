@@ -2,10 +2,10 @@
 FILENAME... drvESP300.cc
 USAGE...    Motor record driver level support for Newport ESP300/100.
 
-Version:        $Revision: 14155 $
+Version:        $Revision: 17450 $
 Modified By:    $Author: sluiter $
-Last Modified:  $Date: 2011-11-29 14:50:00 -0600 (Tue, 29 Nov 2011) $
-HeadURL:        $URL: https://subversion.xor.aps.anl.gov/synApps/motor/tags/R6-7-1/motorApp/NewportSrc/drvESP300.cc $
+Last Modified:  $Date: 2014-05-27 11:39:49 -0500 (Tue, 27 May 2014) $
+HeadURL:        $URL: https://subversion.xray.aps.anl.gov/synApps/motor/tags/R6-8-1/motorApp/NewportSrc/drvESP300.cc $
 */
 
 /*
@@ -53,6 +53,7 @@ HeadURL:        $URL: https://subversion.xor.aps.anl.gov/synApps/motor/tags/R6-7
  *            extern "C" linkage.
  * .09 08/07/06 rls - GPIB under ASYN only allows 1 input EOS character.
  *                    No output EOS. Adjustments accordingly.
+ * .10 05/19/14 rls - Print controller's error code and set RA_PROBLEM.
  */
 
 
@@ -214,7 +215,7 @@ static int set_status(int card, int signal)
     /* Message parsing variables */
     char *cptr, *tok_save;
     char inbuff[BUFF_SIZE], outbuff[BUFF_SIZE];
-    int rtn_state, charcnt;
+    int rtn_state, charcnt, errcode;
     long mstatus;
     double motorData;
     bool power, plusdir, ls_active = false;
@@ -223,6 +224,7 @@ static int set_status(int card, int signal)
     cntrl = (struct MMcontroller *) motor_state[card]->DevicePrivate;
     motor_info = &(motor_state[card]->motor_info[signal]);
     nodeptr = motor_info->motor_motion;
+
     status.All = motor_info->status.All;
 
     sprintf(outbuff, "%.2dMD", signal + 1);
@@ -329,7 +331,19 @@ static int set_status(int card, int signal)
     status.Bits.EA_SLIP     = 0;
     status.Bits.EA_SLIP_STALL   = 0;
     status.Bits.EA_HOME     = 0;
-    status.Bits.RA_PROBLEM  = 0;
+
+    /* Get error code. */
+    sprintf(outbuff, "%.2dTE?", signal + 1);
+    send_mess(card, outbuff, (char) NULL);
+    charcnt = recv_mess(card, inbuff, 1);
+    errcode = atoi(inbuff);
+    if (errcode != 0)
+    {
+        status.Bits.RA_PROBLEM = 1;
+        printf("ESP300 controller error = %d.\n", errcode);
+    }
+    else
+        status.Bits.RA_PROBLEM  = 0;
 
     /* Parse motor velocity? */
     /* NEEDS WORK */
@@ -364,7 +378,7 @@ exit:
 static RTN_STATUS send_mess(int card, char const *com, char *name)
 {
     struct MMcontroller *cntrl;
-    int size;
+    size_t size;
     size_t nwrite;
 
     size = strlen(com);
@@ -496,7 +510,7 @@ static int recv_mess(int card, char *com, int flag)
     }
     
     Debug(2, "recv_mess(): message = \"%s\"\n", com);
-    return(nread);
+    return((int)nread);
 }
 
 
@@ -607,11 +621,11 @@ static int motor_init()
         }
 
         success_rtn = pasynOctetSyncIO->setOutputEos(cntrl->pasynUser,
-                       output_terminator, strlen(output_terminator));
+                       output_terminator, (int)strlen(output_terminator));
         /* Ignore output EOS error in case this is a GPIB port. */
 
         success_rtn = pasynOctetSyncIO->setInputEos(cntrl->pasynUser,
-                       input_terminator, strlen(input_terminator));
+                       input_terminator, (int)strlen(input_terminator));
         if (success_rtn != asynSuccess)
         {
             errlogPrintf("%s setInputEos error = %d\n", errmsg, (int) success_rtn);
@@ -663,6 +677,11 @@ errexit:
             for (motor_index = 0; motor_index < total_axis; motor_index++)
             {
                 struct mess_info *motor_info = &brdptr->motor_info[motor_index];
+
+                /* Get controller's EGU for the user (see README). */
+                sprintf(buff, "%.2dSN?", motor_index + 1);
+                send_mess(card_index, buff, 0);
+                recv_mess(card_index, buff, 1);
 
                 /* Set axis resolution. */
                 sprintf(buff, "%.2dSU?", motor_index + 1);

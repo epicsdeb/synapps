@@ -31,21 +31,24 @@ epicsShareFunc QUEUE seqQueueCreate(size_t numElems, size_t elemSize)
 {
     QUEUE q = new(struct seqQueue);
 
+    if (!q) {
+        errlogSevPrintf(errlogFatal, "seqQueueCreate: out of memory\n");
+        return 0;
+    }
     /* check arguments to establish invariants */
     if (numElems == 0) {
         errlogSevPrintf(errlogFatal, "seqQueueCreate: numElems must be positive\n");
+        free(q);
         return 0;
     }
     if (elemSize == 0) {
         errlogSevPrintf(errlogFatal, "seqQueueCreate: elemSize must be positive\n");
+        free(q);
         return 0;
     }
     if (numElems > seqQueueMaxNumElems) {
         errlogSevPrintf(errlogFatal, "seqQueueCreate: numElems too large\n");
-        return 0;
-    }
-    if (!q) {
-        errlogSevPrintf(errlogFatal, "seqQueueCreate: out of memory\n");
+        free(q);
         return 0;
     }
     DEBUG("%s:%d:calloc(%u,%u)\n",__FILE__,__LINE__,numElems, elemSize);

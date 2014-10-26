@@ -28,6 +28,10 @@ DB += softGlue_FPGAContent_octupole.db
 DB_INSTALLS += ../SoftGlue_2_2_1ID_Vgate_0_1.hex
 DB += softGlue_FPGAContent_s1ID_Vgate.db
 
+# optional support: extra components needed for encoders
+DB_INSTALLS += ../SoftGlue_2_2_Encoder.hex
+DB += softGlue_FPGAContent_Encoder.db
+
 include $(TOP)/configure/RULES
 #----------------------------------------
 #  ADD RULES AFTER THIS LINE

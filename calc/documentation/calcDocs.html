@@ -333,14 +333,19 @@ record,
 
 </blockquote>
 
-<li>Run Gnu Make to build.
-<li>Note that the <b>calc</b> module is not useful on its own, but only produces
-code that can be used by other modules.  (A good example of a module that uses
-the calc module is synApps' <b>xxx</b> module.) A module that uses <b>calc</b>
-should include <code>calcSupport.dbd</code> into the <code>.dbd</code> file it
-creates for loading into an ioc, or for export to other modules, and it should
-link to <code>libcalc</code>.
-</ul>
+<li>Run Gnu Make to build. <li>Note that the <b>calc</b> module is not useful on its own, but
+only produces code that can be used by other modules.  (A good example of a module that uses
+the calc module is synApps' <b>xxx</b> module.) An application that uses <b>calc</b> must
+specify the path to the calc module in its configure/RELEASE file; it must add
+
+<pre>include calcSupport.dbd</pre>
+
+to its <code>xxxInclude.dbd</code> file, and it must link with
+<code>libcalc</code>, by adding a line like
+
+<pre>xxx_LIBS += calc</pre>
+
+to xxxApp/src/Makefile. </ul>
 
 <address>
     Suggestions and Comments to: <br>

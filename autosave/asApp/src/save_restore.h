@@ -1,4 +1,8 @@
 /* save_restore.h */
+
+#include <ellLib.h> /* pass0List, pass1List */
+#include <initHooks.h>
+
 #define STATIC_VARS 0
 #define DEBUG 1
 
@@ -27,7 +31,6 @@
 
 #define         MAX(a,b)   ((a)>(b)?(a):(b))
 #define         MIN(a,b)   ((a)<(b)?(a):(b))
-#define         MAXRESTOREFILES 8
 
 #define SR_STATUS_OK		4
 #define SR_STATUS_SEQ_WARN	3
@@ -55,16 +58,18 @@ static char SR_STATUS_STR[5][10] =
 #define STRING_LEN MAX_STRING_SIZE	/* EPICS max length for string PV */
 #define PV_NAME_LEN 80 /* string containing a PV name */
 
-struct restoreList {
-        int pass0cnt;
-        int pass1cnt;
-        char *pass0files[MAXRESTOREFILES];
-		long pass0Status[MAXRESTOREFILES];
-		char *pass0StatusStr[MAXRESTOREFILES];
-        char *pass1files[MAXRESTOREFILES];
-		long pass1Status[MAXRESTOREFILES];
-		char *pass1StatusStr[MAXRESTOREFILES];
+struct restoreFileListItem {
+    ELLNODE node;
+	char *filename;
+	long restoreStatus;
+	char *restoreStatusStr;
+	char *macrostring;
 };
+
+extern ELLLIST pass0List;
+extern ELLLIST pass1List;
+
+extern void maybeInitRestoreFileLists();
 
 extern void myPrintErrno(char *s, char *file, int line);
 extern FILE *fopen_and_check(const char *file, long *status);
@@ -86,11 +91,16 @@ extern struct restoreList restoreFileList;
 extern int myFileCopy(const char *source, const char *dest);
 extern void dbrestoreShow(void);
 extern void makeNfsPath(char *dest, const char *s1, const char *s2);
+extern long asVerify(char *fileName, int verbose, int debug, int write_restore_file, char *restoreFileName);
 
 extern int	save_restoreNFSOK;
 extern int	save_restoreIoErrors;
 extern volatile int	save_restoreRemountThreshold;
 
+extern int reboot_restore(char *filename, initHookState init_state);
+extern int set_pass0_restoreFile(char *filename, char *macrostring);
+extern int set_pass1_restoreFile(char *filename, char *macrostring);
+extern struct restoreList restoreFileList;
 
 /* strncpy sucks (may copy extra characters, may not null-terminate) */
 #define strNcpy(dest, src, N) {			\

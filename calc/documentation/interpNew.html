@@ -12,7 +12,7 @@ software:
 <tr><td>VALC[]  <td>dependent variable 2
 <tr><td>A       <td>new value of independent variable, for interp or adding entry
 <tr><td>VALN    <td>number of entries
-<tr><td>F       <td>interpolation order (1: linear; >1: polynomial)
+<tr><td>F       <td>interpolation order (1: linear; 2-10: polynomial)
 <tr><td>G       <td>mode (0: Interpolate; 1: Add Entry; 2: Clear All)
 <tr><td>B       <td>new value for dependent variable 1 array (used if mode is "Add Entry")
 <tr><td>C       <td>new value for dependent variable 2 array (used if mode is "Add Entry")
@@ -40,14 +40,15 @@ y2(VALA[i]), where y1 and y2 are the functions you want to interpolate, and
 VALA]] increases with its array index.  You can do this in several ways:
 <ol>
 
-<li> with a channel-access client, such as BURT or caput.  This works only at run time.
+<li> with a channel-access client, such as BURT or caput.  This works only at
+run time.
 
 <li> by editing the file autosave writes when it's told to save according to
-'interpNew_settings.req', and then using autosave/restore to load that file.  This works only
-at boot time.
+'interpNew_settings.req', and then using autosave/restore to load that file. 
+This works only at boot time.
 
-<li> by selecting "Data Entry" from the "More" menu, specifying x, y1, and y2 values, and pressing
-"Add Entry". This works only at run time.
+<li> by selecting "Data Entry" from the "More" menu, specifying x, y1, and y2
+values, and pressing "Add Entry". This works only at run time.
 
 </ol>
 
@@ -55,7 +56,7 @@ at boot time.
 following:
 
 <ol>
-<li> set VALE to the number of meaningful points in the VALA, VALB, VALC arrays.
+<li> set VALN to the number of meaningful points in the VALA, VALB, VALC arrays.
 <li> load arrays into VALA, VALB, and VALC
 <li> Make sure VALA[] is monotonically increasing with its array index
 </ol>
@@ -119,4 +120,4 @@ to produce arrays of results.  Instead of writing a scalar to A and getting
 scalars VALF and VALG, you set the mode to "Array Interpolate", write an array
 to H, and get arrays VALH and VALI.
 
-Tim Mooney
+<P>Tim Mooney

@@ -307,6 +307,18 @@ static boolean init_sscb(SPROG *sp, SSCB *ss, seqSS *seqSS)
 			errlogSevPrintf(errlogFatal, "init_sscb: calloc failed\n");
 			return FALSE;
 		}
+		ss->getReq = newArray(PVREQ*, sp->numChans);
+		if (!ss->getReq)
+		{
+			errlogSevPrintf(errlogFatal, "init_sscb: calloc failed\n");
+			return FALSE;
+		}
+		ss->putReq = newArray(PVREQ*, sp->numChans);
+		if (!ss->putReq)
+		{
+			errlogSevPrintf(errlogFatal, "init_sscb: calloc failed\n");
+			return FALSE;
+		}
 	}
 	for (nch = 0; nch < sp->numChans; nch++)
 	{
@@ -322,6 +334,7 @@ static boolean init_sscb(SPROG *sp, SSCB *ss, seqSS *seqSS)
 			errlogSevPrintf(errlogFatal, "init_sscb: epicsEventCreate failed\n");
 			return FALSE;
 		}
+		/* note: do not pre-allocate request structures */
 	}
 	ss->dead = epicsEventCreate(epicsEventEmpty);
 	if (!ss->dead)

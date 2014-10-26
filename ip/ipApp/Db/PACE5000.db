@@ -1,0 +1,183 @@
+# PACE5000.db
+
+# Database file for GE PACE5000 pressure controller
+
+# Mark Rivers
+# November 13, 2012
+
+record(waveform,"$(P)$(R)Model_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@PACE5000.proto getModel $(PORT)")
+    field(FTVL, "CHAR")
+    field(NELM, "256")
+    field(PINI, "YES")
+}
+
+record(ao,"$(P)$(R)Setpoint") {
+    field(DTYP, "stream")
+    field(OUT,  "@PACE5000.proto setSetpoint $(PORT)")
+    field(PREC, "3")
+}
+
+# These records are for tweaking the pressure setpoint
+record(ao,"$(P)$(R)TweakVal") {
+    field(VAL, "1")
+    field(PREC,"1")
+}
+
+record(calcout,"$(P)$(R)TweakDown") {
+    field(INPA,"$(P)$(R)TweakVal.VAL NPP NMS")
+    field(INPB,"$(P)$(R)Setpoint.VAL NPP NMS")
+    field(CALC,"B-A")
+    field(OUT, "$(P)$(R)Setpoint.VAL PP NMS")
+}
+
+record(calcout,"$(P)$(R)TweakUp") {
+    field(INPA,"$(P)$(R)TweakVal.VAL NPP NMS")
+    field(INPB,"$(P)$(R)Setpoint.VAL NPP NMS")
+    field(CALC,"B+A")
+    field(OUT, "$(P)$(R)Setpoint.VAL PP NMS")
+}
+
+record(bo,"$(P)$(R)Control") {
+    field(PINI, "NO")
+    field(DTYP, "stream")
+    field(OUT,  "@PACE5000.proto setControl $(PORT)")
+    field(ZNAM, "Off")
+    field(ONAM, "On")
+}
+
+record(mbbo,"$(P)$(R)SlewMode") {
+    field(PINI, "YES")
+    field(DTYP, "stream")
+    field(OUT,  "@PACE5000.proto setSlewMode $(PORT)")
+    field(ZRVL, "0")
+    field(ZRST, "MAX")
+    field(ONVL, "1")
+    field(ONST, "LIN")
+}
+
+record(ao,"$(P)$(R)Slew") {
+    field(PINI, "YES")
+    field(DTYP, "stream")
+    field(OUT,  "@PACE5000.proto setSlew $(PORT)")
+    field(PREC, "3")
+}
+
+record(mbbo,"$(P)$(R)Vent") {
+    field(PINI, "NO")
+    field(DTYP, "stream")
+    field(OUT,  "@PACE5000.proto setVent $(PORT)")
+    field(ZRVL, "0")
+    field(ZRST, "Stop vent")
+    field(ONVL, "1")
+    field(ONST, "Start vent")
+}
+
+record(mbbo,"$(P)$(R)Units") {
+    field(PINI, "YES")
+    field(DTYP, "stream")
+    field(OUT,  "@PACE5000.proto setUnits $(PORT)")
+    field(ZRVL, "0")
+    field(ZRST, "BAR")
+    field(ONVL, "1")
+    field(ONST, "MPA")
+    field(TWVL, "2")
+    field(TWST, "KG/CM2")
+    field(THVL, "3")
+    field(THST, "PSI")
+}
+
+
+# Read settings
+record(bo,"$(P)$(R)ReadSettingsScan") {
+    field(SCAN, "1 second")
+    field(FLNK, "$(P)$(R)ReadSettings.PROC")
+}
+
+record(bo,"$(P)$(R)ReadSettings") {
+    field(PINI, "YES")
+    field(FLNK, "$(P)$(R)Pressure_RBV.PROC")
+}
+
+record(ai,"$(P)$(R)Pressure_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@PACE5000.proto getPressure $(PORT)")
+    field(PREC, "3")
+    field(FLNK, "$(P)$(R)Units_RBV.PROC")
+}
+
+record(mbbi,"$(P)$(R)Units_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@PACE5000.proto getUnits $(PORT)")
+    field(ZRVL, "0")
+    field(ZRST, "BAR")
+    field(ONVL, "1")
+    field(ONST, "MPA")
+    field(TWVL, "2")
+    field(TWST, "KG/CM2")
+    field(THVL, "3")
+    field(THST, "PSI")
+    field(FLNK, "$(P)$(R)Control_RBV.PROC")
+}
+
+record(bi,"$(P)$(R)Control_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@PACE5000.proto getControl $(PORT)")
+    field(ZNAM, "Off")
+    field(ONAM, "On")
+    field(FLNK, "$(P)$(R)SlewMode_RBV.PROC")
+}
+
+record(mbbi,"$(P)$(R)SlewMode_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@PACE5000.proto getSlewMode $(PORT)")
+    field(ZRVL, "0")
+    field(ZRST, "MAX")
+    field(ONVL, "1")
+    field(ONST, "LIN")
+    field(FLNK, "$(P)$(R)Slew_RBV.PROC")
+}
+
+record(ai,"$(P)$(R)Slew_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@PACE5000.proto getSlew $(PORT)")
+    field(PREC, "3")
+    field(FLNK, "$(P)$(R)Effort_RBV.PROC")
+}
+
+record(ai,"$(P)$(R)Effort_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@PACE5000.proto getEffort $(PORT)")
+    field(PREC, "3")
+    field(FLNK, "$(P)$(R)Setpoint_RBV.PROC")
+}
+
+record(ai,"$(P)$(R)Setpoint_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@PACE5000.proto getSetpoint $(PORT)")
+    field(PREC, "3")
+    field(FLNK, "$(P)$(R)Vent_RBV.PROC")
+}
+
+record(mbbi,"$(P)$(R)Vent_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@PACE5000.proto getVent $(PORT)")
+    field(ZRVL, "0")
+    field(ZRST, "Vent OK")
+    field(ONVL, "1")
+    field(ONST, "Vent in progress")
+    field(TWVL, "2")
+    field(TWST, "Vent complete")
+    field(FLNK, "$(P)$(R)Error_RBV.PROC")
+}
+
+record(stringin,"$(P)$(R)Error_RBV") {
+    field(DTYP, "stream")
+    field(INP,  "@PACE5000.proto getError $(PORT)")
+}
+
+record(asyn,"$(P)$(R)Asyn") {
+    field(PORT, "$(PORT)")
+}
+

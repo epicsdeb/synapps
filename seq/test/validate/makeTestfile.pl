@@ -23,7 +23,7 @@ use strict;
 
 my $valgrind = "";
 
-my ($target, $stem, $exe, $ioc, $softioc, $softdbd, $valgrind_path) = @ARGV;
+my ($target, $stem, $exe, $ioc, $valgrind_path) = @ARGV;
 
 if ($valgrind_path) {
   `$valgrind_path -h`;
@@ -51,19 +51,19 @@ if ($ioc eq "ioc") {
 my $pid = fork();
 die "fork failed: $err" unless defined($pid);
 if (!$pid) {
-  exec("$softioc -D $softdbd -S -d $db");
+  exec("./$exe -S -d $db");
   die "exec failed: $err";
 }
-system("$valgrind./$exe -S");
+system("$valgrind./$exe -S -t");
 $killit;
 EOF
 } elsif (-r "$db") {
   print $OUT <<EOF;
-exec "$valgrind./$exe -S -d $db" or die "exec failed: $err";
+exec "$valgrind./$exe -S -t -d $db" or die "exec failed: $err";
 EOF
 } else {
   print $OUT <<EOF;
-exec "$valgrind./$exe -S" or die "exec failed: $err";
+exec "$valgrind./$exe -S -t" or die "exec failed: $err";
 EOF
 }
 

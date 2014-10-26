@@ -500,7 +500,7 @@ asyncFinish(sseqRecord *pR)
 }
 
 /* This is the function that will be called when processing started by a dbCaPutLinkCallback completes */
-void epicsShareAPI putCallbackCB(void *arg)
+void putCallbackCB(void *arg)
 {
 	struct linkGroup	*plinkGroupThis = (struct linkGroup *)arg;
 	struct link 		*plink = &(plinkGroupThis->lnk);

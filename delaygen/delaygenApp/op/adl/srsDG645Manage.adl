@@ -1,0 +1,1111 @@
+
+file {
+	name="/home/oxygen/DOHNARMS/controls/epics/SRS_DG645/ioc/dg645App/op/adl/srsDG645Manage.adl"
+	version=030107
+}
+display {
+	object {
+		x=95
+		y=124
+		width=510
+		height=655
+	}
+	clr=14
+	bclr=3
+	cmap=""
+	gridSpacing=5
+	gridOn=0
+	snapToGrid=1
+}
+"color map" {
+	ncolors=65
+	colors {
+		ffffff,
+		ececec,
+		dadada,
+		c8c8c8,
+		bbbbbb,
+		aeaeae,
+		9e9e9e,
+		919191,
+		858585,
+		787878,
+		696969,
+		5a5a5a,
+		464646,
+		2d2d2d,
+		000000,
+		00d800,
+		1ebb00,
+		339900,
+		2d7f00,
+		216c00,
+		fd0000,
+		de1309,
+		be190b,
+		a01207,
+		820400,
+		5893ff,
+		597ee1,
+		4b6ec7,
+		3a5eab,
+		27548d,
+		fbf34a,
+		f9da3c,
+		eeb62b,
+		e19015,
+		cd6100,
+		ffb0ff,
+		d67fe2,
+		ae4ebc,
+		8b1a96,
+		610a75,
+		a4aaff,
+		8793e2,
+		6a73c1,
+		4d52a4,
+		343386,
+		c7bb6d,
+		b79d5c,
+		a47e3c,
+		7d5627,
+		58340f,
+		99ffff,
+		73dfff,
+		4ea5f9,
+		2a63e4,
+		0a00b8,
+		ebf1b5,
+		d4db9d,
+		bbc187,
+		a6a462,
+		8b8239,
+		73ff6b,
+		52da3b,
+		3cb420,
+		289315,
+		1a7309,
+	}
+}
+"text update" {
+	object {
+		x=110
+		y=35
+		width=350
+		height=16
+	}
+	monitor {
+		chan="$(P)$(R)IdentSI"
+		clr=54
+		bclr=1
+	}
+	clrmod="discrete"
+	align="horiz. centered"
+	format="string"
+	limits {
+	}
+}
+text {
+	object {
+		x=10
+		y=5
+		width=150
+		height=20
+	}
+	"basic attribute" {
+		clr=54
+	}
+	textix="$(P)$(R)"
+	align="horiz. centered"
+}
+"text update" {
+	object {
+		x=200
+		y=630
+		width=150
+		height=16
+	}
+	monitor {
+		chan="$(P)$(R)IfaceGatewaySI"
+		clr=54
+		bclr=1
+	}
+	align="horiz. centered"
+	limits {
+	}
+}
+"text entry" {
+	object {
+		x=355
+		y=625
+		width=150
+		height=22
+	}
+	control {
+		chan="$(P)$(R)IfaceGatewaySO"
+		clr=14
+		bclr=51
+	}
+	format="string"
+	limits {
+	}
+}
+text {
+	object {
+		x=10
+		y=630
+		width=180
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Gateway Address"
+	align="horiz. right"
+}
+"text entry" {
+	object {
+		x=175
+		y=5
+		width=200
+		height=22
+	}
+	control {
+		chan="$(P)$(R)Label"
+		clr=14
+		bclr=50
+	}
+	format="engr. notation"
+	limits {
+	}
+}
+text {
+	object {
+		x=0
+		y=35
+		width=100
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+		fill="outline"
+	}
+	textix="Device ID"
+	align="horiz. right"
+}
+text {
+	object {
+		x=75
+		y=150
+		width=200
+		height=20
+	}
+	"basic attribute" {
+		clr=19
+	}
+	textix="RS-232 INTERFACE"
+	align="horiz. right"
+}
+"message button" {
+	object {
+		x=290
+		y=150
+		width=80
+		height=20
+	}
+	control {
+		chan="$(P)$(R)IfaceSerialResetBO"
+		clr=14
+		bclr=51
+	}
+	label="RESET"
+	press_msg="1"
+}
+"text update" {
+	object {
+		x=200
+		y=190
+		width=150
+		height=16
+	}
+	monitor {
+		chan="$(P)$(R)IfaceSerialStateBI"
+		clr=54
+		bclr=1
+	}
+	align="horiz. centered"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=200
+		y=215
+		width=150
+		height=16
+	}
+	monitor {
+		chan="$(P)$(R)IfaceSerialBaudMI"
+		clr=54
+		bclr=1
+	}
+	align="horiz. centered"
+	limits {
+	}
+}
+"choice button" {
+	object {
+		x=355
+		y=185
+		width=150
+		height=20
+	}
+	control {
+		chan="$(P)$(R)IfaceSerialStateBO"
+		clr=14
+		bclr=51
+	}
+	stacking="column"
+}
+menu {
+	object {
+		x=355
+		y=210
+		width=80
+		height=22
+	}
+	control {
+		chan="$(P)$(R)IfaceSerialBaudMO"
+		clr=14
+		bclr=51
+	}
+}
+"text update" {
+	object {
+		x=200
+		y=405
+		width=150
+		height=16
+	}
+	monitor {
+		chan="$(P)$(R)IfaceLanStateBI"
+		clr=54
+		bclr=1
+	}
+	align="horiz. centered"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=200
+		y=430
+		width=150
+		height=16
+	}
+	monitor {
+		chan="$(P)$(R)IfaceDhcpStateBI"
+		clr=54
+		bclr=1
+	}
+	align="horiz. centered"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=200
+		y=455
+		width=150
+		height=16
+	}
+	monitor {
+		chan="$(P)$(R)IfaceAutoIpStateBI"
+		clr=54
+		bclr=1
+	}
+	align="horiz. centered"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=200
+		y=480
+		width=150
+		height=16
+	}
+	monitor {
+		chan="$(P)$(R)IfaceStaticIpStateBI"
+		clr=54
+		bclr=1
+	}
+	align="horiz. centered"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=200
+		y=505
+		width=150
+		height=16
+	}
+	monitor {
+		chan="$(P)$(R)IfaceBareSocketStateBI"
+		clr=54
+		bclr=1
+	}
+	align="horiz. centered"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=200
+		y=530
+		width=150
+		height=16
+	}
+	monitor {
+		chan="$(P)$(R)IfaceTelnetStateBI"
+		clr=54
+		bclr=1
+	}
+	align="horiz. centered"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=200
+		y=555
+		width=150
+		height=16
+	}
+	monitor {
+		chan="$(P)$(R)IfaceVxiStateBI"
+		clr=54
+		bclr=1
+	}
+	align="horiz. centered"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=200
+		y=580
+		width=150
+		height=16
+	}
+	monitor {
+		chan="$(P)$(R)IfaceIpAddrSI"
+		clr=54
+		bclr=1
+	}
+	align="horiz. centered"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=200
+		y=605
+		width=150
+		height=16
+	}
+	monitor {
+		chan="$(P)$(R)IfaceNetMaskSI"
+		clr=54
+		bclr=1
+	}
+	align="horiz. centered"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=200
+		y=380
+		width=200
+		height=16
+	}
+	monitor {
+		chan="$(P)$(R)IfaceMacAddrSI"
+		clr=54
+		bclr=1
+	}
+	align="horiz. centered"
+	limits {
+	}
+}
+"text entry" {
+	object {
+		x=355
+		y=575
+		width=150
+		height=22
+	}
+	control {
+		chan="$(P)$(R)IfaceIpAddrSO"
+		clr=14
+		bclr=51
+	}
+	format="string"
+	limits {
+	}
+}
+"text entry" {
+	object {
+		x=355
+		y=600
+		width=150
+		height=22
+	}
+	control {
+		chan="$(P)$(R)IfaceNetMaskSO"
+		clr=14
+		bclr=51
+	}
+	format="string"
+	limits {
+	}
+}
+text {
+	object {
+		x=10
+		y=505
+		width=180
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Bare Socket State"
+	align="horiz. right"
+}
+text {
+	object {
+		x=10
+		y=380
+		width=180
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="MAC Address"
+	align="horiz. right"
+}
+text {
+	object {
+		x=10
+		y=405
+		width=180
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="LAN State"
+	align="horiz. right"
+}
+text {
+	object {
+		x=10
+		y=430
+		width=180
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="DHCP State"
+	align="horiz. right"
+}
+text {
+	object {
+		x=10
+		y=455
+		width=180
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Auto-IP State"
+	align="horiz. right"
+}
+text {
+	object {
+		x=10
+		y=480
+		width=180
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Static IP State"
+	align="horiz. right"
+}
+text {
+	object {
+		x=10
+		y=530
+		width=180
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Telnet State"
+	align="horiz. right"
+}
+text {
+	object {
+		x=10
+		y=555
+		width=180
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="VXI-11 State"
+	align="horiz. right"
+}
+text {
+	object {
+		x=10
+		y=580
+		width=180
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="IP Address"
+	align="horiz. right"
+}
+text {
+	object {
+		x=10
+		y=605
+		width=180
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Network Mask"
+	align="horiz. right"
+}
+text {
+	object {
+		x=10
+		y=190
+		width=180
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Serial state"
+	align="horiz. right"
+}
+text {
+	object {
+		x=10
+		y=215
+		width=180
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Serial Baud"
+	align="horiz. right"
+}
+"choice button" {
+	object {
+		x=355
+		y=400
+		width=150
+		height=20
+	}
+	control {
+		chan="$(P)$(R)IfaceLanStateBO"
+		clr=14
+		bclr=51
+	}
+	stacking="column"
+}
+"choice button" {
+	object {
+		x=355
+		y=425
+		width=150
+		height=20
+	}
+	control {
+		chan="$(P)$(R)IfaceDhcpStateBO"
+		clr=14
+		bclr=51
+	}
+	stacking="column"
+}
+"choice button" {
+	object {
+		x=355
+		y=450
+		width=150
+		height=20
+	}
+	control {
+		chan="$(P)$(R)IfaceAutoIpStateBO"
+		clr=14
+		bclr=51
+	}
+	stacking="column"
+}
+"choice button" {
+	object {
+		x=355
+		y=475
+		width=150
+		height=20
+	}
+	control {
+		chan="$(P)$(R)IfaceStaticIpStateBO"
+		clr=14
+		bclr=51
+	}
+	stacking="column"
+}
+"choice button" {
+	object {
+		x=355
+		y=500
+		width=150
+		height=20
+	}
+	control {
+		chan="$(P)$(R)IfaceBareSocketStateBO"
+		clr=14
+		bclr=51
+	}
+	stacking="column"
+}
+"choice button" {
+	object {
+		x=355
+		y=525
+		width=150
+		height=20
+	}
+	control {
+		chan="$(P)$(R)IfaceTelnetStateBO"
+		clr=14
+		bclr=51
+	}
+	stacking="column"
+}
+"choice button" {
+	object {
+		x=355
+		y=550
+		width=150
+		height=20
+	}
+	control {
+		chan="$(P)$(R)IfaceVxiStateBO"
+		clr=14
+		bclr=51
+	}
+	stacking="column"
+}
+text {
+	object {
+		x=75
+		y=245
+		width=200
+		height=20
+	}
+	"basic attribute" {
+		clr=19
+	}
+	textix="GPIB INTERFACE"
+	align="horiz. right"
+}
+"message button" {
+	object {
+		x=290
+		y=245
+		width=80
+		height=20
+	}
+	control {
+		chan="$(P)$(R)IfaceGpibResetBO"
+		clr=14
+		bclr=51
+	}
+	label="RESET"
+	press_msg="1"
+}
+"message button" {
+	object {
+		x=290
+		y=345
+		width=80
+		height=20
+	}
+	control {
+		chan="$(P)$(R)IfaceLanResetBO"
+		clr=14
+		bclr=51
+	}
+	label="RESET"
+	press_msg="1"
+}
+text {
+	object {
+		x=75
+		y=345
+		width=200
+		height=20
+	}
+	"basic attribute" {
+		clr=19
+	}
+	textix="LAN INTERFACE"
+	align="horiz. right"
+}
+"text update" {
+	object {
+		x=200
+		y=285
+		width=150
+		height=16
+	}
+	monitor {
+		chan="$(P)$(R)IfaceGpibStateBI"
+		clr=54
+		bclr=1
+	}
+	align="horiz. centered"
+	limits {
+	}
+}
+"text update" {
+	object {
+		x=200
+		y=310
+		width=150
+		height=16
+	}
+	monitor {
+		chan="$(P)$(R)IfaceGpibAddrLI"
+		clr=54
+		bclr=1
+	}
+	align="horiz. centered"
+	limits {
+	}
+}
+"choice button" {
+	object {
+		x=355
+		y=280
+		width=150
+		height=20
+	}
+	control {
+		chan="$(P)$(R)IfaceGpibStateBO"
+		clr=14
+		bclr=51
+	}
+	stacking="column"
+}
+"text entry" {
+	object {
+		x=355
+		y=305
+		width=75
+		height=22
+	}
+	control {
+		chan="$(P)$(R)IfaceGpibAddrLO"
+		clr=14
+		bclr=51
+	}
+	limits {
+	}
+}
+text {
+	object {
+		x=10
+		y=285
+		width=180
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="GPIB State"
+	align="horiz. right"
+}
+text {
+	object {
+		x=10
+		y=310
+		width=180
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="GPIB Address"
+	align="horiz. right"
+}
+text {
+	object {
+		x=115
+		y=65
+		width=216
+		height=20
+	}
+	"basic attribute" {
+		clr=19
+	}
+	textix="MANAGEMENT FUNCTIONS"
+	align="horiz. centered"
+}
+"message button" {
+	object {
+		x=290
+		y=115
+		width=120
+		height=20
+	}
+	control {
+		chan="$(P)$(R)StatusClearBO"
+		clr=14
+		bclr=51
+	}
+	label="CLEAR STATUS"
+	press_msg="1"
+}
+"message button" {
+	object {
+		x=15
+		y=115
+		width=120
+		height=20
+	}
+	control {
+		chan="$(P)$(R)ResetBO"
+		clr=14
+		bclr=51
+	}
+	label="RESET DEVICE"
+	press_msg="1"
+}
+"message button" {
+	object {
+		x=150
+		y=90
+		width=120
+		height=20
+	}
+	control {
+		chan="$(P)$(R)GotoRemoteBO"
+		clr=14
+		bclr=51
+	}
+	label="GOTO REMOTE"
+	press_msg="1"
+}
+"message button" {
+	object {
+		x=150
+		y=115
+		width=120
+		height=20
+	}
+	control {
+		chan="$(P)$(R)GotoLocalBO"
+		clr=14
+		bclr=51
+	}
+	label="GOTO LOCAL"
+	press_msg="1"
+}
+"choice button" {
+	object {
+		x=425
+		y=95
+		width=80
+		height=40
+	}
+	control {
+		chan="$(P)$(R)DisableScanBI"
+		clr=14
+		bclr=51
+	}
+}
+text {
+	object {
+		x=425
+		y=75
+		width=74
+		height=18
+	}
+	"basic attribute" {
+		clr=20
+		fill="outline"
+	}
+	"dynamic attribute" {
+		vis="if not zero"
+		chan="$(P)$(R)DisableScanBI"
+	}
+	textix="OFF LINE"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=427
+		y=75
+		width=74
+		height=18
+	}
+	"basic attribute" {
+		clr=62
+		fill="outline"
+	}
+	"dynamic attribute" {
+		vis="if zero"
+		chan="$(P)$(R)DisableScanBI"
+	}
+	textix="ON LINE"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=300
+		y=90
+		width=100
+		height=20
+	}
+	"basic attribute" {
+		clr=20
+		fill="outline"
+	}
+	"dynamic attribute" {
+		vis="if not zero"
+		chan="$(P)$(R)StatusLI"
+	}
+	textix="ERROR!!"
+	align="horiz. centered"
+}
+rectangle {
+	object {
+		x=0
+		y=55
+		width=510
+		height=3
+	}
+	"basic attribute" {
+		clr=10
+		width=3
+	}
+}
+rectangle {
+	object {
+		x=0
+		y=140
+		width=510
+		height=3
+	}
+	"basic attribute" {
+		clr=10
+		width=3
+	}
+}
+rectangle {
+	object {
+		x=0
+		y=235
+		width=510
+		height=3
+	}
+	"basic attribute" {
+		clr=10
+		width=3
+	}
+}
+rectangle {
+	object {
+		x=0
+		y=270
+		width=510
+		height=3
+	}
+	"basic attribute" {
+		clr=5
+		width=3
+	}
+}
+rectangle {
+	object {
+		x=0
+		y=175
+		width=510
+		height=3
+	}
+	"basic attribute" {
+		clr=5
+		width=3
+	}
+}
+rectangle {
+	object {
+		x=0
+		y=335
+		width=510
+		height=3
+	}
+	"basic attribute" {
+		clr=10
+		width=3
+	}
+}
+rectangle {
+	object {
+		x=0
+		y=370
+		width=510
+		height=3
+	}
+	"basic attribute" {
+		clr=5
+		width=3
+	}
+}
+"related display" {
+	object {
+		x=465
+		y=5
+		width=40
+		height=20
+	}
+	display[0] {
+		label="Main Screen"
+		name="srsDG645.adl"
+		args="P=$(P),R=$(R)"
+	}
+	clr=14
+	bclr=32
+	label="-Main"
+}

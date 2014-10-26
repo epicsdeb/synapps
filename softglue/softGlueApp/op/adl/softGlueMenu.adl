@@ -1,12 +1,12 @@
 
 file {
-	name="/home/oxygen4/MOONEY/epics/synAppsSVN/support/softGlue/softGlueApp/op/adl/softGlueMenu.adl"
-	version=030105
+	name="/home/oxygen/MOONEY/epics/synApps/support/softGlue/softGlueApp/op/adl/softGlueMenu.adl"
+	version=030107
 }
 display {
 	object {
-		x=1376
-		y=384
+		x=157
+		y=25
 		width=120
 		height=200
 	}
@@ -215,6 +215,16 @@ display {
 		name="softGlue_DnCntr.adl"
 		args="P=$(P),H=$(H),N=4"
 	}
+	display[8] {
+		label="UpDown Counter 1"
+		name="softGlue_UpDnCntr.adl"
+		args="P=$(P),H=$(H),N=1"
+	}
+	display[9] {
+		label="UpDown Counter 2"
+		name="softGlue_UpDnCntr.adl"
+		args="P=$(P),H=$(H),N=2"
+	}
 	clr=0
 	bclr=63
 	label="-Counters"
@@ -321,6 +331,16 @@ display {
 		label="Divide By N 4"
 		name="softGlue_DivByN.adl"
 		args="P=$(P),H=$(H),N=4"
+	}
+	display[13] {
+		label="Quadrature Decoder 1"
+		name="softGlue_QuadDec.adl"
+		args="P=$(P),H=$(H),N=1"
+	}
+	display[14] {
+		label="Quadrature Decoder 2"
+		name="softGlue_QuadDec.adl"
+		args="P=$(P),H=$(H),N=2"
 	}
 	clr=0
 	bclr=63
@@ -443,6 +463,11 @@ text {
 	display[7] {
 		label="velocity gate"
 		name="softGlueVgate.adl"
+		args="P=$(P),H=$(H)"
+	}
+	display[8] {
+		label="encoder"
+		name="softGlueEncoder.adl"
 		args="P=$(P),H=$(H)"
 	}
 	clr=0

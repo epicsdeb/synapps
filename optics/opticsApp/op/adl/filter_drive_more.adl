@@ -1,0 +1,732 @@
+
+file {
+	name="/net/s33dserv/xorApps/epics/synApps_5_6/ioc/33bmTEST/33bmTESTApp/op/adl/filter_drive_more.adl"
+	version=030107
+}
+display {
+	object {
+		x=829
+		y=123
+		width=500
+		height=175
+	}
+	clr=14
+	bclr=3
+	cmap=""
+	gridSpacing=5
+	gridOn=0
+	snapToGrid=0
+}
+"color map" {
+	ncolors=65
+	colors {
+		ffffff,
+		ececec,
+		dadada,
+		c8c8c8,
+		bbbbbb,
+		aeaeae,
+		9e9e9e,
+		919191,
+		858585,
+		787878,
+		696969,
+		5a5a5a,
+		464646,
+		2d2d2d,
+		000000,
+		00d800,
+		1ebb00,
+		339900,
+		2d7f00,
+		216c00,
+		fd0000,
+		de1309,
+		be190b,
+		a01207,
+		820400,
+		5893ff,
+		597ee1,
+		4b6ec7,
+		3a5eab,
+		27548d,
+		fbf34a,
+		f9da3c,
+		eeb62b,
+		e19015,
+		cd6100,
+		ffb0ff,
+		d67fe2,
+		ae4ebc,
+		8b1a96,
+		610a75,
+		a4aaff,
+		8793e2,
+		6a73c1,
+		4d52a4,
+		343386,
+		c7bb6d,
+		b79d5c,
+		a47e3c,
+		7d5627,
+		58340f,
+		99ffff,
+		73dfff,
+		4ea5f9,
+		2a63e4,
+		0a00b8,
+		ebf1b5,
+		d4db9d,
+		bbc187,
+		a6a462,
+		8b8239,
+		73ff6b,
+		52da3b,
+		3cb420,
+		289315,
+		1a7309,
+	}
+}
+rectangle {
+	object {
+		x=75
+		y=20
+		width=10
+		height=15
+	}
+	"basic attribute" {
+		clr=15
+	}
+	"dynamic attribute" {
+		vis="if not zero"
+		chan="$(P)$(R)EnergySelect"
+	}
+}
+rectangle {
+	object {
+		x=75
+		y=0
+		width=10
+		height=15
+	}
+	"basic attribute" {
+		clr=15
+	}
+	"dynamic attribute" {
+		vis="if zero"
+		chan="$(P)$(R)EnergySelect"
+	}
+}
+"choice button" {
+	object {
+		x=5
+		y=0
+		width=65
+		height=37
+	}
+	control {
+		chan="$(P)$(R)EnergySelect"
+		clr=14
+		bclr=51
+	}
+}
+"text update" {
+	object {
+		x=90
+		y=0
+		width=85
+		height=15
+	}
+	monitor {
+		chan="$(P)$(R)EnergyBeamline"
+		clr=54
+		bclr=3
+	}
+	align="horiz. right"
+	limits {
+	}
+}
+"text entry" {
+	object {
+		x=90
+		y=17
+		width=85
+		height=20
+	}
+	control {
+		chan="$(P)$(R)EnergyLocal"
+		clr=14
+		bclr=51
+	}
+	limits {
+	}
+}
+"message button" {
+	object {
+		x=400
+		y=0
+		width=95
+		height=28
+	}
+	control {
+		chan="$(P)$(R)TransmissionSetpoint"
+		clr=17
+		bclr=51
+	}
+	label="ALL IN"
+	press_msg="0"
+}
+"message button" {
+	object {
+		x=400
+		y=30
+		width=95
+		height=28
+	}
+	control {
+		chan="$(P)$(R)TransmissionSetpoint"
+		clr=20
+		bclr=51
+	}
+	label="ALL OUT"
+	press_msg="1"
+}
+text {
+	object {
+		x=5
+		y=49
+		width=60
+		height=15
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Status"
+}
+"text update" {
+	object {
+		x=75
+		y=46
+		width=140
+		height=20
+	}
+	monitor {
+		chan="$(P)$(R)Status"
+		clr=54
+		bclr=3
+	}
+	clrmod="alarm"
+	format="string"
+	limits {
+	}
+}
+text {
+	object {
+		x=180
+		y=0
+		width=34
+		height=15
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="keV"
+}
+text {
+	object {
+		x=180
+		y=20
+		width=34
+		height=15
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="keV"
+}
+composite {
+	object {
+		x=230
+		y=0
+		width=155
+		height=108
+	}
+	"composite name"=""
+	children {
+		"message button" {
+			object {
+				x=230
+				y=0
+				width=45
+				height=20
+			}
+			control {
+				chan="$(P)$(R)TransmissionFactor"
+				clr=14
+				bclr=51
+			}
+			label="/1000"
+			press_msg="0.001"
+		}
+		"message button" {
+			object {
+				x=340
+				y=0
+				width=45
+				height=20
+			}
+			control {
+				chan="$(P)$(R)TransmissionSetpoint"
+				clr=14
+				bclr=51
+			}
+			label="1e-2"
+			press_msg="1.0e-2"
+		}
+		"message button" {
+			object {
+				x=340
+				y=22
+				width=45
+				height=20
+			}
+			control {
+				chan="$(P)$(R)TransmissionSetpoint"
+				clr=14
+				bclr=51
+			}
+			label="1e-4"
+			press_msg="1.0e-4"
+		}
+		"message button" {
+			object {
+				x=340
+				y=44
+				width=45
+				height=20
+			}
+			control {
+				chan="$(P)$(R)TransmissionSetpoint"
+				clr=14
+				bclr=51
+			}
+			label="1e-6"
+			press_msg="1.0e-6"
+		}
+		"message button" {
+			object {
+				x=340
+				y=66
+				width=45
+				height=20
+			}
+			control {
+				chan="$(P)$(R)TransmissionSetpoint"
+				clr=14
+				bclr=51
+			}
+			label="1e-8"
+			press_msg="1.0e-8"
+		}
+		"message button" {
+			object {
+				x=340
+				y=88
+				width=45
+				height=20
+			}
+			control {
+				chan="$(P)$(R)TransmissionSetpoint"
+				clr=14
+				bclr=51
+			}
+			label="1e-10"
+			press_msg="1.0e-10"
+		}
+		"message button" {
+			object {
+				x=230
+				y=22
+				width=45
+				height=20
+			}
+			control {
+				chan="$(P)$(R)TransmissionFactor"
+				clr=14
+				bclr=51
+			}
+			label="/10"
+			press_msg="0.1"
+		}
+		"message button" {
+			object {
+				x=230
+				y=44
+				width=45
+				height=20
+			}
+			control {
+				chan="$(P)$(R)TransmissionFactor"
+				clr=14
+				bclr=51
+			}
+			label="/2"
+			press_msg=".5"
+		}
+		"message button" {
+			object {
+				x=230
+				y=66
+				width=45
+				height=20
+			}
+			control {
+				chan="$(P)$(R)TransmissionFactor"
+				clr=14
+				bclr=51
+			}
+			label="-10%"
+			press_msg="0.9"
+		}
+		"message button" {
+			object {
+				x=230
+				y=88
+				width=45
+				height=20
+			}
+			control {
+				chan="$(P)$(R)TransmissionStepDown"
+				clr=14
+				bclr=51
+			}
+			label="-"
+			press_msg="1"
+		}
+		"message button" {
+			object {
+				x=280
+				y=88
+				width=45
+				height=20
+			}
+			control {
+				chan="$(P)$(R)TransmissionStepUp"
+				clr=14
+				bclr=51
+			}
+			label="+"
+			press_msg="1"
+		}
+		"message button" {
+			object {
+				x=280
+				y=0
+				width=45
+				height=20
+			}
+			control {
+				chan="$(P)$(R)TransmissionFactor"
+				clr=14
+				bclr=51
+			}
+			label="*1000"
+			press_msg="1000"
+		}
+		"message button" {
+			object {
+				x=280
+				y=22
+				width=45
+				height=20
+			}
+			control {
+				chan="$(P)$(R)TransmissionFactor"
+				clr=14
+				bclr=51
+			}
+			label="*10"
+			press_msg="10"
+		}
+		"message button" {
+			object {
+				x=280
+				y=44
+				width=45
+				height=20
+			}
+			control {
+				chan="$(P)$(R)TransmissionFactor"
+				clr=14
+				bclr=51
+			}
+			label="*2"
+			press_msg="2"
+		}
+		"message button" {
+			object {
+				x=280
+				y=66
+				width=45
+				height=20
+			}
+			control {
+				chan="$(P)$(R)TransmissionFactor"
+				clr=14
+				bclr=51
+			}
+			label="+10%"
+			press_msg="1.1"
+		}
+	}
+}
+"text update" {
+	object {
+		x=75
+		y=153
+		width=310
+		height=15
+	}
+	monitor {
+		chan="$(P)$(R)Message"
+		clr=14
+		bclr=2
+	}
+	format="string"
+	limits {
+	}
+}
+text {
+	object {
+		x=6
+		y=153
+		width=60
+		height=15
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Message"
+}
+text {
+	object {
+		x=400
+		y=65
+		width=86
+		height=15
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Setpoint"
+}
+"text entry" {
+	object {
+		x=400
+		y=83
+		width=95
+		height=25
+	}
+	control {
+		chan="$(P)$(R)TransmissionSetpoint"
+		clr=14
+		bclr=51
+	}
+	format="compact"
+	limits {
+	}
+}
+text {
+	object {
+		x=399
+		y=125
+		width=95
+		height=15
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Filter Mask"
+}
+"text entry" {
+	object {
+		x=399
+		y=143
+		width=95
+		height=25
+	}
+	control {
+		chan="$(P)$(R)FilterMaskSetpoint"
+		clr=14
+		bclr=51
+	}
+	format="compact"
+	limits {
+	}
+}
+text {
+	object {
+		x=5
+		y=133
+		width=60
+		height=15
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Mask"
+}
+"text update" {
+	object {
+		x=75
+		y=134
+		width=60
+		height=13
+	}
+	monitor {
+		chan="$(P)$(R)FilterMask"
+		clr=54
+		bclr=3
+	}
+	limits {
+	}
+}
+text {
+	object {
+		x=140
+		y=134
+		width=10
+		height=13
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="="
+}
+"text update" {
+	object {
+		x=155
+		y=134
+		width=60
+		height=13
+	}
+	monitor {
+		chan="$(P)$(R)FilterMask"
+		clr=54
+		bclr=3
+	}
+	format="hexadecimal"
+	limits {
+	}
+}
+text {
+	object {
+		x=5
+		y=71
+		width=60
+		height=15
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Transm"
+}
+"text update" {
+	object {
+		x=75
+		y=68
+		width=140
+		height=20
+	}
+	monitor {
+		chan="$(P)$(R)Transmission"
+		clr=54
+		bclr=30
+	}
+	format="exponential"
+	limits {
+	}
+}
+text {
+	object {
+		x=5
+		y=93
+		width=60
+		height=15
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Up(+)"
+}
+"text update" {
+	object {
+		x=75
+		y=93
+		width=140
+		height=15
+	}
+	monitor {
+		chan="$(P)$(R)TransmissionUp"
+		clr=54
+		bclr=3
+	}
+	format="exponential"
+	limits {
+	}
+}
+text {
+	object {
+		x=5
+		y=113
+		width=60
+		height=15
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Down(-)"
+}
+"text update" {
+	object {
+		x=75
+		y=113
+		width=140
+		height=15
+	}
+	monitor {
+		chan="$(P)$(R)TransmissionDown"
+		clr=54
+		bclr=3
+	}
+	format="exponential"
+	limits {
+	}
+}
+text {
+	object {
+		x=230
+		y=133
+		width=90
+		height=15
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="NumFilters"
+}
+"text update" {
+	object {
+		x=330
+		y=133
+		width=50
+		height=15
+	}
+	monitor {
+		chan="$(P)$(R)NumFilters"
+		clr=54
+		bclr=3
+	}
+	limits {
+	}
+}

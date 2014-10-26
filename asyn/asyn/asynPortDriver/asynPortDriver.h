@@ -10,6 +10,7 @@
 class paramList;
 
 epicsShareFunc void* findAsynPortDriver(const char *portName);
+typedef void (*userTimeStampFunction)(void *userPvt, epicsTimeStamp *pTimeStamp);
 
 #ifdef __cplusplus
 
@@ -28,7 +29,6 @@ epicsShareFunc void* findAsynPortDriver(const char *portName);
 #define asynFloat64ArrayMask    0x00000800
 #define asynGenericPointerMask  0x00001000
 #define asynEnumMask            0x00002000
-
 
 
 
@@ -57,6 +57,10 @@ public:
     virtual asynStatus writeOctet(asynUser *pasynUser, const char *value, size_t maxChars,
                                         size_t *nActual);
     virtual asynStatus flushOctet(asynUser *pasynUser);
+    virtual asynStatus setInputEosOctet(asynUser *pasynUser, const char *eos, int eosLen);
+    virtual asynStatus getInputEosOctet(asynUser *pasynUser, char *eos, int eosSize, int *eosLen);
+    virtual asynStatus setOutputEosOctet(asynUser *pasynUser, const char *eos, int eosLen);
+    virtual asynStatus getOutputEosOctet(asynUser *pasynUser, char *eos, int eosSize, int *eosLen);
     virtual asynStatus readInt8Array(asynUser *pasynUser, epicsInt8 *value, 
                                         size_t nElements, size_t *nIn);
     virtual asynStatus writeInt8Array(asynUser *pasynUser, epicsInt8 *value,
@@ -143,6 +147,11 @@ public:
     virtual asynStatus callParamCallbacks();
     virtual asynStatus callParamCallbacks(          int addr);
     virtual asynStatus callParamCallbacks(int list, int addr);
+    virtual asynStatus updateTimeStamp();
+    virtual asynStatus updateTimeStamp(epicsTimeStamp *pTimeStamp);
+    virtual asynStatus getTimeStamp(epicsTimeStamp *pTimeStamp);
+    virtual asynStatus setTimeStamp(const epicsTimeStamp *pTimeStamp);
+    asynStandardInterfaces *getAsynStdInterfaces();
     virtual void reportParams(FILE *fp, int details);
 
     char *portName;         /**< The name of this asyn port */
@@ -157,6 +166,10 @@ protected:
 private:
     paramList **params;
     epicsMutexId mutexId;
+    char *inputEosOctet;
+    int inputEosLenOctet;
+    char *outputEosOctet;
+    int outputEosLenOctet;
     template <typename epicsType, typename interruptType> 
         asynStatus doCallbacksArray(epicsType *value, size_t nElements,
                                     int reason, int address, void *interruptPvt);

@@ -218,8 +218,8 @@ static long initCommon(dbCommon *pr, DBLINK *plink,
             nbits = -nbits;
             pPvt->bipolar = 1;
         }
-        pPvt->signBit = (epicsInt32) ldexp(1.0, nbits-1);
-        pPvt->mask = pPvt->signBit*2 - 1;
+        pPvt->signBit = 1 << (nbits-1);
+        pPvt->mask = ~(~0 << nbits);
         if (pPvt->bipolar) {
             pPvt->deviceLow = ~(pPvt->mask/2)+1;
             pPvt->deviceHigh = (pPvt->mask/2);
@@ -419,7 +419,11 @@ static void processCallbackInput(asynUser *pasynUser)
     dbCommon *pr = (dbCommon *)pPvt->pr;
 
     pPvt->result.status = pPvt->pint32->read(pPvt->int32Pvt, pPvt->pasynUser, &pPvt->result.value);
-    if (pPvt->bipolar && (pPvt->result.value & pPvt->signBit)) pPvt->result.value |= ~pPvt->mask;
+    pPvt->result.time = pPvt->pasynUser->timestamp;
+    if (pPvt->mask) {
+        pPvt->result.value &= pPvt->mask;
+        if (pPvt->bipolar && (pPvt->result.value & pPvt->signBit)) pPvt->result.value |= ~pPvt->mask;
+    }
     if (pPvt->result.status == asynSuccess) {
         asynPrint(pasynUser, ASYN_TRACEIO_DEVICE,
             "%s devAsynInt32 process value=%d\n",pr->name,pPvt->result.value);
@@ -455,7 +459,10 @@ static void interruptCallbackInput(void *drvPvt, asynUser *pasynUser,
     dbCommon *pr = pPvt->pr;
     ringBufferElement *rp;
 
-    if (pPvt->bipolar && (value & pPvt->signBit)) value |= ~pPvt->mask;
+    if (pPvt->mask) {
+        value &= pPvt->mask;
+        if (pPvt->bipolar && (value & pPvt->signBit)) value |= ~pPvt->mask;
+    }
     asynPrint(pPvt->pasynUser, ASYN_TRACEIO_DEVICE,
         "%s devAsynInt32::interruptCallbackInput new value=%d\n",
         pr->name, value);
@@ -526,7 +533,10 @@ static void interruptCallbackAverage(void *drvPvt, asynUser *pasynUser,
     devInt32Pvt *pPvt = (devInt32Pvt *)drvPvt;
     aiRecord *pai = (aiRecord *)pPvt->pr;
 
-    if (pPvt->bipolar && (value & pPvt->signBit)) value |= ~pPvt->mask;
+    if (pPvt->mask) {
+        value &= pPvt->mask;
+        if (pPvt->bipolar && (value & pPvt->signBit)) value |= ~pPvt->mask;
+    }
     asynPrint(pPvt->pasynUser, ASYN_TRACEIO_DEVICE,
         "%s devAsynInt32::interruptCallbackAverage new value=%d\n",
          pai->name, value);
@@ -594,14 +604,13 @@ static void interruptCallbackEnumBo(void *drvPvt, asynUser *pasynUser,
 }
 
 
-static int
-getCallbackValue(devInt32Pvt *pPvt)
+static int getCallbackValue(devInt32Pvt *pPvt)
 {
     int ret = 0;
     epicsMutexLock(pPvt->mutexId);
     if (pPvt->ringTail != pPvt->ringHead) {
         if (pPvt->ringBufferOverflows > 0) {
-            asynPrint(pPvt->pasynUser, ASYN_TRACEIO_DEVICE,
+            asynPrint(pPvt->pasynUser, ASYN_TRACE_WARNING,
                 "%s devAsynInt32 getCallbackValue warning, %d ring buffer overflows\n",
                                     pPvt->pr->name, pPvt->ringBufferOverflows);
             pPvt->ringBufferOverflows = 0;
@@ -747,7 +756,10 @@ static long initAo(aoRecord *pao)
     /* Read the current value from the device */
     status = pasynInt32SyncIO->read(pPvt->pasynUserSync,
                       &value, pPvt->pasynUser->timeout);
-    if (pPvt->bipolar && (value & pPvt->signBit)) value |= ~pPvt->mask;
+    if (pPvt->mask) {
+        value &= pPvt->mask;
+        if (pPvt->bipolar && (value & pPvt->signBit)) value |= ~pPvt->mask;
+    }
     if (status == asynSuccess) {
         pao->rval = value;
         return 0;

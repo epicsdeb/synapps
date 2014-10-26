@@ -867,6 +867,7 @@ static void gen_user_var_init(Expr *prog, int level)
 {
 	Var *vp;
 	Expr *ssp;
+	int num_globals = 0;
 
 	assert(prog->type == D_PROG);
 	printf("{\n");
@@ -877,9 +878,13 @@ static void gen_user_var_init(Expr *prog, int level)
 		{
 			if (vp->init) gen_line_marker(vp->init);
 			indent(level+1); gen_var_init(vp, level+1); printf(",\n");
+			num_globals++;
 		}
 	}
-
+	if (!num_globals)
+	{
+		indent(level+1); printf("0,\n");
+	}
 	foreach (ssp, prog->prog_statesets)
 	{
 		Expr *sp;

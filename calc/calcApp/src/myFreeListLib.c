@@ -35,10 +35,9 @@ typedef struct {
     size_t	nTotalBlocks;
     epicsTimeStamp timeLastUsed;
     epicsMutexId lock;
-}MYFREELISTPVT;
+} MYFREELISTPVT;
 
-epicsShareFunc void epicsShareAPI 
-	myFreeListInitPvt(void **ppvt,int size,int nmalloc)
+void myFreeListInitPvt(void **ppvt,int size,int nmalloc)
 {
     MYFREELISTPVT	*pfl;
 
@@ -55,7 +54,7 @@ epicsShareFunc void epicsShareAPI
     return;
 }
 
-epicsShareFunc void * epicsShareAPI myFreeListCalloc(void *pvt)
+void *myFreeListCalloc(void *pvt)
 {
     MYFREELISTPVT *pfl = pvt;
 #   ifdef EPICS_MYFREELIST_DEBUG
@@ -69,7 +68,8 @@ epicsShareFunc void * epicsShareAPI myFreeListCalloc(void *pvt)
 #   endif
 }
 
-epicsShareFunc void * epicsShareAPI myFreeListMalloc(void *pvt)
+
+void *myFreeListMalloc(void *pvt)
 {
     MYFREELISTPVT *pfl = pvt;
 #   ifdef EPICS_MYFREELIST_DEBUG
@@ -119,7 +119,7 @@ epicsShareFunc void * epicsShareAPI myFreeListMalloc(void *pvt)
 #   endif
 }
 
-epicsShareFunc void epicsShareAPI myFreeListFree(void *pvt,void*pmem)
+void myFreeListFree(void *pvt,void*pmem)
 {
     MYFREELISTPVT	*pfl = pvt;
 #   ifdef EPICS_MYFREELIST_DEBUG
@@ -138,7 +138,7 @@ epicsShareFunc void epicsShareAPI myFreeListFree(void *pvt,void*pmem)
 #   endif
 }
 
-epicsShareFunc void epicsShareAPI myFreeListCleanup(void *pvt)
+void myFreeListCleanup(void *pvt)
 {
     MYFREELISTPVT *pfl = pvt;
     allocMem	*phead;
@@ -155,7 +155,7 @@ epicsShareFunc void epicsShareAPI myFreeListCleanup(void *pvt)
     free(pvt);
 }
 
-epicsShareFunc size_t epicsShareAPI myFreeListItemsAvail(void *pvt)
+size_t myFreeListItemsAvail(void *pvt)
 {
     MYFREELISTPVT *pfl = pvt;
     size_t n;
@@ -166,7 +166,7 @@ epicsShareFunc size_t epicsShareAPI myFreeListItemsAvail(void *pvt)
     return n;
 }
 
-epicsShareFunc size_t epicsShareAPI myFreeListItemsTotal(void *pvt)
+size_t myFreeListItemsTotal(void *pvt)
 {
     MYFREELISTPVT *pfl = pvt;
     size_t n;
@@ -176,7 +176,8 @@ epicsShareFunc size_t epicsShareAPI myFreeListItemsTotal(void *pvt)
     epicsMutexUnlock(pfl->lock);
     return n;
 }
-epicsShareFunc epicsTimeStamp epicsShareAPI myFreeListTimeLastUsed(void *pvt)
+
+epicsTimeStamp myFreeListTimeLastUsed(void *pvt)
 {
     MYFREELISTPVT *pfl = pvt;
     epicsTimeStamp ts;

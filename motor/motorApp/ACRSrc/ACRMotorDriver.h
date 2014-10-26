@@ -17,19 +17,19 @@ March 28, 2011
 #define ACRBinaryOutString      "ACR_BINARY_OUT"
 #define ACRBinaryOutRBVString   "ACR_BINARY_OUT_RBV"
 
-#define MAX_ACR_STRING_SIZE 80
-
 class ACRAxis : public asynMotorAxis
 {
 public:
   /* These are the methods we override from the base class */
   ACRAxis(class ACRController *pC, int axis);
+  void report(FILE *fp, int level);
   asynStatus move(double position, int relative, double min_velocity, double max_velocity, double acceleration);
   asynStatus moveVelocity(double min_velocity, double max_velocity, double acceleration);
   asynStatus home(double min_velocity, double max_velocity, double acceleration, int forwards);
   asynStatus stop(double acceleration);
   asynStatus poll(bool *moving);
   asynStatus setPosition(double position);
+  asynStatus setClosedLoop(bool closedLoop);
 
 private:
   ACRController *pC_;      /**< Pointer to the asynMotorController to which this axis belongs.
@@ -65,10 +65,6 @@ public:
   
   /* These are the methods that are new to this class */
   asynStatus readBinaryIO();
-  asynStatus writeController();
-  asynStatus writeController(const char *output, double timeout);
-  asynStatus writeReadController();
-  asynStatus writeReadController(const char *output, char *response, size_t maxResponseLen, size_t *responseLen, double timeout);
   
 protected:
   int ACRJerk_;          /**< Jerk time parameter index */        
@@ -82,9 +78,6 @@ protected:
 #define NUM_ACR_PARAMS (&LAST_ACR_PARAM - &FIRST_ACR_PARAM + 1)
 
 private:
-  asynUser *pasynUserACR_;
-  char outString_[MAX_ACR_STRING_SIZE];
-  char inString_[MAX_ACR_STRING_SIZE];
   int binaryIn_;
   int binaryOutRBV_;
   int binaryInReg_;

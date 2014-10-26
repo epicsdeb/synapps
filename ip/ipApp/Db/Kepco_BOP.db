@@ -1,0 +1,249 @@
+grecord(dfanout,"$(P)BOP:$(S):Init") {
+	field(SCAN,"1 second")
+	field(OUTA,"$(P)BOP:$(S):seq_Init.PROC  PP NMS")
+	field(OUTB,"$(P)BOP:$(S):seq_rd.PROC  PP NMS")
+	field(OUTC,"$(P)BOP:$(S):Init.SCAN CA NMS")
+}
+
+grecord(seq,"$(P)BOP:$(S):seq_Init") {
+	field(SCAN,"Passive")
+	field(DLY1,"0.1"	)
+	field(LNK1,"$(P)BOP:$(S):setV.PROC  PP MS")
+	field(DLY2,"0.1")
+	field(LNK2,"$(P)BOP:$(S):setC.PROC  PP MS")
+	field(DLY3,"0.1")
+	field(LNK3,"$(P)BOP:$(S):setMode.PROC  PP MS")
+	field(DLY4,"0.1")
+	field(LNK4,"$(P)BOP:$(S):rd_idn.PROC  PP MS")
+}
+
+grecord(seq,"$(P)BOP:$(S):seq_rd") {
+	field(SCAN,"Passive")
+	field(DLY1,"0.1")
+	field(LNK1,"$(P)BOP:$(S):rd_V.PROC  PP MS")
+	field(DLY2,"0.1")
+	field(LNK2,"$(P)BOP:$(S):rd_C.PROC  PP MS")
+	field(DLY3,"0.1")
+	field(LNK3,"$(P)BOP:$(S):rd_dV.PROC  PP MS")
+	field(DLY4,"0.1")
+	field(LNK4,"$(P)BOP:$(S):rd_dC.PROC  PP MS")
+	field(DLY5,"0.1")
+	field(LNK5,"$(P)BOP:$(S):rd_mode.PROC  PP MS")
+}
+
+grecord(ao,"$(P)BOP:$(S):setV") {
+	field(DESC,"Setpoint V")
+	field(DTYP,"Soft Channel")
+	field(FLNK,"$(P)BOP:$(S):wr_V.VAL  PP MS")
+	field(PREC,"5")
+	field(HOPR,"20.0")
+	field(LOPR,"-20.0")
+}
+
+grecord(ai,"$(P)BOP:$(S):V") {
+	field(DESC,"Readback V")
+	field(DTYP,"Soft Channel")
+	field(INP,"$(P)BOP:$(S):wr_rd_V.AINP  NPP NMS")
+	field(PREC,"5")
+	field(HOPR,"20.0")
+	field(LOPR,"-20.0")
+}
+
+grecord(stringout, "$(P)BOP:$(S):rd_V") {
+       field(DTYP, "Soft Channel")	
+       field(FLNK, "0")
+       field(VAL, "VOLT?")
+       field(OUT, "$(P)BOP:$(S):wr_rd_V.AOUT  PP MS")
+}
+
+grecord(scalcout, "$(P)BOP:$(S):wr_V") {
+       field(DESC, "Format string for PID input")
+       field(CALC, "$P('VOLT %f;VOLT?',A)")
+       field(INPA, "$(P)BOP:$(S):setV.VAL  NPP MS")
+       field(OUT, "$(P)BOP:$(S):wr_rd_V.AOUT  PP MS")
+       field(PREC, "5")
+}
+
+
+grecord(asyn,"$(P)BOP:$(S):wr_rd_V") {
+	field(DESC,"WR/RD Volt")
+	field(FLNK,"$(P)BOP:$(S):V.VAL  PP MS")
+	field(PORT,"$(PORT)")
+	field(ADDR,"$(ADDR)")
+}
+
+grecord(ao,"$(P)BOP:$(S):setC") {
+	field(DESC,"Setpoint C")
+	field(DTYP,"Soft Channel")
+	field(FLNK,"$(P)BOP:$(S):wr_C.VAL  PP MS")
+	field(PREC,"5")
+	field(HOPR,"10.0")
+	field(LOPR,"-10.0")
+}
+
+grecord(ai,"$(P)BOP:$(S):C") {
+	field(DESC,"Readback C")
+	field(DTYP,"Soft Channel")
+	field(INP,"$(P)BOP:$(S):wr_rd_C.AINP  NPP NMS")
+	field(PREC,"5")
+	field(HOPR,"10.0")
+	field(LOPR,"-10.0")
+}
+
+grecord(stringout, "$(P)BOP:$(S):rd_C") {
+       field(DTYP, "Soft Channel")
+       field(FLNK, "0")
+       field(VAL, "CURR?")
+       field(OUT, "$(P)BOP:$(S):wr_rd_C.AOUT  PP MS")
+}
+
+grecord(scalcout, "$(P)BOP:$(S):wr_C") {
+       field(DESC, "Format string Current")
+       field(CALC, "$P('CURR %f;CURR?',A)")
+       field(INPA, "$(P)BOP:$(S):setC.VAL  NPP MS")
+       field(OUT, "$(P)BOP:$(S):wr_rd_C.AOUT  PP MS")
+       field(PREC, "5")
+}
+
+
+grecord(asyn,"$(P)BOP:$(S):wr_rd_C") {
+	field(DESC,"WR/RD Current")
+	field(FLNK,"$(P)BOP:$(S):C.VAL  PP MS")
+	field(PORT,"$(PORT)")
+	field(ADDR,"$(ADDR)")
+}
+
+
+grecord(ai,"$(P)BOP:$(S):dC") {
+	field(DESC,"Delivered C")
+	field(DTYP,"Soft Channel")
+	field(INP,"$(P)BOP:$(S):rd_dC.AINP  NPP NMS")
+	field(PREC,"5")
+	field(HOPR,"10.0")
+	field(LOPR,"-10.0")
+}
+
+grecord(asyn,"$(P)BOP:$(S):rd_dC") {
+	field(DESC,"Read dC")
+	field(AOUT, "MEAS:CURR?")
+	field(FLNK,"$(P)BOP:$(S):dC.VAL  PP MS")
+	field(PORT,"$(PORT)")
+	field(ADDR,"$(ADDR)")
+}
+
+grecord(ai,"$(P)BOP:$(S):dV") {
+	field(DESC,"Delivered V")
+	field(DTYP,"Soft Channel")
+	field(INP,"$(P)BOP:$(S):rd_dV.AINP  NPP NMS")
+	field(PREC,"5")
+	field(HOPR,"20.0")
+	field(LOPR,"-20.0")
+}
+
+grecord(asyn,"$(P)BOP:$(S):rd_dV") {
+	field(DESC,"Read dV")
+	field(AOUT, "MEAS:VOLT?")
+	field(FLNK,"$(P)BOP:$(S):dV.VAL  PP MS")
+	field(PORT,"$(PORT)")
+	field(ADDR,"$(ADDR)")
+}
+
+grecord(bi,"$(P)BOP:$(S):Mode") {
+	field(DTYP,"Soft Channel")
+	field(INP,"$(P)BOP:$(S):rd_mode.AINP  NPP NMS")
+	field(ZNAM,"Voltage")
+	field(ONAM,"Current")
+}
+
+grecord(bo,"$(P)BOP:$(S):setMode") {
+	field(DTYP,"Soft Channel")
+	field(FLNK,"$(P)BOP:$(S):Mode_calc.PROC  PP MS")
+	field(ZNAM,"Voltage")
+	field(ONAM,"Current")
+}
+
+grecord(calc,"$(P)BOP:$(S):Mode_calc") {
+	field(FLNK,"$(P)BOP:$(S):Mode_fan.PROC  PP MS")
+	field(CALC,"(A=0)?1:2")
+	field(INPA,"$(P)BOP:$(S):setMode.VAL  NPP NMS")
+}
+
+
+grecord(fanout,"$(P)BOP:$(S):Mode_fan") {
+	field(SELM,"Specified")
+	field(SELL,"$(P)BOP:$(S):Mode_calc.VAL NPP MS")
+	field(LNK1,"$(P)BOP:$(S):wr_modeV.PROC  PP MS")
+	field(LNK2,"$(P)BOP:$(S):wr_modeC.PROC  PP MS")
+}
+
+grecord(asyn,"$(P)BOP:$(S):wr_modeV") {
+	field(DESC,"Set FUNC=Volt")
+	field(TMOD,"Write")
+	field(AOUT, "FUNC:MODE VOLT")
+	field(FLNK,"$(P)BOP:$(S):rd_mode.VAL  PP MS")
+	field(PORT,"$(PORT)")
+	field(ADDR,"$(ADDR)")
+}
+
+grecord(asyn,"$(P)BOP:$(S):wr_modeC") {
+	field(DESC,"Set FUNC=CURR")
+	field(TMOD,"Write")
+	field(AOUT, "FUNC:MODE CURR")
+	field(FLNK,"$(P)BOP:$(S):rd_mode.VAL  PP MS")
+	field(PORT,"$(PORT)")
+	field(ADDR,"$(ADDR)")
+}
+
+grecord(asyn,"$(P)BOP:$(S):rd_mode") {
+	field(DESC,"Read Mode")
+	field(AOUT, "FUNC:MODE?")
+	field(FLNK,"$(P)BOP:$(S):Mode.VAL  PP MS")
+	field(PORT,"$(PORT)")
+	field(ADDR,"$(ADDR)")
+}
+
+grecord(bi,"$(P)BOP:$(S):Enable") {
+	field(FLNK,"$(P)BOP:$(S):fmt_Enable.VAL  PP MS")
+	field(ZNAM,"Disable")
+	field(ONAM,"Enable")
+}
+
+grecord(scalcout, "$(P)BOP:$(S):fmt_Enable") {
+       field(DESC, "Format string for Enable")
+       field(CALC, "$P('OUTP %f;OUTP?',A)")
+       field(INPA, "$(P)BOP:$(S):Enable.VAL  NPP MS")
+       field(OUT, "$(P)BOP:$(S):wr_Enable.AOUT  PP MS")
+       field(PREC, "5")
+}
+
+grecord(asyn,"$(P)BOP:$(S):wr_Enable") {
+	field(DESC,"WR/RD Enable")
+	field(PORT,"$(PORT)")
+	field(ADDR,"$(ADDR)")
+}
+
+grecord(stringin,"$(P)BOP:$(S):IDN") {
+	field(DTYP,"Soft Channel")
+	field(INP,"$(P)BOP:$(S):rd_idn.AINP  CP MS")
+}
+
+grecord(asyn,"$(P)BOP:$(S):rd_idn") {
+	field(DESC,"Read ID")
+	field(AOUT, "*IDN?")
+	field(PORT,"$(PORT)")
+	field(ADDR,"$(ADDR)")
+#	field(FLNK,"$(P)BOP:$(S):IDN.VAL  PP MS")
+}
+
+grecord(asyn,"$(P)BOP:$(S):reset") {
+	field(DESC,"RESET PS")
+	field(AOUT, "*RST")
+	field(PORT,"$(PORT)")
+	field(ADDR,"$(ADDR)")
+}
+
+grecord(asyn,"$(P)BOP:$(S):comm") {
+	field(DESC,"Comm Util")
+	field(PORT,"$(PORT)")
+	field(ADDR,"$(ADDR)")
+}

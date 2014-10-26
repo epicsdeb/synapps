@@ -476,6 +476,7 @@ epicsShareFunc long
 
 		case OPERAND:
 			*pout++ = pel->code;
+			if (sCalcPostfixDebug>=5) printf("put %s to postfix\n", opcodes[(int) pel->code]);
 			runtime_depth += pel->runtime_effect;
 			operand_needed = FALSE;
 			break;
@@ -494,10 +495,12 @@ epicsShareFunc long
 			lit_i = lit_d;
 			if (lit_d != (double) lit_i) {
 				*pout++ = pel->code;
+				if (sCalcPostfixDebug>=5) printf("put %s to postfix\n", opcodes[(int) pel->code]);
 				memcpy(pout, (void *)&lit_d, sizeof(double));
 				pout += sizeof(double);
 			} else {
 				*pout++ = LITERAL_INT;
+				if (sCalcPostfixDebug>=5) printf("put %s to postfix\n", opcodes[(int) LITERAL_INT]);
 				memcpy(pout, (void *)&lit_i, sizeof(int));
 				pout += sizeof(int);
 			}
@@ -521,17 +524,32 @@ epicsShareFunc long
 				*ps1 = *pel; ps1->code = A_SSTORE;
 			}
 
-			if (!handled) {
+			if (handled) {
+				/* Move operators of >= priority to the output, but stop before ps1 */
+				while ((pstacktop > ps1) && (pstacktop > stack) &&
+					   (pstacktop->in_stack_pri >= pel->in_coming_pri)) {
+					*pout++ = pstacktop->code;
+					if (sCalcPostfixDebug>=5) printf("put %s to postfix\n", opcodes[(int) pstacktop->code]);
+					if (pstacktop->type == VARARG_OPERATOR) {
+						*pout++ = 1 - pstacktop->runtime_effect;
+						if (sCalcPostfixDebug>=5) printf("put run-time effect %d to postfix\n", 1 - pstacktop->runtime_effect);
+					}
+					runtime_depth += pstacktop->runtime_effect;
+					pstacktop--;
+				}
+			} else {
 				/* convert FETCH_x or FETCH_xx (already posted to postfix string) */
 				if (pout > ppostfix && pout[-1] >= FETCH_A && pout[-1] <= FETCH_P) {
 					if (sCalcPostfixDebug) printf("STORE_OPERATOR:pout[-1] is a scalar fetch\n");
 					/* Convert fetch into a store on the stack */
 					pout--;
+					if (sCalcPostfixDebug>=5) printf("retracted %s from postfix\n", opcodes[(int) pout[-1]]);
 					*++pstacktop = *pel;
 					pstacktop->code = STORE_A + *pout - FETCH_A;
 				} else if (pout > ppostfix && pout[-1] >= FETCH_AA && pout[-1] <= FETCH_LL) {
 					if (sCalcPostfixDebug) printf("STORE_OPERATOR:pout[-1] is a string fetch\n");
 					pout--;
+					if (sCalcPostfixDebug>=5) printf("retracted %s from postfix\n", opcodes[(int) pout[-1]]);
 					*++pstacktop = *pel;
 					pstacktop->code = STORE_AA + *pout - FETCH_AA;
 				} else {
@@ -550,9 +568,11 @@ epicsShareFunc long
 			while ((pstacktop > stack) &&
 				   (pstacktop->in_stack_pri >= pel->in_coming_pri)) {
 				*pout++ = pstacktop->code;
+				if (sCalcPostfixDebug>=5) printf("put %s to postfix\n", opcodes[(int) pstacktop->code]);
 				if (sCalcPostfixDebug) printf("UNARY/VARARG op '%s': moved '%s' from stack\n", pel->name, pstacktop->name);
 				if (pstacktop->type == VARARG_OPERATOR) {
 					*pout++ = 1 - pstacktop->runtime_effect;
+					if (sCalcPostfixDebug>=5) printf("put run-time effect %d to postfix\n", 1 - pstacktop->runtime_effect);
 				}
 				runtime_depth += pstacktop->runtime_effect;
 				pstacktop--;
@@ -568,9 +588,11 @@ epicsShareFunc long
 			while ((pstacktop > stack) &&
 				   (pstacktop->in_stack_pri >= pel->in_coming_pri)) {
 				*pout++ = pstacktop->code;
+				if (sCalcPostfixDebug>=5) printf("put %s to postfix\n", opcodes[(int) pstacktop->code]);
 				if (sCalcPostfixDebug) printf("BINARY op '%s': moved '%s' from stack\n", pel->name, pstacktop->name);
 				if (pstacktop->type == VARARG_OPERATOR) {
 					*pout++ = 1 - pstacktop->runtime_effect;
+					if (sCalcPostfixDebug>=5) printf("put run-time effect %d to postfix\n", 1 - pstacktop->runtime_effect);
 				}
 				runtime_depth += pstacktop->runtime_effect;
 				pstacktop--;
@@ -593,8 +615,10 @@ epicsShareFunc long
 					goto bad;
 				}
 				*pout++ = pstacktop->code;
+				if (sCalcPostfixDebug>=5) printf("put %s to postfix\n", opcodes[(int) pstacktop->code]);
 				if (pstacktop->type == VARARG_OPERATOR) {
 					*pout++ = 1 - pstacktop->runtime_effect;
+					if (sCalcPostfixDebug>=5) printf("put run-time effect %d to postfix\n", 1 - pstacktop->runtime_effect);
 				}
 				runtime_depth += pstacktop->runtime_effect;
 				pstacktop--;
@@ -612,8 +636,10 @@ epicsShareFunc long
 					goto bad;
 				}
 				*pout++ = pstacktop->code;
+				if (sCalcPostfixDebug>=5) printf("put %s to postfix\n", opcodes[(int) pstacktop->code]);
 				if (pstacktop->type == VARARG_OPERATOR) {
 					*pout++ = 1 - pstacktop->runtime_effect;
+					if (sCalcPostfixDebug>=5) printf("put run-time effect %d to postfix\n", 1 - pstacktop->runtime_effect);
 				}
 				runtime_depth += pstacktop->runtime_effect;
 				pstacktop--;
@@ -645,14 +671,17 @@ epicsShareFunc long
 					goto bad;
 				}
 				*pout++ = pstacktop->code;
+				if (sCalcPostfixDebug>=5) printf("put %s to postfix\n", opcodes[(int) pstacktop->code]);
 				if (pstacktop->type == VARARG_OPERATOR) {
 					*pout++ = 1 - pstacktop->runtime_effect;
+					if (sCalcPostfixDebug>=5) printf("put run-time effect %d to postfix\n", 1 - pstacktop->runtime_effect);
 				}
 				runtime_depth += pstacktop->runtime_effect;
 				pstacktop--;
 			}
 			/* add SUBRANGE operator to postfix */
 			*pout++ = pstacktop->code;
+			if (sCalcPostfixDebug>=5) printf("put %s to postfix\n", opcodes[(int) pstacktop->code]);
 			runtime_depth += pstacktop->runtime_effect;
 			pstacktop--;
 
@@ -669,15 +698,18 @@ epicsShareFunc long
 					goto bad;
 				}
 				*pout++ = pstacktop->code;
+				if (sCalcPostfixDebug>=5) printf("put %s to postfix\n", opcodes[(int) pstacktop->code]);
 				if (sCalcPostfixDebug) printf("CLOSE_CURLY op '%s': moved '%s' from stack\n", pel->name, pstacktop->name);
 				if (pstacktop->type == VARARG_OPERATOR) {
 					*pout++ = 1 - pstacktop->runtime_effect;
+					if (sCalcPostfixDebug>=5) printf("put run-time effect %d to postfix\n", 1 - pstacktop->runtime_effect);
 				}
 				runtime_depth += pstacktop->runtime_effect;
 				pstacktop--;
 			}
 			/* add REPLACE operator to postfix */
 			*pout++ = pstacktop->code;
+			if (sCalcPostfixDebug>=5) printf("put %s to postfix\n", opcodes[(int) pstacktop->code]);
 			runtime_depth += pstacktop->runtime_effect;
 			pstacktop--;
 			break;
@@ -687,9 +719,11 @@ epicsShareFunc long
 			while ((pstacktop > stack) &&
 				   (pstacktop->in_stack_pri > pel->in_coming_pri)) {
 				*pout++ = pstacktop->code;
+				if (sCalcPostfixDebug>=5) printf("put %s to postfix\n", opcodes[(int) pstacktop->code]);
 				if (sCalcPostfixDebug) printf("CONDITIONAL op '%s': moved '%s' from stack\n", pel->name, pstacktop->name);
 				if (pstacktop->type == VARARG_OPERATOR) {
 					*pout++ = 1 - pstacktop->runtime_effect;
+					if (sCalcPostfixDebug>=5) printf("put run-time effect %d to postfix\n", 1 - pstacktop->runtime_effect);
 				}
 				runtime_depth += pstacktop->runtime_effect;
 				pstacktop--;
@@ -697,6 +731,7 @@ epicsShareFunc long
 
 			/* Add new element to the output */
 			*pout++ = pel->code;
+			if (sCalcPostfixDebug>=5) printf("put %s to postfix\n", opcodes[(int) pel->code]);
 			runtime_depth += pel->runtime_effect;
 
 			/* For : operator, also push COND_END code to stack */
@@ -722,9 +757,11 @@ epicsShareFunc long
 			while ((pstacktop > stack) &&
 				   (pstacktop->in_stack_pri >= pel->in_coming_pri)) {
 				*pout++ = pstacktop->code;
+				if (sCalcPostfixDebug>=5) printf("put %s to postfix\n", opcodes[(int) pstacktop->code]);
 				if (sCalcPostfixDebug) printf("UNTIL_OPERATOR op '%s': moved '%s' from stack\n", pel->name, pstacktop->name);
 				if (pstacktop->type == VARARG_OPERATOR) {
 					*pout++ = 1 - pstacktop->runtime_effect;
+					if (sCalcPostfixDebug>=5) printf("put run-time effect %d to postfix\n", 1 - pstacktop->runtime_effect);
 				}
 				runtime_depth += pstacktop->runtime_effect;
 				pstacktop--;
@@ -732,6 +769,7 @@ epicsShareFunc long
 
 			/* Push UNTIL to output */
 			*pout++ = pel->code;
+			if (sCalcPostfixDebug>=5) printf("put %s to postfix\n", opcodes[(int) pel->code]);
 			runtime_depth += pel->runtime_effect;
 
 			/* Push UNTIL_END code to stack */
@@ -746,9 +784,11 @@ epicsShareFunc long
 			/* while (pstacktop > stack) { */
 			while ((pstacktop > stack) && (pstacktop->name[0] != '(')) {
 				*pout++ = pstacktop->code;
+				if (sCalcPostfixDebug>=5) printf("put %s to postfix\n", opcodes[(int) pstacktop->code]);
 				if (sCalcPostfixDebug) printf("EXPR_TERMINATOR op '%s': moved '%s' from stack\n", pel->name, pstacktop->name);
 				if (pstacktop->type == VARARG_OPERATOR) {
 					*pout++ = 1 - pstacktop->runtime_effect;
+					if (sCalcPostfixDebug>=5) printf("put run-time effect %d to postfix\n", 1 - pstacktop->runtime_effect);
 				}
 				runtime_depth += pstacktop->runtime_effect;
 				pstacktop--;
@@ -759,6 +799,7 @@ epicsShareFunc long
 		case STRING_OPERAND:
 			runtime_depth += pel->runtime_effect;
 			*pout++ = pel->code;
+			if (sCalcPostfixDebug>=5) printf("put %s to postfix\n", opcodes[(int) pel->code]);
 			c = psrc[-1]; /* " or ' character */
 			while (*psrc != c && *psrc) *pout++ = *psrc++;
 			*pout++ = '\0';
@@ -798,9 +839,11 @@ epicsShareFunc long
 			goto bad;
 		}
 		*pout++ = pstacktop->code;
+			if (sCalcPostfixDebug>=5) printf("put %s to postfix\n", opcodes[(int) pstacktop->code]);
 		if (sCalcPostfixDebug) printf("done parsing: moved '%s' from stack\n", pstacktop->name);
 		if (pstacktop->type == VARARG_OPERATOR) {
 			*pout++ = 1 - pstacktop->runtime_effect;
+			if (sCalcPostfixDebug>=5) printf("put run-time effect %d to postfix\n", 1 - pstacktop->runtime_effect);
 		}
 		runtime_depth += pstacktop->runtime_effect;
 		pstacktop--;

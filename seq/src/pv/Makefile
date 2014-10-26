@@ -51,7 +51,10 @@ pv_SRCS       += pvFile.cc
 
 endif
 
+ifeq ($(strip $(USE_MALLOC_FOR_TEMPORARY_COPY)),YES)
+USR_CPPFLAGS += -DUSE_MALLOC_FOR_TEMPORARY_COPY
+endif
+
 include $(TOP)/configure/RULES
 #----------------------------------------
 #  ADD RULES AFTER THIS LINE
-

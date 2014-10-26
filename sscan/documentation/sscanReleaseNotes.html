@@ -10,6 +10,31 @@ content="text/html; charset=iso-8859-1">
 
 <h1 align="center">sscan Release Notes</h1>
 
+<h2 align="center">Release 2-9 - Apr. 17, 2013</h2>
+<ul>
+
+<li> Added Jon Tischler's scanProgress support.  To use, include
+scanProgressSupport.dbd, link with libscanProgress, load scanProgress.db, start
+the scanProgress seq program, and view with scanProgress.adl.  (The support is
+packaged separately from the rest of the sscan module, and built only if SNCSEQ
+is defined (typically, in configure/RELEASE), to avoid requiring existing users
+of the sscan module to build and run the sequencer.)
+
+<li> Deleted the PV $(P)saveData_config from saveData.db and scan_saveData.adl.
+The PV was never used.
+
+<li>Included new version of mdautils-src.tar
+
+<li>New versions of op/python/* (from utils/mdaPythonUtils).
+
+<li>Added CSS-BOY and caQtDM display files.
+
+<li>on vxWorks, use open(), rather than creat(), to check that we can open a new
+file.
+
+
+</ul>
+
 <h2 align="center">Release 2-8-1 - Sept. 1, 2012</h2>
 <ul>
 
@@ -20,6 +45,7 @@ on Windows with Visual Studio compiler.</li>
 10-function xdr_ops table.  Now xdr_stdio.c checks for 8-, 10-, and
 12-function tables.
 
+</ul>
 
 <h2 align="center">Release 2-8 - Feb 8, 2012</h2>
 <ul>

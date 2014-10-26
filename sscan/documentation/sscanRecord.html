@@ -2,7 +2,7 @@
 <html>
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-	<title>The sscan record for sscan module R2.7</title>
+	<title>The sscan record for sscan module R2.9</title>
 
 	<style type="text/css">
 	<!--
@@ -13,7 +13,7 @@
 </head>
 <body>
 <h1>
-The sscan record for sscan module R2.7</h1>
+The sscan record for sscan module R2.9</h1>
 Author: Tim M. Mooney<br>
 Based on the scan record, written by Ned D. Arnold.<br>
 <p>&nbsp;Advanced Photon Source
@@ -310,12 +310,16 @@ an error indication, and the command may be ignored.  The sscan record
 will set its <tt>SMSG</tt> field to a string describing the reason why it cannot
 start a new scan.  Possible reasons include the following:
 
-<dl>
-<dt>"Scan is paused"<dd>The sscan-record field <tt>PAUS</tt> has a nonzero value,
-indicating that some client has told the sscan record to stand by until
-<tt>PAUS</tt> is set back to <tt>0</tt>.  In this case, the sscan record will
-wait until <tt>PAUS</tt> is rescinded before setting <tt>BUSY</tt> to <tt>1</tt>
-and starting the scan.
+<dl> <dt>"Scan is paused ..."<dd>The sscan-record field <tt>PAUS</tt> has a
+nonzero value, indicating that some client has told the sscan record to stand by
+until <tt>PAUS</tt> is set back to <tt>0</tt>.  In this case, the sscan record
+will set <tt>FAZE</tt> to "SCAN_PENDING", and wait until <tt>PAUS</tt> is
+rescinded before setting <tt>BUSY</tt> to <tt>1</tt> and starting the scan.
+
+<dt>"waiting for client ..."<dd>The sscan-record field <tt>WTNG</tt> has a
+nonzero value, indicating that some client has told the sscan record to wait.
+(See "Handshaking with data-storage clients", below, for details.)  In this case
+the command will be ignored.
 
 <dt>"Already scanning"<dd>A scan is already in progress.  Setting <tt>EXSC</tt> to
 <tt>1</tt> while  scan is in progress has no effect on that scan.  In this case,
@@ -335,9 +339,9 @@ the command will be ignored.
 
 </dl>
 
-<P>In all of these cases, the start command is ignored, and the scan will not
-automatically start when the condition that prevented it from starting is
-removed.  A new start command must be issued.
+<P>In all but the "Scan is paused" case, the start command will be ignored, and the
+scan will not automatically start when the condition that prevented it from starting
+is removed.  A new start command must be issued.
 
 <p><a NAME="HEADING_1-3-2"></a>
 <h3>1.3.2 Stopping a scan</h3>
@@ -408,10 +412,10 @@ While a sscan record is paused, it will do nothing to further the progress
 of the scan, but it will remain receptive to outstanding callbacks.  A paused
 scan is continued by writing "GO", or the number <tt>0</tt>, to the <tt>PAUS</tt> field.
 
-<P>Pausing a multidimensional scan should work in the same way as pausing a
-single sscan record, but there have been reports that the process fails
-sometimes for multidimensional scans, leaving the scan active but not resuming
-when <tt>PAUS</tt> is rescinded.  The issue is being studied.
+<P>A multidimensional scan can be paused by writing "PAUSE" to the <tt>PAUS</tt> fields
+of all involved sscan records.  (The database <tt>standardScans.db</tt> does this by
+implementing a single "PAUSE" pv, and writing its value to all of the sscan records in the
+database.)
 
 <p><a NAME="HEADING_1-3-4"></a>
 <h3>1.3.4 Displaying scan data</h3>
@@ -457,11 +461,11 @@ the readback's current value (<tt>R<i>n</i>CV</tt>).  (If there is no readback
 PV, the posted readback value will be a copy of the desired value.)
 
 <P>Not all data points of a scan are guaranteed to be posted as scalar values,
-because the sscan record <i>throttles</i> it's posting, so that it
-doesn't exceed 20 data points per second.  This throttling is intended to limit
-the network activity caused by a scan, and it's necessary because displaying
-scan data is not more important that acquiring it, and because the sscan
-record also uses the network to acquire data.
+because the sscan record <i>throttles</i> it's posting, so that it doesn't exceed
+20 data points per second.  ("data point" means "all positioners and
+detectors".) This throttling is intended to limit the network activity caused by a
+scan, and it's necessary because displaying scan data is not more important that
+acquiring it, and because the sscan record also uses the network to acquire data.
 
 <P>The task of accumulating posted scalar values into data arrays is complicated
 by the standard EPICS behavior of declining to post a field whose value has not
@@ -634,21 +638,21 @@ callback.
 
 <ul>
 
-<li>A developer loads a <i>busy</i> record (let's call it <tt>xxx:detBusy</tt>) into
-the IOC.
+<li>A developer loads a <i>busy</i> record (let's call it <tt>xxx:detBusy</tt>)
+into the IOC.
 
-<li>The sscan record writes a <tt>1</tt> to <tt>xxx:detBusy.VAL</tt>.
+<li>The sscan record writes a <tt>1</tt> to <tt>xxx:detBusy.VAL</tt>, causing the
+record to process.
 
 <li>The client monitors <tt>xxx:detBusy.VAL</tt>, and begins some operation when
 it goes to <tt>1</tt>.
 
-<li>When the client's done, it writes <tt>0</tt> to <tt>xxx:detBusy.VAL</tt>.
- 
-<li>This causes the record to process, and to request that EPICS execute its
-forward link.
+<li>When the client's done, it writes <tt>0</tt> to <tt>xxx:detBusy.VAL</tt>.  This
+causes the record to process.  Because its <tt>VAL</tt> field is <tt>0</tt>, it
+executes its forward link.
 
-<li>EPICS discovers that the <i>busy</i> record is finished when it executes the
-forward link, and it sends a callback to the sscan record.
+<li>EPICS understands that a record is finished processing when it executes its
+forward link, so it sends a completion callback to the sscan record.
 
 </ul>
 
@@ -753,18 +757,17 @@ an SNL program, see the subsection on "putNotify-based completion signalling" in
 section <a href="#HEADING_1-3-6"><b>1.3.6</b> Handshaking with CA clients that
 implement positioners or detectors</a>.
 
-<p>Database developers should note that a <tt>PP</tt> link from a record in one
-IOC to a record in another IOC will silently be converted to a <tt>CA</tt>
-link, which will not satisfy the completion-callback criterion.  In this case,
-there are two options: the <i>busy</i>-record solution, detailed above, and the
-use of a buffer record that can do a <tt>ca_put_callback()</tt> to make the
-link between IOCs.  Currently, I'm aware of six record types that can do a
-<tt>ca_put_callback()</tt>: the sscan, swait, and sseq
-records; an ai record with soft asynchronous device support; and the
-sCalcout and aCalcout records.  (The sscan, swait,
-sseq, sCalcout, and aCalcout records are distributed with
-synApps.  swait, sCalcout, and aCalcout are  variants of
-the calcout record; sseq is a variant of the seq record.)
+<p>Database developers should note that a <tt>PP</tt> link from a record in one IOC
+to a record in another IOC will silently be converted to a <tt>CA</tt> link, which
+will not satisfy the completion-callback criterion.  In this case, there are two
+options: the <i>busy</i>-record solution, detailed above, and the use of a buffer
+record that can do a <tt>ca_put_callback()</tt> to make the link between IOCs.  I
+know of six record types that can do a <tt>ca_put_callback()</tt>: the sscan,
+swait, and sseq records; an ai record with soft asynchronous device support; and
+the sCalcout and aCalcout records.  (The sscan, swait, sseq, sCalcout, and aCalcout
+records are distributed with synApps.  swait, sCalcout, and aCalcout are  variants
+of the calcout record in EPICS base; sseq is a variant of the seq record in EPICS
+base.)
 
 <!---------------------------------------------------------------------------->
 <p><a NAME="HEADING_1-5"></a>
@@ -917,14 +920,14 @@ scalar-mode fly scans discussed above, this type of fly scan can have a very
 precise and reproducible association between positioner and detector values.
 
 
-<blockquote> In previous versions of the sscan record, fly mode was implemented
-slightly differently, as follows (differences are in <i>italics</i>) If the
-sscan record was in scalar mode (<tt>ACQT</tt>==<tt>SCALAR</tt>), and a
-positioner's step mode had the value <tt>FLY</tt>, the sscan record sent it to
-the start position at the beginning of a scan, waited for it to get there,
-<i>acquired one data point (trigger, read),</i>  sent the positioner to the end
-position, and began acquiring the remaining data points while the positioner was
-travelling to the end position.  <i>If the record was in array mode
+<blockquote> In releases of the sscan module lower than 2.7, fly mode was
+implemented slightly differently, as follows (differences are in <i>italics</i>) If
+the sscan record was in scalar mode (<tt>ACQT</tt>==<tt>SCALAR</tt>), and a
+positioner's step mode had the value <tt>FLY</tt>, the sscan record sent it to the
+start position at the beginning of a scan, waited for it to get there, <i>acquired
+one data point (trigger, read),</i>  sent the positioner to the end position, and
+began acquiring the remaining data points while the positioner was travelling to
+the end position.  <i>If the record was in array mode
 (<tt>ACQT</tt>==<tt>1D&nbsp;ARRAY</tt>), positioners that were not explicitly in
 fly mode (<tt>PnSM</tt>!=<tt>FLY</tt>) were not sent to the end position at
 all.</i> </blockquote>

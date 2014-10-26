@@ -4,9 +4,10 @@ FILENAME...	motordrvCom.h
 USAGE...	This file contains definitions and structures that
 		are common to all motor record driver support modules.
 
-Version:	$Revision: 1.18 $
+Version:	$Revision: 16591 $
 Modified By:	$Author: sluiter $
-Last Modified:	$Date: 2008-03-14 20:41:02 $
+Last Modified:	$Date: 2013-06-17 09:23:05 -0500 (Mon, 17 Jun 2013) $
+HeadURL:        $URL: https://subversion.xray.aps.anl.gov/synApps/motor/tags/R6-8-1/motorApp/MotorSrc/motordrvCom.h $
 */
 
 /*
@@ -158,7 +159,7 @@ struct mess_info
     int encoder_present;		/* one YES/NO for each axis */
     epicsInt32 position;		/* one pos for each axis */
     epicsInt32 encoder_position;	/* one pos for each axis */
-    epicsInt32 velocity;		/* Raw velocity readback(not implemented) */
+    epicsInt32 velocity;		/* Raw velocity readback */
     int no_motion_count;
     epicsTime status_delay;     /* Insure 10ms delay between motion/velocity
 				 * commands and status query. */

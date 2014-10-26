@@ -7,8 +7,56 @@
 <BODY LANG="en-US" BGCOLOR="#ffffff" DIR="LTR">
 <H2 ALIGN=CENTER>softGlue Release Notes</H2>
 
-<H2 ALIGN=LEFT>Release 2-2 (Aug 26, 2011)</H2>
+<H2 ALIGN=LEFT>Release 2-4-1 </H2>
+<ul>
+	<li>pollTimeMS was not being acted on at init time.  Also, pollTimeMS
+	was improperly converted to double, so that pollTimeMS < 1000 yielded zero,
+	which took all of the cpy cycles.  Now, pollTimeMS is not honored if less
+	than 50.
+</ul>
 
+<H2 ALIGN=LEFT>Release 2-4</H2>
+<ul>
+	<li>Added support for registering and calling a custom interrupt handler.
+	<li>Added support for calculating the VME address of a softGlue register.
+	<li>Added example custom interrupt handler.
+	<li>Added docs for softGlue_FPGAContent_Encoder
+	<li>Added field-wiring docs and pictures.
+</ul>
+
+
+<H2 ALIGN=LEFT>Release 2-3-1</H2>
+<ul>
+	<li>Added docs describing how to do the EPICS support for a new sopc
+component (documentation/AddComponent.txt).
+
+	<li>Added quadrature decoder, up/down counter.
+	<li>Added docs for shift register.
+	<li>Added label PVs: one for circuit as a whole, one each for each
+		component. For now, labels are stringout records.  The plan is to switch
+		to lso records (in base 3.15), which can be longer than 40 characters.
+	<li>Support user modified field I/O connector descriptions.
+	<li>Added docs for using autosave's configMenu with softGlue.
+</ul>
+
+
+<H2 ALIGN=LEFT>Release 2-3</H2>
+<ul>
+
+	<li>macLib didn't like softGlue_FPGAInt.db's use of PORT1 (etc.) to tell
+	  softGlue_PollTime.db what value to give it's PORT1 macro (recursive).
+	  Modified softGlue_PollTime.db to use PORTA. 
+
+	<li>Improved docs.
+	
+	<li>Added display files for CSS-BOY and caQtDM.
+	
+	<li>Added configMenu support for saving and restoring circuits (requires
+	    autosave R5-1).
+
+</ul>
+
+<H2 ALIGN=LEFT>Release 2-2 (Aug 26, 2011)</H2>
 <ul>
 	<li>Significant rewrite, including new configuration functions, to support IP_EP20x modules
 	other than the IP_EP201.

@@ -1,11 +1,11 @@
-program hrCtl  ("P=tmm, N=1, M_PHI1=m9, M_PHI2=m10")
+program hrCtl  ("P=xxx:, N=1, M_PHI1=m9, M_PHI2=m10")
 
 /* SNL compiler options */
 option +r;
 
 /* arguments on the command line  :
  * 
- * ex.  seq &hr_Ctl, "P=nda, N=1, M_PHI1=m9, M_PHI2=m10"
+ * ex.  seq &hrCtl, "P=xxx:, N=1, M_PHI1=m9, M_PHI2=m10"
  *
  *      P       - prefix     
  *      M_PHI1 - motor record for Theta 1
@@ -310,7 +310,7 @@ short   phi2Lls;
 
 
 /* Use the following assignments for the real system */
-%%  short  hrCtl_LS_TEST = 0;
+%%  static short  hrCtl_LS_TEST = 0;
 assign  phi1Hls to "{P}{M_PHI1}.HLS";
 assign  phi1Lls to "{P}{M_PHI1}.LLS";
 assign  phi2Hls to "{P}{M_PHI2}.HLS";
@@ -318,7 +318,7 @@ assign  phi2Lls to "{P}{M_PHI2}.LLS";
 
 /* Use the following assignment to simulate switches with soft PV's */
 /*
-%%  short  hrCtl_LS_TEST = 1;
+%%  static short  hrCtl_LS_TEST = 1;
 assign  phi1Hls to "{P}HR{N}_phi1SimHlsBI";
 assign  phi1Lls to "{P}HR{N}_phi1SimLlsBI";
 assign  phi2Hls to "{P}HR{N}_phi2SimHlsBI";
@@ -365,9 +365,11 @@ sync    phi2MotLoLim phi2MotLoLim_mon;
 
 double  phi1MotCmd;
 assign  phi1MotCmd to "{P}{M_PHI1}";
+int phi1PutComplete;
 
 double  phi2MotCmd;
 assign  phi2MotCmd to "{P}{M_PHI2}";
+int phi2PutComplete;
 
 double  phi1MotCmdMon;
 assign  phi1MotCmdMon to "{P}{M_PHI1}";
@@ -482,10 +484,10 @@ monitor thetaMax;
 %%#include <string.h>
 %%#include <math.h>
 
-%%double hrCtl_calc2dSpacing(struct UserVar *pVar, int xtal, double A, double H, double K, double L);
-%%void hrCtl_calcReadback(struct UserVar *pVar);
-%%char *hrCtl_pmacP;
-%%char *hrCtl_pmacM;
+%%static double hrCtl_calc2dSpacing(struct UserVar *pVar, int xtal, double A, double H, double K, double L);
+%%static void hrCtl_calcReadback(struct UserVar *pVar);
+%%static char *hrCtl_pmacP;
+%%static char *hrCtl_pmacM;
 
 short  toggle;
 short  causedMove;
@@ -501,15 +503,19 @@ double temp;
 
 ss hr_Ctl
 {
-state init
-	{
+	state init {
+		entry {
+			if (hrCtlDebug) %%printf("hrCtl:init: entry\n");
+		}
 		when () {
 			initSeq = 0;
 		} state initSequence
 	}
 
-state initSequence
-	{
+	state initSequence {
+		entry {
+			if (hrCtlDebug) %%printf("hrCtl:initSequence: entry\n");
+		}
 		when (initSeq == 0) {
 			hc = 12.3984244;
 			PI = 4*atan(1.0);
@@ -519,6 +525,8 @@ state initSequence
 			D2uR = 1000000*PI/180;
 			phi1MotStop = 1;
 			phi2MotStop = 1;
+			phi1PutComplete = 1;
+			phi2PutComplete = 1;
 			putVals = 0;
 			pvPut(putVals);
 			autoMode = 0;
@@ -568,25 +576,29 @@ state initSequence
 				pvPut(seqMsg2);
 			%%}
 			initSeqDone = 1;
-			phi1 = phi1MotRdbk + (phi1Off + worldOff*uR2D);
+			phi1 = phi1MotRdbk * uR2D + (phi1Off + worldOff*uR2D);
 			pvPut(phi1);
 			theta1 = phi1;
 			pvPut(theta1);
 			if (Geom == 0) {
 				phi2 = phi2MotRdbk * uR2D + phi2Off + worldOff*uR2D;
+				theta2 = phi2 - phi1 - theta1;
 			} else {
 				phi2 = phi2MotRdbk * uR2D + phi2Off - worldOff*uR2D;
+				theta2 = phi2;
 			}
-			pvPut(phi1);
-			theta2 = phi2 - phi1 - theta1;
+			if (hrCtlDebug) %%printf("hrCtl:initSequence: opMode=%d, Geom=%d, phi2=%f\n", pVar->opMode, pVar->Geom, pVar->phi2);
+			pvPut(phi2);
 			pvPut(theta2);
 		} state thChanged
 	}
 
-state waitForCmndEnter
-	{
+	state waitForCmndEnter {
+		entry {
+			if (hrCtlDebug) %%printf("hrCtl:waitForCmndEnter: entry\n");
+		}
 		when (initSeqDone && delay(.1)) {
-			if (hrCtlDebug) %%printf("hrCtl:waitForCmdEnter\n");
+			if (hrCtlDebug) %%printf("hrCtl:waitForCmdEnter: initSeqDone\n");
 			efClear(H1_mon);
 			efClear(K1_mon);
 			efClear(L1_mon);
@@ -632,6 +644,7 @@ state waitForCmndEnter
 				} else {
 					phi2 = phi2MotCmdMon * uR2D + phi2Off - worldOff*uR2D;
 				}
+				if (hrCtlDebug) %%printf("hrCtl:waitForCmdEnter: Geom=%d, phi2=%f\n", pVar->Geom, pVar->phi2);
 				pvPut(phi2);
 
 				if ((opMode == 0) || (opMode == 1)) {
@@ -674,8 +687,10 @@ state waitForCmndEnter
 		} state initSequence
 	}
 
-state waitForCmnd 
-	{
+	state waitForCmnd {
+		entry {
+			if (hrCtlDebug) %%printf("hrCtl:waitForCmnd: entry\n");
+		}
 		when (efTestAndClear(phi1MotHiLim_mon) || efTestAndClear(phi1MotLoLim_mon) ||
 				efTestAndClear(phi2MotHiLim_mon) || efTestAndClear(phi2MotLoLim_mon)) {
 			sprintf(seqMsg1, "Motor Soft Limit Changed");
@@ -764,7 +779,7 @@ state waitForCmnd
 			efClear(useSetMode_mon);
 		} state phiLimits
 
-		when (efTestAndClear(opMode_mon) && delay(.1)) {
+		when (efTestAndClear(opMode_mon)) {
 			if (hrCtlDebug) %%printf("hrCtl:waitForCmnd: opMode event.\n");
 			autoMode = 0;
 			pvPut(autoMode);
@@ -772,7 +787,7 @@ state waitForCmnd
 			pvPut(seqMsg2);
 		} state calcMovements
 
-		when (efTestAndClear(Geom_mon) && delay(.1)) {
+		when (efTestAndClear(Geom_mon)) {
 			if (hrCtlDebug) %%printf("hrCtl:waitForCmnd: Geom event.\n");
 			autoMode = 0;
 			pvPut(autoMode);
@@ -801,18 +816,25 @@ state waitForCmnd
 		when (efTest(hr_Moving_mon)) {
 			efClear(hr_Moving_mon);
 		} state checkAutoMode
+		
+		when ((!phi1Dmov || !phi2Dmov) && delay(.1)) {
+		} state updateRdbk
 	}
 
-state checkAutoMode
-	{
+	state checkAutoMode {
+		entry {
+			if (hrCtlDebug) %%printf("hrCtl:checkAutoMode: entry\n");
+		}
 		when (autoMode) {
 		} state checkDone
 		when (1) {
 		} state waitForCmnd
 	}
 
-state phiLimits
-	{
+	state phiLimits {
+		entry {
+			if (hrCtlDebug) %%printf("hrCtl:phiLimits: entry\n");
+		}
 		when () {
 			if (hrCtlDebug) %%printf("hrCtl:phiLimits\n");
 			if (!useSetMode) {
@@ -823,14 +845,12 @@ state phiLimits
 				theta1Lo = phi1Lo;
 				if (theta1Hi > thetaMax) {
 					theta1Hi = thetaMax;
-					sprintf(seqMsg2, "Theta1HiLim > %f deg. (Using %f deg.)",
-						thetaMax, thetaMax);
+					sprintf(seqMsg2, "Theta1HiLim clipped at %.3f", thetaMax);
 					pvPut(seqMsg2);
 				}
 				if (theta1Lo < thetaMin) {
 					theta1Lo = thetaMin;
-					sprintf(seqMsg2, "Theta1LoLim < %f deg. (Using %f deg.)",
-						thetaMin, thetaMin);
+					sprintf(seqMsg2, "Theta1LoLim clipped at %.3f", thetaMin);
 					pvPut(seqMsg2);
 				}
 				pvPut(theta1Hi);
@@ -850,14 +870,12 @@ state phiLimits
 				}
 				if (theta2Hi > thetaMax) {
 					theta2Hi = thetaMax;
-					sprintf(seqMsg2, "Theta2HiLim > %f deg. (Using %f deg.)",
-						thetaMax,thetaMax);
+					sprintf(seqMsg2, "Theta2HiLim clipped at %.3f", thetaMax);
 					pvPut(seqMsg2);
 				}
 				if (theta2Lo < thetaMin) {
 					theta2Lo = thetaMin;
-					sprintf(seqMsg2, "Theta2LoLim < %f deg. (Using %f deg.)",
-						thetaMin, thetaMin);
+					sprintf(seqMsg2, "Theta2LoLim clipped at %.3f", thetaMin);
 					pvPut(seqMsg2);
 				}
 				pvPut(theta2Hi);
@@ -890,19 +908,27 @@ state phiLimits
 		} state checkDone /*waitForCmndEnter*/
 	}
 
-state checkDone {
-	when (phi1Dmov && phi2Dmov) {
-		if (hrCtlDebug) %%printf("hrCtl:checkDone: done\n");
-		hr_Done = 1;
-	} state waitForCmndEnter
+	state checkDone {
+		entry {
+			if (hrCtlDebug) %%printf("hrCtl:checkDone: entry\n");
+			if (!phi1PutComplete) phi1PutComplete = pvPutComplete(phi1MotCmd);
+			if (!phi2PutComplete) phi2PutComplete = pvPutComplete(phi2MotCmd);
+		}
+		/* when (phi1Dmov && phi2Dmov) { */
+		when (phi1PutComplete && phi2PutComplete) {
+			if (hrCtlDebug) %%printf("hrCtl:checkDone: done\n");
+			hr_Done = 1;
+		} state waitForCmndEnter
 
-	when (1) {
-	} state updateRdbk
+		when (1) {
+			if (hrCtlDebug) %%printf("hrCtl:checkDone: not done\n");
+		} state updateRdbk
+	}
 
-}
-
-state dInputChanged 
-	{
+	state dInputChanged {
+		entry {
+			if (hrCtlDebug) %%printf("hrCtl:dInputChanged: entry\n");
+		}
 		when () {
 			autoMode = 0;
 			pvPut(autoMode);
@@ -934,8 +960,10 @@ state dInputChanged
 		} state thChanged
 	}
 
-state tweak
-	{
+	state tweak {
+		entry {
+			if (hrCtlDebug) %%printf("hrCtl:tweak: entry\n");
+		}
 		when (ETweakInc || ETweakDec) {
 			/* Note ETweakVal is in meV (E is in keV) */
 			if (ETweakInc) {
@@ -1052,8 +1080,10 @@ state tweak
 
     }
 
-state eChanged
-	{
+	state eChanged {
+		entry {
+			if (hrCtlDebug) %%printf("hrCtl:eChanged: entry\n");
+		}
 		when () {                
 			if (hrCtlDebug) %%printf("hrCtl:eChanged\n");
 			lambda = hc/E;
@@ -1061,8 +1091,10 @@ state eChanged
 		} state lChanged
 	}
 
-state lChanged
-	{
+	state lChanged {
+		entry {
+			if (hrCtlDebug) %%printf("hrCtl:lChanged: entry\n");
+		}
 		when (lambda > D1) {
 			/* Don't change Theta, notify operator */
 			sprintf(seqMsg1, "Wavelength > 2d spacing of crystal 1.");
@@ -1107,8 +1139,10 @@ state lChanged
 		} state thChanged
 	}
 
-state thChanged
-	{
+	state thChanged {
+		entry {
+			if (hrCtlDebug) %%printf("hrCtl:thChanged: entry\n");
+		}
 		when () {
 			if (hrCtlDebug) %%printf("hrCtl:thChanged\n");
 			if (!useSetMode && ((theta1 <= theta1Lo) || (theta1 >= theta1Hi))) {
@@ -1142,6 +1176,7 @@ state thChanged
 					} else {
 						phi2 = theta2;
 					}
+					if (hrCtlDebug) %%printf("hrCtl:thChanged: opMode=%d, Geom=%d, theta2=%f\n", pVar->opMode, pVar->Geom, pVar->theta2);
 				}
 			} else {
 				lambdaNom = D1*sin(theta1*D2R);
@@ -1157,7 +1192,10 @@ state thChanged
 				}
 			}
 			pvPut(phi1);
-			if (opMode != 0) pvPut(phi2);
+			if (opMode != 0) {
+				if (hrCtlDebug) %%printf("hrCtl:thChanged: opMode=%d, Geom=%d, phi2=%f\n", pVar->opMode, pVar->Geom, pVar->phi2);
+				pvPut(phi2);
+			}
 			pvPut(lambda);
 
 			E = hc/lambda;
@@ -1179,8 +1217,10 @@ state thChanged
 		} state calcMovements
 	}
 
-state calcMovements
-	{
+	state calcMovements {
+		entry {
+			if (hrCtlDebug) %%printf("hrCtl:calcMovements: entry\n");
+		}
 		when (useSetMode == 0) {
 			if (hrCtlDebug) %%printf("hrCtl:calcMovements, USE\n");
 			/* Calculate new phi* */
@@ -1240,23 +1280,22 @@ state calcMovements
 		} state waitForCmndEnter
 	}
 
-state moveHR
-	{
+	state moveHR {
+		entry {
+			if (hrCtlDebug) %%printf("hrCtl:moveHR entry\n");
+		}
 		when (autoMode || putVals) {
 			if (hrCtlDebug) %%printf("hrCtl:moveHR: putting to motors\n");
 			phi1MotCmd = phi1MotDesired;
 			if (opMode == 0) {
-				pvPut(phi1MotCmd);
-			} else if ((opMode == 1) || (opMode == 2)){
+				phi1PutComplete = 0;
+				pvPut(phi1MotCmd, ASYNC);
+			} else if ((opMode == 1) || (opMode == 2)) {
 				phi2MotCmd = phi2MotDesired;
-				/*
-				 * Write to phi2 motor first because it moves a larger angle.
-				 * (phi1 may not need to move at all, and if it doesn't, it's
-				 *  "done" flag may go down and up before phi2's even goes
-				 * down, which would confuse the scan software.)
-				 */
-				pvPut(phi2MotCmd);
-				pvPut(phi1MotCmd);
+				phi1PutComplete = 0;
+				phi2PutComplete = 0;
+				pvPut(phi2MotCmd, ASYNC);
+				pvPut(phi1MotCmd, ASYNC);
             }
 			putVals = 0;
 			pvPut(putVals);
@@ -1268,24 +1307,12 @@ state moveHR
 		} state waitForCmndEnter
 	}
 
-state updateRdbk
-	{
-		when (phi1Dmov && phi2Dmov) {
-			if (hrCtlDebug) %%printf("hrCtl:updateRdbk: motors stopped\n");
-			/* Calc and put readback values. */
-			%%hrCtl_calcReadback(pVar);        
-			pvPut(phi1Rdbk);
-			pvPut(theta1Rdbk);
-			if (opMode != 0) {
-				pvPut(phi2Rdbk);
-				pvPut(theta2Rdbk);
-			}
-			pvPut(lambdaRdbk);
-			pvPut(ERdbk);
-			hr_Done = 1;
-		} state motorsStopped
-
-
+	state updateRdbk {
+		entry {
+			if (hrCtlDebug) %%printf("hrCtl:updateRdbk: entry\n");
+			if (!phi1PutComplete) phi1PutComplete = pvPutComplete(phi1MotCmd);
+			if (!phi2PutComplete) phi2PutComplete = pvPutComplete(phi2MotCmd);
+		}
 		when (phi1Hls || phi1Lls || phi2Hls || phi2Lls) {
 			if (phi1Hls || phi1Lls) {
 				sprintf(seqMsg1, "Theta 1 motor hit a limit switch !");
@@ -1303,7 +1330,8 @@ state updateRdbk
 			pvPut(seqMsg2);
 		} state stopHR
 
-		when ((!phi1Dmov || !phi2Dmov) && delay(.1)) {
+		when (!phi1Dmov || !phi2Dmov) {
+			if (hrCtlDebug) %%printf("hrCtl:updateRdbk: a motor is moving\n");
 			hr_Moving = 1;
 			pvPut(hr_Moving);
             
@@ -1317,11 +1345,33 @@ state updateRdbk
 			}
 			pvPut(lambdaRdbk);
 			pvPut(ERdbk);
+		} state updateRdbkAfterDelay
+
+		when (phi1PutComplete && phi2PutComplete) {
+			if (hrCtlDebug) %%printf("hrCtl:updateRdbk: motors stopped\n");
+			/* Calc and put readback values. */
+			%%hrCtl_calcReadback(pVar);        
+			pvPut(phi1Rdbk);
+			pvPut(theta1Rdbk);
+			if (opMode != 0) {
+				pvPut(phi2Rdbk);
+				pvPut(theta2Rdbk);
+			}
+			pvPut(lambdaRdbk);
+			pvPut(ERdbk);
+			hr_Done = 1;
+		} state motorsStopped
+	}
+
+	state updateRdbkAfterDelay {
+		when (delay(.1)) {
 		} state updateRdbk
 	}
 
-state motorsStopped
-	{
+	state motorsStopped {
+		entry {
+			if (hrCtlDebug) %%printf("hrCtl:motorsStopped: entry\n");
+		}
 		when (causedMove) {
 			if (hrCtlDebug) %%printf("hrCtl:motorsStopped (we started them)\n");
 			causedMove = 0;
@@ -1351,8 +1401,10 @@ state motorsStopped
 		}  state waitForCmndEnter /*thChanged*/
 	}
 
-state chkMotorLimits
-    {
+	state chkMotorLimits {
+		entry {
+			if (hrCtlDebug) %%printf("hrCtl:chkMotorLimits: entry\n");
+		}
 		when () {
 			opAlert = 0;
 			/* Calc and put readback values */
@@ -1385,8 +1437,10 @@ state chkMotorLimits
 		} state chkMotorLimitsExit
 	}
 
-state chkMotorLimitsExit
-	{
+	state chkMotorLimitsExit {
+		entry {
+			if (hrCtlDebug) %%printf("hrCtl:chkMotorLimitsExit: entry\n");
+		}
 		when (!opAlert) {
 			pvPut(opAlert);
 			sprintf(seqMsg1, "All motors within limits");
@@ -1400,16 +1454,20 @@ state chkMotorLimitsExit
 		} state chkMotorLimits
 	}
 
-state stopHR
-	{
+	state stopHR {
+		entry {
+			if (hrCtlDebug) %%printf("hrCtl:stopHR: entry\n");
+		}
 		when () {
 			pvPut(phi1MotStop);
 			if (opMode != 0) pvPut(phi2MotStop);
 		} state stoppedHRWait
 	}
 
-state stoppedHRWait
-	{
+	state stoppedHRWait {
+		entry {
+			if (hrCtlDebug) %%printf("hrCtl:stoppedHRWait: entry\n");
+		}
 		when (delay(1.0)) {
 		} state updateRdbk
 	}
@@ -1423,14 +1481,18 @@ state stoppedHRWait
  **************************************************************************/
 ss updatePsuedo
 {
-state init
-    {
+	state init {
+		entry {
+			if (hrCtlDebug) %%printf("hrCtl:updatePsuedo:init: entry\n");
+		}
 		when () {
 		} state update
 	}
 
-state update
-	{
+	state update {
+		entry {
+			if (hrCtlDebug) %%printf("hrCtl:updatePsuedo:update: entry\n");
+		}
 		when (efTestAndClear(phi1MotRdbkPseudo_mon)) {
 			phi1MotRdbkEcho = phi1MotRdbk;
 			pvPut(phi1MotRdbkEcho);
@@ -1476,7 +1538,7 @@ state update
 
 #define NINT(f) (int)((f)>0 ? (f)+0.5 : (f)-0.5)
 
-double hrCtl_calc2dSpacing(struct UserVar *pVar, int xtal, double A, double H, double K, double L)
+static double hrCtl_calc2dSpacing(struct UserVar *pVar, int xtal, double A, double H, double K, double L)
 {
 	double result;
 	float  avg;
@@ -1498,7 +1560,7 @@ double hrCtl_calc2dSpacing(struct UserVar *pVar, int xtal, double A, double H, d
     return(result);
 }
 
-void hrCtl_calcReadback(struct UserVar *pVar)
+static void hrCtl_calcReadback(struct UserVar *pVar)
 {
 
 	pVar->phi1Rdbk = pVar->phi1MotRdbk * pVar->uR2D +

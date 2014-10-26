@@ -103,8 +103,8 @@ This is the overall structure of an SNL program. After the keyword
 parameter, global definitions, an optional entry block, the state sets, an
 optional exit block, and finally some embedded C code.
 
-Program Name and Parameter
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+Program Name and Parameters
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The program name is an identifier. It is used as the name of the global
 variable which contains or points to all the program data structures
@@ -119,7 +119,7 @@ time parameters`).
 
 The program name may be followed by an optional string enclosed in
 parentheses. The string content must be a list of comma-separated
-parameters in the same form as they are specified on the command line (see
+parameters in the same form as if specified on the command line (see
 :ref:`run time parameters`).
 
 .. note:: Command-line parameters override those specified in the program.
@@ -214,8 +214,7 @@ Variable declarations are quite similar to C.
 
 .. versionadded:: 2.1
 
-You can now
-declare more than one variable in a single declaration (comma
+You can declare more than one variable in a single declaration (comma
 separated) and add pointer and array markers (subscripts)
 ad libitum as well as initializers.
 
@@ -290,7 +289,9 @@ where it is different from 40, but to be on the safe side I
 recommend not to rely too much on the numeric value. (You can use
 ``sizeof(string)`` in SNL expressions.)
 
-.. note:: In contrast to C, in SNL ``string s`` is *not* a synonym for
+.. note::
+
+   In contrast to C, in SNL ``string s`` is *not* a synonym for
    ``char s[MAX_STRING_SIZE]``, since variables of type :token:`string`
    are treated differently when it comes to interacting with PVs: the
    former gets requested with type DBR_STRING and a count of one, while
@@ -321,8 +322,8 @@ Foreign Entities
 ~~~~~~~~~~~~~~~~
 
 The pseudo type "foreign" is used to declare any number of C variables
-or struct tags or *cpp* macros that have been defined outside the SNL
-program. No warning will be issued if such a variable, struct tag, or
+or C preprocessor macros that have been defined outside the SNL
+program. No warning will be issued if such a variable or
 macro is used in the program even if warnings are enabled.
 
 You cannot declare arrays of or pointers to foreign entities.
@@ -407,6 +408,13 @@ The second one assigns a single element of an array variable to a
 single process variable. The third one assigns elements of an array
 variable to separate process variables.
 
+For the third variant, if the number of PV names does not match the number
+of elements in the array, then the rule is that
+
+* missing PV names default to "", and
+
+* excess PV names are discarded.
+
 .. versionadded:: 2.1
 
 The fourth variant serves as an abbreviation for
@@ -423,17 +431,21 @@ are numeric types (char, short, int, long, and their unsigned variants)
 and strings (these are sometimes referred to as *scalar types*), as well
 as one or two dimensional arrays of these.
 
-The process variable name may contain macro names enclosed in
-braces, as in ``"{sys}{sub}voltage"``. Macros are named following
-the same rules as C language variables. Macros are defined via
-command line argument, or program parameter (see `Program Name and
-Parameter`_). If the process variable name is an empty string, then no
+Process variable names are subject to *parameter expansion*: substrings
+of the form ::
+
+    {parametername}
+
+(i.e. an identifier enclosed in curly braces) are expanded to the value of
+the program parameter *if* a corresponding parameter is defined (either
+inside the program or as extra argument on invocation); otherwise no
+expansion takes place.
+
+If the process variable name (after expansion) is an empty string, then no
 actual assignment to any process variable is performed, but the variable
 is marked for potential (dynamic) assignment with :c:func:`pvAssign`.
 
-.. note::
-
-   An :token:`assign` clause using an empty string for the PV name is
+.. note:: An :token:`assign` clause using an empty string for the PV name is
    interpreted differently in :ref:`safe mode`, see :ref:`anonymous pvs`.
 
 .. todo:: In safe mode it might make sense to implicitly declare every
@@ -458,14 +470,15 @@ Pointer types may not be assigned to process variables.
 
 .. versionadded:: 2.1
 
-The keyword "connect" is synonymous
-with "assign". It is offered as an alternative because the traditional
+You can use the keyword "connect" as a synonym
+for "assign". It is offered as an alternative because the traditional
 term "assign" is too easily confused with the assignment
 statement (``var = expression;``), even though these notions have
 nothing in common. However, for compatibility and the
 fact that most SNL programmers are used to it, I have refrained from
 making any disruptive change here. Thus, the documentation still talks
-about "assigned variables", the "assign clause" etc.
+about "assigned variables", the "assign clause" etc. This might change
+in a future (major) release.
 
 
 monitor
@@ -616,7 +629,7 @@ State Set
    ss_defns: `ss_defns` `ss_defn`
    ss_defns: 
 
-A program may contains one or more state sets. Each state set is
+A program contains one or more state sets. Each state set is
 defined by the keyword "ss", followed by the name of the state set (an
 identifier). After that comes an opening brace, optionally state set
 local definitions, a list of states, and then a closing brace.
@@ -763,15 +776,17 @@ Instead of declaring which should be the next state, one can use the
 single keyword "exit" to specify that at this point all state sets
 should terminate (after completing any action block in progress)
 and execution proceed with the global exit block (if any). Afterwards
-disconnect all channels, close the pv system (CA), free all
-allocated memory, and then terminate the program.
+all channels are disconnected, all allocated memory is freed, and the
+program terminates.
 
-Note: if the program has been started under an ioc shell, then only the SNL
-program is terminated, not the whole ioc. If terminating the ioc shell is
-required, you should call the ``exit()`` function from the standard C
-library. This call can conveniently be placed in the SNL program's global
-exit block. See also the ioc shell command ``seqStop`` in section
-:ref:`Stopping the State Program Tasks`.
+.. note::
+
+   If the program has been started under an ioc shell, then only the SNL
+   program is terminated, not the whole ioc. If terminating the ioc
+   shell is required, you should call the ``exit()`` function from the
+   standard C library. This call can conveniently be placed in the SNL
+   program's global exit block. See also the ioc shell command
+   ``seqStop`` in section :ref:`Stopping the State Program Tasks`.
 
 
 Block
@@ -862,7 +877,9 @@ record selection, and postfix operators (increment and decrement).
    :token:`exit` is listed explicitly because it is a keyword, not an
    identifier, but can also be used as a function.
 
-.. note:: SNL makes no use of the semantics of structure member access and
+.. note::
+
+   SNL makes no use of the semantics of structure member access and
    struct tags are treated as if they were expressions (variables, in
    fact). A side-effect is that *snc* will warn that structure tags are
    "used but not declared", which can be silenced with a :ref:`foreign
@@ -1035,6 +1052,7 @@ compType
    };
 
 .. note::
+
    Only ``SYNC`` and ``ASYNC`` are SNL built-in constants (i.e.
    known to *snc*). The constant ``DEFAULT`` is for use in C code
    (to represent a missing optional argument).
@@ -1320,6 +1338,8 @@ it causes assignment to an anonymous PV.
 
 As usual, ``assigned_var`` can also be an array element.
 
+See also :token:`assign` clause.
+
 Note that pvAsssign is *asynchronous*: it sends a request to search for and
 connect to the given ``process_variable_name``, but it does not wait for a
 response, similar to ``pvGet(var,ASYNC)``. Calling pvAssign *does* have one
@@ -1372,13 +1392,13 @@ Initiates a monitor on the underlying process variable.
 
 See :token:`monitor` clause.
 
-..note:: If you want to monitor all elements of an array that have been
+.. note:: If you want to monitor all elements of an array that have been
    assigned to separate PVs, you cannot currently do this with a single
    call (in contrast to doing it in a :token:`monitor` clause). Instead,
    you must call :c:func:`pvMonitor` for each array element individually.
    This might change in a future release.
 
-..todo:: Implement multiple monitor for arrays.
+.. todo:: Implement multiple monitor for arrays.
 
 
 pvStopMonitor
@@ -1387,13 +1407,13 @@ pvStopMonitor
 .. c:function::
    pvStat pvStopMonitor(assigned_var)
 
-..note:: If you want to stop monitoring all elements of an array that have been
+.. note:: If you want to stop monitoring all elements of an array that have been
    assigned to separate PVs, you cannot currently do this with a single
    call. Instead,
    you must call :c:func:`pvStopMonitor` for each array element individually.
    This might change in a future release.
 
-..todo:: Implement multiple stop monitor for arrays.
+.. todo:: Implement multiple stop monitor for arrays.
 
 Terminates a monitor on the underlying process variable.
 
@@ -1407,13 +1427,13 @@ pvSync
 Synchronizes a variable with an event flag, or removes such a
 synchronization if ``event_flag`` is `NOEVFLAG`_.
 
-..note:: If you want to sync all elements of an array that have been
+.. note:: If you want to sync all elements of an array that have been
    assigned to separate PVs, you cannot currently do this with a single
    call. Instead,
    you must call :c:func:`pvSync` for each array element individually.
    This might change in a future release.
 
-..todo:: Implement multiple sync for arrays.
+.. todo:: Implement multiple sync for arrays.
 
 See :token:`sync` clause.
 
@@ -1639,12 +1659,12 @@ macValueGet
 ^^^^^^^^^^^
 
 .. c:function::
-   char* macValueGet(char *macro_name)
+   char* macValueGet(char *parameter_name)
 
-Returns a pointer to a string that is the value for
-the specified macro name. If the macro does not exist, it returns
-``NULL``.
+Returns a pointer to the value of the specified program parameter, if
+it exists, else ``NULL``. See `Program Name and Parameters`_.
 
+.. _Shell Commands:
 
 Shell Commands
 --------------
@@ -1662,14 +1682,14 @@ VxWorks shell version directly takes an epicsThreadID argument and
 thus does not recognize thread names.
 
 .. c:function::
-   void seq(seqProgram *program, const char *macros, unsigned stacksize)
+   void seq(seqProgram *program, const char *paramdefs, unsigned stacksize)
 
-Start the given program with the given set of macro expansions and
-stack size. If stacksize is zero or is omitted, then use a default
-(EPICS "small" stack). If macros is zero or the last two arguments are
-omitted, the no macros are defined. Otherwise macros should be a string
-that gives program parameters as specified in :ref:`run time parameters`.
-See also :token:`program_param`.
+Start the given program with the given set of parameter definitions and
+stack size. If ```stacksize`` is zero or is omitted, then use a default
+(EPICS "small" stack). If ``paramdefs`` is zero or the last two arguments
+are omitted, then no parameters are defined. Otherwise ``paramdefs`` should
+be a string that specifies program parameters as detailed in :ref:`run time
+parameters`. See also :token:`program_param`.
 
 .. c:function::
    void seqShow()
@@ -2006,7 +2026,7 @@ by adding a line ::
 This uses the one-line-escape syntax explained in the next section.
 
 For historical reasons, *snc* complains with a warning if you use a
-foreign variable (or structure tag, or macro) in SNL code (but not for
+foreign variable or preprocessor macro in SNL code (but not for foreign
 function calls). This can be suppressed by adding a foreign
 declaration (see `Foreign Entities`_).
 
@@ -2034,7 +2054,7 @@ methods allowed:
    Note that text appearing on the same line after ``%{`` and
    before ``}%`` also belongs to the literal code block.
 
-A variable (or struct tag or macro) declared in escaped C code is
+A variable or preprocessor macro declared in escaped C code is
 foreign to the SNL, just as if it were declared in C code extern to
 the SNL program and its use will give a warning if no foreign
 declaration preceeds it.
@@ -2062,7 +2082,7 @@ here. For instance,
 if the header contains macro definitions, these will not be in effect
 when the rest of the C code block gets compiled.
 
-You can defer defer interpretation of a preprocessor directive until
+You can defer interpretation of a preprocessor directive until
 after *snc* has compiled the code to C, by ensuring that some extra
 non-blank characters appear in front of the ``#`` sign, so *cpp* does
 not recognize the directive. For instance ::

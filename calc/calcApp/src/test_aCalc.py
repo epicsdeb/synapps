@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 
-#from ca_util import *
 import epics
 from math import *
 from string import *
 import time
 import copy
 import os
+import sys
 #os.environ['EPICS_CA_ADDR_LIST'] = "164.54.53.99"
 
-aCalcRecord = "xxx:userArrayCalc10"
+aCalcRecord = "xxxL:userArrayCalc10"
 calc = aCalcRecord + ".CALC"
 result = aCalcRecord + ".VAL"
 aresult = aCalcRecord + ".AVAL"
@@ -28,6 +28,14 @@ def arraySum(a1, a2):
 	for i in range(minlen):
 		result.append(a1[i]+a2[i])
 	print a1[:minlen], " + ", a2[:minlen], " = ", result
+	return result
+
+def arrayCum(a):
+	result = copy.copy(a)
+	for i in range(len(a)-1,-1,-1):
+		for j in range(0,i):
+			print "i=", i, "j=", j
+			result[i] = result[i]+a[j]
 	return result
 
 def same(a1, a2, l):
@@ -54,8 +62,8 @@ L=12.
 AA = [1,2,3]
 BB = [4,5,6]
 CC = [7,8,9]
-DD = [10,11,12]
-EE = [13,14,15]
+DD = [-1,0,1]
+EE = [0,1,2]
 FF = [16,17,18]
 GG = [19,20,21]
 HH = [1,2,3]
@@ -64,150 +72,154 @@ JJ = [1,2,3]
 KK = [1,2,3]
 LL = [1,2,3]
 
-epics.caput(calc, "0")
-for i in range(12):
-	#print "connecting to", aCalcRecord + "." + A2L[i]
-	epics.caput(aCalcRecord + "." + A2L[i], eval(A2L[i]))
-	#print "connecting to", aCalcRecord + "." + A2L[i] + A2L[i]
-	epics.caput(aCalcRecord + "." + A2L[i] + A2L[i], eval(A2L[i]+A2L[i]) )
+def init(aCalcRecord):
+	calc = aCalcRecord + ".CALC"
+	epics.caput(calc, "0")
+	for i in range(12):
+		#print "connecting to", aCalcRecord + "." + A2L[i]
+		epics.caput(aCalcRecord + "." + A2L[i], eval(A2L[i]))
+		#print "connecting to", aCalcRecord + "." + A2L[i] + A2L[i]
+		epics.caput(aCalcRecord + "." + A2L[i] + A2L[i], eval(A2L[i]+A2L[i]) )
 
 # Dictionary of possible expression elements
 all_elements = {"@":0,
-"@@":0, 
-"!":0, 
-"(":0, 
-"-":0, 
-".":0, 
-"0":0, 
-"1":0, 
-"2":0, 
-"3":0, 
-"4":0, 
-"5":0, 
-"6":0, 
-"7":0, 
-"8":0, 
-"9":0, 
-"A":0, 
-"AA":0, 
-"ABS":0, 
-"ACOS":0, 
-"ARR":0, 
-"ARNDM":0, 
-"ASIN":0, 
-"ATAN":0, 
-"ATAN2":0, 
-"AVAL":0, 
-"AVG":0, 
-"B":0, 
-"BB":0, 
-"C":0, 
-"CC":0, 
-"CEIL":0, 
-"COS":0, 
-"COSH":0, 
-"D":0, 
-"DD":0, 
-"DBL":0, 
-"DERIV":0, 
-"D2R":0, 
-"E":0, 
-"EE":0, 
-"EXP":0, 
-"F":0, 
-"FF":0, 
-"FINITE":0, 
-"FITPOLY":0, 
-"FITMPOLY":0, 
-"FLOOR":0, 
-"FWHM":0, 
-"G":0, 
-"GG":0, 
-"H":0, 
-"HH":0, 
-"I":0, 
-"II":0, 
-"INF":0, 
-"INT":0, 
-"ISINF":0, 
-"ISNAN":0, 
-"IX":0, 
-"J":0, 
-"JJ":0, 
-"K":0, 
-"KK":0, 
-"L":0, 
-"LL":0, 
-"LN":0, 
-"LOG":0, 
-"LOGE":0, 
-"M":0, 
-"AMAX":0, 
-"AMIN":0, 
-"MAX":0, 
-"MIN":0, 
-"N":0, 
-"NINT":0, 
-"NAN":0, 
-"NDERIV":0, 
-"NOT":0, 
-"NRNDM":0, 
-"NSMOO":0, 
-"O":0, 
-"P":0, 
-"PI":0, 
-"R2D":0, 
-"R2S":0, 
-"RNDM":0, 
-"SIN":0, 
-"SINH":0, 
-"SMOO":0, 
-"SQR":0, 
-"SQRT":0, 
-"STD":0, 
-"SUM":0, 
-"S2R":0, 
-"TAN":0, 
-"TANH":0, 
-"VAL":0, 
-"LEN":0, 
-"UNTIL":0, 
-"~":0, 
-"!=":0, 
-"#":0, 
-"%":0, 
-"&":0, 
-"&&":0, 
-")":0, 
-"[":0, 
-"{":0, 
-"]":0, 
-"}":0, 
-"*":0, 
-"**":0, 
-"+":0, 
-",":0, 
-"-":0, 
-"/":0, 
-":":0, 
-":=":0, 
-";":0, 
-"<":0, 
-"<<":0, 
-"<=":0, 
-"=":0, 
-"==":0, 
-">":0, 
-">=":0, 
-">>":0, 
-"?":0, 
-"AND":0, 
-"OR":0, 
-"XOR":0, 
-"^":0, 
-"|":0, 
-"||":0, 
-">?":0, 
+"@@":0,
+"!":0,
+"-":0,
+".":0,
+"0":0,
+"1":0,
+"2":0,
+"3":0,
+"4":0,
+"5":0,
+"6":0,
+"7":0,
+"8":0,
+"9":0,
+"A":0,
+"AA":0,
+"ABS":0,
+"ACOS":0,
+"ARR":0,
+"ARNDM":0,
+"ASIN":0,
+"ATAN":0,
+"ATAN2":0,
+"AVAL":0,
+"AVG":0,
+"B":0,
+"BB":0,
+"C":0,
+"CC":0,
+"CEIL":0,
+"COS":0,
+"COSH":0,
+"CUM":0,
+"D":0,
+"DD":0,
+"DBL":0,
+"DERIV":0,
+"D2R":0,
+"E":0,
+"EE":0,
+"EXP":0,
+"F":0,
+"FF":0,
+"FINITE":0,
+"FITPOLY":0,
+"FITMPOLY":0,
+"FLOOR":0,
+"FWHM":0,
+"G":0,
+"GG":0,
+"H":0,
+"HH":0,
+"I":0,
+"II":0,
+"INT":0,
+"ISINF":0,
+"ISNAN":0,
+"IX":0,
+"IXMAX":0,
+"IXMIN":0,
+"IXZ":0,
+"IXNZ":0,
+"J":0,
+"JJ":0,
+"K":0,
+"KK":0,
+"L":0,
+"LL":0,
+"LN":0,
+"LOG":0,
+"LOGE":0,
+"M":0,
+"AMAX":0,
+"AMIN":0,
+"MAX":0,
+"MIN":0,
+"N":0,
+"NINT":0,
+"NDERIV":0,
+"NOT":0,
+"NRNDM":0,
+"NSMOO":0,
+"O":0,
+"P":0,
+"PI":0,
+"R2D":0,
+"R2S":0,
+"RNDM":0,
+"SIN":0,
+"SINH":0,
+"SMOO":0,
+"SQR":0,
+"SQRT":0,
+"STD":0,
+"SUM":0,
+"S2R":0,
+"TAN":0,
+"TANH":0,
+"VAL":0,
+"LEN":0,
+"UNTIL":0,
+"~":0,
+"!=":0,
+"#":0,
+"%":0,
+"&":0,
+"&&":0,
+")":0,
+"[":0,
+"":0,
+"]":0,
+"}":0,
+"*":0,
+"**":0,
+"+":0,
+",":0,
+"-":0,
+"/":0,
+":":0,
+":=":0,
+";":0,
+"<":0,
+"<<":0,
+"<=":0,
+"=":0,
+"==":0,
+">":0,
+">=":0,
+">>":0,
+"?":0,
+"AND":0,
+"OR":0,
+"XOR":0,
+"^":0,
+"|":0,
+"||":0,
+">?":0,
 "<?":0}
 
 # List of expressions for testing
@@ -305,8 +317,50 @@ expressions = [
 	# the following two must be in order, because of the store to c
 	("A?(0;C:=3.3):B", "r=(0,B)[A==0]"),
 	("C;C:=3", "r=3.3"),
-	# The following changes AA to BB, so python's proxy for AA is wrong
-	("@@0:=BB;AA", "r=BB")
+	# The following changes AA to BB and back, but depends on AA=[1,2,3]
+	("@@0:=BB;AA;aa:=aa-3[0,2]", "r=BB"),
+	("CUM(BB)", "r=arrayCum(BB)"),
+	("a:=-7;@@-a:=BB;HH;a:=1;hh:=ii", "r=BB"),
+	("cos(pi)", None),	
+	("sum(BB)", "r=BB[0]+BB[1]+BB[2]"),	
+	("avg(BB[0,2])", "r=(BB[0]+BB[1]+BB[2])/3"),	
+	("ceil(1.5)", None),	
+	("ceil(-1.5)", None),
+	("floor(1.5)", None),	
+	("floor(-1.5)", None),
+	("1!=2", None),
+	("D2R", "r=pi/180"),
+	("R2D", "r=180/pi"),
+	("atan(pi)", None),
+	("1<=2", None),
+	("loge(10)", "r=log(10)"),
+	("ln(10)", "r=log(10)"),
+	("log(10)", "r=log(10,10)"),
+	("1==2", None),
+	("cosh(pi)", None),
+	("sinh(pi)", None),
+	("tanh(pi)", None),
+	("amax(aa[0,2])", "r=max(AA[0:3])"),
+	("amin(aa[0,2])", "r=min(AA[0:3])"),
+	("ixmax(aa[0,2])", "r=2"),
+	("ixmin(aa[0,2])", "r=0"),
+	("atan2(10,5)", "r=atan2(5,10)"),
+	("sqr(10)", "r=sqrt(10)"),
+	("sqrt(10)", "r=sqrt(10)"),
+	("2^3", "r=2**3"),
+	("2**3", None),
+	("a<?b", "r=min(A,B)"),
+	("a>?b", "r=max(A,B)"),
+	("5xor3", "r=5^3"),
+	("amax(aa)", "r=3"),
+	("asin(.3)", None),
+	("acos(.3)", None),
+	("ix[1,3]", "r=AA"),
+	("~1", None),
+	("ixz(dd)", "r=1"),
+	("ixnz(ee)", "r=1"),
+	("cat(aa[0,2],bb[0,2])", "r=[1,2,3,4,5,6]"),
+	("cat(aa[0,2],7)", "r=[1,2,3,7]")
 ]
 
 def nint(x):
@@ -342,8 +396,15 @@ def test1(i):
 		print "ERROR\t", "rtry=",rtry, ", atry=",atry, ", r=",r
 		return(1)
 
-def test():
+def test(aCalcRecord):
+	print "using acalcout record '%s'" % aCalcRecord
+	init(aCalcRecord)
+	calc = aCalcRecord + ".CALC"
+	result = aCalcRecord + ".VAL"
+	aresult = aCalcRecord + ".AVAL"
+
 	numErrors = 0
+	numTested = 0
 	for e in expressions:
 		epics.caput(calc,e[0], wait=True)
 		time.sleep(.1)
@@ -355,6 +416,7 @@ def test():
 		else:
 			r = eval(e[0])
 			print "\n", e[0]
+		numTested = numTested + 1
 		print "type(r)=", type(r), "type(rtry)=", type(rtry)
 		if ((type(r) == type(1.0)) or (type(r) == type(1))):
 			if (abs(r - rtry) < small):
@@ -381,7 +443,7 @@ def test():
 			numErrors = numErrors+1
 
 	print "\n------------------------"
-	print "  ", numErrors, " errors."
+	print "   %d errors out of %d tested expressions" % (numErrors, numTested)
 	print "------------------------"
 
 def showCoverage():
@@ -398,6 +460,9 @@ def showCoverage():
 
 
 
-if __name__ == "__main__":
-	test()
+if __name__ == '__main__':
+	if (len(sys.argv) > 1) :
+		test(sys.argv[1])
+	else:
+		test("xxx:userStringCalc10")
 	showCoverage()

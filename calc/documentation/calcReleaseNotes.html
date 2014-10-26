@@ -1,12 +1,85 @@
 <html>
 
 <head>
-<meta http-equiv="Content-Type"
-content="text/html; charset=iso-8859-1">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <title>calcReleaseNotes</title>
 </head>
 
 <body bgcolor="#FFFFFF">
+
+<h1 align="center">calc Release Notes</h1>
+
+<h2 align="center">Release 3-4</h2>
+
+<ul>
+<li>acalcout record: new functions, better treatment of subranges:
+<ul>
+<li>IXMAX: index of largest array element
+<li>IXMIN: index of smallest array element
+<li>IXZ: index of first zero crossing in array
+<li>IXNZ: index of first nonzero array element
+<li>FITQ, FITMQ: fit to quadratic and optionally return fit coefficients. 
+(Replacements for deprecated FITPOLY, FITMPOLY.)
+<li>CAT: concatenate array subranges, or an array subrange and a double.
+
+<li>operators <code>^</code> and <code>**</code> reimplemented to permit
+noninteger exponents.
+
+
+<li>acalcout expressions now maintain array extents on the stack, so, for
+example, the expression <code>avg(aa[1,10])</code> really is an average of just
+<code>aa[1,10]</code>.  Previously, <code>avg(aa[1,10])</code> actually
+performed <code>sum(aa[1,10])/arraySize</code>.  Now it does
+<code>sum(aa[1,10])/10</code>.
+
+</ul>
+<li>scalcout and transform records: operators <code>^</code> and <code>**</code> reimplemented to permit
+noninteger exponents.
+
+<li>use Perl's ExtUtils::Command to concatenate .dbd files, instead of local
+cat.pl. Left old stuff in place, for now, in case someone has a problem with the
+new method.
+
+<li>Minor improvements in interp
+
+<li>When an scalcout fails to fetch a string field, give an informative error message.
+
+</ul>
+
+<h2 align="center">Release 3-3</h2>
+
+<ul>
+<li>The transform record now supports expressions with user-specified variable
+names.  For example, instead of the expression "a-b/2", you could arrange to
+write "$center+$size/2".  Variable names are specified using the CMTx fields.
+The sizes of calc fields have been increased from 80 to 120 to better accommodate
+variable names.
+
+<li>Make it easier to add 10 more usercalcs by writing, e.g.,
+userCalcouts10more.db
+
+</ul>
+
+<h2 align="center">Release 3-2</h2>
+<ul>
+
+<li>Added CUM function to calculate running sum of array elements.  Example: if
+AA=(1,2,3), CUM(AA) = (1,3,6).  This function is useful for integrating
+multichannel scaler arrays of motor steps into relative motor positions.
+
+<li>Previously, when fetching array values from input links, the number of
+elements requested was not initialized before each call to dbGetLink().  If
+dbGetLink() reported a smaller number of elements, that number was used in
+subsequent calls to dbGetLink().
+
+<li>Previously, the arguments of the @ and @@ operators were not thoroughly
+range checked.  Also, a subexpression like "@-a:=2" was executed as "@a:=-2"
+because the := operator failed to move operators of >= priority out to the
+postfix buffer.
+
+<li> Added display files for caQtDM
+
+</ul>
 
 <h1 align="center">calc Release Notes</h1>
 <h2 align="center">Release 3-1</h2>
@@ -63,9 +136,9 @@ to do the expected thing in the case "a?1:0;b:=0", because we can't know whether
 "(a?1:0);b:=0" or "a?1:(0;b:=0)" was intended.
 
 <li>Previously, the sseq record used database access to get the properties of a
-PV it linked to, even if it was making a CA link to that PV.  Also, the sseq
-record failed to update the status of an input link that had changed from a CA
-link to a DB link.
+local PV it linked to, even if it was making a CA link to that PV.  Also, the
+sseq record failed to update the status of an input link that had changed from a
+CA link to a DB link.
 
 <li>Previously, userCalc collections were enabled by a record whose value was
 undefined until the enable state was changed.  Now the enables are made to be

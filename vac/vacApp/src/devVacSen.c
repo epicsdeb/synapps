@@ -8,6 +8,13 @@
 	CC_station is the station #  for Cold Cathode, 
 	if CC is either 5/6 then the corresponding CV1 are 1/2 and CV2 are 3/4
 	if CC is either 3/4 then the corresponding CV is 1/2 and no CV2
+	
+Revision 1.0  - 4/1/2013 
+**only for MM200 **	
+	removed the predetermined combination of CC and CV
+	Explicitly state the station numbers in the startup file
+	order is :  CC,CV1,CV2,SP1
+	For setpoint lets assume odd or even based on the first setpoint.
 */
 
 #include <stdlib.h>
@@ -60,6 +67,7 @@ typedef struct devVacSenPvt {
     int		cv1;
     int		cv2;
     int		noSPT;
+    int		spt;
     int		errCount;
 } devVacSenPvt;
 
@@ -92,7 +100,8 @@ static long init(vsRecord *pr)
     DBLINK *plink  = &pr->inp;
     int address;
     char *port, *userParam;
-    int station;
+    int station,stationC1, stationC2,spt;
+    int i;
    
     /* Allocate private structure */
     pPvt = calloc(1, sizeof(devVacSenPvt));
@@ -108,8 +117,36 @@ static long init(vsRecord *pr)
     strcpy(pPvt->address,"");
     pPvt->PortName = port;
     pPvt->devType = pr->type;
-    sscanf(userParam,"%d",&station);
+    i = sscanf(userParam,"%1d %1d %1d %1d",&station,&stationC1,&stationC2,&spt);
+    switch (i) {
+	case 1:
+	/* backward compatibility with old hard-coded station assignments */
+	        switch (station) {
+		    case 3:
+		    case 4:
+		        stationC1 = station-2;
+	        	stationC2 = 0;
+			break;
+		    case 5:
+		    case 6:
+		        stationC1 = station-4;
+	        	stationC2 = station-2;
+			break;
+		    default:
+	    		printf("devVacSen::init %s station out of range %d\n",
+	            	       pr->name, station);
+		    	goto bad;
+		}
+		spt = stationC1;
+	case 4: /* This is a good configuration */
+		break;
+	default:
+		printf("Invalid dbLoadRecords parameter for vs.db\n");
+		printf("Valid configuration is either 1 or 4 parameters for STN\n");
+		break;
+    }
     pPvt->noSPT = 4;
+    
 
 /*
 * devType needed to be set to device as followsin record "TYPE":
@@ -153,12 +190,29 @@ static long init(vsRecord *pr)
 	
 	if (address > 0) 
 	    sprintf(pPvt->cmdPrefix,"#%s",pPvt->address);
-	if (station < 3 || station > 6) {
-	    errlogPrintf("devVacSen::init %s station out of range %d\n",
+	if (station < 3 || station > 9) {
+	    errlogPrintf("devVacSen::init %s station for CC out of range %d\n",
                    pr->name, station);
 	    goto bad;
 	}
-	switch (station) {
+	pPvt->cc=station;
+	pPvt->spt=0;
+	if ( (stationC1 < 1) || (stationC1 > 6) ) {
+	    pPvt->cv1 = 0;
+	} else {
+	    pPvt->cv1=stationC1;
+	}
+	
+	if ( (stationC2 < 1) || (stationC2 > 6) ) {
+	    pPvt->cv2 = 0;
+	} else {
+	    pPvt->cv2=stationC2;
+	}
+	/* The setpoint should be checked first */
+	pPvt->spt = spt;
+
+
+/*	switch (station) {
 	    case 3:
 	    case 4:
 	    	pPvt->cc=station;
@@ -172,7 +226,8 @@ static long init(vsRecord *pr)
 	    	pPvt->cv2=station-2;
 		break;
 	}	
-    }
+*/
+	}
 
     if (status != asynSuccess) {
 	errlogPrintf("devVacSen::init %s bad link %s\n",
@@ -378,14 +433,14 @@ static long readWrite_vs(vsRecord *pr)
     	strncpy(data,&pPvt->recBuf[0],3);
 	data[2] =0;
 	sscanf(data, "%x", &value);
-        pr->sp1 = value & (1 << (pPvt->cv1-1));
-        pr->sp2 = value & (1 << (pPvt->cv1+1));
-        pr->sp3 = value & (1 << (pPvt->cv1+3));
-	pr->sp4 = value & (1 << (pPvt->cv1+5));
+        pr->sp1 = value & (1 << (pPvt->spt-1));
+        pr->sp2 = value & (1 << (pPvt->spt+1));
+        pr->sp3 = value & (1 << (pPvt->spt+3));
+	pr->sp4 = value & (1 << (pPvt->spt+5));
 
 	for (i = 1; i<8; i++) {
 	    /* process the cc,cv1 and (cv2 if exists) n=x.xx-(+)eT */
-	    if (i < 4 ) {    	
+	    if (i < 4 ) {
 	    	strncpy(data,&pPvt->recBuf[10*i+2],8);
 	    	if (data[6] == 'T') {
 		    data[6] =0;
@@ -455,7 +510,7 @@ static long readWrite_vs(vsRecord *pr)
     pr->udf=0;
     return(0);
 }
-
+
 
 static void devVacSenCallback(asynUser *pasynUser)
 {

@@ -510,7 +510,25 @@ energy is varied.</P>
 <P ALIGN=CENTER><IMG SRC="2filter.adl.jpg" NAME="Graphic27" ALIGN=BOTTOM WIDTH=207 HEIGHT=231 BORDER=0><BR>2filter.adl</P>
 <P ALIGN=CENTER><IMG SRC="2filter_setup.adl.jpg" NAME="Graphic28" ALIGN=BOTTOM WIDTH=472 HEIGHT=341 BORDER=0><BR>2filter_setup.adl</P>
 
-<P ALIGN=LEFT>XIA PF4 dual filter (parallel interface)</P>
+<P ALIGN=CENTER STYLE="margin-bottom: 0in"><IMG SRC="colorLine.gif" NAME="Graphic14" ALIGN=BOTTOM WIDTH=576 HEIGHT=5 BORDER=0>
+
+<P ALIGN=LEFT>XIA PF4 dual filter</P>
+
+<p>This software treats two XIA (X-Ray Instrumentation Associates) PF4
+four-filter units as separate devices, though it does calculate the total
+transmission of the two units.  Originally, this software supported only three
+filter-material choices, but support for 22 elemental filter materials was
+grafted on later.  This software drives the filter via digital I/O PVs.   It
+also also monitors those PVs, and behaves correctly when they are changed by
+some external agent.
+
+<P>This software calculates the x-ray transmission for each combination of
+filters in one unit, given the current x-ray beam energy, and permits either
+direct setting of the desired transmission, or selection of the next higher, or
+next lower, transmission.
+
+<p>
+
 <P ALIGN=CENTER><IMG SRC="pf4.jpg" NAME="Graphic42" ALIGN=BOTTOM BORDER=0><BR><BR><BR>
 </P>
 <P ALIGN=CENTER><IMG SRC="pf4more.jpg" NAME="Graphic43" ALIGN=BOTTOM BORDER=0></P>
@@ -563,6 +581,114 @@ file pf4bank.req   P=$(P),H=pf4:,B=B
 </pre>
 </ul>
 
+<P ALIGN=CENTER STYLE="margin-bottom: 0in"><IMG SRC="colorLine.gif" NAME="Graphic14" ALIGN=BOTTOM WIDTH=576 HEIGHT=5 BORDER=0>
+
+
+<P ALIGN=LEFT>XIA PF4 multiple filter</P>
+
+<p>This software treats two or four XIA (X-Ray Instrumentation Associates) PF4
+four-filter units as a single device.  It drives the filters via digital I/O
+PVs.   It also also monitors those PVs, and behaves correctly when they are
+changed by some external agent.
+
+<P>This software calculates the x-ray transmission for all combinations of all
+filters in all units, given the current x-ray beam energy.  It permits direct
+setting of the desired transmission, setting the transmission relative to the
+current value (e.g., down by 10%, up by a factor of 2, etc.), and selection of
+the next higher, or next lower, transmission.  It also permits individual
+filters to be removed from consideration, and locked in or out of the x-ray
+beam.
+
+<P ALIGN=CENTER><IMG SRC="filter.adl.jpg" NAME="Graphic45" ALIGN=BOTTOM BORDER=0><BR><BR><BR>
+</P>
+<P ALIGN=CENTER><IMG SRC="filterbox_config.adl.jpg" NAME="Graphic46" ALIGN=BOTTOM BORDER=0></P>
+<P ALIGN=CENTER><BR><BR>
+</P>
+<P ALIGN=CENTER><BR><BR>
+</P>
+
+To Load an instance of this support, add the following lines to the ioc startup file, st.cmd, before the call to iocInit():
+
+<pre>
+### Load database records for alternative PF4-filter support
+dbLoadTemplate "filter.substitutions"
+</pre>
+
+and add the following lines after the call to iocInit(): 
+
+<pre>
+# Alternative pf4 filter seq program
+seq filterDrive,"NAME=filterDrive,P=xxx:,R=filter:,NUM_FILTERS=16"
+</pre>
+
+Here's a sample filter.substitutions file:
+<pre>
+# filter.substitutions
+
+file "$(OPTICS)/opticsApp/Db/filterBladeNoSensor.db" {
+  pattern
+  {P,           R,        N,   DESC,           OUT}
+  {xxx:,   filter:,  1,   "Filter 1",     "xxx:Unidig1Bo0"}
+  {xxx:,   filter:,  2,   "Filter 2",     "xxx:Unidig1Bo1"}
+  {xxx:,   filter:,  3,   "Filter 3",     "xxx:Unidig1Bo2"}
+  {xxx:,   filter:,  4,   "Filter 4",     "xxx:Unidig1Bo3"}
+  {xxx:,   filter:,  5,   "Filter 5",     "xxx:Unidig1Bo4"}
+  {xxx:,   filter:,  6,   "Filter 6",     "xxx:Unidig1Bo5"}
+  {xxx:,   filter:,  7,   "Filter 7",     "xxx:Unidig1Bo6"}
+  {xxx:,   filter:,  8,   "Filter 8",     "xxx:Unidig1Bo7"}
+  {xxx:,   filter:,  9,   "Filter 9",     "xxx:Unidig1Bo8"}
+  {xxx:,   filter:,  10,  "Filter 10",    "xxx:Unidig1Bo9"}
+  {xxx:,   filter:,  11,  "Filter 11",    "xxx:Unidig1Bo10"}
+  {xxx:,   filter:,  12,  "Filter 12",    "xxx:Unidig1Bo11"}
+  {xxx:,   filter:,  13,  "Filter 13",    "xxx:Unidig1Bo12"}
+  {xxx:,   filter:,  14,  "Filter 14",    "xxx:Unidig1Bo13"}
+  {xxx:,   filter:,  15,  "Filter 15",    "xxx:Unidig1Bo14"}
+  {xxx:,   filter:,  16,  "Filter 16",    "xxx:Unidig1Bo15"}
+}
+
+file "$(OPTICS)/opticsApp/Db/filterDrive.db" {
+  {P="xxx:", R="filter:", DESC="Filters", KEV="xxx:BraggEAO"}
+}
+</pre>
+
+and here are lines added to auto_settings.req for these filters:
+<pre>
+file filterDrive.req "P=xxx:,R=filter:"
+file filterBladeNoSensor.req "P=xxx:,R=filter:,N=1"
+file filterBladeNoSensor.req "P=xxx:,R=filter:,N=2"
+file filterBladeNoSensor.req "P=xxx:,R=filter:,N=3"
+file filterBladeNoSensor.req "P=xxx:,R=filter:,N=4"
+file filterBladeNoSensor.req "P=xxx:,R=filter:,N=5"
+file filterBladeNoSensor.req "P=xxx:,R=filter:,N=6"
+file filterBladeNoSensor.req "P=xxx:,R=filter:,N=7"
+file filterBladeNoSensor.req "P=xxx:,R=filter:,N=8"
+file filterBladeNoSensor.req "P=xxx:,R=filter:,N=9"
+file filterBladeNoSensor.req "P=xxx:,R=filter:,N=10"
+file filterBladeNoSensor.req "P=xxx:,R=filter:,N=11"
+file filterBladeNoSensor.req "P=xxx:,R=filter:,N=12"
+file filterBladeNoSensor.req "P=xxx:,R=filter:,N=13"
+file filterBladeNoSensor.req "P=xxx:,R=filter:,N=14"
+file filterBladeNoSensor.req "P=xxx:,R=filter:,N=15"
+file filterBladeNoSensor.req "P=xxx:,R=filter:,N=16"
+
+</pre>
+Top level MEDM display files for this support are
+<dl>
+<dt>filter_8_0_more.adl
+<dd>for two PF4 4-filter units
+<dt>filter_8_8_more.adl
+<dd>for four PF4 4-filter units
+</dl>
+
+To load the MEDM display file, specify a related display button with
+something like the following entries:
+
+<pre>
+Display Label: PF4 filter 16
+Display File: filter_8_8_more.adl
+Arguments: P=xxx:,R=filter
+</pre>
+
 <P ALIGN=CENTER STYLE="margin-bottom: 0in"><IMG SRC="colorLine.gif" NAME="Graphic29" ALIGN=BOTTOM WIDTH=576 HEIGHT=5 BORDER=0>
 </P>
 <P ALIGN=CENTER STYLE="margin-bottom: 0in"><IMG SRC="colorLine.gif" NAME="Graphic30" ALIGN=BOTTOM WIDTH=576 HEIGHT=5 BORDER=0>
@@ -592,15 +718,29 @@ file pf4bank.req   P=$(P),H=pf4:,B=B
 <P ALIGN=CENTER><IMG SRC="colorLine.gif" NAME="Graphic39" ALIGN=BOTTOM WIDTH=576 HEIGHT=5 BORDER=0>
 </P>
 <H3>Io calculation (Jon Tischler)</H3>
-<P ALIGN=CENTER><IMG SRC="Io.adl.jpg" NAME="Graphic40" ALIGN=BOTTOM WIDTH=545 HEIGHT=460 BORDER=0><BR>Io.adl.adl</P>
-<P ALIGN=CENTER><IMG SRC="Io_small.adl.jpg" NAME="Graphic41" ALIGN=BOTTOM WIDTH=80 HEIGHT=40 BORDER=0><BR>oIo_small.adl.adl</P>
+<P ALIGN=CENTER><IMG SRC="Io.adl.jpg" NAME="Graphic40" ALIGN=BOTTOM WIDTH=545 HEIGHT=460 BORDER=0><BR>Io.adl</P>
+<P ALIGN=CENTER><IMG SRC="Io_small.adl.jpg" NAME="Graphic41" ALIGN=BOTTOM WIDTH=308 HEIGHT=150 BORDER=0><BR>Io_small.adl</P>
 <P STYLE="margin-bottom: 0in">This software calculates the photon
 flux through an ion chamber, given the counts recorded in scaler
 channels, and data describing the ionization chamber, the beam
 energy, and the signal path from ionization chamber to scaler. 
 </P>
+<P ALIGN=CENTER STYLE="margin-bottom: 0in"><IMG SRC="colorLine.gif" NAME="Graphic37" ALIGN=BOTTOM WIDTH=576 HEIGHT=5 BORDER=0>
+</P>
+<P ALIGN=CENTER STYLE="margin-bottom: 0in"><IMG SRC="colorLine.gif" NAME="Graphic37" ALIGN=BOTTOM WIDTH=576 HEIGHT=5 BORDER=0>
+</P>
+<P ALIGN=CENTER STYLE="margin-bottom: 0in"><IMG SRC="colorLine.gif" NAME="Graphic37" ALIGN=BOTTOM WIDTH=576 HEIGHT=5 BORDER=0>
+</P>
+<H3>PID loop support</H3>
+<P ALIGN=CENTER><IMG SRC="fb_epid/fb_epid_adl.png" NAME="Graphic42" ALIGN="BOTTOM" BORDER="0"><BR>fb_epid.adl</P>
+<P STYLE="margin-bottom: 0in">The <tt>fb_epid</tt> support provides a database centered around the EPICS
+<a href="http://cars9.uchicago.edu/software/epics/epidRecord.html"><tt>epid</tt></a> record. 
+<a href="fb_epid/index.html">Documentation</a>  is provided on a separate page.
+</P>
+<P ALIGN=CENTER STYLE="margin-bottom: 0in"><IMG SRC="colorLine.gif" NAME="Graphic37" ALIGN=BOTTOM WIDTH=576 HEIGHT=5 BORDER=0>
+</P>
 <ADDRESS>Suggestions and Comments to: <BR><A HREF="mailto:mooney@aps.anl.gov">Tim
-Mooney </A>: (mooney@aps.anl.gov) <BR>Last modified: October 8, 2006 
+Mooney </A>: (mooney@aps.anl.gov)
 </ADDRESS>
 </BODY>
 </HTML>

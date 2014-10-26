@@ -187,7 +187,7 @@ extern STATUS nfsUnmount(char *localName);
 #include <dbEvent.h>
 #include <special.h>
 #include <cadef.h>
-#include <tsDefs.h>
+/* not in 3.15.0.1 #include <tsDefs.h> */
 #include <epicsMutex.h>
 #include <epicsMessageQueue.h>
 #include <epicsThread.h>
@@ -706,7 +706,7 @@ LOCAL int fileStatus(char* fname)
 
 	errno = 0;
 	retVal = stat(fname, &status);
-	if ((retVal == -1) && (debug_saveData)) {
+	if ((retVal == -1) && (debug_saveData>1)) {
 		printf("saveData: stat returned -1 for filename '%s'; errno=%d\n", fname, errno);
 	}
 	return retVal;
@@ -734,7 +734,11 @@ LOCAL int checkRWpermission(char* path) {
 		return ERROR;
 	}
 
+#ifdef vxWorks
+	file = open (tmpfile, O_CREAT | O_RDWR, 0666);
+#else
 	file= creat(tmpfile, O_RDWR);
+#endif
 
 	if (fileStatus(tmpfile)!=OK) {
 		return ERROR;
@@ -1497,7 +1501,7 @@ if (pscan->nxt) {
 }
 	pval = (struct dbr_time_short *) eha.dbr;
 	sval = pval->value;
-	Debug2(5,"dataMonitor(%s): (DATA=%d)\n", pscan->name, sval);
+	Debug2(1,"dataMonitor(%s): (DATA=%d)\n", pscan->name, sval);
 
 	if (pscan->data != -1) {
 		if (sval == 1) {
@@ -1524,7 +1528,7 @@ if (pscan->nxt) {
 	epicsTimeToStrftime(pscan->stamp, MAX_STRING_SIZE, "%b %d, %Y %H:%M:%S.%06f", &pval->stamp);
 	sendScanTSShortMsgWait(MSG_SCAN_DATA, (SCAN*)ca_puser(eha.chid), pval->stamp, pval->value);
 	epicsTimeToStrftime(currtimestr, MAX_STRING_SIZE, "%b %d, %Y %H:%M:%S.%06f", &currtime);
-	Debug6(1,"dataMonitor(%s)tid=%p(%s): (DATA=%d) eha time:%s, currtime=%s\n", pscan->name,
+	Debug6(2,"dataMonitor(%s)tid=%p(%s): (DATA=%d) eha time:%s, currtime=%s\n", pscan->name,
 		epicsThreadGetIdSelf(), epicsThreadGetNameSelf(), sval, pscan->stamp, currtimestr);
 }
 
@@ -1576,6 +1580,11 @@ LOCAL void cptMonitor(struct event_handler_args eha)
 /*                                                                      */
 LOCAL void pxnvMonitor(struct event_handler_args eha)
 {
+#if 0
+	SCAN* pscan = (SCAN *) ca_puser(eha.chid);
+	short sval = *((dbr_short_t *) eha.dbr);
+	Debug2(1,"pxnvMonitor(%s): (pxnv=%d)\n", pscan->name, sval);
+#endif
 	sendScanIndexMsgWait(MSG_SCAN_PXNV, (SCAN *) ca_puser(eha.chid), (long) eha.usr, *((dbr_short_t *) eha.dbr));
 }
 
@@ -2376,7 +2385,7 @@ LOCAL int writeScanRecInProgress(SCAN *pscan, epicsTimeStamp stamp, int isRetry)
 	 */
 	if (pscan->nxt) {
 		pscan->nxt->dims_offset= pscan->dims_offset+sizeof(int);
-		Debug3(2, "saveData:proc_scan_data:(%s) scan_dim=%d, dims_offset=%ld\n",
+		Debug3(2, "saveData:writeScanRecInProgress:(%s) scan_dim=%d, dims_offset=%ld\n",
 			pscan->name, pscan->scan_dim, pscan->dims_offset);
 		pscan->nxt->regular_offset= pscan->regular_offset;
 	}
@@ -2511,7 +2520,7 @@ LOCAL int writeScanRecInProgress(SCAN *pscan, epicsTimeStamp stamp, int isRetry)
 		
 	if (pscan->old_npts < pscan->npts) {
 		writeFailed |= !xdr_setpos(&xdrs, pscan->dims_offset);
-		Debug3(2, "saveData:writeScanRecInProgress:(%s) scan_dim=%d, dims_offset=%ld\n",
+		Debug3(2, "saveData:writeScanRecInProgress:(%s):npts scan_dim=%d, dims_offset=%ld\n",
 			pscan->name, pscan->scan_dim, pscan->dims_offset);
 		if (writeFailed) goto cleanup;
 		lval = pscan->npts;
@@ -2914,6 +2923,7 @@ LOCAL void proc_scan_data(SCAN_TS_SHORT_MSG* pmsg)
 		pscan->savedSeekPos = 0;
 		currRetries = 0;
 		if (currRetries_chid) ca_array_put(DBR_LONG, 1, currRetries_chid, &currRetries);
+		epicsTimeGetCurrent(&openTime);
 		for (status = -1; status && currRetries<=maxAllowedRetries; ) {
 			status = writeScanRecInProgress(pscan, pmsg->stamp, currRetries);
 			if (status) {
@@ -2934,7 +2944,7 @@ LOCAL void proc_scan_data(SCAN_TS_SHORT_MSG* pmsg)
 		}
 
 		epicsTimeGetCurrent(&now);
-		Debug2(1, "%s header written (%.3fs)\n", pscan->name,
+		Debug2(2, "%s header written (%fs)\n", pscan->name,
 			(float)epicsTimeDiffInSeconds(&now, &openTime));
 		DebugMsg2(2, "%s MSG_SCAN_DATA(0)= %f\n", pscan->name,
 			(float)epicsTimeDiffInSeconds(&now, &pmsg->time));
@@ -2971,7 +2981,7 @@ LOCAL void proc_scan_data(SCAN_TS_SHORT_MSG* pmsg)
 			}
 		}
 		epicsTimeGetCurrent(&now);
-		Debug2(1, "%s data written (%.3fs)\n", pscan->name,
+		Debug2(2, "%s data written (%.3fs)\n", pscan->name,
 			(float)epicsTimeDiffInSeconds(&now, &openTime));
 
 		if (pscan->first_scan) {
@@ -3005,6 +3015,7 @@ LOCAL void proc_scan_data(SCAN_TS_SHORT_MSG* pmsg)
 
 	}
 	Debug2(5, "proc_scan_data(%s): exit(%d)\n", pscan->name, pmsg->val);
+	Debug0(1, "\n");
 }
 
 LOCAL void proc_scan_npts(SCAN_LONG_MSG* pmsg)

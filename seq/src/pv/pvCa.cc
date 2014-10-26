@@ -7,10 +7,12 @@
 #include <string.h>
 #include <stdlib.h>
 
+#ifndef USE_MALLOC_FOR_TEMPORARY_COPY
 #ifdef _WIN32
 #  include <malloc.h>
 #elif (__STDC_VERSION__ < 199901L) && !defined(__GNUC__)
 #  include <alloca.h>
+#endif
 #endif
 
 #include "alarm.h"
@@ -204,7 +206,9 @@ pvStat caVariable::get( pvType type, unsigned count, pvValue *value )
         printf( "%8p: caVariable::get( %d, %d )\n", this, type, count );
 
     int caType = typeToCA( type );
-#if (__STDC_VERSION__ >= 199901L) || defined(__GNUC__)
+#ifdef USE_MALLOC_FOR_TEMPORARY_COPY
+    char *caValue = (char*)malloc( dbr_size_n( caType, count ) );
+#elif (__STDC_VERSION__ >= 199901L) || defined(__GNUC__)
     char caValue[dbr_size_n( caType, count )];
 #else
     char *caValue = (char*)alloca( dbr_size_n( caType, count ) );
@@ -215,7 +219,9 @@ pvStat caVariable::get( pvType type, unsigned count, pvValue *value )
 	INVOKE( ca_pend_io( 5.0 ) );
     if ( getStat() == pvStatOK )
 	copyFromCA( caType, count, ( union db_access_val * ) caValue, value );
-
+#ifdef USE_MALLOC_FOR_TEMPORARY_COPY
+    free(caValue);
+#endif
     return getStat();
 }
 
@@ -272,7 +278,9 @@ pvStat caVariable::put( pvType type, unsigned count, pvValue *value )
         printf( "%8p: caVariable::put( %d, %d )\n", this, type, count );
 
     int caType = typeToCA( type );
-#if (__STDC_VERSION__ >= 199901L) || defined(__GNUC__)
+#ifdef USE_MALLOC_FOR_TEMPORARY_COPY
+    char *caValue = (char*)malloc( dbr_size_n( caType, count ) );
+#elif (__STDC_VERSION__ >= 199901L) || defined(__GNUC__)
     char caValue[dbr_size_n( caType, count )];
 #else
     char *caValue = (char*)alloca( dbr_size_n( caType, count ) );
@@ -281,6 +289,9 @@ pvStat caVariable::put( pvType type, unsigned count, pvValue *value )
     INVOKE( ca_array_put( caType, count, chid_, caValue ) );
     if ( getStat() == pvStatOK )
 	INVOKE( ca_pend_io( 5.0 ) );
+#ifdef USE_MALLOC_FOR_TEMPORARY_COPY
+    free(caValue);
+#endif
     return getStat();
 }
 
@@ -298,13 +309,18 @@ pvStat caVariable::putNoBlock( pvType type, unsigned count, pvValue *value )
 		type, count );
 
     int caType = typeToCA( type );
-#if (__STDC_VERSION__ >= 199901L) || defined(__GNUC__)
+#ifdef USE_MALLOC_FOR_TEMPORARY_COPY
+    char *caValue = (char*)malloc( dbr_size_n( caType, count ) );
+#elif (__STDC_VERSION__ >= 199901L) || defined(__GNUC__)
     char caValue[dbr_size_n( caType, count )];
 #else
     char *caValue = (char*)alloca( dbr_size_n( caType, count ) );
 #endif
     copyToCA( type, count, value, ( union db_access_val * ) caValue );
     INVOKE( ca_array_put( caType, count, chid_, caValue ) );
+#ifdef USE_MALLOC_FOR_TEMPORARY_COPY
+    free(caValue);
+#endif
     return getStat();
 }
 
@@ -477,7 +493,9 @@ void pvCaMonitorHandler( struct event_handler_args args )
 	( *func ) ( ( void * ) variable, type, count, NULL, arg,
 		    statFromCA( args.status ) );
     } else {
-#if (__STDC_VERSION__ >= 199901L) || defined(__GNUC__)
+#ifdef USE_MALLOC_FOR_TEMPORARY_COPY
+        char *value = (char*)malloc( pv_size_n(typeFromCA(args.type), count) );
+#elif (__STDC_VERSION__ >= 199901L) || defined(__GNUC__)
         char value[pv_size_n(typeFromCA(args.type), count)];
 #else
         char *value = (char*)alloca( pv_size_n(typeFromCA(args.type), count) );
@@ -487,6 +505,9 @@ void pvCaMonitorHandler( struct event_handler_args args )
 	// ### should assert args.type is equiv to type and args.count is count
 	( *func ) ( ( void * ) variable, type, count, (pvValue *) value, arg,
 		    statFromCA( args.status ) );
+#ifdef USE_MALLOC_FOR_TEMPORARY_COPY
+        free ( value );
+#endif
     }
 }
 

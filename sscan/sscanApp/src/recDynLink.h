@@ -12,7 +12,7 @@ of this distribution.
 #ifndef INCrecDynLinkh
 #define INCrecDynLinkh
 
-#include <tsDefs.h>
+/* tmm not in 3.15.0.1 #include <tsDefs.h> */
 typedef struct recDynLink{
 	void	*puserPvt;
 	void	*pdynLinkPvt;

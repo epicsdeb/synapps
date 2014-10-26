@@ -24,6 +24,8 @@ TESTPROD_HOST += optt
 TESTPROD_HOST += stop
 TESTPROD_HOST += subscript
 TESTPROD_HOST += syncq
+TESTPROD_HOST += version
+
 
 REGRESSION_TESTS_WITH_DB += bittypes
 REGRESSION_TESTS_WITH_DB += evflag
@@ -44,19 +46,25 @@ REGRESSION_TESTS_WITHOUT_DB += assign
 REGRESSION_TESTS_WITHOUT_DB += change
 REGRESSION_TESTS_WITHOUT_DB += commaOperator
 REGRESSION_TESTS_WITHOUT_DB += local
-REGRESSION_TESTS_WITHOUT_DB += pvSync
-REGRESSION_TESTS_WITHOUT_DB += safeMonitor
 REGRESSION_TESTS_WITHOUT_DB += opttVar
-REGRESSION_TESTS_WITHOUT_DB += userfunc
+REGRESSION_TESTS_WITHOUT_DB += pvSync
 REGRESSION_TESTS_WITHOUT_DB += safeModeNotAssigned
+REGRESSION_TESTS_WITHOUT_DB += safeMonitor
+REGRESSION_TESTS_WITHOUT_DB += userfunc
+REGRESSION_TESTS_WITHOUT_DB += userfuncEf
+
+REGRESSION_TESTS_REMOTE_ONLY += pvGetSync
+REGRESSION_TESTS_REMOTE_ONLY += pvGetComplete
 
 REGRESSION_TESTS += $(REGRESSION_TESTS_WITHOUT_DB)
 REGRESSION_TESTS += $(REGRESSION_TESTS_WITH_DB)
 
 ifeq '$(EPICS_HAS_UNIT_TEST)' '1'
 TESTPROD_HOST += $(REGRESSION_TESTS)
+TESTPROD_HOST += $(REGRESSION_TESTS_REMOTE_ONLY)
 TESTSCRIPTS_HOST += $(REGRESSION_TESTS:%=%.t)
 TESTSCRIPTS_HOST += $(REGRESSION_TESTS_WITH_DB:%=%Ioc.t)
+TESTSCRIPTS_HOST += $(REGRESSION_TESTS_REMOTE_ONLY:%=%Ioc.t)
 endif
 
 #TESTPROD_HOST += ctest
@@ -67,7 +75,9 @@ PROD_LIBS += $(EPICS_BASE_IOC_LIBS)
 
 DBD += seqSoftIoc.dbd
 seqSoftIoc_DBD += base.dbd
+seqSoftIoc_DBD += testSupport.dbd
 
+seqSoftIoc_SRCS += subThreadSleep.c
 seqSoftIoc_SRCS += seqSoftIoc_registerRecordDeviceDriver.cpp
 
 ifeq '$(EPICS_HAS_UNIT_TEST)' '1'
@@ -113,14 +123,11 @@ vxTestHarness.dbd$(DEP):
 	@echo "$(COMMON_DIR)/vxTestHarness.dbd: ../Makefile" > $@
 endif
 
-SOFTIOC=$(EPICS_BASE_BIN)/softIoc$(HOSTEXE)
-SOFTDBD=$(EPICS_BASE)/dbd/softIoc.dbd
-
-$(REGRESSION_TESTS_WITH_DB:%=%Ioc.t): %Ioc.t: %$(EXE) ../makeTestfile.pl
-	$(PERL) ../makeTestfile.pl $@ $* $< ioc $(SOFTIOC) $(SOFTDBD) $(USE_VALGRIND)
+$(REGRESSION_TESTS_WITH_DB:%=%Ioc.t) $(REGRESSION_TESTS_REMOTE_ONLY:%=%Ioc.t): %Ioc.t: %$(EXE) ../makeTestfile.pl
+	$(PERL) ../makeTestfile.pl $@ $* $< ioc $(USE_VALGRIND)
 
 $(REGRESSION_TESTS:%=%.t): %.t: %$(EXE) ../makeTestfile.pl
-	$(PERL) ../makeTestfile.pl $@ $* $< noioc $(SOFTIOC) $(SOFTDBD) $(USE_VALGRIND)
+	$(PERL) ../makeTestfile.pl $@ $* $< noioc $(USE_VALGRIND)
 
 norace.i race.i: ../raceCommon.st
 
@@ -135,8 +142,11 @@ $(COMMON_DIR)/vxTestHarness.db: $(REGRESSION_TESTS_WITH_DB:%=../%.db)
 st.cmd: ../st.cmd.vxWorks ../makeStCmd.pl
 	$(CP) ../st.cmd.vxWorks $@
 	$(PERL) -MExtUtils::Command -e chmod 644 $@
-	$(PERL) ../makeStCmd.pl $(REGRESSION_TESTS_vxWorks) >> $@
+
+testHarness.cmd: ../makeStCmd.pl
+	$(PERL) ../makeStCmd.pl $(REGRESSION_TESTS_vxWorks) > $@
+	$(PERL) -MExtUtils::Command -e chmod 644 $@
 
 ifeq "$(OS_CLASS)" "vxWorks"
-build: st.cmd
+build: st.cmd testHarness.cmd
 endif

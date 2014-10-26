@@ -62,6 +62,7 @@
 
 #define MIND_UNUSED_ELEMENTS 0
 
+
 /* Create RSET - Record Support Entry Table*/
 #define report NULL
 #define initialize NULL
@@ -154,6 +155,17 @@ epicsExportAddress(int, aCalcoutRecordDebug);
 #define ARRAY_MAX_FIELDS 12
 
 
+static long acalcGetNumElements( acalcoutRecord *pcalc )
+{
+	long numElements;
+	if ( (pcalc->nuse > 0) && (pcalc->nuse < pcalc->nelm) )
+		numElements = pcalc->nuse;
+	else
+		numElements = pcalc->nelm;
+	return numElements;
+}
+
+
 static long init_record(acalcoutRecord *pcalc, int pass)
 {
 	DBLINK *plink;
@@ -269,8 +281,7 @@ static long afterCalc(acalcoutRecord *pcalc) {
 	long		i, j;
 	double		**panew;
 
-	i = ((pcalc->nuse > 0) && (pcalc->nuse < pcalc->nelm)) ?
-		pcalc->nuse : pcalc->nelm;
+	i = acalcGetNumElements( pcalc );
 #if MIND_UNUSED_ELEMENTS
 	if (i < pcalc->nelm) {
 		for (; i<pcalc->nelm; i++) pcalc->aval[i] = 0;
@@ -591,8 +602,7 @@ static long cvt_dbaddr(dbAddr *paddr)
 	 * additional elements until they disconnect and reconnect to the array.
 	 */
 	if (pcalc->size == acalcoutSIZE_NUSE) {
-		paddr->no_elements = ((pcalc->nuse > 0) && (pcalc->nuse < pcalc->nelm)) ?
-			pcalc->nuse : pcalc->nelm;
+		paddr->no_elements = acalcGetNumElements( pcalc );
 	} else {
 		paddr->no_elements = pcalc->nelm;
 	}
@@ -627,8 +637,7 @@ static long get_array_info(struct dbAddr *paddr, long *no_elements, long *offset
 	if ((fieldIndex==acalcoutRecordOAV) && (pcalc->oav == NULL)) {
 		pcalc->oav = (double *)calloc(pcalc->nelm, sizeof(double));
 	}
-    *no_elements =  ((pcalc->nuse > 0) && (pcalc->nuse < pcalc->nelm)) ?
-		pcalc->nuse : pcalc->nelm;
+    *no_elements = acalcGetNumElements( pcalc );
     *offset = 0;
     return(0);
 }
@@ -638,6 +647,7 @@ static long put_array_info(struct dbAddr *paddr, long nNew)
 	acalcoutRecord	*pcalc = (acalcoutRecord *) paddr->precord;
 	double			**ppd, *pd = NULL;
 	long			i;
+	long			numElements;
     int				fieldIndex = dbGetFieldIndex(paddr);
 
 	if (aCalcoutRecordDebug >= 20) {
@@ -667,12 +677,13 @@ static long put_array_info(struct dbAddr *paddr, long nNew)
 	}
 
 #if MIND_UNUSED_ELEMENTS
-	if (pd && (nNew < pcalc->nelm))
-		for (i=nNew; i<pcalc->nelm; i++) pd[i] = 0.;
+	numElements = pcalc->nelm;
 #else
-	if (pd && (nNew < pcalc->nuse))
-		for (i=nNew; i<pcalc->nuse; i++) pd[i] = 0.;
+	numElements = acalcGetNumElements( pcalc );
 #endif
+	if ( pd && (nNew < numElements) )
+		for (i=nNew; i<numElements; i++)
+			pd[i] = 0.;
 
 	/* We could set nuse to the number of elements just written, but that would also
 	 * affect the other arrays.  For now, with all arrays sharing a single value of nuse,
@@ -838,20 +849,11 @@ static void checkAlarms(acalcoutRecord *pcalc)
 
 static void execOutput(acalcoutRecord *pcalc)
 {
-	long		i, status;
+	long		status;
 
 	/* Determine output data */
 	if (aCalcoutRecordDebug >= 10)
 		printf("acalcoutRecord(%s):execOutput:entry\n", pcalc->name);
-
-	if (pcalc->dopt == acalcoutDOPT_Use_VAL) {
-		pcalc->oval = pcalc->val;
-#if MIND_UNUSED_ELEMENTS
-		for (i=0; i<pcalc->nelm; i++) pcalc->oav[i] = pcalc->aval[i];
-#else
-		for (i=0; i<pcalc->nuse; i++) pcalc->oav[i] = pcalc->aval[i];
-#endif
-	}
 
 	/* Check to see what to do if INVALID */
 	if (pcalc->nsev < INVALID_ALARM) {
@@ -930,7 +932,7 @@ static void monitor(acalcoutRecord *pcalc)
 #if MIND_UNUSED_ELEMENTS
 	numElements = pcalc->nelm;
 #else
-	numElements = pcalc->nuse;
+	numElements = acalcGetNumElements( pcalc );
 #endif
 
 	for (i=0, diff=0; i<numElements; i++) {
@@ -981,8 +983,7 @@ static int fetch_values(acalcoutRecord *pcalc)
 	DBLINK	*plink;	/* structure of the link field  */
 	double	*pvalue;
 	double	**pavalue;
-	long	status = 0, nRequest = ((pcalc->nuse > 0) && (pcalc->nuse < pcalc->nelm)) ?
-							pcalc->nuse : pcalc->nelm;
+	long	status = 0;
 	int		i, j;
 	unsigned short *plinkValid;
 	long numElements;
@@ -990,7 +991,7 @@ static int fetch_values(acalcoutRecord *pcalc)
 #if MIND_UNUSED_ELEMENTS
 	numElements = pcalc->nelm;
 #else
-	numElements = pcalc->nuse;
+	numElements = acalcGetNumElements( pcalc );
 #endif
 	if (aCalcoutRecordDebug >= 10)
 		printf("acalcoutRecord(%s):fetch_values: entry\n", pcalc->name);
@@ -1005,6 +1006,7 @@ static int fetch_values(acalcoutRecord *pcalc)
 	for (i=0, plink=&pcalc->inaa, pavalue=(double **)(&pcalc->aa); i<ARRAY_MAX_FIELDS; 
 			i++, plink++, pavalue++, plinkValid++) {
 		if ((*plinkValid==acalcoutINAV_EXT) || (*plinkValid==acalcoutINAV_LOC)) {
+			long	nRequest;
 			if (aCalcoutRecordDebug >= 10) printf("acalcoutRecord(%s):fetch_values: field %c%c, pointer=%p\n",
 				pcalc->name, (int)('A'+i), (int)('A'+i), *pavalue);
 			if (*pavalue == NULL) {
@@ -1020,8 +1022,12 @@ static int fetch_values(acalcoutRecord *pcalc)
 			}
 			for (j=0; j<numElements; j++) pcalc->paa[j] = (*pavalue)[j];
 			/* get new value */
+			nRequest = acalcGetNumElements( pcalc );
 			status = dbGetLink(plink, DBR_DOUBLE, *pavalue, 0, &nRequest);
 			if (!RTN_SUCCESS(status)) return(status);
+			if (nRequest<numElements) {
+				for (j=nRequest; j<numElements; j++) (*pavalue)[j] = 0;
+			}
 			/* compare new array value with saved value */
 			for (j=0; j<numElements; j++) {
 				if (pcalc->paa[j] != (*pavalue)[j]) {pcalc->newm |= 1<<i; break;}
@@ -1166,21 +1172,20 @@ volatile int aCalcAsyncThreshold = 10000; /* array sizes larger than this get qu
 epicsExportAddress(int, aCalcAsyncThreshold);
 
 static void call_aCalcPerform(acalcoutRecord *pcalc) {
-	long i;
+	long numElements;
 	epicsUInt32 amask;
 
 	if (aCalcoutRecordDebug >= 10) printf("call_aCalcPerform:entry\n");
 
 	/* Note that we want to permit nuse == 0 as a way of saying "use nelm". */
-	i = ((pcalc->nuse > 0) && (pcalc->nuse < pcalc->nelm)) ?
-		pcalc->nuse : pcalc->nelm;
+	numElements = acalcGetNumElements( pcalc );
 	pcalc->cstat = aCalcPerform(&pcalc->a, MAX_FIELDS, &pcalc->aa,
-		ARRAY_MAX_FIELDS, i, &pcalc->val, pcalc->aval, pcalc->rpcl,
+		ARRAY_MAX_FIELDS, numElements, &pcalc->val, pcalc->aval, pcalc->rpcl,
 		pcalc->nelm, &pcalc->amask);
 	
 	if (pcalc->dopt == acalcoutDOPT_Use_OVAL) {
 		pcalc->cstat |= aCalcPerform(&pcalc->a, MAX_FIELDS, &pcalc->aa,
-			ARRAY_MAX_FIELDS, i, &pcalc->oval, pcalc->oav, pcalc->orpc,
+			ARRAY_MAX_FIELDS, numElements, &pcalc->oval, pcalc->oav, pcalc->orpc,
 			pcalc->nelm, &amask);
 		pcalc->amask |= amask;
 	}
@@ -1193,7 +1198,8 @@ static long doCalc(acalcoutRecord *pcalc) {
 	if (aCalcoutRecordDebug >= 10)
 		printf("acalcoutRecord(%s):doCalc\n", pcalc->name);
 
-	if (pcalc->nuse > aCalcAsyncThreshold) doAsync = 1;
+	if ( acalcGetNumElements(pcalc) > aCalcAsyncThreshold )
+		doAsync = 1;
 
 	/* if required infrastructure doesn't yet exist, create it */
 	if (doAsync && acalcMsgQueue == NULL) {
@@ -1261,3 +1267,5 @@ static void acalcPerformTask(void *parm) {
 		dbScanUnlock((struct dbCommon *)pcalc);
 	}
 }
+
+

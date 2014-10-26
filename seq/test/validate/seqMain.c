@@ -88,7 +88,8 @@ int main(int argc, char *argv[])
     char *macros = NULL;
     int startIocsh = 1;	/* default = start shell */
     int loadedDb = 0;
-    
+    int startSeqProgram = 0;
+
     errlogSetSevToLog(errlogFatal+1);
 
     arg0 = strrchr(*argv, '/');
@@ -153,6 +154,10 @@ int main(int argc, char *argv[])
 	case 's':
 	    break;
 	
+	case 't':
+            startSeqProgram = 1;
+	    break;
+	
 	default:
 	    printf("%s: option '%s' not recognized\n", arg0, *argv);
 	    usage(EXIT_FAILURE);
@@ -180,6 +185,10 @@ int main(int argc, char *argv[])
 	case 's':
 	    break;
 	
+	case 't':
+            startSeqProgram = 1;
+	    break;
+	
 	default:
 	    printf("%s: option '%s' not recognized\n", arg0, *argv);
 	    usage(EXIT_FAILURE);
@@ -193,13 +202,13 @@ int main(int argc, char *argv[])
 	epicsThreadSleep(0.2);
     }
 
-    seq(&PROG_NAME, macros, 0);
+    if (startSeqProgram)
+        seq(&PROG_NAME, macros, 0);
     
     /* run user's startup script */
     if (argc>0) {
 	if (iocsh(*argv)) epicsExit(EXIT_FAILURE);
 	epicsThreadSleep(0.2);
-	loadedDb = 1;	/* Give it the benefit of the doubt... */
     }
     
     /* start an interactive shell if it was requested */

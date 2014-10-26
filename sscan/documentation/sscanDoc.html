@@ -76,16 +76,22 @@ module), which pulls software from the <b>sscan</b> module and deploys it in an 
 
 <li>Include the following line in
 example/exampleApp/src/iocexampleInclude.dbd.
-<pre>include "sscanSupport.dbd"</pre>
+<pre>
+include "sscanSupport.dbd"
+include "scanProgressSupport.dbd"
+</pre>
 
 
 <li>Include the following line in example/exampleApp/src/Makefile.
-<pre>example_LIBS += sscan</pre>
+<pre>example_LIBS += sscan scanProgress</pre>
 
-<li>Load the databases standardScans, and saveData, by including the following lines in st.cmd:
+<li>Load the databases standardScans, and saveData, by including the following
+lines in st.cmd:
+
 <pre>
 dbLoadRecords("$(SSCAN)/sscanApp/Db/standardScans.db","P=xxx:,MAXPTS1=2000,MAXPTS2=1000,MAXPTS3=1000,MAXPTS4=10,MAXPTSH=2000")
 dbLoadRecords("$(SSCAN)/sscanApp/Db/saveData.db","P=xxx:")
+dbLoadRecords("$(SSCAN)/sscanApp/Db/scanProgress.db","P=xxx:scanProgress:")
 </pre>
 
 <li>If you use autosave, include standardScans_settings.req, and

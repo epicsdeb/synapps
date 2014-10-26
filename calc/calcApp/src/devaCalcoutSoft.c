@@ -18,7 +18,7 @@
  *      device support will use dbCaPutLinkCallback(), with the result that
  *      the record will wait for completion of any processing started by the
  *      'put' operation before executing recGblFwdLink.  The choice (sync or
- *      async) is made with the .WAIT field of the scalcoutRecord.  However,
+ *      async) is made with the .WAIT field of the acalcoutRecord.  However,
  *      if the OUT link is not a CA link, device support must fall back to
  *      synchronous behavior, because it's illegal to use dbCaPutLinkCallback()
  *      on a database link.
@@ -67,6 +67,7 @@ static long write_acalcout(acalcoutRecord *pacalcout)
     struct link		*plink = &pacalcout->out;
     long			status, nelm = 1, i;
 	dbAddr			Addr, *pAddr = &Addr;
+	void		*	pBuffer;
 
 	if (devaCalcoutSoftDebug) printf("write_acalcout: pact=%d\n", pacalcout->pact);
 	if (pacalcout->pact) return(0);
@@ -80,17 +81,16 @@ static long write_acalcout(acalcoutRecord *pacalcout)
 	if (devaCalcoutSoftDebug) printf("write_acalcout: target nelm=%ld\n", nelm);
 	i = (pacalcout->nuse > 0) ? pacalcout->nuse : pacalcout->nelm;
 	if (i < nelm) nelm = i;
+	if ( pacalcout->dopt == acalcoutDOPT_Use_VAL )
+		pBuffer = nelm == 1 ? &pacalcout->val  : pacalcout->aval;
+	else
+		pBuffer = nelm == 1 ? &pacalcout->oval : pacalcout->oav;
 
     if ((plink->type==CA_LINK) && (pacalcout->wait)) {
 		/* asynchronous */
-		if (devaCalcoutSoftDebug) printf("write_scalcout: calling dbCPLCB..DBR_DOUBLE\n");
-		if (nelm == 1) {
-			status = dbCaPutLinkCallback(&(pacalcout->out), DBR_DOUBLE,
-				&(pacalcout->oval), 1, (dbCaCallback)dbCaCallbackProcess, plink);
-		} else {
-			status = dbCaPutLinkCallback(&(pacalcout->out), DBR_DOUBLE,
-				pacalcout->oav, nelm, (dbCaCallback)dbCaCallbackProcess, plink);
-		}
+		if (devaCalcoutSoftDebug) printf("write_acalcout: calling dbCPLCB..DBR_DOUBLE\n");
+		status = dbCaPutLinkCallback(	&(pacalcout->out), DBR_DOUBLE, pBuffer, nelm,
+										(dbCaCallback)dbCaCallbackProcess, plink );
 		if (status) {
 			if (devaCalcoutSoftDebug) printf("write_acalcout: dbCaPutLinkCallback returned error\n");
 			recGblSetSevr(pacalcout, LINK_ALARM, INVALID_ALARM);
@@ -100,11 +100,7 @@ static long write_acalcout(acalcoutRecord *pacalcout)
 
 	} else {
 		/* synchronous */
-		if (nelm == 1) {
-			status = dbPutLink(&(pacalcout->out), DBR_DOUBLE,&(pacalcout->oval),1);
-		} else {
-			status = dbPutLink(&(pacalcout->out), DBR_DOUBLE,pacalcout->oav,nelm);
-		}
+		status = dbPutLink(	&(pacalcout->out), DBR_DOUBLE, pBuffer, nelm );
 		if (status) {
 			if (devaCalcoutSoftDebug) printf("write_acalcout: dbPutLink returned error\n");
 			recGblSetSevr(pacalcout, LINK_ALARM, INVALID_ALARM);
@@ -113,3 +109,5 @@ static long write_acalcout(acalcoutRecord *pacalcout)
 	}
 	return (status);
 }
+
+

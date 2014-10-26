@@ -2,10 +2,10 @@
 FILENAME... drvMM4000.cc
 USAGE...    Motor record driver level support for Newport MM4000.
 
-Version:        $Revision: 14155 $
-Modified By:    $Author: sluiter $
-Last Modified:  $Date: 2011-11-29 14:50:00 -0600 (Tue, 29 Nov 2011) $
-HeadURL:        $URL: https://subversion.xor.aps.anl.gov/synApps/motor/tags/R6-7-1/motorApp/NewportSrc/drvMM4000.cc $
+Version:        $Revision: 15620 $
+Modified By:    $Author: rivers $
+Last Modified:  $Date: 2012-12-06 16:20:02 -0600 (Thu, 06 Dec 2012) $
+HeadURL:        $URL: https://subversion.xray.aps.anl.gov/synApps/motor/tags/R6-8-1/motorApp/NewportSrc/drvMM4000.cc $
 */
 
 /*
@@ -515,7 +515,7 @@ exit:
 static RTN_STATUS send_mess(int card, char const *com, char *name)
 {
     struct MMcontroller *cntrl;
-    int size;
+    size_t size;
     size_t nwrite;
 
     size = strlen(com);
@@ -591,7 +591,7 @@ static int recv_mess(int card, char *com, int flag)
     }
 
     Debug(2, "recv_mess(): message = \"%s\" on card #%d\n", com, card);
-    return(nread);
+    return((int)nread);
 }
 
 

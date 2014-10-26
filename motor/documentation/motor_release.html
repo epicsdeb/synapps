@@ -5,13 +5,223 @@
   <meta content="Ronald L. Sluiter" name="Author" />
   <meta content="Synopsis of modifications, fixes and new features for each motor record release."
     name="Description" />
-  <title>EPICS Motor Record Release R6-7 Notice</title>
+  <title>EPICS Motor Record Release R6-8 Notice</title>
   <meta content="Ronald L. Sluiter" name="author" />
   <meta content="Notification of bug fixes, functional changes and new features." name="description" />
   <meta content="text/html; charset=ISO-8859-1" http-equiv="Content-Type" />
 </head>
 
 <body>
+
+  <div style="text-align: center">
+    <h1><b>Motor Record Version 6-8-1 Release Notice</b></h1>
+  </div>
+  <div style="text-align: center">
+    <h4>Modifications to Existing Features</h4>
+  </div>
+  <div style="text-align: left">
+    <p><b>motor record</b></p>
+    <p>
+    Previous to this release, if an EPICS motor driver signaled a controller error 
+    by setting the RA_PROBLEM bit of the MSTA filed true, then the motor record 
+    assumed that the controller had stopped motor motion. In some cases this was not 
+    true. For example, if a Newport ESP300 controller's maximum velocity parameter 
+    is exceeded, the controller signals an error, but then continues jogging the 
+    motor at the maximum velocity parameter value.
+    </p>
+    <p>
+    With this release, the motor record stops motion whenever RA_PROBLEM is set true.
+    </p>
+
+    <p><b>Newport ESP100/300/301</b></p>
+    <p>
+    The changes made to the Newport ESP100/300/301 driver in the previous release (R6-8) 
+    were rolled back. Since the motor record's data structure is not always 
+    available to driver level code, using MRES to scale the EGUtoRAWbacktoEGU 
+    conversion proved to be unworkable.
+    </p>
+
+    <p><b>OMS MAXv limit mode</b></p>
+    <p>
+    Since the default mode of the limit switches is "Off" on some OMS MAXv firmware 
+    versions after 1.30, during iocInit, if the limit mode is "Off" the driver will 
+    set the limit mode to "Hard".
+    </p>
+
+    <p><b>OMS Asyn</b></p>
+    <p>
+    Flush OMS MAXv response buffer more than once (Thanks to Mitch D'Ewart).
+	 Allow up to 10 axes for current MAXnet cards. Increased read buffer length for 
+	 MAXnet cards.
+    </p>
+
+    <p><b>Micos MoCo</b></p>
+    <p>
+    Bug fix for protection against NULL *parms pointer from motor record.
+    </p>
+
+    <p><b>Mclennan PM304</b></p>
+    <p>
+    Bug fixes for both protection against NULL *parms pointer from motor record and 
+    incorrect epicsStrtok_r() argument.
+    </p>
+
+    <p><b>motorx_msta_detail.ui</b></p>
+    <p>
+    Bug fix for caByte display of MSTA field.
+    </p>
+
+    <p><b>motorUtil</b></p>
+    <p>
+    Registered listMovingMotors function so non-VxWorks IOCs can call it.
+    </p>
+  </div>
+  <p>
+  </p>
+
+  <div style="text-align: center">
+    <h1>
+      <b>Motor Record Version 6-8 Release Notice</b></h1>
+  </div>
+  <div style="text-align: center">
+    <h4>
+      Modifications to Existing Features</h4>
+  </div>
+  <div style="text-align: left">
+    <b>!WARNING!</b><br />
+    motorRecord.dbd has been modified.&nbsp; This requires rebuilding any and all 
+    user trees (i.e., &lt;ioctop&gt;) that load the motor record.
+    </p>
+    <p>
+      <b>Newport XPS Asyn Motor (Phase-2) Support</b>
+    </p>
+    <p>
+      The stepsPerUnit argument of XPSConfigAxis has changed from an integer to a string
+      to make phase-2 consistent with phase-3 support.  Failing to change the stepsPerUnit
+      argument to a string results in parameter-out-of-range errors when attempting to 
+      move XPS motors.
+    </p>
+    <p>
+      <b>Newport ESP300</b>
+    </p>
+    <p>
+      Prior to this release, the ESP300 driver used the controller's resolution to 
+      scale the EGUtoRAWbacktoEGU conversion that is done between motor record and 
+      device driver support. With R6.8 the driver uses the motor record's MRES to 
+      scale this conversion. Users should now set the MRES like any other motor; i.e., 
+      to the precision of the stage.
+    </p>
+  </div>
+  
+  <div style="text-align: left">
+    <b>Soft-travel limits</b>
+  </p>
+  <p>
+  Several changes have been made with regard to the motor record's soft-travel 
+  limits (LVIO field).
+  <ul>
+    <li>
+      Since the soft-travel limits (HLM/LLM, DHLM/DLLM) are not defined until after a 
+      successful home search is performed, error checks have been removed from the 
+      home search request (HOMF/HOMR).
+    </li>
+    <li>
+      All moves out of the invalid soft-limit travel range, toward the valid range, 
+      are allowed.
+    </li>
+  </ul>
+  </p>
+  </div>
+  
+  <div style="text-align: left">
+    <p>
+  <b>Retry Deadband </b>
+  </p>
+  <p>
+  The retry deadband (RDBD) field no longer limits the smallest allowed move. The 
+  size of a move is now only limited by the motor resolution (MRES).
+  </p>
+  </div>
+  
+  <div style="text-align: left">
+  
+  </div>
+
+  <div style="text-align: center">
+    <h4>
+      New Features</h4>
+  </div>
+  <div style="text-align: left">
+    <p>
+      <b>Physik Instrumente (PI) Asyn Motor Support</b>
+    </p>
+    <p>
+      Steffen Rau (Physik Instrumente GmbH & Co.) has added asyn motor support for PI 
+      motion controllers that use the GCS2 (General Command Set) command language. 
+      This support resides in the &ltmotor&gt/motorApp/PIGCS2Src/ directory of the 
+      motor module.
+    </p>
+  </div>
+  <div style="text-align: left">
+    <p>
+      <b>PI micos SMC hydra Asyn Motor Support</b>
+    </p>
+    <p>
+      Kevin Peterson (APS) added support for asyn motor support for the PI micos SMC 
+      hydra controller.
+    </p>
+  </div>
+  <div style="text-align: left">
+    <p>
+      <b>Schneider Electric (IMS) MDrive/MForce Asyn Motor Support</b>
+    </p>
+    <p>
+      Nia Fong (SLAC) added asyn motor support for the Schneider Electric (IMS) MDrive/MForce controller that uses the MCode command language.
+    </p>
+  </div>
+  <div style="text-align: left">
+    <p>
+      <b>Newport XPS Support</b>
+    </p>
+    <p>
+      Kevin Peterson (APS) added a sequence program, xpsSlave.st, that allows master/slave mode to be used with any version of the XPS motor support.
+    </p>
+  </div>
+  <div style="text-align: left">
+    <p>
+      <b>Newport Hexapod Asyn Motor Support</b>
+    </p>
+    <p>
+      Kevin Peterson (APS) added asyn motor support for the Newport Hexapod controller.
+    </p>
+  </div>
+  <div style="text-align: left">
+    <p>
+      <b>nPoint C300 Asyn Motor Support</b>
+    </p>
+    <p>
+      Kevin Peterson (APS) added asyn motor support for the nPoint C300 piezo controller.
+    </p>
+  </div>
+    <div style="text-align: left">
+    <p>
+      <b>OMS MAXv and MAXnet Asyn Motor Support</b>
+    </p>
+    <p>
+      Jens Eden (PTB) added asyn motor support for both the OMS MAXv and the OMS MAXnet controllers.
+    </p>
+  </div>
+    </div>
+    <div style="text-align: left">
+    <p>
+      <b>Newport Agilis UC series Asyn Motor Support</b>
+    </p>
+    <p>
+      Mark Rivers (APS) added asyn motor support for the Newport Agilis UC series of controllers.
+    </p>
+  </div>
+  <p>
+  </p>
 
   <div style="text-align: center">
     <h1>

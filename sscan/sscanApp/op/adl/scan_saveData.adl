@@ -1,7 +1,7 @@
 
 file {
-	name="/home/oxygen4/MOONEY/epics/synAppsSVN/support/sscan/sscanApp/Db/../op/adl/scan_saveData.adl"
-	version=030105
+	name="/home/oxygen/MOONEY/epics/synApps/support/sscan/sscanApp/op/adl/scan_saveData.adl"
+	version=030107
 }
 display {
 	object {
@@ -334,24 +334,6 @@ text {
 		clr=14
 	}
 	textix="Write 1D data at each data point?"
-}
-text {
-	object {
-		x=250
-		y=155
-		width=140
-		height=10
-	}
-	"basic attribute" {
-		clr=30
-	}
-	"dynamic attribute" {
-		vis="calc"
-		calc="1"
-		chan="$(P)saveData_config"
-	}
-	textix="CLIENT CONFIG STRING"
-	align="horiz. centered"
 }
 text {
 	object {
@@ -830,22 +812,6 @@ text {
 		clr=14
 		bclr=51
 	}
-	limits {
-	}
-}
-"text update" {
-	object {
-		x=250
-		y=165
-		width=140
-		height=10
-	}
-	monitor {
-		chan="$(P)saveData_config"
-		clr=53
-		bclr=3
-	}
-	format="string"
 	limits {
 	}
 }

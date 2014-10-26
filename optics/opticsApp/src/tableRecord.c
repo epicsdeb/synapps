@@ -64,6 +64,13 @@
 #undef GEN_SIZE_OFFSET
 #include	"epicsExport.h"
 
+#include	<epicsVersion.h>
+#ifndef EPICS_VERSION_INT
+#define VERSION_INT(V,R,M,P) ( ((V)<<24) | ((R)<<16) | ((M)<<8) | (P))
+#define EPICS_VERSION_INT VERSION_INT(EPICS_VERSION, EPICS_REVISION, EPICS_MODIFICATION, EPICS_PATCH_LEVEL)
+#endif
+#define LT_EPICSBASE(V,R,M,P) (EPICS_VERSION_INT < VERSION_INT((V),(R),(M),(P)))
+
 double D2R;	/* set in init_record() */
 
 #define MAX(a,b) ((a)>(b)?(a):(b))
@@ -706,7 +713,11 @@ static void
 checkAlarms(tableRecord *ptbl)
 {
 	if (ptbl->udf == TRUE) {
-		recGblSetSevr(ptbl, UDF_ALARM, INVALID_ALARM);
+#if LT_EPICSBASE(3,15,0,2)
+		recGblSetSevr(ptbl,UDF_ALARM,INVALID_ALARM);
+#else
+		recGblSetSevr(ptbl,UDF_ALARM,ptbl->udfs);
+#endif
 		return;
 	}
 	return;

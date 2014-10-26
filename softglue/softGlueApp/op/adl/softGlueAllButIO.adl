@@ -1,7 +1,7 @@
 
 file {
 	name="/home/oxygen/MOONEY/epics/synApps/support/softGlue/softGlueApp/op/adl/softGlueAllButIO.adl"
-	version=030105
+	version=030107
 }
 display {
 	object {
@@ -523,4 +523,38 @@ composite {
 			}
 		}
 	}
+}
+"related display" {
+	object {
+		x=1295
+		y=750
+		width=60
+		height=20
+	}
+	display[0] {
+		label="all softGlue"
+		name="softGlueAll.adl"
+		args="P=$(P),H=$(H)"
+		policy="replace display"
+	}
+	clr=0
+	bclr=63
+	label="-With I/O"
+}
+"related display" {
+	object {
+		x=1295
+		y=730
+		width=60
+		height=20
+	}
+	display[0] {
+		label="all softGlue"
+		name="softGlueAllButIO_label.adl"
+		args="P=$(P),H=$(H)"
+		policy="replace display"
+	}
+	clr=0
+	bclr=63
+	label="-Labels"
 }

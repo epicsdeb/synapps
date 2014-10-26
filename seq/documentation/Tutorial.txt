@@ -680,27 +680,41 @@ What's Happening at Run Time
 
 At run time the sequencer blocks until something "interesting" occurs,
 where "interesting" means things like receiving a monitor from a PV
-used in a :token:`when` statement, an event flag changing state, or a
-delay timer expiring. The sequencer then scans the list of
+used in a :token:`when` clause, an event flag changing state, or a
+delay timer expiring. More precisely, there are five types of sequencer
+event:
+
+-  a process variable monitor is posted
+-  an asynchronous :c:func:`pvGet` or :c:func:`pvPut` completes
+-  a time :c:func:`delay` elapses
+-  an event flag is set or cleared
+-  a process variable connects or disconnects
+
+The sequencer then scans the list of
 :token:`when` statements for the current state and evaluates each
 expression in turn. If a :token:`when` expression evaluates to
 non-zero the actions within that :token:`when` block are executed and
 the sequencer enters the state specified by that :token:`when`
 statement. The sequencer then blocks again waiting for something
-"interesting" to happen. A complete list of these conditions can be
-found in section 6.5.
+"interesting" to happen.
 
-A common misconception among new state notation language programmers
-is that the sequencer somehow blocks inside the :c:func:`delay`
-functions within :token:`when` statements. This interpretation of the
-:c:func:`delay` function is incorrect but understandable given the
-name. A :c:func:`delay` function does not block the sequencer. Instead
-it tells the sequencer to compare the value specified by the
-:c:func:`delay` expression with a timer that is reset whenever the
-state is entered or whenever the state is entered from another state.
-If the timer matches or exceeds the value of the expression the
-:c:func:`delay` function returns ``TRUE`` otherwise it returns
-``FALSE``.
+Note, however, that whenever a new state is entered, the
+corresponding :token:`when` conditions for that state are evaluated once
+without first waiting for events.
+
+A Common Misconception
+^^^^^^^^^^^^^^^^^^^^^^
+
+A common misconception among new SNL programmers is that the sequencer
+somehow blocks inside the :c:func:`delay` function within :token:`when`
+statements. This interpretation of the :c:func:`delay` function is
+incorrect but understandable given the name. The :c:func:`delay` function
+does not block at all, it merely compares its argument with a timer that
+is reset whenever the state is entered (from the same or another state),
+and then returns the result (a boolean value). Any blocking (in case the
+returned value is FALSE and no other condition fires) is done outside of
+the :c:func:`delay` function by the run time system. You might want to
+think of the operation as `elapsed(s)` rather than `delay(s)`.
 
 If your action statements have any sort of polling loops or calls to
 ``epicsThreadSleep`` you should reconsider your design. The presence

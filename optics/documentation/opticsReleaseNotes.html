@@ -10,6 +10,68 @@
 <BODY LANG="en-US" BGCOLOR="#ffffff" DIR="LTR">
 <H1 ALIGN=CENTER>optics Release Notes</H1>
 
+<h2 ALIGN=CENTER>Release 2-9-2</h2>
+<ul>
+
+<li>hrSeq.db: Crystal species wasn't implemented right (seq record needed TypeMO.RVAL,
+instead of TyoeMO.VAL)
+
+<li>hrCtl.st: phi1MotRdbk wasn't converted to degrees before being used to init Phi1. 
+Theta2 init wasn't honoring Geom switch.  Fixed "when" statements that included
+expressions like "efTestAndClear() && delay(.1)", which can fail because delay hasn't
+expired, and then fail because flag was cleared.  Use pvPut(, ASYNC) instead of motor.DMOV
+fields to check for completion.
+
+<li>hrCtl.st: When motors moved by third party, drive "Moving", and set to Manual mode
+when motors stop.  sprintf overwrote end of string.
+
+<li>orient_st.st: User messages were overflowing string fields.
+
+<li>MLLH, MLLV: New databases and display files for Multilayer Laue Lens
+instrument.  The databases are also examples of using multiple soft motors to
+control multiple hard motors through transforms.
+
+</ul>
+
+<h2 ALIGN=CENTER>Release 2-9-1</h2>
+<ul>
+
+<li>filterDrive.st: Added OUTGET for separate readback of outputs; only move
+enabled filters.  Removed trailing backslash characters from several lines,
+caused compiler failure on Windows.
+<li>filterBladeNoSensor.db: Added OutGet and OutSet records and OUT_STRING and
+IN_STRING macro parameters so the database does not assume blade in=1 and blade
+out=0.
+<li>filter.substitutions: Added OUT_STRING and IN_STRING macro parameters
+
+</ul>
+
+
+<h2 ALIGN=CENTER>Release 2-9</h2>
+<ul>
+
+<li>
+  <b>fb_epid</b> updated (2012-02-29): 
+    <ul>
+      <li>Support and <a href="fb_epid/index.html">documentation</a> updated to help with deployment.</li>
+      <li>Added simulation of a temperature controller as default configuration.</li>
+      <li>TODO: Consider replacing swait records with calcout from EPICS base.</li>
+    </ul>
+
+<li>Split chantler.h into chantler.h and chantler.c, so more than one program
+can use it.
+
+<li>Added iocBoot examples code
+
+<li>Added Christian Schlepuetz' support for the XIA PF4 filter, which draws from
+support developed by David Maden, Jon Tischler, Pete Jemian, and Tim Mooney.
+
+<li>Fixed initialization problems in SGM database, and converted to VDCT.
+
+<li>Added CSS-BOY and caQtDM display files
+
+</ul>
+
 <H2 ALIGN=CENTER>Release 2-8-1</H2>
 <ul>
 

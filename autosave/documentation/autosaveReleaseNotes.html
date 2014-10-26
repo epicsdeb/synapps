@@ -10,6 +10,128 @@ content="text/html; charset=iso-8859-1">
 
 <h1 align="center">autosave Release Notes</h1>
 
+<h3>5.4.2</h3>
+<ul>
+<li>set_pass1_restoreFile(), called from iocsh had wrong second argument.
+</ul>
+
+<h3>5.4.1</h3>
+<ul>
+
+<li>Previously, restoring an array which had been saved with zero or one values
+failed.  Also, manual restore (including restore by configMenu) of any array PV
+caused a seg fault.
+
+<li>Previously, manual restore (including restore by configMenu) of a long string
+PV neglected to restore the trailing null character.
+</ul>
+
+
+<h3>5.4</h3>
+<ul>
+
+<li>Can now do boot-time restore from a read-only .sav file located anywhere,
+and can do macro substitution on the file contents.  This is intended to support
+a generic, default configuration for highly mobile iocs, such as those
+supporting areaDetector.
+
+<li>Fixed bug in boot-time treatment of long-string values that are longer than
+120 chars.
+
+</ul>
+
+
+<h3>5.3.1</h3>
+<ul>
+
+<li>configMenu: In building the list of .cfg files from the autosave directory,
+now require that .cfg file names begin with the config name followed by an
+underscore, and end with ".cfg".  Previously, they were only required to begin
+with the config name (so config names SG and SG2 got mixed) and contain .cfg
+without also containing .cfg_.
+
+</ul>
+
+
+<h3>5.3</h3>
+<ul>
+
+<li>Beginning with R5.0, autosave failed to detect and reject a truncated .sav
+file, and would segfault if the file was truncated in the middle of an array. 
+Thanks to Jon Thompson (Diamond) for reporting the problem.
+<li>In 5.1 through 5.2, "asVerify -r" was failing to write reboot files.
+</ul>
+
+<h3>5.2</h3>
+<ul>
+<li>In autosave 5.1 and 5.1.1, asVerify did not print anything if all PVs
+had the same values as in the supplied .sav file.  Now asVerify goes back to
+the original behavior, printing, for example, "0 PVs differed.  (8 PVs checked;
+0 PVs not connected)".
+
+<li>In autosave 5.1 and 5.1.1, the presence of the macro "CONFIG" anywhere in a
+request file, or in a create_xxx_set() command, told autosave to refrain from
+writing backup (".savB") and sequence (".savN") files.  This didn't work very
+well, because you generally want to include configMenu_settings.req in
+auto_settings.req, and that requires the CONFIG macro.  Now, autosave will
+refrain from backups and sequence files if the macro CONFIGMENU is defined
+with any value. 
+
+</ul>
+
+
+<h3>5.1.1</h3>
+<ul>
+<li>Declare pass0List and pass1List extern in save_restore.h
+</ul>
+
+<h3>5.1</h3>
+<ul>
+
+	<li>In autosave versions 4-8 through 5-0, if the save_restore task connected
+		to a remote PV that later was disconnected, it would crash the next time
+		that PV was used.
+
+	<li>Modified autosave to correctly restore unsigned long values.  Thanks to
+		Kukhee Kim (SSRL) for find and fixing the bug.
+
+	<li>configMenu: new support for manually saving, restoring, and verifying
+		sets of PVs.  configMenu operations can be driven by an EPICS record, or
+		by any channel-access client.  configMenu list can be populated from the
+		existing config files on disk.
+
+	<li>Assignment of status PVs to save sets didn't account for save sets being
+		removed.
+
+	<li>Manual restore failed to correctly handle strings longer than 39
+		characters, did not honor comments in .sav files, and failed to call
+		ca_clear_channel.
+
+	<li>manual_save() no longer takes an argument specifying how long to wait
+		for the save to complete.
+	
+	<li>Refactored asVerify so that the core can be called from a client wrapper
+		and from the save_restore task.  Manual save and restore operations called
+		from configMenu are verified.
+
+	<li>Previously, create_XXX_set() called with no request-file name created an
+		empty PV list.  That's fixed, and it's also ok to specify no arguments.
+
+	<li>Previously, the number of restore files was limited to eight.  Now it is
+		unlimited.
+	
+	<li>Added file tr_dirent.h, a replacement for the posix header dirent.h,
+		which windows doesn't have.
+	
+	<li>Modified parsing of "file" commands in request files.  It's now ok to
+		include the '#' character in a macro definition.  Consequently, it's
+		no longer legal to have a comment on the same line as a file command.
+
+	<li>use 24-hour time-format string
+
+</ul>
+
+
 <h3>5.0</h3>
 <ul>
 

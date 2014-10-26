@@ -23,7 +23,7 @@
 /* Version number names similar to those provide by base
  * These macros are always numeric */
 #define ASYN_VERSION       4
-#define ASYN_REVISION     21
+#define ASYN_REVISION     23
 #define ASYN_MODIFICATION  0
 
 #ifdef __cplusplus
@@ -37,7 +37,7 @@ typedef enum {
 
 typedef enum {
     asynExceptionConnect,asynExceptionEnable,asynExceptionAutoConnect,
-    asynExceptionTraceMask,asynExceptionTraceIOMask,
+    asynExceptionTraceMask,asynExceptionTraceIOMask,asynExceptionTraceInfoMask,
     asynExceptionTraceFile,asynExceptionTraceIOTruncateSize
 } asynException;
 
@@ -82,6 +82,7 @@ typedef struct asynInterface{
 
 typedef void (*userCallback)(asynUser *pasynUser);
 typedef void (*exceptionCallback)(asynUser *pasynUser,asynException exception);
+typedef void (*timeStampCallback)(void *userPvt, epicsTimeStamp *pTimeStamp);
 
 typedef struct interruptNode{
     ELLNODE node;
@@ -151,6 +152,13 @@ typedef struct asynManager {
                                   interruptNode*pinterruptNode);
     asynStatus (*interruptStart)(void *pasynPvt,ELLLIST **plist);
     asynStatus (*interruptEnd)(void *pasynPvt);
+    /* Time stamp functions */
+    asynStatus (*registerTimeStampSource)(asynUser *pasynUser, void *userPvt, timeStampCallback callback);
+    asynStatus (*unregisterTimeStampSource)(asynUser *pasynUser);
+    asynStatus (*updateTimeStamp)(asynUser *pasynUser);
+    asynStatus (*getTimeStamp)(asynUser *pasynUser, epicsTimeStamp *pTimeStamp);
+    asynStatus (*setTimeStamp)(asynUser *pasynUser, const epicsTimeStamp *pTimeStamp);
+
     const char *(*strStatus)(asynStatus status);
 }asynManager;
 epicsShareExtern asynManager *pasynManager;
@@ -179,6 +187,7 @@ typedef struct  asynLockPortNotify {
 #define ASYN_TRACEIO_FILTER  0x0004
 #define ASYN_TRACEIO_DRIVER  0x0008
 #define ASYN_TRACE_FLOW      0x0010
+#define ASYN_TRACE_WARNING   0x0020
 
 /* traceIO mask definitions*/
 #define ASYN_TRACEIO_NODATA 0x0000
@@ -186,20 +195,28 @@ typedef struct  asynLockPortNotify {
 #define ASYN_TRACEIO_ESCAPE 0x0002
 #define ASYN_TRACEIO_HEX    0x0004
 
+/* traceInfo mask definitions*/
+#define ASYN_TRACEINFO_TIME 0x0001
+#define ASYN_TRACEINFO_PORT 0x0002
+#define ASYN_TRACEINFO_SOURCE 0x0004
+#define ASYN_TRACEINFO_THREAD 0x0008
+
 /* asynPrint and asynPrintIO are macros that act like
    int asynPrint(asynUser *pasynUser,int reason, const char *format, ... ); 
    int asynPrintIO(asynUser *pasynUser,int reason,
         const char *buffer, size_t len, const char *format, ... ); 
 */
 typedef struct asynTrace {
-    /* lock/unlock are only necessary if caller performs I/O other then*/
-    /* by calling asynTrace methods                                    */
+    /* lock/unlock are only necessary if caller performs I/O other than */
+    /* by calling asynTrace methods                                     */
     asynStatus (*lock)(asynUser *pasynUser);
     asynStatus (*unlock)(asynUser *pasynUser);
     asynStatus (*setTraceMask)(asynUser *pasynUser,int mask);
     int        (*getTraceMask)(asynUser *pasynUser);
     asynStatus (*setTraceIOMask)(asynUser *pasynUser,int mask);
     int        (*getTraceIOMask)(asynUser *pasynUser);
+    asynStatus (*setTraceInfoMask)(asynUser *pasynUser,int mask);
+    int        (*getTraceInfoMask)(asynUser *pasynUser);
     asynStatus (*setTraceFile)(asynUser *pasynUser,FILE *fp);
     FILE       *(*getTraceFile)(asynUser *pasynUser);
     asynStatus (*setTraceIOTruncateSize)(asynUser *pasynUser,size_t size);
@@ -207,45 +224,57 @@ typedef struct asynTrace {
 #if defined(__GNUC__) && (__GNUC__ < 3)
     /* GCC 2.95 does not allow EPICS_PRINTF_STYLE on function pointers */
     int        (*print)(asynUser *pasynUser,int reason, const char *pformat, ...);
+    int        (*printSource)(asynUser *pasynUser,int reason, const char *fileName, int line, const char *pformat, ...);
     int        (*vprint)(asynUser *pasynUser,int reason, const char *pformat, va_list pvar);
+    int        (*vprintSource)(asynUser *pasynUser,int reason, const char *file, int line, const char *pformat, va_list pvar);
     int        (*printIO)(asynUser *pasynUser,int reason,
-               const char *buffer, size_t len,const char *pformat, ...);
+                    const char *buffer, size_t len,const char *pformat, ...);
+    int        (*printIOSource)(asynUser *pasynUser,int reason,
+                    const char *buffer, size_t len,const char *file, int line, const char *pformat, ...);
     int        (*vprintIO)(asynUser *pasynUser,int reason,
-               const char *buffer, size_t len,const char *pformat, va_list pvar);
+                    const char *buffer, size_t len,const char *pformat, va_list pvar);
+    int        (*vprintIOSource)(asynUser *pasynUser,int reason,
+                    const char *buffer, size_t len,const char *file, int line, const char *pformat, va_list pvar);
 #else
     int        (*print)(asynUser *pasynUser,int reason, const char *pformat, ...) EPICS_PRINTF_STYLE(3,4);
+    int        (*printSource)(asynUser *pasynUser,int reason, const char *fileName, int line, const char *pformat, ...) EPICS_PRINTF_STYLE(5,6);
     int        (*vprint)(asynUser *pasynUser,int reason, const char *pformat, va_list pvar) EPICS_PRINTF_STYLE(3,0);
+    int        (*vprintSource)(asynUser *pasynUser,int reason, const char *file, int line, const char *pformat, va_list pvar) EPICS_PRINTF_STYLE(5,0);
     int        (*printIO)(asynUser *pasynUser,int reason,
-               const char *buffer, size_t len,const char *pformat, ...) EPICS_PRINTF_STYLE(5,6);
+                    const char *buffer, size_t len,const char *pformat, ...) EPICS_PRINTF_STYLE(5,6);
+    int        (*printIOSource)(asynUser *pasynUser,int reason,
+                    const char *buffer, size_t len,const char *file, int line, const char *pformat, ...) EPICS_PRINTF_STYLE(7,8);
     int        (*vprintIO)(asynUser *pasynUser,int reason,
-               const char *buffer, size_t len,const char *pformat, va_list pvar) EPICS_PRINTF_STYLE(5,0);
+                    const char *buffer, size_t len,const char *pformat, va_list pvar) EPICS_PRINTF_STYLE(5,0);
+    int        (*vprintIOSource)(asynUser *pasynUser,int reason,
+                    const char *buffer, size_t len,const char *file, int line, const char *pformat, va_list pvar) EPICS_PRINTF_STYLE(7,0);
 #endif
 }asynTrace;
 epicsShareExtern asynTrace *pasynTrace;
 
-#if defined(__STDC_VERSION__) && __STDC_VERSION__>=199901L
+#if (defined(__STDC_VERSION__) && __STDC_VERSION__>=199901L) || defined(_WIN32)
 #define asynPrint(pasynUser,reason, ...) \
    ((pasynTrace->getTraceMask((pasynUser))&(reason)) \
-    ? pasynTrace->print((pasynUser),(reason),__VA_ARGS__) \
+    ? pasynTrace->printSource((pasynUser),(reason),__FILE__,__LINE__,__VA_ARGS__) \
     : 0)
 #elif defined(__GNUC__)
 #define asynPrint(pasynUser,reason,format...) \
    ((pasynTrace->getTraceMask((pasynUser))&(reason)) \
-    ? pasynTrace->print(pasynUser,reason,format) \
+    ? pasynTrace->printSource(pasynUser,reason,__FILE__,__LINE__,format) \
     : 0)
 #else
 #define asynPrint pasynTrace->print
 #endif
 
-#if defined(__STDC_VERSION__) && __STDC_VERSION__>=199901L
+#if (defined(__STDC_VERSION__) && __STDC_VERSION__>=199901L) || defined(_WIN32)
 #define asynPrintIO(pasynUser,reason,buffer,len, ...) \
    ((pasynTrace->getTraceMask((pasynUser))&(reason)) \
-    ? pasynTrace->printIO((pasynUser),(reason),(buffer),(len),__VA_ARGS__) \
+    ? pasynTrace->printIOSource((pasynUser),(reason),(buffer),(len),__FILE__,__LINE__,__VA_ARGS__) \
     : 0)
 #elif defined(__GNUC__)
 #define asynPrintIO(pasynUser,reason,buffer,len,format...) \
    ((pasynTrace->getTraceMask((pasynUser))&(reason)) \
-    ? pasynTrace->printIO((pasynUser),(reason),(buffer),(len),format) \
+    ? pasynTrace->printIOSource((pasynUser),(reason),(buffer),(len),__FILE__,__LINE__,format) \
     : 0)
 #else
 #define asynPrintIO pasynTrace->printIO

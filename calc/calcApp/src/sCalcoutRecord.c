@@ -75,6 +75,7 @@
 #include	<callback.h>
 #include	<taskwd.h>
 #include	<epicsString.h>	/* for epicsStrSnPrintEscaped() */
+#include	<epicsStdio.h> /* for epicsSnprintf() */
 #include	"sCalcPostfix.h"
 
 #define GEN_SIZE_OFFSET
@@ -184,7 +185,10 @@ epicsExportAddress(int, sCalcoutRecordDebug);
  * is allocated in init_record) are known to be of this length.
  */
 #define STRING_SIZE 40
-
+
+static char sFldnames[MAX_FIELDS][3] =
+{"AA","BB","CC","DD","EE","FF","GG","HH","II","JJ","KK","LL"};
+
 static long init_record(scalcoutRecord *pcalc, int pass)
 {
 	DBLINK *plink;
@@ -893,7 +897,9 @@ static int fetch_values(scalcoutRecord *pcalc)
 					printf("fetch_values('%s'): dbGetLink(%d) DBR_STRING, returned %ld\n", pcalc->name, i, status);
 			}
 		}
-		if (!RTN_SUCCESS(status)) {strcpy(*psvalue, "Huh?");}
+		if (!RTN_SUCCESS(status)) {
+			epicsSnprintf(*psvalue, STRING_SIZE-1, "%s:fetch(%s) failed", pcalc->name, sFldnames[i]);
+		}
 	}
 	return(0);
 }
@@ -930,7 +936,7 @@ static void checkLinks(scalcoutRecord *pcalc)
 	dbAddr			Addr;
 	dbAddr			*pAddr = &Addr;
 	char 			tmpstr[100];
-	int linkWorks;
+	int isString, linkWorks;
 
 	if (sCalcoutRecordDebug) printf("checkLinks() for %s\n", pcalc->name);
 
@@ -942,11 +948,13 @@ static void checkLinks(scalcoutRecord *pcalc)
 			isCaLink = 1;
 
 			/* See if link is fully functional. (CA link to ENUM must wait for enum strings.) */
+			isString = 0;
 			linkWorks = 0;
 			if (dbCaIsLinkConnected(plink)) {
 				if (i >= MAX_FIELDS && i < MAX_FIELDS+STRING_MAX_FIELDS) {
 					/* this is a string link, do a trial dbGetLink() */
 					long	status;
+					isString = 1;
 					status = dbGetLink(plink, DBR_STRING, tmpstr, 0, 0);
 					if (RTN_SUCCESS(status)) {
 						linkWorks = 1;
@@ -957,8 +965,7 @@ static void checkLinks(scalcoutRecord *pcalc)
 				}
 			}
 
-			/* if (dbCaIsLinkConnected(plink)) { */
-			if (linkWorks) {
+			if (dbCaIsLinkConnected(plink) && (isString == linkWorks)) {
 				if (*plinkValid == scalcoutINAV_EXT_NC) {
 					if (!dbNameToAddr(plink->value.pv_link.pvname, pAddr)) {
 						/* PV resides on this ioc */

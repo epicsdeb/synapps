@@ -12,6 +12,99 @@
   </div>
   <div style="text-align: center">
     <h2>
+      Release 2-7</h2>
+    <h2>
+      August 19, 2014</h2>
+  </div>
+  <ul>
+    <li>Added support for function code 23, Read/Write Multiple Registers. Because of
+      the architecture of the EPICS Modbus support, a driver that uses function 23 is
+      restricted to being either a read-only driver where no data is written, or a write-only
+      driver where no data is read. It is preferable to use functions codes 3, 4, 6, or
+      16 if they are supported. However, some older devices only support function code
+      23.</li>
+  </ul>
+  <div style="text-align: center">
+    <h2>
+      Release 2-6</h2>
+    <h2>
+      April 10, 2014</h2>
+  </div>
+  <ul>
+    <li>Fixed a problem with function code 6 (write single register) on Wago devices when
+      the MASK was not 0x0 or 0xFFFF. In this case a read/modify/write operation is required,
+      and the driver was reading from the wrong address. On Wago devices the readback
+      address for a register is offset by 0x200 from the write address. This offset was
+      not being applied. </li>
+    <li>Added 2 new records to statistics.template. $(P)$(R)HistTimeAxis is a waveform
+      record that contains the X time axis for histogram plots, and MsPerBin is the time
+      per histogram bin in msec.</li>
+  </ul>
+  <div style="text-align: center">
+    <h2>
+      Release 2-5</h2>
+    <h2>
+      October 2, 2013</h2>
+  </div>
+  <ul>
+    <li>Fixed a mutex issue with the input poller. Previous versions had a potential problem
+      with input records which did not use Scan=I/O Intr. In this case there was no mutex
+      protecting access to the read buffer between the device support thread and the poller
+      thread that was reading the Modbus data. It is likely that this problem was rarely
+      if ever encountered because input records were almost always I/O Intr scanned. The
+      fix was to remove the existing mutex in the driver and to simply call pasynManager->lockPort()
+      for the entire duration of the polling cycle. This fix has a positive side effect:
+      it is now possible for external clients, for example other drivers that call the
+      Modbus driver, to temporarily disable the poller by calling pasynManager->lockPort().
+      This can be used to allow atomic sequences of Modbus read/write operations with
+      no possibility of interference from the poller.</li>
+    <li>The above fix means that Modbus input drivers can now block on read operations,
+      because they may need to wait for the poller to complete. These drivers are thus
+      now created with the ASYN_CANBLOCK flag, and the documentation has been changed
+      to state that input drivers are now asynchronous, not synchronous.</li>
+    <li>Changed the wait for interruptAccept in the poller thread. It now works to have
+      a very long polling time, but still having one initial read cycle and callback on
+      I/O Intr scanned records.</li>
+    <li>Added a new command to the Modbus driver, which has the drvUser string "MODBUS_READ".
+      This command is implemented on the asynInt32 interface. Calling asynInt32->write()
+      with this command causes a Modbus I/O cycle for this driver. It will typically be
+      used to force a Modbus input driver to do a read operation independent of the poller
+      thread.</li>
+    <li>Added a new test driver called testModbusSyncIO.cpp. This driver is derived from
+      asynPortDriver. It is designed to demonstrate using another asyn driver to communicate
+      through the Modbus driver. This concept is currently being used to have a motor
+      driver that communicates through the Modbus driver. It demonstrates two types of
+      communication:
+      <ol>
+        <li>Using pasynInt32SyncIO calls to make "synchronous" calls to the Modbus driver.
+          These calls are blocking and are queued.</li>
+        <li>Doing an atomic "read/modify/write" cycle using the following sequence of operations.
+          This uses pasynManager->lockPort to disable the poller and allow this thread to
+          directly call the asynInt32->write() and asynInt32->read() functions. It uses the
+          following logic:
+          <ul>
+            <li>Lock the output port. Needed because we are directly calling the write() function.</li>
+            <li>Lock the input port, which disables the poller and because we are directly calling
+              read().</li>
+            <li>Sleep for 1 second so we can prove the poller was idle.</li>
+            <li>Force a read of the Modbus input by writing on asynInt32 interface with the MODBUS_READ
+              drvInfo.</li>
+            <li>Read the input value on the asynInt32 interface.</li>
+            <li>Add the value passed to this function to the current value just read.</li>
+            <li>Sleep for 2 seconds so we can prove the poller was idle.</li>
+            <li>Write the new value to the output driver.</li>
+            <li>Unlock the input port.</li>
+            <li>Unlock the output port.</li>
+          </ul>
+          This new example driver can be tested with the new files iocBoot/iocTest/sim3.cmd
+          and sim3.substitutions. </li>
+      </ol>
+    </li>
+    <li>Minor change to structure packing declarations to allow building on ARM architecture
+      with GCC 4.2.1</li>
+  </ul>
+  <div style="text-align: center">
+    <h2>
       Release 2-4</h2>
     <h2>
       May 22, 2012</h2>

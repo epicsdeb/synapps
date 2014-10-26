@@ -1,16 +1,1664 @@
-grecord(asyn,"$(P)$(R)$(N)_READ")
+record(mbbi, "$(P)$(R)rCurr_Chan")
 {
-        field(PORT,"$(PORT)")
-        field(AOUT,"MEAS?$(N)")
-        field(FLNK,"$(P)$(R)$(N)")
-        field(SCAN,"$(SCAN)")
+  field(DESC, "Current channel being measured")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto curr_channel $(PORT)")
+
+  field(PINI, "YES")
+
+  field(FLNK, "$(P)$(R)Check_Update")
+
+  field(ZRVL, "1")
+  field(ONVL, "2")
+  field(TWVL, "3")
+  field(THVL, "4")
+  field(FRVL, "5")
+  field(FVVL, "6")
+  field(SXVL, "7")
+  field(SVVL, "8")
+  field(EIVL, "9")
+  field(NIVL, "10")
+  field(TEVL, "11")
+  field(ELVL, "12")
+  field(TVVL, "13")
+  field(TTVL, "14")
+  field(FTVL, "15")
+  field(FFVL, "16")
+
+  field(ZRST, "Channel 1")
+  field(ONST, "Channel 2")
+  field(TWST, "Channel 3")
+  field(THST, "Channel 4")
+  field(FRST, "Channel 5")
+  field(FVST, "Channel 6")
+  field(SXST, "Channel 7")
+  field(SVST, "Channel 8")
+  field(EIST, "Channel 9")
+  field(NIST, "Channel 10")
+  field(TEST, "Channel 11")
+  field(ELST, "Channel 12")
+  field(TVST, "Channel 13")
+  field(TTST, "Channel 14")
+  field(FTST, "Channel 15")
+  field(FFST, "Channel 16")
 }
 
-grecord(scalcout,"$(P)$(R)$(N)")
+
+record(mbbo, "$(P)$(R)wCurr_Chan")
 {
-        field(INAA,"$(P)$(R)$(N)_READ.AINP NPP NMS")
-        field(CALC,"$S(AA,'%f')")
-        field(PREC,"$(PREC)")
-        field(DESC,"$(DESC)")
+  field(DESC, "Change the current channel")
+  field(DTYP, "stream")
+
+  field(OUT, "@SR630.proto set_channel $(PORT)")
+  field(FLNK, "$(P)$(R)Check_Update")
+
+  field(ZRVL, "1")
+  field(ONVL, "2")
+  field(TWVL, "3")
+  field(THVL, "4")
+  field(FRVL, "5")
+  field(FVVL, "6")
+  field(SXVL, "7")
+  field(SVVL, "8")
+  field(EIVL, "9")
+  field(NIVL, "10")
+  field(TEVL, "11")
+  field(ELVL, "12")
+  field(TVVL, "13")
+  field(TTVL, "14")
+  field(FTVL, "15")
+  field(FFVL, "16")
+
+  field(ZRST, "Channel 1")
+  field(ONST, "Channel 2")
+  field(TWST, "Channel 3")
+  field(THST, "Channel 4")
+  field(FRST, "Channel 5")
+  field(FVST, "Channel 6")
+  field(SXST, "Channel 7")
+  field(SVST, "Channel 8")
+  field(EIST, "Channel 9")
+  field(NIST, "Channel 10")
+  field(TEST, "Channel 11")
+  field(ELST, "Channel 12")
+  field(TVST, "Channel 13")
+  field(TTST, "Channel 14")
+  field(FTST, "Channel 15")
+  field(FFST, "Channel 16")
+}
+
+
+#  The device takes a while to correctly respond to requests
+#about which channel it's on when the value has been changed
+#so we will attempt to update the values and then check to
+#make sure that the read channel value is the same as the one
+#that we wanted to set it to.
+record(fanout, "$(P)$(R)Check_Update")
+{
+  field(LNK1, "$(P)$(R)Current_Sync")
+  field(LNK2, "$(P)$(R)Check_Equal")
+}
+
+
+#Update the values that will change when we change channels
+record(fanout, "$(P)$(R)Current_Sync")
+{
+  field(LNK1, "$(P)$(R)rCurr_Chan")
+  field(LNK2, "$(P)$(R)rCurr_Nominal")
+  field(LNK3, "$(P)$(R)rCurr_Units")
+}
+
+
+#  Here we check if there is a difference between the read
+#value of the current channel and the written value. We then
+#send the result of the calculation to two records in order
+#to disable/enable updates
+record(calcout, "$(P)$(R)Check_Equal")
+{
+  field(DESC, "Out of Sync Check")
+
+  field(INPA, "$(P)$(R)rCurr_Chan.RVAL NPP")
+  field(INPB, "$(P)$(R)wCurr_Chan.RVAL NPP")
+
+  field(CALC, "A!=B")
+
+  field(OUT, "$(P)$(R)Update_Lock.VAL PP")
+  field(FLNK, "$(P)$(R)Scale_Scan")
+}
+
+
+#  If the channel values are not in sync, we need to lock
+#the measurement updates as the commands to get the values
+#switch the device to the channel you are reading.
+record(dfanout, "$(P)$(R)Update_Lock")
+{
+  field(OUTA, "$(P)$(R)rCurr_Measure.DISA")
+  field(OUTB, "$(P)$(R)rCurr_Delta.DISA")
+}
+
+
+#  We also want to switch the channel read pv to start
+#continuously updating until the channels match.
+record(calcout, "$(P)$(R)Scale_Scan")
+{
+  field(DESC, "Switch reading from passive")
+
+  field(INPA, "$(P)$(R)Check_Equal.VAL NPP")
+
+  field(CALC, "9 * A")
+
+  field(OUT, "$(P)$(R)rCurr_Chan.SCAN")
+}
+
+
+
+record(ai, "$(P)$(R)rCurr_Measure")
+{
+  field(DESC, "Value for Current Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto curr_measure($(P)$(R)rCurr_Chan.RVAL) $(PORT)")
+
+  field(SCAN, ".1 second")
+
+  field(PREC, "1")
+}
+
+
+
+record(ai, "$(P)$(R)rCurr_Nominal")
+{
+  field(DESC, "Nominal for Current Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto curr_nominal($(P)$(R)rCurr_Chan.RVAL) $(PORT)")
+}
+
+
+
+record(ai, "$(P)$(R)rCurr_Delta")
+{
+  field(DESC, "Difference for Current Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto curr_delta($(P)$(R)rCurr_Chan.RVAL) $(PORT)")
+
+  field(SCAN, ".1 second")
+
+  field(PREC, "1")
+}
+
+record(mbbi, "$(P)$(R)rCurr_Units")
+{
+  field(DESC, "Units for Current Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto curr_units($(P)$(R)rCurr_Chan.RVAL) $(PORT)")
+
+  field(PINI, "YES")
+
+  field(ZRST, "ABS")
+  field(ONST, "CENT")
+  field(TWST, "FHRN")
+  field(THST, "MDC")
+  field(FRST, "DC")
+}
+
+
+
+record(mbbi, "$(P)$(R)rChannel1_Units")
+{
+  field(DESC, "Units for Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto get_units(1) $(PORT)")
+
+  field(PINI, "YES")
+
+  field(ZRST, "ABS")
+  field(ONST, "CENT")
+  field(TWST, "FHRN")
+  field(THST, "MDC")
+  field(FRST, "DC")
+}
+
+record(mbbi, "$(P)$(R)rChannel2_Units")
+{
+  field(DESC, "Units for Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto get_units(2) $(PORT)")
+
+  field(PINI, "YES")
+
+  field(ZRST, "ABS")
+  field(ONST, "CENT")
+  field(TWST, "FHRN")
+  field(THST, "MDC")
+  field(FRST, "DC")
+}
+
+record(mbbi, "$(P)$(R)rChannel3_Units")
+{
+  field(DESC, "Units for Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto get_units(3) $(PORT)")
+
+  field(PINI, "YES")
+
+  field(ZRST, "ABS")
+  field(ONST, "CENT")
+  field(TWST, "FHRN")
+  field(THST, "MDC")
+  field(FRST, "DC")
+}
+
+record(mbbi, "$(P)$(R)rChannel4_Units")
+{
+  field(DESC, "Units for Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto get_units(4) $(PORT)")
+
+  field(PINI, "YES")
+
+  field(ZRST, "ABS")
+  field(ONST, "CENT")
+  field(TWST, "FHRN")
+  field(THST, "MDC")
+  field(FRST, "DC")
+}
+
+record(mbbi, "$(P)$(R)rChannel5_Units")
+{
+  field(DESC, "Units for Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto get_units(5) $(PORT)")
+
+  field(PINI, "YES")
+
+  field(ZRST, "ABS")
+  field(ONST, "CENT")
+  field(TWST, "FHRN")
+  field(THST, "MDC")
+  field(FRST, "DC")
+}
+
+record(mbbi, "$(P)$(R)rChannel6_Units")
+{
+  field(DESC, "Units for Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto get_units(6) $(PORT)")
+
+  field(PINI, "YES")
+
+  field(ZRST, "ABS")
+  field(ONST, "CENT")
+  field(TWST, "FHRN")
+  field(THST, "MDC")
+  field(FRST, "DC")
+}
+
+record(mbbi, "$(P)$(R)rChannel7_Units")
+{
+  field(DESC, "Units for Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto get_units(7) $(PORT)")
+
+  field(PINI, "YES")
+
+  field(ZRST, "ABS")
+  field(ONST, "CENT")
+  field(TWST, "FHRN")
+  field(THST, "MDC")
+  field(FRST, "DC")
+}
+
+record(mbbi, "$(P)$(R)rChannel8_Units")
+{
+  field(DESC, "Units for Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto get_units(8) $(PORT)")
+
+  field(PINI, "YES")
+
+  field(ZRST, "ABS")
+  field(ONST, "CENT")
+  field(TWST, "FHRN")
+  field(THST, "MDC")
+  field(FRST, "DC")
+}
+
+record(mbbi, "$(P)$(R)rChannel9_Units")
+{
+  field(DESC, "Units for Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto get_units(9) $(PORT)")
+
+  field(PINI, "YES")
+
+  field(ZRST, "ABS")
+  field(ONST, "CENT")
+  field(TWST, "FHRN")
+  field(THST, "MDC")
+  field(FRST, "DC")
+}
+
+record(mbbi, "$(P)$(R)rChannel10_Units")
+{
+  field(DESC, "Units for Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto get_units(10) $(PORT)")
+
+  field(PINI, "YES")
+
+  field(ZRST, "ABS")
+  field(ONST, "CENT")
+  field(TWST, "FHRN")
+  field(THST, "MDC")
+  field(FRST, "DC")
+}
+
+record(mbbi, "$(P)$(R)rChannel11_Units")
+{
+  field(DESC, "Units for Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto get_units(11) $(PORT)")
+
+  field(PINI, "YES")
+
+  field(ZRST, "ABS")
+  field(ONST, "CENT")
+  field(TWST, "FHRN")
+  field(THST, "MDC")
+  field(FRST, "DC")
+}
+
+record(mbbi, "$(P)$(R)rChannel12_Units")
+{
+  field(DESC, "Units for Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto get_units(12) $(PORT)")
+
+  field(PINI, "YES")
+
+  field(ZRST, "ABS")
+  field(ONST, "CENT")
+  field(TWST, "FHRN")
+  field(THST, "MDC")
+  field(FRST, "DC")
+}
+
+record(mbbi, "$(P)$(R)rChannel13_Units")
+{
+  field(DESC, "Units for Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto get_units(13) $(PORT)")
+
+  field(PINI, "YES")
+
+  field(ZRST, "ABS")
+  field(ONST, "CENT")
+  field(TWST, "FHRN")
+  field(THST, "MDC")
+  field(FRST, "DC")
+}
+
+record(mbbi, "$(P)$(R)rChannel14_Units")
+{
+  field(DESC, "Units for Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto get_units(14) $(PORT)")
+
+  field(PINI, "YES")
+
+  field(ZRST, "ABS")
+  field(ONST, "CENT")
+  field(TWST, "FHRN")
+  field(THST, "MDC")
+  field(FRST, "DC")
+}
+record(mbbi, "$(P)$(R)rChannel15_Units")
+{
+  field(DESC, "Units for Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto get_units(15) $(PORT)")
+
+  field(PINI, "YES")
+
+  field(ZRST, "ABS")
+  field(ONST, "CENT")
+  field(TWST, "FHRN")
+  field(THST, "MDC")
+  field(FRST, "DC")
+}
+
+record(mbbi, "$(P)$(R)rChannel16_Units")
+{
+  field(DESC, "Units for Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto get_units(16) $(PORT)")
+
+  field(PINI, "YES")
+
+  field(ZRST, "ABS")
+  field(ONST, "CENT")
+  field(TWST, "FHRN")
+  field(THST, "MDC")
+  field(FRST, "DC")
+}
+
+
+record(mbbo, "$(P)$(R)wChannel1_Units")
+{
+  field(DESC, "Set Units for Channel")
+  field(DTYP, "stream")
+  field(OUT, "@SR630.proto set_units(1) $(PORT)")
+  field(FLNK, "$(P)$(R)Channel1_Sync")
+
+  field(ZRST, "ABS")
+  field(ONST, "CENT")
+  field(TWST, "FHRN")
+  field(THST, "MDC")
+  field(FRST, "DC")
+}
+
+record(mbbo, "$(P)$(R)wChannel2_Units")
+{
+  field(DESC, "Set Units for Channel")
+  field(DTYP, "stream")
+  field(OUT, "@SR630.proto set_units(2) $(PORT)")
+  field(FLNK, "$(P)$(R)Channel2_Sync")
+
+  field(ZRST, "ABS")
+  field(ONST, "CENT")
+  field(TWST, "FHRN")
+  field(THST, "MDC")
+  field(FRST, "DC")
+}
+
+record(mbbo, "$(P)$(R)wChannel3_Units")
+{
+  field(DESC, "Set Units for Channel")
+  field(DTYP, "stream")
+  field(OUT, "@SR630.proto set_units(3) $(PORT)")
+  field(FLNK, "$(P)$(R)Channel3_Sync")
+
+  field(ZRST, "ABS")
+  field(ONST, "CENT")
+  field(TWST, "FHRN")
+  field(THST, "MDC")
+  field(FRST, "DC")
+}
+
+record(mbbo, "$(P)$(R)wChannel4_Units")
+{
+  field(DESC, "Set Units for Channel")
+  field(DTYP, "stream")
+  field(OUT, "@SR630.proto set_units(4) $(PORT)")
+  field(FLNK, "$(P)$(R)Channel4_Sync")
+
+  field(ZRST, "ABS")
+  field(ONST, "CENT")
+  field(TWST, "FHRN")
+  field(THST, "MDC")
+  field(FRST, "DC")
+}
+
+record(mbbo, "$(P)$(R)wChannel5_Units")
+{
+  field(DESC, "Set Units for Channel")
+  field(DTYP, "stream")
+  field(OUT, "@SR630.proto set_units(5) $(PORT)")
+  field(FLNK, "$(P)$(R)Channel5_Sync")
+
+  field(ZRST, "ABS")
+  field(ONST, "CENT")
+  field(TWST, "FHRN")
+  field(THST, "MDC")
+  field(FRST, "DC")
+}
+
+record(mbbo, "$(P)$(R)wChannel6_Units")
+{
+  field(DESC, "Set Units for Channel")
+  field(DTYP, "stream")
+  field(OUT, "@SR630.proto set_units(6) $(PORT)")
+  field(FLNK, "$(P)$(R)Channel6_Sync")
+
+  field(ZRST, "ABS")
+  field(ONST, "CENT")
+  field(TWST, "FHRN")
+  field(THST, "MDC")
+  field(FRST, "DC")
+}
+
+record(mbbo, "$(P)$(R)wChannel7_Units")
+{
+  field(DESC, "Set Units for Channel")
+  field(DTYP, "stream")
+  field(OUT, "@SR630.proto set_units(7) $(PORT)")
+  field(FLNK, "$(P)$(R)Channel7_Sync")
+
+  field(ZRST, "ABS")
+  field(ONST, "CENT")
+  field(TWST, "FHRN")
+  field(THST, "MDC")
+  field(FRST, "DC")
+}
+
+record(mbbo, "$(P)$(R)wChannel8_Units")
+{
+  field(DESC, "Set Units for Channel")
+  field(DTYP, "stream")
+  field(OUT, "@SR630.proto set_units(8) $(PORT)")
+  field(FLNK, "$(P)$(R)Channel8_Sync")
+
+  field(ZRST, "ABS")
+  field(ONST, "CENT")
+  field(TWST, "FHRN")
+  field(THST, "MDC")
+  field(FRST, "DC")
+}
+
+record(mbbo, "$(P)$(R)wChannel9_Units")
+{
+  field(DESC, "Set Units for Channel")
+  field(DTYP, "stream")
+  field(OUT, "@SR630.proto set_units(9) $(PORT)")
+  field(FLNK, "$(P)$(R)Channel9_Sync")
+
+  field(ZRST, "ABS")
+  field(ONST, "CENT")
+  field(TWST, "FHRN")
+  field(THST, "MDC")
+  field(FRST, "DC")
+}
+
+record(mbbo, "$(P)$(R)wChannel10_Units")
+{
+  field(DESC, "Set Units for Channel")
+  field(DTYP, "stream")
+  field(OUT, "@SR630.proto set_units(10) $(PORT)")
+  field(FLNK, "$(P)$(R)Channel10_Sync")
+
+  field(ZRST, "ABS")
+  field(ONST, "CENT")
+  field(TWST, "FHRN")
+  field(THST, "MDC")
+  field(FRST, "DC")
+}
+
+record(mbbo, "$(P)$(R)wChannel11_Units")
+{
+  field(DESC, "Set Units for Channel")
+  field(DTYP, "stream")
+  field(OUT, "@SR630.proto set_units(11) $(PORT)")
+  field(FLNK, "$(P)$(R)Channel11_Sync")
+
+  field(ZRST, "ABS")
+  field(ONST, "CENT")
+  field(TWST, "FHRN")
+  field(THST, "MDC")
+  field(FRST, "DC")
+}
+
+record(mbbo, "$(P)$(R)wChannel12_Units")
+{
+  field(DESC, "Set Units for Channel")
+  field(DTYP, "stream")
+  field(OUT, "@SR630.proto set_units(12) $(PORT)")
+  field(FLNK, "$(P)$(R)Channel12_Sync")
+
+  field(ZRST, "ABS")
+  field(ONST, "CENT")
+  field(TWST, "FHRN")
+  field(THST, "MDC")
+  field(FRST, "DC")
+}
+
+
+record(mbbo, "$(P)$(R)wChannel13_Units")
+{
+  field(DESC, "Set Units for Channel")
+  field(DTYP, "stream")
+  field(OUT, "@SR630.proto set_units(13) $(PORT)")
+  field(FLNK, "$(P)$(R)Channel13_Sync")
+
+  field(ZRST, "ABS")
+  field(ONST, "CENT")
+  field(TWST, "FHRN")
+  field(THST, "MDC")
+  field(FRST, "DC")
+}
+
+
+record(mbbo, "$(P)$(R)wChannel14_Units")
+{
+  field(DESC, "Set Units for Channel")
+  field(DTYP, "stream")
+  field(OUT, "@SR630.proto set_units(14) $(PORT)")
+  field(FLNK, "$(P)$(R)Channel14_Sync")
+
+  field(ZRST, "ABS")
+  field(ONST, "CENT")
+  field(TWST, "FHRN")
+  field(THST, "MDC")
+  field(FRST, "DC")
+}
+
+
+record(mbbo, "$(P)$(R)wChannel15_Units")
+{
+  field(DESC, "Set Units for Channel")
+  field(DTYP, "stream")
+  field(OUT, "@SR630.proto set_units(15) $(PORT)")
+  field(FLNK, "$(P)$(R)Channel15_Sync")
+
+  field(ZRST, "ABS")
+  field(ONST, "CENT")
+  field(TWST, "FHRN")
+  field(THST, "MDC")
+  field(FRST, "DC")
+}
+
+record(mbbo, "$(P)$(R)wChannel16_Units")
+{
+  field(DESC, "Set Units for Channel")
+  field(DTYP, "stream")
+  field(OUT, "@SR630.proto set_units(16) $(PORT)")
+  field(FLNK, "$(P)$(R)Channel16_Sync")
+
+  field(ZRST, "ABS")
+  field(ONST, "CENT")
+  field(TWST, "FHRN")
+  field(THST, "MDC")
+  field(FRST, "DC")
+}
+
+
+record(mbbi, "$(P)$(R)rChannel1_Therm_Type")
+{
+  field(DESC, "Therm Type for Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto get_type(1) $(PORT)")
+
+  field(PINI, "YES")
+
+  field(ZRST, "B")
+  field(ONST, "E")
+  field(TWST, "J")
+  field(THST, "K")
+  field(FRST, "R")
+  field(FVST, "S")
+  field(SXST, "T")
+}
+
+record(mbbi, "$(P)$(R)rChannel2_Therm_Type")
+{
+  field(DESC, "Therm Type for Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto get_type(2) $(PORT)")
+
+  field(PINI, "YES")
+
+  field(ZRST, "B")
+  field(ONST, "E")
+  field(TWST, "J")
+  field(THST, "K")
+  field(FRST, "R")
+  field(FVST, "S")
+  field(SXST, "T")
+}
+
+record(mbbi, "$(P)$(R)rChannel3_Therm_Type")
+{
+  field(DESC, "Therm Type for Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto get_type(3) $(PORT)")
+
+  field(PINI, "YES")
+
+  field(ZRST, "B")
+  field(ONST, "E")
+  field(TWST, "J")
+  field(THST, "K")
+  field(FRST, "R")
+  field(FVST, "S")
+  field(SXST, "T")
+}
+
+record(mbbi, "$(P)$(R)rChannel4_Therm_Type")
+{
+  field(DESC, "Therm Type for Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto get_type(4) $(PORT)")
+
+  field(PINI, "YES")
+
+  field(ZRST, "B")
+  field(ONST, "E")
+  field(TWST, "J")
+  field(THST, "K")
+  field(FRST, "R")
+  field(FVST, "S")
+  field(SXST, "T")
+}
+
+record(mbbi, "$(P)$(R)rChannel5_Therm_Type")
+{
+  field(DESC, "Therm Type for Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto get_type(5) $(PORT)")
+
+  field(PINI, "YES")
+
+  field(ZRST, "B")
+  field(ONST, "E")
+  field(TWST, "J")
+  field(THST, "K")
+  field(FRST, "R")
+  field(FVST, "S")
+  field(SXST, "T")
+}
+
+record(mbbi, "$(P)$(R)rChannel6_Therm_Type")
+{
+  field(DESC, "Therm Type for Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto get_type(6) $(PORT)")
+
+  field(PINI, "YES")
+
+  field(ZRST, "B")
+  field(ONST, "E")
+  field(TWST, "J")
+  field(THST, "K")
+  field(FRST, "R")
+  field(FVST, "S")
+  field(SXST, "T")
+}
+
+record(mbbi, "$(P)$(R)rChannel7_Therm_Type")
+{
+  field(DESC, "Therm Type for Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto get_type(7) $(PORT)")
+
+  field(PINI, "YES")
+
+  field(ZRST, "B")
+  field(ONST, "E")
+  field(TWST, "J")
+  field(THST, "K")
+  field(FRST, "R")
+  field(FVST, "S")
+  field(SXST, "T")
+}
+
+record(mbbi, "$(P)$(R)rChannel8_Therm_Type")
+{
+  field(DESC, "Therm Type for Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto get_type(8) $(PORT)")
+
+  field(PINI, "YES")
+
+  field(ZRST, "B")
+  field(ONST, "E")
+  field(TWST, "J")
+  field(THST, "K")
+  field(FRST, "R")
+  field(FVST, "S")
+  field(SXST, "T")
+}
+
+record(mbbi, "$(P)$(R)rChannel9_Therm_Type")
+{
+  field(DESC, "Therm Type for Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto get_type(9) $(PORT)")
+
+  field(PINI, "YES")
+
+  field(ZRST, "B")
+  field(ONST, "E")
+  field(TWST, "J")
+  field(THST, "K")
+  field(FRST, "R")
+  field(FVST, "S")
+  field(SXST, "T")
+}
+
+record(mbbi, "$(P)$(R)rChannel10_Therm_Type")
+{
+  field(DESC, "Therm Type for Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto get_type(10) $(PORT)")
+
+  field(PINI, "YES")
+
+  field(ZRST, "B")
+  field(ONST, "E")
+  field(TWST, "J")
+  field(THST, "K")
+  field(FRST, "R")
+  field(FVST, "S")
+  field(SXST, "T")
+}
+
+record(mbbi, "$(P)$(R)rChannel11_Therm_Type")
+{
+  field(DESC, "Therm Type for Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto get_type(11) $(PORT)")
+
+  field(PINI, "YES")
+
+  field(ZRST, "B")
+  field(ONST, "E")
+  field(TWST, "J")
+  field(THST, "K")
+  field(FRST, "R")
+  field(FVST, "S")
+  field(SXST, "T")
+}
+
+record(mbbi, "$(P)$(R)rChannel12_Therm_Type")
+{
+  field(DESC, "Therm Type for Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto get_type(12) $(PORT)")
+
+  field(PINI, "YES")
+
+  field(ZRST, "B")
+  field(ONST, "E")
+  field(TWST, "J")
+  field(THST, "K")
+  field(FRST, "R")
+  field(FVST, "S")
+  field(SXST, "T")
+}
+
+record(mbbi, "$(P)$(R)rChannel13_Therm_Type")
+{
+  field(DESC, "Therm Type for Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto get_type(13) $(PORT)")
+
+  field(PINI, "YES")
+
+  field(ZRST, "B")
+  field(ONST, "E")
+  field(TWST, "J")
+  field(THST, "K")
+  field(FRST, "R")
+  field(FVST, "S")
+  field(SXST, "T")
+}
+
+record(mbbi, "$(P)$(R)rChannel14_Therm_Type")
+{
+  field(DESC, "Therm Type for Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto get_type(14) $(PORT)")
+
+  field(PINI, "YES")
+
+  field(ZRST, "B")
+  field(ONST, "E")
+  field(TWST, "J")
+  field(THST, "K")
+  field(FRST, "R")
+  field(FVST, "S")
+  field(SXST, "T")
+}
+
+record(mbbi, "$(P)$(R)rChannel15_Therm_Type")
+{
+  field(DESC, "Therm Type for Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto get_type(15) $(PORT)")
+
+  field(PINI, "YES")
+
+  field(ZRST, "B")
+  field(ONST, "E")
+  field(TWST, "J")
+  field(THST, "K")
+  field(FRST, "R")
+  field(FVST, "S")
+  field(SXST, "T")
+}
+
+record(mbbi, "$(P)$(R)rChannel16_Therm_Type")
+{
+  field(DESC, "Therm Type for Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto get_type(16) $(PORT)")
+
+  field(PINI, "YES")
+
+  field(ZRST, "B")
+  field(ONST, "E")
+  field(TWST, "J")
+  field(THST, "K")
+  field(FRST, "R")
+  field(FVST, "S")
+  field(SXST, "T")
+}
+
+
+record(mbbo, "$(P)$(R)wChannel1_Therm_Type")
+{
+  field(DESC, "Set Therm Type for Channel")
+  field(DTYP, "stream")
+  field(OUT, "@SR630.proto set_type(1) $(PORT)")
+  field(FLNK, "$(P)$(R)Channel1_Sync")
+
+
+  field(ZRST, "B")
+  field(ONST, "E")
+  field(TWST, "J")
+  field(THST, "K")
+  field(FRST, "R")
+  field(FVST, "S")
+  field(SXST, "T")
+}
+
+record(mbbo, "$(P)$(R)wChannel2_Therm_Type")
+{
+  field(DESC, "Set Therm Type for Channel")
+  field(DTYP, "stream")
+  field(OUT, "@SR630.proto set_type(2) $(PORT)")
+  field(FLNK, "$(P)$(R)Channel2_Sync")
+
+  field(ZRST, "B")
+  field(ONST, "E")
+  field(TWST, "J")
+  field(THST, "K")
+  field(FRST, "R")
+  field(FVST, "S")
+  field(SXST, "T")
+}
+
+record(mbbo, "$(P)$(R)wChannel3_Therm_Type")
+{
+  field(DESC, "Set Therm Type for Channel")
+  field(DTYP, "stream")
+  field(OUT, "@SR630.proto set_type(3) $(PORT)")
+  field(FLNK, "$(P)$(R)Channel3_Sync")
+
+  field(ZRST, "B")
+  field(ONST, "E")
+  field(TWST, "J")
+  field(THST, "K")
+  field(FRST, "R")
+  field(FVST, "S")
+  field(SXST, "T")
+}
+
+record(mbbo, "$(P)$(R)wChannel4_Therm_Type")
+{
+  field(DESC, "Set Therm Type for Channel")
+  field(DTYP, "stream")
+  field(OUT, "@SR630.proto set_type(4) $(PORT)")
+  field(FLNK, "$(P)$(R)Channel4_Sync")
+
+  field(ZRST, "B")
+  field(ONST, "E")
+  field(TWST, "J")
+  field(THST, "K")
+  field(FRST, "R")
+  field(FVST, "S")
+  field(SXST, "T")
+}
+
+record(mbbo, "$(P)$(R)wChannel5_Therm_Type")
+{
+  field(DESC, "Set Therm Type for Channel")
+  field(DTYP, "stream")
+  field(OUT, "@SR630.proto set_type(5) $(PORT)")
+  field(FLNK, "$(P)$(R)Channel5_Sync")
+
+  field(ZRST, "B")
+  field(ONST, "E")
+  field(TWST, "J")
+  field(THST, "K")
+  field(FRST, "R")
+  field(FVST, "S")
+  field(SXST, "T")
+}
+
+record(mbbo, "$(P)$(R)wChannel6_Therm_Type")
+{
+  field(DESC, "Set Therm Type for Channel")
+  field(DTYP, "stream")
+  field(OUT, "@SR630.proto set_type(6) $(PORT)")
+  field(FLNK, "$(P)$(R)Channel6_Sync")
+
+  field(ZRST, "B")
+  field(ONST, "E")
+  field(TWST, "J")
+  field(THST, "K")
+  field(FRST, "R")
+  field(FVST, "S")
+  field(SXST, "T")
+}
+
+record(mbbo, "$(P)$(R)wChannel7_Therm_Type")
+{
+  field(DESC, "Set Therm Type for Channel")
+  field(DTYP, "stream")
+  field(OUT, "@SR630.proto set_type(7) $(PORT)")
+  field(FLNK, "$(P)$(R)Channel7_Sync")
+
+  field(ZRST, "B")
+  field(ONST, "E")
+  field(TWST, "J")
+  field(THST, "K")
+  field(FRST, "R")
+  field(FVST, "S")
+  field(SXST, "T")
+}
+
+record(mbbo, "$(P)$(R)wChannel8_Therm_Type")
+{
+  field(DESC, "Set Therm Type for Channel")
+  field(DTYP, "stream")
+  field(OUT, "@SR630.proto set_type(8) $(PORT)")
+  field(FLNK, "$(P)$(R)Channel8_Sync")
+
+  field(ZRST, "B")
+  field(ONST, "E")
+  field(TWST, "J")
+  field(THST, "K")
+  field(FRST, "R")
+  field(FVST, "S")
+  field(SXST, "T")
+}
+
+record(mbbo, "$(P)$(R)wChannel9_Therm_Type")
+{
+  field(DESC, "Set Therm Type for Channel")
+  field(DTYP, "stream")
+  field(OUT, "@SR630.proto set_type(9) $(PORT)")
+  field(FLNK, "$(P)$(R)Channel9_Sync")
+
+  field(ZRST, "B")
+  field(ONST, "E")
+  field(TWST, "J")
+  field(THST, "K")
+  field(FRST, "R")
+  field(FVST, "S")
+  field(SXST, "T")
+}
+
+record(mbbo, "$(P)$(R)wChannel10_Therm_Type")
+{
+  field(DESC, "Set Therm Type for Channel")
+  field(DTYP, "stream")
+  field(OUT, "@SR630.proto set_type(10) $(PORT)")
+  field(FLNK, "$(P)$(R)Channel10_Sync")
+
+  field(ZRST, "B")
+  field(ONST, "E")
+  field(TWST, "J")
+  field(THST, "K")
+  field(FRST, "R")
+  field(FVST, "S")
+  field(SXST, "T")
+}
+
+record(mbbo, "$(P)$(R)wChannel11_Therm_Type")
+{
+  field(DESC, "Set Therm Type for Channel")
+  field(DTYP, "stream")
+  field(OUT, "@SR630.proto set_type(11) $(PORT)")
+  field(FLNK, "$(P)$(R)Channel11_Sync")
+
+  field(ZRST, "B")
+  field(ONST, "E")
+  field(TWST, "J")
+  field(THST, "K")
+  field(FRST, "R")
+  field(FVST, "S")
+  field(SXST, "T")
+}
+
+record(mbbo, "$(P)$(R)wChannel12_Therm_Type")
+{
+  field(DESC, "Set Therm Type for Channel")
+  field(DTYP, "stream")
+  field(OUT, "@SR630.proto set_type(12) $(PORT)")
+  field(FLNK, "$(P)$(R)Channel12_Sync")
+
+  field(ZRST, "B")
+  field(ONST, "E")
+  field(TWST, "J")
+  field(THST, "K")
+  field(FRST, "R")
+  field(FVST, "S")
+  field(SXST, "T")
+}
+
+record(mbbo, "$(P)$(R)wChannel13_Therm_Type")
+{
+  field(DESC, "Set Therm Type for Channel")
+  field(DTYP, "stream")
+  field(OUT, "@SR630.proto set_type(13) $(PORT)")
+  field(FLNK, "$(P)$(R)Channel13_Sync")
+
+  field(ZRST, "B")
+  field(ONST, "E")
+  field(TWST, "J")
+  field(THST, "K")
+  field(FRST, "R")
+  field(FVST, "S")
+  field(SXST, "T")
+}
+
+record(mbbo, "$(P)$(R)wChannel14_Therm_Type")
+{
+  field(DESC, "Set Therm Type for Channel")
+  field(DTYP, "stream")
+  field(OUT, "@SR630.proto set_type(14) $(PORT)")
+  field(FLNK, "$(P)$(R)Channel14_Sync")
+
+  field(ZRST, "B")
+  field(ONST, "E")
+  field(TWST, "J")
+  field(THST, "K")
+  field(FRST, "R")
+  field(FVST, "S")
+  field(SXST, "T")
+}
+
+record(mbbo, "$(P)$(R)wChannel15_Therm_Type")
+{
+  field(DESC, "Set Therm Type for Channel")
+  field(DTYP, "stream")
+  field(OUT, "@SR630.proto set_type(15) $(PORT)")
+  field(FLNK, "$(P)$(R)Channel15_Sync")
+
+  field(ZRST, "B")
+  field(ONST, "E")
+  field(TWST, "J")
+  field(THST, "K")
+  field(FRST, "R")
+  field(FVST, "S")
+  field(SXST, "T")
+}
+
+record(mbbo, "$(P)$(R)wChannel16_Therm_Type")
+{
+  field(DESC, "Set Therm Type for Channel")
+  field(DTYP, "stream")
+  field(OUT, "@SR630.proto set_type(16) $(PORT)")
+  field(FLNK, "$(P)$(R)Channel16_Sync")
+
+  field(ZRST, "B")
+  field(ONST, "E")
+  field(TWST, "J")
+  field(THST, "K")
+  field(FRST, "R")
+  field(FVST, "S")
+  field(SXST, "T")
+}
+
+
+
+record(ai, "$(P)$(R)rChannel1_Nominal_Value")
+{
+  field(DESC, "Nominal for Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto get_nominal(1) $(PORT)")
+
+  field(PINI, "YES")
+
+  field(PREC, "1")
+}
+
+record(ai, "$(P)$(R)rChannel2_Nominal_Value")
+{
+  field(DESC, "Nominal for Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto get_nominal(2) $(PORT)")
+
+  field(PINI, "YES")
+
+  field(PREC, "1")
+}
+
+record(ai, "$(P)$(R)rChannel3_Nominal_Value")
+{
+  field(DESC, "Nominal for Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto get_nominal(3) $(PORT)")
+
+  field(PINI, "YES")
+
+  field(PREC, "1")
+}
+
+record(ai, "$(P)$(R)rChannel4_Nominal_Value")
+{
+  field(DESC, "Nominal for Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto get_nominal(4) $(PORT)")
+
+  field(PINI, "YES")
+}
+
+record(ai, "$(P)$(R)rChannel5_Nominal_Value")
+{
+  field(DESC, "Nominal for Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto get_nominal(5) $(PORT)")
+
+  field(PINI, "YES")
+
+  field(PREC, "1")
+}
+
+record(ai, "$(P)$(R)rChannel6_Nominal_Value")
+{
+  field(DESC, "Nominal for Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto get_nominal(6) $(PORT)")
+
+  field(PINI, "YES")
+
+  field(PREC, "1")
+}
+
+record(ai, "$(P)$(R)rChannel7_Nominal_Value")
+{
+  field(DESC, "Nominal for Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto get_nominal(7) $(PORT)")
+
+  field(PINI, "YES")
+
+  field(PREC, "1")
+}
+
+record(ai, "$(P)$(R)rChannel8_Nominal_Value")
+{
+  field(DESC, "Nominal for Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto get_nominal(8) $(PORT)")
+
+  field(PINI, "YES")
+}
+
+record(ai, "$(P)$(R)rChannel9_Nominal_Value")
+{
+  field(DESC, "Nominal for Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto get_nominal(9) $(PORT)")
+
+  field(PINI, "YES")
+
+  field(PREC, "1")
+}
+
+record(ai, "$(P)$(R)rChannel10_Nominal_Value")
+{
+  field(DESC, "Nominal for Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto get_nominal(10) $(PORT)")
+
+  field(PINI, "YES")
+
+  field(PREC, "1")
+}
+
+record(ai, "$(P)$(R)rChannel11_Nominal_Value")
+{
+  field(DESC, "Nominal for Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto get_nominal(11) $(PORT)")
+
+  field(PINI, "YES")
+
+  field(PREC, "1")
+}
+
+record(ai, "$(P)$(R)rChannel12_Nominal_Value")
+{
+  field(DESC, "Nominal for Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto get_nominal(12) $(PORT)")
+
+  field(PINI, "YES")
+
+  field(PREC, "1")
+}
+
+record(ai, "$(P)$(R)rChannel13_Nominal_Value")
+{
+  field(DESC, "Nominal for Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto get_nominal(13) $(PORT)")
+
+  field(PINI, "YES")
+
+  field(PREC, "1")
+}
+
+record(ai, "$(P)$(R)rChannel14_Nominal_Value")
+{
+  field(DESC, "Nominal for Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto get_nominal(14) $(PORT)")
+
+  field(PINI, "YES")
+
+  field(PREC, "1")
+}
+
+record(ai, "$(P)$(R)rChannel15_Nominal_Value")
+{
+  field(DESC, "Nominal for Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto get_nominal(15) $(PORT)")
+
+  field(PINI, "YES")
+
+  field(PREC, "1")
+}
+
+record(ai, "$(P)$(R)rChannel16_Nominal_Value")
+{
+  field(DESC, "Nominal for Channel")
+  field(DTYP, "stream")
+  field(INP, "@SR630.proto get_nominal(16) $(PORT)")
+
+  field(PINI, "YES")
+
+  field(PREC, "1")
+}
+
+record(ao, "$(P)$(R)wChannel1_Nominal_Value")
+{
+  field(DESC, "Set Nominal for Channel")
+  field(DTYP, "stream")
+  field(OUT, "@SR630.proto set_nominal(1) $(PORT)")
+  field(FLNK, "$(P)$(R)Channel1_Sync")
+
+  field(PREC, "1")
+}
+
+record(ao, "$(P)$(R)wChannel2_Nominal_Value")
+{
+  field(DESC, "Set Nominal for Channel")
+  field(DTYP, "stream")
+  field(OUT, "@SR630.proto set_nominal(2) $(PORT)")
+  field(FLNK, "$(P)$(R)Channel2_Sync")
+
+  field(PREC, "1")
+}
+
+record(ao, "$(P)$(R)wChannel3_Nominal_Value")
+{
+  field(DESC, "Set Nominal for Channel")
+  field(DTYP, "stream")
+  field(OUT, "@SR630.proto set_nominal(3) $(PORT)")
+  field(FLNK, "$(P)$(R)Channel3_Sync")
+
+  field(PREC, "1")
+}
+
+record(ao, "$(P)$(R)wChannel4_Nominal_Value")
+{
+  field(DESC, "Set Nominal for Channel")
+  field(DTYP, "stream")
+  field(OUT, "@SR630.proto set_nominal(4) $(PORT)")
+  field(FLNK, "$(P)$(R)Channel4_Sync")
+
+  field(PREC, "1")
+}
+
+record(ao, "$(P)$(R)wChannel5_Nominal_Value")
+{
+  field(DESC, "Set Nominal for Channel")
+  field(DTYP, "stream")
+  field(OUT, "@SR630.proto set_nominal(5) $(PORT)")
+  field(FLNK, "$(P)$(R)Channel5_Sync")
+
+  field(PREC, "1")
+}
+
+record(ao, "$(P)$(R)wChannel6_Nominal_Value")
+{
+  field(DESC, "Set Nominal for Channel")
+  field(DTYP, "stream")
+  field(OUT, "@SR630.proto set_nominal(6) $(PORT)")
+  field(FLNK, "$(P)$(R)Channel6_Sync")
+
+  field(PREC, "1")
+}
+
+record(ao, "$(P)$(R)wChannel7_Nominal_Value")
+{
+  field(DESC, "Set Nominal for Channel")
+  field(DTYP, "stream")
+  field(OUT, "@SR630.proto set_nominal(7) $(PORT)")
+  field(FLNK, "$(P)$(R)Channel7_Sync")
+
+  field(PREC, "1")
+}
+
+record(ao, "$(P)$(R)wChannel8_Nominal_Value")
+{
+  field(DESC, "Set Nominal for Channel")
+  field(DTYP, "stream")
+  field(OUT, "@SR630.proto set_nominal(8) $(PORT)")
+  field(FLNK, "$(P)$(R)Channel8_Sync")
+
+  field(PREC, "1")
+}
+
+record(ao, "$(P)$(R)wChannel9_Nominal_Value")
+{
+  field(DESC, "Set Nominal for Channel")
+  field(DTYP, "stream")
+  field(OUT, "@SR630.proto set_nominal(9) $(PORT)")
+  field(FLNK, "$(P)$(R)Channel9_Sync")
+
+  field(PREC, "1")
+}
+
+record(ao, "$(P)$(R)wChannel10_Nominal_Value")
+{
+  field(DESC, "Set Nominal for Channel")
+  field(DTYP, "stream")
+  field(OUT, "@SR630.proto set_nominal(10) $(PORT)")
+  field(FLNK, "$(P)$(R)Channel10_Sync")
+
+  field(PREC, "1")
+}
+
+record(ao, "$(P)$(R)wChannel11_Nominal_Value")
+{
+  field(DESC, "Set Nominal for Channel")
+  field(DTYP, "stream")
+  field(OUT, "@SR630.proto set_nominal(11) $(PORT)")
+  field(FLNK, "$(P)$(R)Channel11_Sync")
+
+  field(PREC, "1")
+}
+
+record(ao, "$(P)$(R)wChannel12_Nominal_Value")
+{
+  field(DESC, "Set Nominal for Channel")
+  field(DTYP, "stream")
+  field(OUT, "@SR630.proto set_nominal(12) $(PORT)")
+  field(FLNK, "$(P)$(R)Channel12_Sync")
+
+  field(PREC, "1")
+}
+
+record(ao, "$(P)$(R)wChannel13_Nominal_Value")
+{
+  field(DESC, "Set Nominal for Channel")
+  field(DTYP, "stream")
+  field(OUT, "@SR630.proto set_nominal(13) $(PORT)")
+  field(FLNK, "$(P)$(R)Channel13_Sync")
+
+  field(PREC, "1")
+}
+
+record(ao, "$(P)$(R)wChannel14_Nominal_Value")
+{
+  field(DESC, "Set Nominal for Channel")
+  field(DTYP, "stream")
+  field(OUT, "@SR630.proto set_nominal(14) $(PORT)")
+  field(FLNK, "$(P)$(R)Channel14_Sync")
+
+  field(PREC, "1")
+}
+
+record(ao, "$(P)$(R)wChannel15_Nominal_Value")
+{
+  field(DESC, "Set Nominal for Channel")
+  field(DTYP, "stream")
+  field(OUT, "@SR630.proto set_nominal(15) $(PORT)")
+  field(FLNK, "$(P)$(R)Channel15_Sync")
+
+  field(PREC, "1")
+}
+
+record(ao, "$(P)$(R)wChannel16_Nominal_Value")
+{
+  field(DESC, "Set Nominal for Channel")
+  field(DTYP, "stream")
+  field(OUT, "@SR630.proto set_nominal(16) $(PORT)")
+  field(FLNK, "$(P)$(R)Channel16_Sync")
+
+  field(PREC, "1")
+}
+
+record(fanout, "$(P)$(R)Channel1_Sync")
+{
+  field(LNK1, "$(P)$(R)rChannel1_Nominal_Value")
+  field(LNK2, "$(P)$(R)rChannel1_Therm_Type")
+  field(LNK3, "$(P)$(R)rChannel1_Units")
+  field(LNK4, "$(P)$(R)Current_Sync")
+}
+
+record(fanout, "$(P)$(R)Channel2_Sync")
+{
+  field(LNK1, "$(P)$(R)rChannel2_Nominal_Value")
+  field(LNK2, "$(P)$(R)rChannel2_Therm_Type")
+  field(LNK3, "$(P)$(R)rChannel2_Units")
+  field(LNK4, "$(P)$(R)Current_Sync")
+}
+
+record(fanout, "$(P)$(R)Channel3_Sync")
+{
+  field(LNK1, "$(P)$(R)rChannel3_Nominal_Value")
+  field(LNK2, "$(P)$(R)rChannel3_Therm_Type")
+  field(LNK3, "$(P)$(R)rChannel3_Units")
+  field(LNK4, "$(P)$(R)Current_Sync")
+}
+
+record(fanout, "$(P)$(R)Channel4_Sync")
+{
+  field(LNK1, "$(P)$(R)rChannel4_Nominal_Value")
+  field(LNK2, "$(P)$(R)rChannel4_Therm_Type")
+  field(LNK3, "$(P)$(R)rChannel4_Units")
+  field(LNK4, "$(P)$(R)Current_Sync")
+}
+
+record(fanout, "$(P)$(R)Channel5_Sync")
+{
+  field(LNK1, "$(P)$(R)rChannel5_Nominal_Value")
+  field(LNK2, "$(P)$(R)rChannel5_Therm_Type")
+  field(LNK3, "$(P)$(R)rChannel5_Units")
+  field(LNK4, "$(P)$(R)Current_Sync")
+}
+
+record(fanout, "$(P)$(R)Channel6_Sync")
+{
+  field(LNK1, "$(P)$(R)rChannel6_Nominal_Value")
+  field(LNK2, "$(P)$(R)rChannel6_Therm_Type")
+  field(LNK3, "$(P)$(R)rChannel6_Units")
+  field(LNK4, "$(P)$(R)Current_Sync")
+}
+
+record(fanout, "$(P)$(R)Channel7_Sync")
+{
+  field(LNK1, "$(P)$(R)rChannel7_Nominal_Value")
+  field(LNK2, "$(P)$(R)rChannel7_Therm_Type")
+  field(LNK3, "$(P)$(R)rChannel7_Units")
+  field(LNK4, "$(P)$(R)Current_Sync")
+}
+
+record(fanout, "$(P)$(R)Channel8_Sync")
+{
+  field(LNK1, "$(P)$(R)rChannel8_Nominal_Value")
+  field(LNK2, "$(P)$(R)rChannel8_Therm_Type")
+  field(LNK3, "$(P)$(R)rChannel8_Units")
+  field(LNK4, "$(P)$(R)Current_Sync")
+}
+
+record(fanout, "$(P)$(R)Channel9_Sync")
+{
+  field(LNK1, "$(P)$(R)rChannel9_Nominal_Value")
+  field(LNK2, "$(P)$(R)rChannel9_Therm_Type")
+  field(LNK3, "$(P)$(R)rChannel9_Units")
+  field(LNK4, "$(P)$(R)Current_Sync")
+}
+
+record(fanout, "$(P)$(R)Channel10_Sync")
+{
+  field(LNK1, "$(P)$(R)rChannel10_Nominal_Value")
+  field(LNK2, "$(P)$(R)rChannel10_Therm_Type")
+  field(LNK3, "$(P)$(R)rChannel10_Units")
+  field(LNK4, "$(P)$(R)Current_Sync")
+}
+
+record(fanout, "$(P)$(R)Channel11_Sync")
+{
+  field(LNK1, "$(P)$(R)rChannel11_Nominal_Value")
+  field(LNK2, "$(P)$(R)rChannel11_Therm_Type")
+  field(LNK3, "$(P)$(R)rChannel11_Units")
+  field(LNK4, "$(P)$(R)Current_Sync")
+}
+
+record(fanout, "$(P)$(R)Channel12_Sync")
+{
+  field(LNK1, "$(P)$(R)rChannel12_Nominal_Value")
+  field(LNK2, "$(P)$(R)rChannel12_Therm_Type")
+  field(LNK3, "$(P)$(R)rChannel12_Units")
+  field(LNK4, "$(P)$(R)Current_Sync")
+}
+
+record(fanout, "$(P)$(R)Channel13_Sync")
+{
+  field(LNK1, "$(P)$(R)rChannel13_Nominal_Value")
+  field(LNK2, "$(P)$(R)rChannel13_Therm_Type")
+  field(LNK3, "$(P)$(R)rChannel13_Units")
+  field(LNK4, "$(P)$(R)Current_Sync")
+}
+
+record(fanout, "$(P)$(R)Channel14_Sync")
+{
+  field(LNK1, "$(P)$(R)rChannel14_Nominal_Value")
+  field(LNK2, "$(P)$(R)rChannel14_Therm_Type")
+  field(LNK3, "$(P)$(R)rChannel14_Units")
+  field(LNK4, "$(P)$(R)Current_Sync")
+}
+
+record(fanout, "$(P)$(R)Channel15_Sync")
+{
+  field(LNK1, "$(P)$(R)rChannel15_Nominal_Value")
+  field(LNK2, "$(P)$(R)rChannel15_Therm_Type")
+  field(LNK3, "$(P)$(R)rChannel15_Units")
+  field(LNK4, "$(P)$(R)Current_Sync")
+}
+
+record(fanout, "$(P)$(R)Channel16_Sync")
+{
+  field(LNK1, "$(P)$(R)rChannel16_Nominal_Value")
+  field(LNK2, "$(P)$(R)rChannel16_Therm_Type")
+  field(LNK3, "$(P)$(R)rChannel16_Units")
+  field(LNK4, "$(P)$(R)Current_Sync")
 }
 

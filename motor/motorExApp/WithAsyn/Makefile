@@ -4,7 +4,7 @@
 #Version:        $Revision: 13567 $
 #Modified By:    $Author: rivers $
 #Last Modified:  $Date: 2011-08-30 14:11:01 -0500 (Tue, 30 Aug 2011) $
-#HeadURL:        $URL: https://subversion.xor.aps.anl.gov/synApps/motor/tags/R6-7-1/motorExApp/WithAsyn/Makefile $
+#HeadURL:        $URL: https://subversion.xray.aps.anl.gov/synApps/motor/tags/R6-8-1/motorExApp/WithAsyn/Makefile $
 
 # "#!" marks lines that can be uncommented.
 

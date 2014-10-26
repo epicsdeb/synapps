@@ -1,23 +1,27 @@
 {% extends "!layout.html" %}
-{%- block sidebartoc %}
-{%- if display_toc %}
-<h3><a href="{{ pathto('Manual.html', 1) }}">{{ _('Table Of Contents') }}</a></h3>
-{{ toc }}
-{%- else %}
-<h3>{{ 'Shortcuts' }}</h3>
-<ul class="topless">
-<li><a href="{{ pathto('Installation.html', 1) }}">Installation</a></li>
-<li><a href="{{ pathto('Tutorial.html', 1) }}">Tutorial</a></li>
-<li><a href="{{ pathto('Reference.html', 1) }}">SNL Reference</a></li>
-<li>Users' Guide (<a href="{{ pathto('Manual.html', 1) }}">html</a>,
-    <a href="{{ pathto('Manual.pdf', 1) }}">pdf</a>)</li>
-</ul>
-<h3>{{ _('Related') }}</h3>
-<ul class="topless">
-<li><a href="http://epics.web.psi.ch/software/sequencer/">{{ 'Old Sequencer Home at PSI' }}</a></li>
-<li><a href="http://www.aps.anl.gov/epics/">{{ 'EPICS' }}</a></li>
-<li><a href="http://www.aps.anl.gov/epics/base/R3-14/12-docs/CAref.html">{{ 'Channel Access' }}</a></li>
-</ul>
-<hr>
+
+{%- block relbar2 %}{% endblock %}
+
+{%- block footer %}
+{%- if pagename == "index" %}
+    <div class="footer">
+    {%- if show_copyright %}
+      {%- if hasdoc('copyright') %}
+        {% trans path=pathto('copyright'), copyright=copyright|e %}&copy; <a href="{{ path }}">Copyright</a> {{ copyright }}.{% endtrans %}
+      {%- else %}
+        {% trans copyright=copyright|e %}&copy; Copyright {{ copyright }}.{% endtrans %}
+      {%- endif %}
+    {%- endif %}
+    {%- if last_updated %}
+      {% trans last_updated=last_updated|e %}Last updated on {{ last_updated }}.{% endtrans %}
+    {%- endif %}
+    {%- if show_sphinx %}
+      {% trans sphinx_version=sphinx_version|e %}Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> {{ sphinx_version }}.{% endtrans %}
+    {%- endif %}
+    </div>
 {%- endif %}
+{%- endblock %}
+
+{%- block rootrellink %}
+        <h2><a href="{{ pathto(master_doc) }}">{{ shorttitle|e }}</a></h2>
 {%- endblock %}

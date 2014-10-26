@@ -28,6 +28,8 @@ epicsShareFunc int
 epicsShareFunc int 
  asynSetTraceIOMask(const char *portName,int addr,int mask);
 epicsShareFunc int 
+ asynSetTraceInfoMask(const char *portName,int addr,int mask);
+epicsShareFunc int 
  asynSetTraceFile(const char *portName,int addr,const char *filename);
 epicsShareFunc int 
  asynSetTraceIOTruncateSize(const char *portName,int addr,int size);
@@ -55,6 +57,10 @@ epicsShareFunc int
  asynOctetSetOutputEos(const char *port, int addr,const char *eos);
 epicsShareFunc int 
  asynOctetGetOutputEos(const char *port, int addr);
+epicsShareFunc int 
+ asynRegisterTimeStampSource(const char *portName, const char *functionName);
+epicsShareFunc int 
+ asynUnregisterTimeStampSource(const char *portName);
 
 #ifdef __cplusplus
 }

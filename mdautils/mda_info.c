@@ -1,5 +1,5 @@
 /*************************************************************************\
-* Copyright (c) 2013 UChicago Argonne, LLC,
+* Copyright (c) 2014 UChicago Argonne, LLC,
 *               as Operator of Argonne National Laboratory.
 * This file is distributed subject to a Software License Agreement
 * found in file LICENSE that is included with this distribution. 
@@ -32,6 +32,7 @@
            making it faster as well as easier to understand
   1.2.2 -- June 2012
   1.3.0 -- February 2013
+  1.3.1 -- February 2014
 
  */
 
@@ -49,8 +50,8 @@
 
 //#include <mcheck.h>
 
-#define VERSION "1.3.0 (February 2013)"
-#define YEAR "2013"
+#define VERSION "1.3.1 (February 2014)"
+#define YEAR "2014"
 
 
 

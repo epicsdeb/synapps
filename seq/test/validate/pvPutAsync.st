@@ -8,7 +8,9 @@ program pvPutAsyncTest
 
 %%#include "../testSupport.h"
 
-foreign pvStatOK;
+%%epicsShareExtern double seq_sync_timeout;
+
+foreign seq_sync_timeout;
 
 int x;
 assign x to "pvPutAsync1";
@@ -46,47 +48,31 @@ ss test1 {
     state put_sync {
         entry {
             int i = 0;
-            for (i=0; i<4; i++) {
-                int status = pvPut(x,SYNC);
-                /* should always succeed */
+            int status;
+            for (i=0; i<2; i++) {
+                status = pvPut(x,SYNC);
+                /* should succeed */
                 testOk(status==pvStatOK, "pvPut/SYNC %d, status=%d (%s)",
                     i, status, status ? pvMessage(x) : "");
             }
+            i = 2;
+            seq_sync_timeout = 1.0;
+            status = pvPut(x,SYNC);
+            /* should fail */
+            testOk(status==pvStatTIMEOUT, "pvPut/SYNC %d, status=%d (%s)",
+                i, status, status ? pvMessage(x) : "");
+
+            i = 3;
+            seq_sync_timeout = 10.0;
+            status = pvPut(x,SYNC);
+            /* should succeed */
+            testOk(status==pvStatOK, "pvPut/SYNC %d, status=%d (%s)",
+                i, status, status ? pvMessage(x) : "");
         }
         when (delay(1)) {
         } exit
     }
 }
-
-#if 0
-ss test2 {
-    int x;
-    assign x to "pvPutAsync2";
-    state wait {
-        when (delay(0.5)) {
-        } state put_async
-    }
-    state put_async {
-        when (pvPutComplete(x)) {
-            int status;
-            printf("test2: pvPut/ASYNC complete\n");
-            x = 1;
-            status = pvPut(x,ASYNC);
-            /* should always succeed */
-            if (status)
-                printf("test2: pvPut/ASYNC 1 failed, %s\n", pvMessage(x));
-            else
-                printf("test2: pvPut/ASYNC 1 issued\n");
-            /* should always fail */
-            status = pvPut(x,ASYNC);
-            if (status)
-                printf("test2: pvPut/ASYNC 2 failed, %s\n", pvMessage(x));
-            else
-                printf("test2: pvPut/ASYNC 2 issued\n");
-        } state wait
-    }
-}
-#endif
 
 exit {
     seq_test_done();

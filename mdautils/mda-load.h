@@ -1,5 +1,5 @@
 /*************************************************************************\
-* Copyright (c) 2013 UChicago Argonne, LLC,
+* Copyright (c) 2014 UChicago Argonne, LLC,
 *               as Operator of Argonne National Laboratory.
 * This file is distributed subject to a Software License Agreement
 * found in file LICENSE that is included with this distribution. 
@@ -30,6 +30,7 @@
   1.2.2 -- June 2012
            Added preprocessor commands for c++ compatibility
   1.3.0 -- February 2013
+  1.3.1 -- February 2014
  */
 
 
@@ -117,7 +118,7 @@ struct mda_pv
   int16_t type;
   int16_t count;
   char   *unit;
-  char   *values; /* used to be void *, but gave a lot of headaches */
+  char   *values;
 };
 
 

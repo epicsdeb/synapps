@@ -1,0 +1,18 @@
+
+Serial connection: Used straight-through RJ11 (6-cond).  
+IP (XM-OCTAL) jumpers default
+
+RJ-11 recepticle (taper at bottom)
+| | | | | |
+1 2 3 4 5 6
+
+1,2 = RxD (to db9 pin 3)
+3,4 = GND (to db9 pin 5)
+5,6 = TxD (to db9 pin 2)
+
+1200 or 300 Baud only. 7 data bits. 1 stop bit. Odd parity.
+
+This device wants cr/lf.  This is the default setting .  Since I 
+used serial records, could only set one send/recieve terminator.  
+Therefore I set ODEL to be 10 decimal which is lf, and IDEL to 13 
+decimal which is cr. 

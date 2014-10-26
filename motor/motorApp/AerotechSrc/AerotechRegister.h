@@ -5,7 +5,7 @@ USAGE... This file contains function prototypes for ACS IOC shell commands.
 Version:        $Revision: 12194 $
 Modified By:    $Author: sluiter $
 Last Modified:  $Date: 2011-01-07 10:06:01 -0600 (Fri, 07 Jan 2011) $
-HeadURL:        $URL: https://subversion.xor.aps.anl.gov/synApps/motor/tags/R6-7-1/motorApp/AerotechSrc/AerotechRegister.h $
+HeadURL:        $URL: https://subversion.xray.aps.anl.gov/synApps/motor/tags/R6-8-1/motorApp/AerotechSrc/AerotechRegister.h $
 */
 
 /*

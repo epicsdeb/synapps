@@ -1,14 +1,14 @@
 
 file {
-	name="/home/oxygen/MOONEY/epics/synApps/support/calc/calcApp/op/adl/calcExamples.adl"
-	version=030105
+	name="/home/oxygen4/MOONEY/epics/synAppsSVN/support/calc/calcApp/op/adl/calcExamples.adl"
+	version=030107
 }
 display {
 	object {
-		x=624
-		y=72
+		x=1026
+		y=69
 		width=370
-		height=940
+		height=955
 	}
 	clr=14
 	bclr=1
@@ -1494,390 +1494,346 @@ text {
 	}
 	textix="a:=b"
 }
-composite {
+text {
+	object {
+		x=10
+		y=680
+		width=350
+		height=14
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="NOTE: can use single or double quotes at runtime"
+}
+text {
+	object {
+		x=10
+		y=695
+		width=350
+		height=14
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="but only single quotes in a static database."
+}
+text {
+	object {
+		x=10
+		y=715
+		width=350
+		height=14
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="'a', 'b', etc. are numeric arguments."
+}
+text {
+	object {
+		x=10
+		y=730
+		width=350
+		height=14
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="'aa', 'bb', etc. are string arguments."
+}
+polyline {
+	object {
+		x=10
+		y=675
+		width=350
+		height=0
+	}
+	"basic attribute" {
+		clr=53
+	}
+	points {
+		(10,675)
+		(360,675)
+	}
+}
+"related display" {
 	object {
 		x=5
-		y=675
-		width=355
-		height=249
+		y=755
+		width=350
+		height=27
 	}
-	"composite name"=""
-	children {
-		text {
-			object {
-				x=10
-				y=680
-				width=350
-				height=14
-			}
-			"basic attribute" {
-				clr=14
-			}
-			textix="NOTE: can use single or double quotes at runtime"
-		}
-		text {
-			object {
-				x=10
-				y=695
-				width=350
-				height=14
-			}
-			"basic attribute" {
-				clr=14
-			}
-			textix="but only single quotes in a static database."
-		}
-		text {
-			object {
-				x=10
-				y=715
-				width=350
-				height=14
-			}
-			"basic attribute" {
-				clr=14
-			}
-			textix="'a', 'b', etc. are numeric arguments."
-		}
-		text {
-			object {
-				x=10
-				y=730
-				width=350
-				height=14
-			}
-			"basic attribute" {
-				clr=14
-			}
-			textix="'aa', 'bb', etc. are string arguments."
-		}
-		polyline {
-			object {
-				x=10
-				y=675
-				width=350
-				height=0
-			}
-			"basic attribute" {
-				clr=53
-			}
-			points {
-				(10,675)
-				(360,675)
-			}
-		}
-		"related display" {
-			object {
-				x=5
-				y=755
-				width=350
-				height=27
-			}
-			display[0] {
-				name="calcArrayExamples.adl"
-				policy="replace display"
-			}
-			clr=0
-			bclr=17
-			label="-Array functions/operators"
-		}
-		text {
-			object {
-				x=10
-				y=895
-				width=350
-				height=14
-			}
-			"basic attribute" {
-				clr=20
-			}
-			textix="Items in red are useable in aCalcout records."
-		}
-		text {
-			object {
-				x=10
-				y=910
-				width=350
-				height=14
-			}
-			"basic attribute" {
-				clr=20
-			}
-		}
-		text {
-			object {
-				x=10
-				y=865
-				width=350
-				height=14
-			}
-			"basic attribute" {
-				clr=53
-			}
-			textix="Items in blue are useable in transform and sCalcout"
-		}
-		text {
-			object {
-				x=10
-				y=880
-				width=350
-				height=14
-			}
-			"basic attribute" {
-				clr=53
-			}
-			textix="records, and include string functions."
-		}
-		composite {
-			object {
-				x=10
-				y=785
-				width=70
-				height=74
-			}
-			"composite name"=""
-			children {
-				text {
-					object {
-						x=10
-						y=845
-						width=70
-						height=14
-					}
-					"basic attribute" {
-						clr=20
-					}
-					textix="AVG(aa)"
-				}
-				text {
-					object {
-						x=10
-						y=815
-						width=70
-						height=14
-					}
-					"basic attribute" {
-						clr=20
-					}
-					textix="ARNDM"
-				}
-				text {
-					object {
-						x=10
-						y=785
-						width=70
-						height=14
-					}
-					"basic attribute" {
-						clr=20
-					}
-					textix="AMAX(aa)"
-				}
-				text {
-					object {
-						x=10
-						y=800
-						width=70
-						height=14
-					}
-					"basic attribute" {
-						clr=20
-					}
-					textix="AMIN(aa)"
-				}
-				text {
-					object {
-						x=10
-						y=830
-						width=70
-						height=14
-					}
-					"basic attribute" {
-						clr=20
-					}
-					textix="ARR(a)"
-				}
-			}
-		}
-		composite {
-			object {
-				x=85
-				y=785
-				width=110
-				height=74
-			}
-			"composite name"=""
-			children {
-				text {
-					object {
-						x=85
-						y=845
-						width=110
-						height=14
-					}
-					"basic attribute" {
-						clr=20
-					}
-					textix="IX"
-				}
-				text {
-					object {
-						x=85
-						y=830
-						width=110
-						height=14
-					}
-					"basic attribute" {
-						clr=20
-					}
-					textix="FWHM(aa)"
-				}
-				text {
-					object {
-						x=85
-						y=785
-						width=110
-						height=14
-					}
-					"basic attribute" {
-						clr=20
-					}
-					textix="DERIV(aa)"
-				}
-				text {
-					object {
-						x=85
-						y=800
-						width=110
-						height=14
-					}
-					"basic attribute" {
-						clr=20
-					}
-					textix="FITPOLY(aa)"
-				}
-				text {
-					object {
-						x=85
-						y=815
-						width=110
-						height=14
-					}
-					"basic attribute" {
-						clr=20
-					}
-					textix="FITMPOLY(aa,bb)"
-				}
-			}
-		}
-		composite {
-			object {
-				x=205
-				y=785
-				width=80
-				height=74
-			}
-			"composite name"=""
-			children {
-				text {
-					object {
-						x=205
-						y=830
-						width=80
-						height=14
-					}
-					"basic attribute" {
-						clr=20
-					}
-					textix="STD(aa)"
-				}
-				text {
-					object {
-						x=205
-						y=815
-						width=80
-						height=14
-					}
-					"basic attribute" {
-						clr=20
-					}
-					textix="SMOO(aa)"
-				}
-				text {
-					object {
-						x=205
-						y=845
-						width=80
-						height=14
-					}
-					"basic attribute" {
-						clr=20
-					}
-					textix="SUM(aa)"
-				}
-				text {
-					object {
-						x=205
-						y=800
-						width=80
-						height=14
-					}
-					"basic attribute" {
-						clr=20
-					}
-					textix="NSMOO(aa,a)"
-				}
-				text {
-					object {
-						x=205
-						y=785
-						width=80
-						height=14
-					}
-					"basic attribute" {
-						clr=20
-					}
-					textix="NDERIV(aa,a)"
-				}
-			}
-		}
-		text {
-			object {
-				x=295
-				y=800
-				width=50
-				height=14
-			}
-			"basic attribute" {
-				clr=20
-			}
-			textix="aa>>10"
-		}
-		text {
-			object {
-				x=295
-				y=785
-				width=50
-				height=14
-			}
-			"basic attribute" {
-				clr=20
-			}
-			textix="@@a"
-		}
-		text {
-			object {
-				x=295
-				y=815
-				width=50
-				height=14
-			}
-			"basic attribute" {
-				clr=20
-			}
-			textix="aa<<10"
-		}
+	display[0] {
+		name="calcArrayExamples.adl"
+		policy="replace display"
 	}
+	clr=0
+	bclr=17
+	label="-Array functions/operators"
+}
+text {
+	object {
+		x=10
+		y=910
+		width=350
+		height=14
+	}
+	"basic attribute" {
+		clr=20
+	}
+	textix="Items in red are useable in aCalcout records."
+}
+text {
+	object {
+		x=10
+		y=925
+		width=350
+		height=14
+	}
+	"basic attribute" {
+		clr=20
+	}
+}
+text {
+	object {
+		x=10
+		y=880
+		width=350
+		height=14
+	}
+	"basic attribute" {
+		clr=53
+	}
+	textix="Items in blue are useable in transform and sCalcout"
+}
+text {
+	object {
+		x=10
+		y=895
+		width=350
+		height=14
+	}
+	"basic attribute" {
+		clr=53
+	}
+	textix="records, and include string functions."
+}
+text {
+	object {
+		x=10
+		y=845
+		width=70
+		height=14
+	}
+	"basic attribute" {
+		clr=20
+	}
+	textix="AVG(aa)"
+}
+text {
+	object {
+		x=10
+		y=815
+		width=70
+		height=14
+	}
+	"basic attribute" {
+		clr=20
+	}
+	textix="ARNDM"
+}
+text {
+	object {
+		x=10
+		y=785
+		width=70
+		height=14
+	}
+	"basic attribute" {
+		clr=20
+	}
+	textix="AMAX(aa)"
+}
+text {
+	object {
+		x=10
+		y=800
+		width=70
+		height=14
+	}
+	"basic attribute" {
+		clr=20
+	}
+	textix="AMIN(aa)"
+}
+text {
+	object {
+		x=10
+		y=830
+		width=70
+		height=14
+	}
+	"basic attribute" {
+		clr=20
+	}
+	textix="ARR(a)"
+}
+text {
+	object {
+		x=85
+		y=845
+		width=110
+		height=14
+	}
+	"basic attribute" {
+		clr=20
+	}
+	textix="IX"
+}
+text {
+	object {
+		x=85
+		y=830
+		width=110
+		height=14
+	}
+	"basic attribute" {
+		clr=20
+	}
+	textix="FWHM(aa)"
+}
+text {
+	object {
+		x=85
+		y=785
+		width=110
+		height=14
+	}
+	"basic attribute" {
+		clr=20
+	}
+	textix="DERIV(aa)"
+}
+text {
+	object {
+		x=85
+		y=800
+		width=110
+		height=14
+	}
+	"basic attribute" {
+		clr=20
+	}
+	textix="FITPOLY(aa)"
+}
+text {
+	object {
+		x=85
+		y=815
+		width=110
+		height=14
+	}
+	"basic attribute" {
+		clr=20
+	}
+	textix="FITMPOLY(aa,bb)"
+}
+text {
+	object {
+		x=205
+		y=830
+		width=80
+		height=14
+	}
+	"basic attribute" {
+		clr=20
+	}
+	textix="STD(aa)"
+}
+text {
+	object {
+		x=205
+		y=815
+		width=80
+		height=14
+	}
+	"basic attribute" {
+		clr=20
+	}
+	textix="SMOO(aa)"
+}
+text {
+	object {
+		x=205
+		y=845
+		width=80
+		height=14
+	}
+	"basic attribute" {
+		clr=20
+	}
+	textix="SUM(aa)"
+}
+text {
+	object {
+		x=205
+		y=800
+		width=80
+		height=14
+	}
+	"basic attribute" {
+		clr=20
+	}
+	textix="NSMOO(aa,a)"
+}
+text {
+	object {
+		x=205
+		y=785
+		width=80
+		height=14
+	}
+	"basic attribute" {
+		clr=20
+	}
+	textix="NDERIV(aa,a)"
+}
+text {
+	object {
+		x=295
+		y=800
+		width=50
+		height=14
+	}
+	"basic attribute" {
+		clr=20
+	}
+	textix="aa>>10"
+}
+text {
+	object {
+		x=295
+		y=785
+		width=50
+		height=14
+	}
+	"basic attribute" {
+		clr=20
+	}
+	textix="@@a"
+}
+text {
+	object {
+		x=295
+		y=815
+		width=50
+		height=14
+	}
+	"basic attribute" {
+		clr=20
+	}
+	textix="aa<<10"
 }
 text {
 	object {
@@ -1902,4 +1858,64 @@ text {
 		clr=53
 	}
 	textix="aa<<a"
+}
+text {
+	object {
+		x=295
+		y=830
+		width=50
+		height=14
+	}
+	"basic attribute" {
+		clr=20
+	}
+	textix="CUM(AA)"
+}
+text {
+	object {
+		x=295
+		y=845
+		width=50
+		height=14
+	}
+	"basic attribute" {
+		clr=20
+	}
+	textix="IXMAX(AA)"
+}
+text {
+	object {
+		x=205
+		y=860
+		width=50
+		height=14
+	}
+	"basic attribute" {
+		clr=20
+	}
+	textix="IXNZ(AA)"
+}
+text {
+	object {
+		x=85
+		y=860
+		width=50
+		height=14
+	}
+	"basic attribute" {
+		clr=20
+	}
+	textix="IXZ(AA)"
+}
+text {
+	object {
+		x=10
+		y=860
+		width=50
+		height=14
+	}
+	"basic attribute" {
+		clr=20
+	}
+	textix="IXMIN(AA)"
 }
