@@ -1,0 +1,268 @@
+synapps (20130320-2) unstable; urgency=low
+
+  * Patch: fix aCalcoutRecord when NUSE==0
+
+ -- Michael Davidsaver <mdavidsaver@bnl.gov>  Thu, 08 Aug 2013 15:01:02 -0400
+
+synapps (20130320-1) unstable; urgency=low
+
+  * New upstream version(s)
+    stream 2.6
+    seq 2.1.12
+    ipac 2.11
+    asyn 4.21
+    vme 2.8
+    vac 1.4
+    std 3.1
+    softglue 2.2
+    sscan 2.8.1
+    mdautils 1.3.0
+    optics 2.8.1
+    motor 6.7.1
+    modbus 2.4
+    mca 7.3.1
+    love 3.2.5
+    ipunidig 2.9
+    ip330 2.7
+    ip 2.13
+    delaygen 1.0.7
+    dac128v 2.7
+    calc 3.1
+    busy 1.4
+    autosave 5.0
+
+ -- Michael Davidsaver <mdavidsaver@bnl.gov>  Fri, 29 Mar 2013 14:21:32 -0400
+
+synapps (20111025-9) unstable; urgency=low
+
+  * strict deps between binary packages
+
+ -- Michael Davidsaver <mdavidsaver@bnl.gov>  Mon, 25 Feb 2013 16:11:01 -0500
+
+synapps (20111025-8) unstable; urgency=low
+
+  * epics-synapps-dev depends on libpcre3-dev
+  * Auto include libpcre dep for stream users
+      Avoids need to explicitly list library dep
+      when linking static executables.
+
+ -- Michael Davidsaver <mdavidsaver@bnl.gov>  Mon, 25 Feb 2013 11:46:14 -0500
+
+synapps (20111025-7) unstable; urgency=low
+
+  * fix stream PCRE patch
+
+ -- Michael Davidsaver <mdavidsaver@bnl.gov>  Thu, 15 Nov 2012 14:49:26 -0500
+
+synapps (20111025-6) unstable; urgency=low
+
+  * Add patch to build PCRE support for streamdevice
+
+ -- Michael Davidsaver <mdavidsaver@bnl.gov>  Thu, 15 Nov 2012 13:32:07 -0500
+
+synapps (20111025-5) unstable; urgency=low
+
+  * Rebuild for epics 3.14.12
+  * autosave: Build fix for RTEMS 4.10
+
+ -- Michael Davidsaver <mdavidsaver@bnl.gov>  Thu, 25 Oct 2012 14:03:13 -0400
+
+synapps (20111025-4) unstable; urgency=low
+
+  * autosave: Status PVs use severity
+
+ -- Michael Davidsaver <mdavidsaver@bnl.gov>  Thu, 30 Aug 2012 10:55:14 -0400
+
+synapps (20111025-3) unstable; urgency=low
+
+  * stream: fix async hang during reconnect
+
+ -- Michael Davidsaver <mdavidsaver@bnl.gov>  Wed, 08 Aug 2012 15:59:25 -0400
+
+synapps (20111025-2) unstable; urgency=low
+
+  * stream: Don't include aai and aao (wait until Base 3.14.12)
+
+ -- Michael Davidsaver <mdavidsaver@bnl.gov>  Thu, 03 Nov 2011 16:43:11 -0400
+
+synapps (20111025-1) unstable; urgency=low
+
+  * Update Modules
+    std 3.0
+    sscan 2.7
+    modbus 2.3
+    delaygen 1.0.6
+    autosave 4.8
+    asyn 4.17
+  * New package boy-synapps contains .opi files
+
+ -- Michael Davidsaver <mdavidsaver@bnl.gov>  Tue, 25 Oct 2011 16:58:07 -0400
+
+synapps (20110728-2) unstable; urgency=low
+
+  * remove Conflicts entry for old library package name: epics-synapps-libs
+
+ -- Michael Davidsaver <mdavidsaver@bnl.gov>  Fri, 12 Aug 2011 15:52:42 -0400
+
+synapps (20110728-1) unstable; urgency=low
+
+  * New snapshot version
+     Revert seq to 2.0.12 because of 64-bit build failures.
+       Does not fix the problem (sequencer + 64-bit integers == bad)
+       but doesn't change anything wrt synApps 5.5
+
+ -- Michael Davidsaver <mdavidsaver@bnl.gov>  Thu, 28 Jul 2011 16:32:32 -0400
+
+synapps (20110610-1) unstable; urgency=low
+
+  * New snapshot version (Not an official synApps release, but a collection
+    of releases of some of the constituent modules.
+     autosave - 4.7
+     asyn     - 4.16
+     busy     - 1.3
+     camac    - 2.6
+     calc     - 2.8
+     delaygen - 1.0.4
+     dac128V  - 2.6
+     ipUnidig - 2.7
+     ip330    - 2.6
+     ip       - 2.10
+     ipac     - 2.11
+     love     - 3.2.3
+     mdautils - 1.2
+     motor    - 6.5.2
+     modbus   - 2.2
+     mca      - 6.12.5
+     optics   - 2.7
+     softGlue - 2.1
+     sscan    - 2.6.6
+     std      - 2.8
+     stream   - snapshot20110224
+     seq      - 2.0.13
+     vme      - 2.7
+     vac      - 1.3
+   * patches
+     Don't build many Apps
+     remove duplicate adls
+     asyn: waveform writes should use NORD not NELM
+     asyn: keep generated docs from being cleaned
+     asyn: vxi11 depends
+     autosave: info tag length limited to 100 characters
+     mca: SIS does not build on RTEMS
+     mca: use LLC sockets
+     motor: typo in adl
+     motor: iocsh functions should use C linkage
+     motor: enable debug
+     seq: Skip building tests
+     sscan: ensure that enum's of CMND field don't overflow
+     stream: add mba checksum
+     stream: snapshot missing configure/
+     stream: fix Makefiles
+     stream: calcSupport
+     vme: build devScaler on RTEMS and Linux
+     vme: devScaler use MMIO inlines when available
+     stream: parallel make
+
+ -- Michael Davidsaver <mdavidsaver@bnl.gov>  Wed, 22 Jun 2011 12:05:30 -0400
+
+synapps (5.5-6) unstable; urgency=low
+
+  * update asyn to 4.16
+  * asyn: waveform writes should use NORD not NELM
+  * update mdautils to 1.2
+  * exclude db and req files from areaDetector
+
+ -- Michael Davidsaver <mdavidsaver@bnl.gov>  Fri, 10 Jun 2011 16:58:46 -0400
+
+synapps (5.5-5) unstable; urgency=low
+
+  * switch RTEMS from any to all
+
+ -- Michael Davidsaver <mdavidsaver@bnl.gov>  Mon, 24 Jan 2011 17:33:53 -0500
+
+synapps (5.5-4) unstable; urgency=low
+
+  * epics-synapps-dev missing dep on epics-dev
+  * autosave: upgrade to 4.7
+  * autosave: info tag length limited to 100 characters
+  * motor: upgrade to 6.5.1
+  * fix conversion glitch in AD panels
+  * stream: Use EPICS endian
+  * modbus: update to 2.1
+  * update base dependency
+
+ -- Michael Davidsaver <mdavidsaver@bnl.gov>  Mon, 20 Dec 2010 17:42:58 -0500
+
+synapps (5.5-3) unstable; urgency=low
+
+  * Install in /usr/lib/epics
+  * update lintian overrides
+  * debian/control description lines too long
+
+ -- Michael Davidsaver <mdavidsaver@bnl.gov>  Wed, 18 Aug 2010 14:06:38 -0400
+
+synapps (5.5-2) unstable; urgency=low
+
+  * sscan: Build the MDA format conversion utils
+  * stream: add the 'mba' checksum
+  * vme: devScaler use safe MMIO ops (powerpc on RTEMS)
+
+ -- Michael Davidsaver <mdavidsaver@bnl.gov>  Wed, 11 Aug 2010 17:52:25 -0400
+
+synapps (5.5-1) unstable; urgency=low
+
+  * New upstream version
+
+ -- Michael Davidsaver <mdavidsaver@bnl.gov>  Tue, 27 Apr 2010 12:14:49 -0400
+
+synapps (5.4.1-7) unstable; urgency=low
+
+  * mca: Avoid dependency on libnet and libpcap (Use LLC sockets)
+  * Build support which uses libusb and libtiff
+
+ -- Michael Davidsaver <mdavidsaver@bnl.gov>  Tue, 09 Mar 2010 21:13:19 -0500
+
+synapps (5.4.1-6) unstable; urgency=low
+
+  * Rebuild for RTEMS 4.9.3
+  * Build for RTEMS-mvme2307
+
+ -- Michael Davidsaver <mdavidsaver@bnl.gov>  Wed, 17 Feb 2010 17:19:01 -0500
+
+synapps (5.4.1-5) unstable; urgency=low
+
+  * Rename RTEMS packages to follow convention (rtems-modname-bspname)
+  * Rename library package to libsynapps5.4.1
+
+ -- Michael Davidsaver <mdavidsaver@bnl.gov>  Sun, 27 Dec 2009 21:33:53 -0500
+
+synapps (5.4.1-4) unstable; urgency=low
+
+  * In 5.4.1-3 files were moved between packages, but no corresponding Conflicts: were
+  *   added to the control file.  Add them now.
+
+ -- Michael Davidsaver <mdavidsaver@bnl.gov>  Mon, 30 Nov 2009 13:33:21 -0500
+
+synapps (5.4.1-3) unstable; urgency=low
+
+  * Clean EoL for adl files before edl conversion.
+  * Package unconverted adl files as medm-synapps
+  * enable runtime debug code for ccd and motor modules
+
+ -- Michael Davidsaver <mdavidsaver@bnl.gov>  Thu, 19 Nov 2009 16:59:32 -0500
+
+synapps (5.4.1-2) unstable; urgency=low
+
+  * Include additional files
+  *   More db files in /usr/epics/base/db
+  *   Autosave request files in /usr/epics/base/as/req
+  *   EDM panels in /usr/epics/base/op/edl
+
+ -- Michael Davidsaver <mdavidsaver@bnl.gov>  Thu, 25 Sept 2009 13:27:00 -0400
+
+synapps (5.4.1-1) unstable; urgency=low
+
+  * Initial release
+
+ -- Michael Davidsaver <mdavidsaver@bnl.gov>  Wed, 15 Jul 2009 12:01:29 -0400
+
