@@ -1,0 +1,20 @@
+From: Michael Davidsaver <mdavidsaver@bnl.gov>
+Date: Fri, 29 Mar 2013 14:25:11 -0400
+Subject: [PATCH] seq: clean
+
+---
+ seq/Makefile |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
+
+diff --git a/seq/Makefile b/seq/Makefile
+index e790ca2..7575e03 100644
+--- a/seq/Makefile
++++ b/seq/Makefile
+@@ -50,3 +50,6 @@ changelog:
+ 	DARCS_ALWAYS_COLOR=0 darcs changes -a --from-tag=. | egrep -v '^(Author|Date|patch)' > changelog
+ 
+ .PHONY: release upload
++
++distclean:
++	rm -f documentation/bnf.inc
+-- 

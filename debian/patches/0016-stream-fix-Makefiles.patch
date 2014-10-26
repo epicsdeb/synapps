@@ -1,0 +1,83 @@
+From: Michael Davidsaver <mdavidsaver@bnl.gov>
+Date: Sun, 12 Jun 2011 11:21:23 -0400
+Subject: [PATCH] stream: fix Makefiles
+
+Fix TOP with
+
+find stream -name Makefile|xargs sed -i -e '/TOP\s*=/ s|\(=\s*\)..|\1.|'
+
+Change stream/Makefile to _TOP but keep
+stream/doc from being cleaned
+---
+ stream/Makefile            |    7 +++++--
+ stream/configure/Makefile  |    2 +-
+ stream/src/Makefile        |    2 +-
+ stream/srcSynApps/Makefile |    2 +-
+ stream/streamApp/Makefile  |    2 +-
+ 5 files changed, 9 insertions(+), 6 deletions(-)
+
+diff --git a/stream/Makefile b/stream/Makefile
+index 247c705..efe17bb 100644
+--- a/stream/Makefile
++++ b/stream/Makefile
+@@ -1,4 +1,4 @@
+-TOP = ..
++TOP = .
+ 
+ DIRS = src
+ streamApp_DEPEND_DIRS  = src
+@@ -21,4 +21,7 @@ endif
+ 
+ DIRS += streamApp
+ 
+-include $(CONFIG)/RULES_DIRS
++include $(CONFIG)/RULES_TOP
++
++UNINSTALL_DIRS := $(filter-out $(INSTALL_DOC),$(UNINSTALL_DIRS))
++
+diff --git a/stream/configure/Makefile b/stream/configure/Makefile
+index 0317746..60466fe 100644
+--- a/stream/configure/Makefile
++++ b/stream/configure/Makefile
+@@ -1,6 +1,6 @@
+ # Makefile
+ 
+-TOP=..
++TOP=.
+ 
+ include $(TOP)/configure/CONFIG
+ 
+diff --git a/stream/src/Makefile b/stream/src/Makefile
+index ed146e0..4f98539 100644
+--- a/stream/src/Makefile
++++ b/stream/src/Makefile
+@@ -18,7 +18,7 @@
+ #                                                              #
+ ################################################################
+ 
+-TOP=../..
++TOP=./..
+ 
+ # Look if we have EPICS R3.13 or R3.14
+ ifeq ($(wildcard $(TOP)/configure),)
+diff --git a/stream/srcSynApps/Makefile b/stream/srcSynApps/Makefile
+index 4fec9f9..c16f995 100644
+--- a/stream/srcSynApps/Makefile
++++ b/stream/srcSynApps/Makefile
+@@ -1,4 +1,4 @@
+-TOP=../..
++TOP=./..
+ 
+ include $(TOP)/configure/CONFIG
+ 
+diff --git a/stream/streamApp/Makefile b/stream/streamApp/Makefile
+index c44934c..cb50a12 100644
+--- a/stream/streamApp/Makefile
++++ b/stream/streamApp/Makefile
+@@ -1,4 +1,4 @@
+-TOP=../..
++TOP=./..
+ 
+ # EPICS R3.14
+ include $(TOP)/configure/CONFIG
+-- 

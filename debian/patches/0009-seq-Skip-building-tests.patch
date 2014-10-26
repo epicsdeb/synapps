@@ -1,0 +1,31 @@
+From: Michael Davidsaver <mdavidsaver@bnl.gov>
+Date: Sun, 12 Jun 2011 19:33:52 -0400
+Subject: [PATCH] seq: Skip building tests
+
+Having multiple PROD entries in one directory
+breaks with parallel builds on some RTEMS
+targets due to hard coded file names appearing
+in the linker script.
+
+Note: This is a problem with the toolchain not
+this package, or epics base.
+---
+ seq/Makefile |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/seq/Makefile b/seq/Makefile
+index 6420db4..e790ca2 100644
+--- a/seq/Makefile
++++ b/seq/Makefile
+@@ -6,8 +6,8 @@ DIRS += configure
+ DIRS += src
+ src_DEPEND_DIRS  = configure
+ 
+-DIRS += test
+-test_DEPEND_DIRS = src
++#DIRS += test
++#test_DEPEND_DIRS = src
+ 
+ DIRS += examples
+ examples_DEPEND_DIRS = src
+-- 

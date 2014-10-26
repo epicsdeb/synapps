@@ -1,0 +1,35 @@
+From: Michael Davidsaver <mdavidsaver@bnl.gov>
+Date: Thu, 30 Jul 2009 14:47:43 -0400
+Subject: [PATCH] vme: build devScaler on RTEMS and Linux
+
+---
+ vme/vmeApp/src/Makefile          |    2 +-
+ vme/vmeApp/src/devScaler_debug.c |    1 +
+ 2 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/vme/vmeApp/src/Makefile b/vme/vmeApp/src/Makefile
+index 1da0822..06fa399 100644
+--- a/vme/vmeApp/src/Makefile
++++ b/vme/vmeApp/src/Makefile
+@@ -27,7 +27,7 @@ vme_SRCS_vxWorks += drvIK320.c
+ vme_SRCS_vxWorks += drvIK320ErrStat.c
+ 
+ #vme_SRCS_vxWorks += devScaler.c
+-vme_SRCS_vxWorks += devScaler_debug.c
++vme_SRCS += devScaler_debug.c
+ vme_SRCS_vxWorks += devScaler_VS.c
+ vme_SRCS_vxWorks += vmeRecord.c
+ vme_SRCS_vxWorks += devBunchClkGen.c
+diff --git a/vme/vmeApp/src/devScaler_debug.c b/vme/vmeApp/src/devScaler_debug.c
+index 026f485..4555bb3 100644
+--- a/vme/vmeApp/src/devScaler_debug.c
++++ b/vme/vmeApp/src/devScaler_debug.c
+@@ -57,6 +57,7 @@ typedef unsigned short uint16;
+ #include	<epicsExit.h>
+ extern int logMsg(char *fmt, ...);
+ #else
++#define logMsg errlogPrintf
+ #define printf errlogPrintf
+ #endif
+ 
+-- 

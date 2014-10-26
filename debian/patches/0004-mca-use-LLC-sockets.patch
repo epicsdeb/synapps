@@ -1,0 +1,39 @@
+From: Michael Davidsaver <mdavidsaver@bnl.gov>
+Date: Sun, 12 Jun 2011 00:27:59 -0400
+Subject: [PATCH] mca: use LLC sockets
+
+debian 5.0 (lenny) uses a 2.6.26 kernel
+---
+ mca/mcaApp/CanberraSrc/Makefile |   16 ++++++++--------
+ 1 files changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/mca/mcaApp/CanberraSrc/Makefile b/mca/mcaApp/CanberraSrc/Makefile
+index 47681cc..6dacf4b 100644
+--- a/mca/mcaApp/CanberraSrc/Makefile
++++ b/mca/mcaApp/CanberraSrc/Makefile
+@@ -51,16 +51,16 @@ endif
+ # We can only use LLC sockets on Linux versions
+ # more recent than 2.6.13 due to a show-shopper bug in the LLC socket
+ # layer that was fixed in 2.6.14. 
+-#USR_CFLAGS_Linux += -DUSE_SOCKETS
++USR_CFLAGS_Linux += -DUSE_SOCKETS
+ # If LLC sockets are not being used on Linux, and libnet is being used instead, then
+ # uncomment the following lines.
+-USR_CFLAGS_Linux           += -DUSE_LIBNET
+-USR_CPPFLAGS_Linux         += -DUSE_LIBNET
+-USR_CFLAGS_Linux           += -g `libnet-config --defines` 
+-USR_CPPFLAGS_Linux         += -g `libnet-config --defines` 
+-mcaCanberra_SYS_LIBS_Linux += net pcap
+-mcaAIM_SYS_LIBS_Linux      += net pcap
+-nmcDemo_SYS_LIBS_Linux     += net pcap
++#USR_CFLAGS_Linux           += -DUSE_LIBNET
++#USR_CPPFLAGS_Linux         += -DUSE_LIBNET
++#USR_CFLAGS_Linux           += -g `libnet-config --defines` 
++#USR_CPPFLAGS_Linux         += -g `libnet-config --defines` 
++#mcaCanberra_SYS_LIBS_Linux += net pcap
++#mcaAIM_SYS_LIBS_Linux      += net pcap
++#nmcDemo_SYS_LIBS_Linux     += net pcap
+ 
+ # Darwin
+ LIBRARY_IOC_Darwin          += mcaCanberra
+-- 

@@ -1,0 +1,23 @@
+From: Michael Davidsaver <mdavidsaver@bnl.gov>
+Date: Fri, 31 Jul 2009 09:46:36 -0400
+Subject: [PATCH] motor: enable debug
+
+Won't print anything unless the runtime flag is set
+---
+ motor/motorApp/OmsSrc/Makefile |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/motor/motorApp/OmsSrc/Makefile b/motor/motorApp/OmsSrc/Makefile
+index ed43a33..1513f66 100644
+--- a/motor/motorApp/OmsSrc/Makefile
++++ b/motor/motorApp/OmsSrc/Makefile
+@@ -5,7 +5,7 @@ include $(TOP)/configure/CONFIG
+ #  ADD MACRO DEFINITIONS AFTER THIS LINE
+ 
+ # The following are used for debugging messages.
+-#!USR_CXXFLAGS += -DDEBUG
++USR_CXXFLAGS += -DDEBUG
+ 
+ DBD += devOms.dbd
+ 
+-- 

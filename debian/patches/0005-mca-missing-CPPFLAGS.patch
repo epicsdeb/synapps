@@ -1,0 +1,22 @@
+From: Michael Davidsaver <mdavidsaver@bnl.gov>
+Date: Wed, 29 Oct 2014 06:08:04 -0400
+Subject: [PATCH] mca: missing CPPFLAGS
+
+Must set CPPFLAGS to build DSA2000.cpp
+---
+ mca/mcaApp/CanberraSrc/Makefile |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/mca/mcaApp/CanberraSrc/Makefile b/mca/mcaApp/CanberraSrc/Makefile
+index 6dacf4b..0776b17 100644
+--- a/mca/mcaApp/CanberraSrc/Makefile
++++ b/mca/mcaApp/CanberraSrc/Makefile
+@@ -52,6 +52,7 @@ endif
+ # more recent than 2.6.13 due to a show-shopper bug in the LLC socket
+ # layer that was fixed in 2.6.14. 
+ USR_CFLAGS_Linux += -DUSE_SOCKETS
++USR_CPPFLAGS_Linux += -DUSE_SOCKETS
+ # If LLC sockets are not being used on Linux, and libnet is being used instead, then
+ # uncomment the following lines.
+ #USR_CFLAGS_Linux           += -DUSE_LIBNET
+-- 

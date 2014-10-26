@@ -1,0 +1,25 @@
+From: Michael Davidsaver <mdavidsaver@bnl.gov>
+Date: Tue, 25 Oct 2011 13:54:33 -0400
+Subject: [PATCH] delaygen: install DBD
+
+---
+ delaygen/delaygenApp/src/Makefile |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
+
+diff --git a/delaygen/delaygenApp/src/Makefile b/delaygen/delaygenApp/src/Makefile
+index 1ae5ec0..b8b5e25 100644
+--- a/delaygen/delaygenApp/src/Makefile
++++ b/delaygen/delaygenApp/src/Makefile
+@@ -27,6 +27,11 @@ delaygen_LIBS_vxWorks += $(EPICS_BASE_IOC_LIBS)
+ #=============================================================================
+ 
+ DBD += delaygenSupport.dbd
++DBD += devDG535.dbd
++DBD += drvAsynCoherentSDG.dbd
++DBD += drvAsynColby.dbd
++DBD += drvAsynDG645.dbd
++DBD += nigpibSupport.dbd
+ 
+ ifdef STREAM
+ 	delaygenApp_LIBS += stream
+-- 
