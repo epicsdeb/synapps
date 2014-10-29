@@ -3,7 +3,7 @@ Section: devel
 Priority: extra
 Maintainer: Michael Davidsaver <mdavidsaver@bnl.gov>
 Build-Depends: debhelper (>= 7.0.50~), epics-debhelper (>= 6~),
-               epics-dev (>= 3.14.11-2), epics-dev (<< 3.14.13),
+               epics-dev (>= 3.14.12.3-6~), epics-dev (<< 3.16.0),
                rtems-epics-mvme2100,
                rtems-epics-mvme2307,
                rtems-epics-mvme3100,
@@ -27,7 +27,7 @@ Description: Documentation for synapps components
  .
  This package contains reference documentation for synApps.
 
-Package: libsynapps20111025
+Package: libsynapps20141009
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Conflicts: epics-synapps-dev (<= 5.4.1-2)
@@ -43,7 +43,7 @@ Description: Shared libraries for IOCs using synApps modules
 Package: epics-synapps
 Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends},
-         libsynapps20111025 (>= ${source:Version}), libsynapps20111025 (<< ${source:Version}.1~),
+         libsynapps20141009 (>= ${source:Version}), libsynapps20141009 (<< ${source:Version}.1~),
 Conflicts: epics-synapps-doc (<= 5.4.1-2)
 Suggests: epics-synapps-doc, epics-synapps-util
 Description: Files for running IOCs using synApps modules
@@ -58,7 +58,7 @@ Description: Files for running IOCs using synApps modules
 Package: epics-synapps-dev
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
-         libsynapps20111025 (= ${binary:Version}),
+         libsynapps20141009 (= ${binary:Version}),
          epics-synapps (= ${source:Version}),
          libpcre3-dev,
          epics-synapps (= ${source:Version}),
@@ -75,7 +75,7 @@ Description: For building IOCs which use synApps modules
 Package: epics-synapps-util
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
-         libsynapps20111025 (= ${binary:Version})
+         libsynapps20141009 (= ${binary:Version})
 Suggests: epics-synapps-doc
 Conflicts: epics-synapps (<< 20110728-1~),
 Description: For building IOCs which use synApps modules
