@@ -1,6 +1,6 @@
 From: Michael Davidsaver <mdavidsaver@bnl.gov>
 Date: Sun, 12 Jun 2011 11:21:23 -0400
-Subject: [PATCH] stream: fix Makefiles
+Subject: stream: fix Makefiles
 
 Fix TOP with
 
@@ -9,11 +9,11 @@ find stream -name Makefile|xargs sed -i -e '/TOP\s*=/ s|\(=\s*\)..|\1.|'
 Change stream/Makefile to _TOP but keep
 stream/doc from being cleaned
 ---
- stream/Makefile            |    7 +++++--
- stream/configure/Makefile  |    2 +-
- stream/src/Makefile        |    2 +-
- stream/srcSynApps/Makefile |    2 +-
- stream/streamApp/Makefile  |    2 +-
+ stream/Makefile            | 7 +++++--
+ stream/configure/Makefile  | 2 +-
+ stream/src/Makefile        | 2 +-
+ stream/srcSynApps/Makefile | 2 +-
+ stream/streamApp/Makefile  | 2 +-
  5 files changed, 9 insertions(+), 6 deletions(-)
 
 diff --git a/stream/Makefile b/stream/Makefile
@@ -80,4 +80,3 @@ index c44934c..cb50a12 100644
  
  # EPICS R3.14
  include $(TOP)/configure/CONFIG
--- 

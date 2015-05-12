@@ -1,0 +1,160 @@
+From: Michael Davidsaver <mdavidsaver@bnl.gov>
+Date: Tue, 12 May 2015 10:34:11 -0400
+Subject: fix various 64-bit asynPrint() problems
+
+---
+ asyn/asyn/gsIP488/drvGsIP488.c                |  2 +-
+ asyn/asyn/ni1014/drvNi1014.c                  |  2 +-
+ asyn/asyn/vxi11/drvVxi11.c                    |  2 +-
+ modbus/modbusApp/src/modbusInterpose.c        |  4 ++--
+ motor/motorApp/MotorSrc/asynMotorAxis.cpp     |  4 ++--
+ motor/motorApp/NewportSrc/asynOctetSocket.cpp |  8 ++++----
+ std/stdApp/src/devScalerAsyn.c                | 10 +++++-----
+ std/stdApp/src/drvScalerSoft.c                |  4 ++--
+ 8 files changed, 18 insertions(+), 18 deletions(-)
+
+diff --git a/asyn/asyn/gsIP488/drvGsIP488.c b/asyn/asyn/gsIP488/drvGsIP488.c
+index d4658e1..f5c8ce5 100644
+--- a/asyn/asyn/gsIP488/drvGsIP488.c
++++ b/asyn/asyn/gsIP488/drvGsIP488.c
+@@ -687,7 +687,7 @@ static asynStatus gpibPortGetEos(void *pdrvPvt,asynUser *pasynUser,
+         *eoslen = 1;
+     }
+     asynPrintIO(pasynUser, ASYN_TRACE_FLOW, eos, *eoslen,
+-            "%s gpibPortGetEos eoslen %d\n",pgsport->portName,eoslen);
++            "%s gpibPortGetEos eoslen %d\n",pgsport->portName,*eoslen);
+     return asynSuccess;
+ }
+ 
+diff --git a/asyn/asyn/ni1014/drvNi1014.c b/asyn/asyn/ni1014/drvNi1014.c
+index 953d261..080af31 100644
+--- a/asyn/asyn/ni1014/drvNi1014.c
++++ b/asyn/asyn/ni1014/drvNi1014.c
+@@ -739,7 +739,7 @@ static asynStatus gpibPortGetEos(void *pdrvPvt,asynUser *pasynUser,
+         *eoslen = 1;
+     }
+     asynPrintIO(pasynUser, ASYN_TRACE_FLOW, eos, *eoslen,
+-        "%s addr %d gpibPortGetEos eoslen %d\n",pniport->portName,addr,eoslen);
++        "%s addr %d gpibPortGetEos eoslen %d\n",pniport->portName,addr,*eoslen);
+     return asynSuccess;
+ }
+ 
+diff --git a/asyn/asyn/vxi11/drvVxi11.c b/asyn/asyn/vxi11/drvVxi11.c
+index a8e2d55..e23ddad 100644
+--- a/asyn/asyn/vxi11/drvVxi11.c
++++ b/asyn/asyn/vxi11/drvVxi11.c
+@@ -291,7 +291,7 @@ static BOOL vxiCreateDeviceLink(vxiPort * pvxiPort,
+         } else if(pvxiPort->maxRecvSize!=crLinkR.maxRecvSize) {
+             asynPrint(pasynUser,ASYN_TRACE_ERROR,
+                 "%s vxiCreateDeviceLink maxRecvSize changed from %lu to %lu\n",
+-                            devName,pvxiPort->maxRecvSize,crLinkR.maxRecvSize);
++                            devName,(unsigned long)pvxiPort->maxRecvSize,(unsigned long)crLinkR.maxRecvSize);
+         }
+         if(pvxiPort->abortPort==0) {
+             pvxiPort->abortPort = crLinkR.abortPort;
+diff --git a/modbus/modbusApp/src/modbusInterpose.c b/modbus/modbusApp/src/modbusInterpose.c
+index a433a7f..7dc7f8f 100644
+--- a/modbus/modbusApp/src/modbusInterpose.c
++++ b/modbus/modbusApp/src/modbusInterpose.c
+@@ -394,8 +394,8 @@ static asynStatus readIt(void *ppvt, asynUser *pasynUser,
+             computeLRC(data, nRead, &LRC);
+             if (LRC != data[i]) {
+                 asynPrint(pasynUser, ASYN_TRACE_ERROR,
+-                          "%s::readIt, LRC error, nRead=%d, received LRC=0x%x, computed LRC=0x%x\n",
+-                          driver, nRead, data[i], LRC);
++                          "%s::readIt, LRC error, nRead=%lu, received LRC=0x%x, computed LRC=0x%x\n",
++                          driver, (unsigned long)nRead, data[i], LRC);
+                 return asynError;
+             }
+             /* The buffer now contains binary data, but the first byte is address.  
+diff --git a/motor/motorApp/MotorSrc/asynMotorAxis.cpp b/motor/motorApp/MotorSrc/asynMotorAxis.cpp
+index f83bf20..aa51fce 100644
+--- a/motor/motorApp/MotorSrc/asynMotorAxis.cpp
++++ b/motor/motorApp/MotorSrc/asynMotorAxis.cpp
+@@ -328,8 +328,8 @@ asynStatus asynMotorAxis::defineProfile(double *positions, size_t numPoints)
+   static const char *functionName = "defineProfile";
+   
+   asynPrint(pasynUser_, ASYN_TRACE_FLOW,
+-            "%s:%s: axis=%d, numPoints=%d, positions[0]=%f\n",
+-            driverName, functionName, axisNo_, numPoints, positions[0]);
++            "%s:%s: axis=%d, numPoints=%ul, positions[0]=%f\n",
++            driverName, functionName, axisNo_, (unsigned long)numPoints, positions[0]);
+ 
+   if (numPoints > pC_->maxProfilePoints_) return asynError;
+ 
+diff --git a/motor/motorApp/NewportSrc/asynOctetSocket.cpp b/motor/motorApp/NewportSrc/asynOctetSocket.cpp
+index 0336935..6589117 100644
+--- a/motor/motorApp/NewportSrc/asynOctetSocket.cpp
++++ b/motor/motorApp/NewportSrc/asynOctetSocket.cpp
+@@ -178,8 +178,8 @@ void SendAndReceive (int SocketIndex, char buffer[], char valueRtrn[], int retur
+                                             &nbytesIn,
+                                             &eomReason);
+             asynPrint(psock->pasynUser, ASYN_TRACEIO_DRIVER,
+-                  "SendAndReceive, received: nread=%d, returnSize-nread=%d, nbytesIn=%d\n",
+-                  (int)nread, returnSize-nread, (int)nbytesIn);
++                  "SendAndReceive, received: nread=%d, returnSize-nread=%lu, nbytesIn=%d\n",
++                  (int)nread, (unsigned long)(returnSize-nread), (int)nbytesIn);
+             nread += nbytesIn;
+         }
+     } else {
+@@ -259,8 +259,8 @@ int ReadXPSSocket (int SocketIndex, char valueRtrn[], int returnSize, double tim
+                                         &nbytesIn,
+                                         &eomReason);
+         asynPrint(psock->pasynUser, ASYN_TRACEIO_DRIVER,
+-              "ReadXPSSocket, received: nread=%d, returnSize-nread=%d, nbytesIn=%d\n",
+-              (int)nread, returnSize-nread, (int)nbytesIn);
++              "ReadXPSSocket, received: nread=%d, returnSize-nread=%lu, nbytesIn=%d\n",
++              (int)nread, (unsigned long)(returnSize-nread), (int)nbytesIn);
+         nread += nbytesIn;
+     } while ((status==asynSuccess) && 
+              (strcmp(valueRtrn + nread - strlen(XPS_TERMINATOR), XPS_TERMINATOR) != 0));
+diff --git a/std/stdApp/src/devScalerAsyn.c b/std/stdApp/src/devScalerAsyn.c
+index 8066566..0c34f65 100644
+--- a/std/stdApp/src/devScalerAsyn.c
++++ b/std/stdApp/src/devScalerAsyn.c
+@@ -239,7 +239,7 @@ static long scaler_init_record(scalerRecord *psr, CALLBACK *pcallback)
+         if (status != asynSuccess) {
+             asynPrint(pasynUser, ASYN_TRACE_ERROR,
+                       "devScalerAsyn::init_record, %s connectDevice failed to %s for channel %d\n",
+-                      psr->name, port);
++                      psr->name, port, i);
+             goto bad;
+         }
+     }
+@@ -348,8 +348,8 @@ static void asynCallback(asynUser *pasynUser)
+     size_t nread;
+ 
+     asynPrint(pasynUser, ASYN_TRACE_FLOW, 
+-              "devScalerAsyn::asynCallback: %s command=%d, val=%d, pval=%p\n",
+-              psr->name, pmsg->command, pmsg->val, pmsg->pval);
++              "devScalerAsyn::asynCallback: %s command=%d, val=%ld, pval=%p\n",
++              psr->name, pmsg->command, (long)pmsg->val, pmsg->pval);
+     pasynUser->reason = pmsg->command;
+ 
+     if (pmsg->command == pPvt->resetCommand) {
+@@ -361,8 +361,8 @@ static void asynCallback(asynUser *pasynUser)
+        pPvt->pasynInt32Array->read(pPvt->asynInt32ArrayPvt, pasynUser, 
+                                    pmsg->pval, psr->nch, &nread);
+        asynPrint(pasynUser, ASYN_TRACE_FLOW,
+-         "devScalerAsyn::asynCallback readCommand nread=%d, counts[0]=%d\n",
+-         nread, pmsg->pval[0]);        
++         "devScalerAsyn::asynCallback readCommand nread=%lu, counts[0]=%d\n",
++         (unsigned long)nread, pmsg->pval[0]);
+     }
+     else if (pmsg->command == pPvt->presetCommand) {
+         /* Send preset command */
+diff --git a/std/stdApp/src/drvScalerSoft.c b/std/stdApp/src/drvScalerSoft.c
+index f761254..cb83264 100644
+--- a/std/stdApp/src/drvScalerSoft.c
++++ b/std/stdApp/src/drvScalerSoft.c
+@@ -403,8 +403,8 @@ static asynStatus int32ArrayRead(void *drvPvt, asynUser *pasynUser, epicsInt32 *
+     checkAcquireDone(pPvt);
+ 
+     asynPrint(pasynUser, ASYN_TRACE_FLOW, 
+-        "%s::int32ArrayRead entry, maxChans=%d\n", 
+-        pPvt->driver, maxChans);
++        "%s::int32ArrayRead entry, maxChans=%lu\n", 
++        pPvt->driver, (unsigned long)maxChans);
+ 
+     switch (command) {
+         case scalerReadCommand:
