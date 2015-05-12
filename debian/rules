@@ -41,6 +41,7 @@ ifneq (,$(findstring edm-synapps, $(shell dh_listpackages)))
 	 | xargs -n 1 cp -b --suffix '.dup' -t $(CURDIR)/op
 
 	rm -f edlskip
+	touch edlskip
 	for ff in op/*.adl; do \
 		fromdos $$ff; \
 		if adl2edl -rename -rgb $$ff > $${ff%.adl}.edl.tmp; then \
